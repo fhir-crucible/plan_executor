@@ -7,7 +7,7 @@ module FHIR
       end
 
       def self.createPatient(family, given)
-        patient = FHIR::Patient.new(name: [FHIR::HumanName.new(family: family, given: given)])
+        patient = FHIR::Patient.new(name: [FHIR::HumanName.new(family: [family], given: [given])])
       end
 
       def execute

@@ -1,4 +1,4 @@
-module FHIR
+module Crucible
 	module Tests
     class Executor
 
@@ -7,8 +7,8 @@ module FHIR
       end
 
       def execute_all
-        FHIR::Tests.constants.grep(/Test$/).each do |test|
-          FHIR::Tests.const_get(test).new(@client).execute
+        Crucible::Tests.constants.grep(/Test$/).each do |test|
+          Crucible::Tests.const_get(test).new(@client).execute
         end
       end
 

@@ -1,4 +1,4 @@
-module FHIR
+module Crucible
 	module Tests
     class ReadTest
 

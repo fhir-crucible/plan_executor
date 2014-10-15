@@ -32,7 +32,7 @@ module Crucible
 
       # [SprinklerTest("R002", "Read unknown resource type")]
       def r002_get_unknown_resource_type_test
-        'Implementation missing: r002_get_unknown_resource_type_test'
+        raise 'Implementation missing: r002_get_unknown_resource_type_test'
       end
       #     public void TryReadUnknownResourceType()
       #     {
@@ -45,7 +45,7 @@ module Crucible
 
       # [SprinklerTest("R003", "Read non-existing resource id")]
       def r003_get_non_existing_resource_test
-        'Implementation missing: r003_get_non_existing_resource_test'
+        raise 'Implementation missing: r003_get_non_existing_resource_test'
       end
       #     public void TryReadNonExistingResource()
       #     {
@@ -54,7 +54,7 @@ module Crucible
 
       # [SprinklerTest("R004", "Read bad formatted resource id")]
       def r004_get_bad_formatted_resource_id_test
-        'Implementation missing: r004_get_bad_formatted_resource_id_test'
+        raise 'Implementation missing: r004_get_bad_formatted_resource_id_test'
       end
       #     public void TryReadBadFormattedResourceId()
       #     {

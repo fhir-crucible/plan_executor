@@ -7,10 +7,27 @@ module Crucible
       end
 
       def execute
+        result = {}
         self.methods.grep(/_test$/).each do |test_method|
           puts "executing: #{test_method}..."
-          self.method(test_method).call()
+          begin
+            content = self.method(test_method).call()
+            status = 'passed'
+          rescue => e
+            content = "#{test_method} failed. Error: #{e.message}."
+            if e.message.include? 'Implementation missing'
+              status = 'missing'
+            else
+              status = 'failed'
+            end
+          end
+          result[test_method] = {
+            test_method: test_method,
+            status: status,
+            result: content
+          }
         end
+        result
       end
 
       def description

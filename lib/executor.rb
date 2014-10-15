@@ -7,9 +7,15 @@ module Crucible
       end
 
       def execute_all
+        results = {}
         Crucible::Tests.constants.grep(/Test$/).each do |test|
-          Crucible::Tests.const_get(test).new(@client).execute
+          next if test == :BaseTest
+          results[test] = {
+            test_file: test,
+            tests: Crucible::Tests.const_get(test).new(@client).execute
+          }
         end
+        results
       end
 
       def self.list_all

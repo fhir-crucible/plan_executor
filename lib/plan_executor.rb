@@ -7,6 +7,7 @@ require 'fhir_model'
 require 'fhir_client'
 
 require_relative File.join('.','executor.rb')
+require_relative File.join('.','test_result.rb')
 
 root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
 Dir.glob(File.join(root, 'lib','tests','**','*.rb')).each do |file|

@@ -14,9 +14,9 @@ module Crucible
             tests: Crucible::Tests.const_get(test).new(@client).execute
           }
         end
-        # Dir.mkdir('./results') unless Dir.exists?('./results')
-        # json = JSON.pretty_unparse(results)
-        # File.open("./results/execute_all.json","w") {|f| f.write json }
+        Dir.mkdir('./results') unless Dir.exists?('./results')
+        json = JSON.pretty_unparse(results)
+        File.open("./results/execute_all.json","w") {|f| f.write json }
         results
       end
 

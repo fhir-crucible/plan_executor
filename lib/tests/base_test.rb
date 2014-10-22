@@ -14,21 +14,17 @@ module Crucible
         self.methods.grep(/_test$/).each do |test_method|
           puts "executing: #{test_method}..."
           begin
-            content = self.method(test_method).call()
-            status = 'passed'
+            test_result = self.method(test_method).call().to_hash
+            #status = 'passed'
           rescue => e
-            content = "#{test_method} failed. Error: #{e.message}."
-            if e.message.include? 'Implementation missing'
-              status = 'missing'
-            else
-              status = 'failed'
-            end
+            test_result = "#{test_method} failed. Fatal Error: #{e.message}."
+            # if e.message.include? 'Implementation missing'
+            #   status = 'missing'
+            # else
+            #   status = 'failed'
+            # end
           end
-          result[test_method] = {
-            test_method: test_method,
-            status: status,
-            result: content
-          }
+          result[test_method] = test_result
         end
         result
       end
@@ -59,6 +55,23 @@ module Crucible
       end
 
       # timestamp?
+
+      def parse_operation_outcome(body)
+        # body should be a String
+        outcome = nil
+        if 0==(body =~ /^[<?xml]/)
+          outcome = FHIR::OperationOutcome.from_xml(body)
+        else # treat as JSON
+          outcome = FHIR::OperationOutcome.from_fhir_json(body)
+        end
+        outcome
+      end
+
+      def build_messages(operation_outcome)
+        messages = []
+        operation_outcome.issue.each {|issue| messages << "#{issue.severity} : #{issue.details}" }
+        messages
+      end
 
     end
   end

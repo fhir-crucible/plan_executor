@@ -2,6 +2,9 @@ module Crucible
   module Tests
     class BaseTest
 
+      # Base test fields, used in Crucible::Tests::Executor.list_all
+      JSON_FIELDS = ['author','description','id','tests','title']
+
       def initialize(client)
         @client = client
       end
@@ -30,20 +33,29 @@ module Crucible
         result
       end
 
-      def description
-        self.class.name
-      end
-
       def author
+        # String identifying test file author
         self.class.name
       end
 
-      def title
-        self.class.name.split('::').last
+      def description
+        # String containing test file description
+        self.class.name
+      end
+
+      def id
+        # String used to order test files for execution
+        self.object_id.to_s
       end
 
       def tests
+        # Array of test methods within test file
         self.methods.grep(/_test$/)
+      end
+
+      def title
+        # String containing test file title
+        self.class.name.split('::').last
       end
 
       # timestamp?

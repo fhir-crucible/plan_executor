@@ -2,6 +2,10 @@ module Crucible
   module Tests
     class ReadTest < BaseTest
 
+      def id
+        'A001'
+      end
+
       def description
         'Initial Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests.'
       end

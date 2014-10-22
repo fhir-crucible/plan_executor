@@ -8,34 +8,33 @@ module Crucible
 
       def execute_all
         results = {}
-        Crucible::Tests.constants.grep(/Test$/).each do |test|
+        self.class.tests.each do |test|
           next if test == :BaseTest
           results[test] = {
             test_file: test,
             tests: Crucible::Tests.const_get(test).new(@client).execute
           }
         end
-        if !Dir.exists?('./results')
-          Dir.mkdir('./results')
-        end
-        json = JSON.pretty_unparse(results)
-        File.open("./results/execute_all.json","w") {|f| f.write json }
+        # Dir.mkdir('./results') unless Dir.exists?('./results')
+        # json = JSON.pretty_unparse(results)
+        # File.open("./results/execute_all.json","w") {|f| f.write json }
         results
       end
 
       def self.list_all
         list = {}
-        Crucible::Tests.constants.grep(/Test$/).each do |test|
+        self.class.tests.each do |test|
           next if test == :BaseTest
           test_file = Crucible::Tests.const_get(test).new(nil)
-          list[test] = {
-            author: test_file.author,
-            description: test_file.description,
-            title: test_file.title,
-            tests: test_file.tests
-          }
+          list[test] = {}
+          Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test][field] = test_file.send(field)}
         end
         list
+      end
+
+      def self.tests
+        # sort test files by defined id field
+        Crucible::Tests.constants.grep(/Test$/).sort{|t1,t2| Crucible::Tests.const_get(t1).new(nil).id <=> Crucible::Tests.const_get(t2).new(nil).id }
       end
 
     end

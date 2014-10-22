@@ -1,5 +1,5 @@
 module Crucible
-	module Tests
+  module Tests
     class Executor
 
       def initialize(client)
@@ -15,6 +15,11 @@ module Crucible
             tests: Crucible::Tests.const_get(test).new(@client).execute
           }
         end
+        if !Dir.exists?('./results')
+          Dir.mkdir('./results')
+        end
+        json = JSON.pretty_unparse(results)
+        File.open("./results/execute_all.json","w") {|f| f.write json }
         results
       end
 

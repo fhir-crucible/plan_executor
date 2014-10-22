@@ -1,5 +1,5 @@
 module Crucible
-	module Tests
+  module Tests
     class ReadTest < BaseTest
 
       def description

@@ -18,13 +18,12 @@ module Crucible
       def r001_get_person_data_test
         patient = ReadTest.createPatient("Emerald", "Caro")
         x = @client.create(patient)
-        x = RestClient.post(URI("http://fhirtest.uhn.ca/base/Patient").to_s, resource_string) {|response, request, result| {:response => response, :request => request, :result => result}}
+        # x = RestClient.post(URI("http://fhirtest.uhn.ca/base/Patient").to_s, resource_string) {|response, request, result| {:response => response, :request => request, :result => result}}
 
         if x[:response].code==201
           status = 'passed'
           message = 'Test passed successfully.'
         else
-          binding.pry
           status = 'failed'
           outcome = self.parse_operation_outcome(x[:response].body)
           message = self.build_messages(outcome)

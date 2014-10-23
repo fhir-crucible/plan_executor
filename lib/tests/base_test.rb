@@ -17,7 +17,8 @@ module Crucible
             test_result = self.method(test_method).call().to_hash
             #status = 'passed'
           rescue => e
-            test_result = "#{test_method} failed. Fatal Error: #{e.message}."
+            # test_result = "#{test_method} failed. Fatal Error: #{e.message}."
+            test_result = TestResult.new('ERROR', "Error executing #{test_method}", 'error', "#{test_method} failed.", "Fatal Error: #{e.message}").to_hash
             # if e.message.include? 'Implementation missing'
             #   status = 'missing'
             # else

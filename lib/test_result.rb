@@ -16,6 +16,13 @@ module Crucible
         @data = data
       end
 
+      def update(status, message, data)
+        @status = status
+        @message = message
+        @data = data
+        self
+      end
+
       def passed?
         return ( (@status==true) or (@status=='passed') )
       end

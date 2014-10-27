@@ -38,10 +38,25 @@ module Crucible
 
       def self.list_all
         list = {}
+        # FIXME: Organize defaults between instance & class methods
+        @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
         self.tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
-          list[test] = {}
-          Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test][field] = test_file.send(field)}
+          #if t can set class
+          if test_file.respond_to? 'resource_class='
+            @fhir_classes.each do |klass|
+              # hack to ignore embedded subclasses
+              if klass.to_s.split('::').size == 2
+                test_file.resource_class = klass
+                list["#{test}#{klass.name.demodulize}"] = {}
+                list["#{test}#{klass.name.demodulize}"]['resource_class'] = klass
+                Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list["#{test}#{klass.name.demodulize}"][field] = test_file.send(field)}
+              end
+            end
+          else
+            list[test] = {}
+            Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test][field] = test_file.send(field)}
+          end
         end
         list
       end

@@ -4,6 +4,7 @@ module Crucible
 
       attr_accessor :resource_class
       attr_accessor :bundle
+      attr_accessor :temp_resource
 
       def id
         "ResourceTest#{resource_class}"
@@ -30,7 +31,20 @@ module Crucible
       #
       def create_test
         result = TestResult.new('X010',"Create new #{resource_class.name.demodulize}", nil, nil, nil)
-        result.update('skipped', "Skipped creation of new #{resource_class.name.demodulize}.", nil)
+        @temp_resource = ResourceGenerator.generate(@resource_class,true)
+
+        response = @client.create @temp_resource
+
+        if response[:response].code==201
+          result.update('passed', 'New #{resource_class.name.demodulize} was created.', response[:response].body)
+        else
+          outcome = self.parse_operation_outcome(response[:response].body)
+          message = self.build_messages(outcome)
+          result.update('failed', message, response[:response].body)
+          @temp_resource = nil
+        end
+
+        result
       end
 
       #
@@ -38,12 +52,15 @@ module Crucible
       #
       def read_test
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
-        if @bundle.nil? or @bundle.size==0
+        if !@bundle.nil? and @bundle.size>0
+          preexisting_id = @bundle.get(1).id
+          preexisting_id = preexisting_id.split('/').last    
+        elsif !@temp_resource.nil?
+          preexisting_id = @temp_resource.id
+        else
           return result.update('failed', "Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end
 
-        preexisting_id = @bundle.get(1).id
-        preexisting_id = preexisting_id.split('/').last
         resource = @client.read(@resource_class, preexisting_id)
 
         if resource.nil?
@@ -66,7 +83,37 @@ module Crucible
       #
       def update_test
         result = TestResult.new('X040',"Update existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
-        result.update('skipped', "Skipped updating preexisting #{resource_class.name.demodulize}.", nil)
+
+        if !@bundle.nil? and @bundle.size>0
+          preexisting_id = @bundle.get(1).id
+          preexisting_id = preexisting_id.split('/').last
+          preexisting = @bundle.get(1).resource    
+        elsif !@temp_resource.nil?
+          preexisting_id = @temp_resource.id
+          preexisting = @temp_resource
+        else
+          return result.update('failed', "Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        end
+
+        if preexisting.nil?
+          result.update('failed', "Unable to update -- no existing #{resource_class.name.demodulize} is available or could be created.", nil)
+        else
+          ResourceGenerator.set_fields!(preexisting)
+
+          response = @client.update preexisting, preexisting_id
+
+          if response[:response].code==200
+            result.update('passed', "Updated existing #{resource_class.name.demodulize}.", response[:response].body)
+          elsif response[:response].code==201
+            result.update('failed', "Server created new #{resource_class.name.demodulize} rather than update.", response[:response].body)
+          else
+            outcome = self.parse_operation_outcome(response[:response].body)
+            message = self.build_messages(outcome)
+            result.update('failed', message, response[:response].body)
+          end
+        end
+
+        result
       end
 
       #

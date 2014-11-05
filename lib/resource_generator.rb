@@ -26,6 +26,14 @@ module Crucible
           gen = nil
           if type == String
             gen = SecureRandom.urlsafe_base64
+
+            if resource.class.constants.include? :VALID_CODES
+              valid_values = resource.class::VALID_CODES[key.to_sym]
+              if !valid_values.nil?
+                gen = valid_values[ SecureRandom.random_number( valid_values.length ) ]
+              end
+            end
+
           elsif type == Integer
             gen = SecureRandom.random_number(100)
           elsif type == Boolean

@@ -24,7 +24,9 @@ namespace :crucible do
 
   def write_result(status, test_name, description)
     tab_size = 10
-    "#{' '*(tab_size - status.length)}#{Turn::Colorize.method(status).call(status.upcase)} #{test_name}: #{description}"
+    status_map = {'passed'=>:pass, 'failed'=>:fail, 'error'=>:error}
+    description = '' if status == 'passed'
+    "#{' '*(tab_size - status.length)}#{Turn::Colorize.method(status_map[status]).call(status.upcase)} #{test_name}: #{description}"
   end
 
 end

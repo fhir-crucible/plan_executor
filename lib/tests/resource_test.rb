@@ -195,7 +195,7 @@ module Crucible
         reply = @client.resource_instance_history_version(@resource_class, @preexisting_id, @preexisting_version)
 
         #TODO
-        binding.pry
+        # binding.pry
  
         result.update('skipped', "Skipped version read preexisting #{resource_class.name.demodulize}.", nil)
       end

@@ -17,19 +17,19 @@ module Crucible
       # [SprinklerTest("R001", "Result headers on normal read")]
       def r001_get_person_data_test
         patient = ReadTest.createPatient("Emerald", "Caro")
-        x = @client.create(patient)
+        test_patient = @client.create(patient)
         # x = RestClient.post(URI("http://fhirtest.uhn.ca/base/Patient").to_s, resource_string) {|response, request, result| {:response => response, :request => request, :result => result}}
 
-        if x[:response].code==201
+        if test_patient.code==201
           status = 'passed'
           message = 'Test passed successfully.'
         else
           status = 'failed'
-          outcome = self.parse_operation_outcome(x[:response].body)
+          outcome = self.parse_operation_outcome(test_patient.response.body)
           message = self.build_messages(outcome)
         end
 
-        TestResult.new('R001','Read Patient Data',status, message, x[:response].body)
+        TestResult.new('R001','Read Patient Data',status, message, test_patient.response.body)
       end
       #     public void GetTestDataPerson()
       #     {

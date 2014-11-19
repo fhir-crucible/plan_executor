@@ -113,7 +113,7 @@ module Crucible
             resulting_id = reply.id
 
             if(@preexisting_id != resulting_id)
-              binding.pry
+              # binding.pry
               result.update('failed', "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", reply.body)
             else
               result.update('failed', "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", reply.body)
@@ -173,7 +173,7 @@ module Crucible
         reply = @client.resource_instance_history_version(@resource_class, @preexisting_id, @preexisting_version)
 
         #TODO
-        binding.pry
+        # binding.pry
 
         result.update('skipped', "Skipped version read preexisting #{resource_class.name.demodulize}.", nil)
       end

@@ -1,15 +1,16 @@
+GIT
+  remote: https://gitlab.mitre.org/tof/fhir_client.git
+  revision: 875a6ae7b94f8ec8cc85a17dcea0d53d8d43051b
+  specs:
+    fhir_client (1.0.0)
+
 PATH
   remote: .
   specs:
     plan_executor (1.0.0)
 
 PATH
-  remote: ../tof/implementations/ruby/output/client/
-  specs:
-    fhir_client (1.0.0)
-
-PATH
-  remote: ../tof/implementations/ruby/output/model/
+  remote: ../fhir_dstu1/implementations/ruby/output/model/
   specs:
     fhir_model (1.0.0)
 

@@ -11,28 +11,29 @@ module Crucible
         t = Crucible::Tests.const_get(test).new(@client)
         #if t can set class
         if t.respond_to? 'resource_class='
-          @fhir_classes.each do | klass |
-            # hack to ignore embedded subclasses
-            if klass.to_s.split('::').size == 2
-              t.resource_class = klass
-              {"#{test}#{klass.name.demodulize}" => {
-                test_file: test,
-                tests: t.execute
-              }}
-            end
+          # selecting class module name length is a hack to ignore embedded subclasses
+          @fhir_classes.select{ | klass | klass.to_s.split('::').size == 2 }.map do | klass |
+            t.resource_class = klass
+            {"#{test}#{klass.name.demodulize}" => {
+              test_file: test,
+              tests: t.execute
+            }}
           end
         else
-          {test => {
+          [{test => {
             test_file: test,
             tests: t.execute
-          }}
+          }}]
         end
       end
 
       def execute_all
         results = {}
         self.class.tests.each do |test|
-          results.merge! execute(test)
+          temp = execute(test)
+          temp.each do | report |
+            results.merge! report
+          end
         end
         Dir.mkdir('./results') unless Dir.exists?('./results')
         json = JSON.pretty_unparse(results)

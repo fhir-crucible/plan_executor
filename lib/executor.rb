@@ -4,39 +4,19 @@ module Crucible
 
       def initialize(client)
         @client = client
-        @fhir_classes = Mongoid.models.select {|c| c.name.include? 'FHIR'}
       end
 
       def execute(test)
-        t = Crucible::Tests.const_get(test).new(@client)
-        #if t can set class
-        if t.respond_to? 'resource_class='
-          # selecting class module name length is a hack to ignore embedded subclasses
-          @fhir_classes.select{ | klass | klass.to_s.split('::').size == 2 }.map do | klass |
-            t.resource_class = klass
-            {"#{test}#{klass.name.demodulize}" => {
-              test_file: test,
-              tests: t.execute
-            }}
-          end
-        else
-          [{test => {
-            test_file: test,
-            tests: t.execute
-          }}]
-        end
+        Crucible::Tests.const_get(test).new(@client).execute
       end
 
       def execute_all
-        results = {}
-        self.class.tests.each do |test|
-          temp = execute(test)
-          temp.each do | report |
-            results.merge! report
-          end
+        results = []
+        Executor.tests.each do |test|
+          results = results.concat execute(test)
         end
         Dir.mkdir('./results') unless Dir.exists?('./results')
-        json = JSON.pretty_unparse(results)
+        json = JSON.pretty_unparse(JSON.parse(results.to_json))
         File.open("./results/execute_all.json","w") {|f| f.write json }
         results
       end

@@ -15,21 +15,15 @@ module Crucible
       end
 
       # [SprinklerTest("R001", "Result headers on normal read")]
-      def r001_get_person_data_test
+      test "R001", "get person data" do
         patient = ReadTest.createPatient("Emerald", "Caro")
         test_patient = @client.create(patient)
-        # x = RestClient.post(URI("http://fhirtest.uhn.ca/base/Patient").to_s, resource_string) {|response, request, result| {:response => response, :request => request, :result => result}}
 
-        if test_patient.code==201
-          status = 'passed'
-          message = 'Test passed successfully.'
-        else
-          status = 'failed'
-          outcome = self.parse_operation_outcome(test_patient.response.body)
-          message = self.build_messages(outcome)
-        end
+        # TODO: define a assert outcome method for pulling out the messages?
+        # outcome = self.parse_operation_outcome(test_patient.response.body)
+        # build_messages(outcome)
 
-        TestResult.new('R001','Read Patient Data',status, message, test_patient.response.body)
+        assert_equal 201, test_patient.code, "get person data failed.", test_patient.response.body
       end
       #     public void GetTestDataPerson()
       #     {
@@ -47,7 +41,7 @@ module Crucible
       #     }
 
       # [SprinklerTest("R002", "Read unknown resource type")]
-      def r002_get_unknown_resource_type_test
+      test "R002", "get unknown resource type" do
         raise 'Implementation missing: r002_get_unknown_resource_type_test'
       end
       #     public void TryReadUnknownResourceType()
@@ -60,7 +54,7 @@ module Crucible
       #     }
 
       # [SprinklerTest("R003", "Read non-existing resource id")]
-      def r003_get_non_existing_resource_test
+      test "R003", "get non existing resource" do
         raise 'Implementation missing: r003_get_non_existing_resource_test'
       end
       #     public void TryReadNonExistingResource()
@@ -69,7 +63,7 @@ module Crucible
       #     }
 
       # [SprinklerTest("R004", "Read bad formatted resource id")]
-      def r004_get_bad_formatted_resource_id_test
+      test "R004", "get bad formatted resource id" do
         raise 'Implementation missing: r004_get_bad_formatted_resource_id_test'
       end
       #     public void TryReadBadFormattedResourceId()

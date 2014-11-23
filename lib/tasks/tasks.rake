@@ -9,11 +9,18 @@ namespace :crucible do
   task :execute, [:url, :test] do |t, args|
     require 'turn'
     results = Crucible::Tests::Executor.new(FHIR::Client.new(args.url)).execute(args.test.to_sym)
-    test_results = results.values.first[:tests]
 
-    puts results.keys.first
-    test_results.each do |key, value|
-      puts write_result(value['status'], key, value['data'])
+    results.each do |result|
+
+      result.keys.each do |suite_key|
+        puts suite_key
+        result[suite_key][:tests].each do |test_key, value|
+          puts write_result(value['status'], test_key, value['message'])
+          puts (' '*10) + value['data'] if (verbose==true) && value['data']
+        end
+
+      end
+
     end
   end
 
@@ -22,11 +29,9 @@ namespace :crucible do
     puts Crucible::Tests::Executor.list_all
   end
 
-  def write_result(status, test_name, description)
+  def write_result(status, test_name, message)
     tab_size = 10
-    status_map = {'passed'=>:pass, 'failed'=>:fail, 'error'=>:error}
-    description = '' if status == 'passed'
-    "#{' '*(tab_size - status.length)}#{Turn::Colorize.method(status_map[status]).call(status.upcase)} #{test_name}: #{description}"
+    "#{' '*(tab_size - status.length)}#{Turn::Colorize.method(status.to_sym).call(status.upcase)} #{test_name}: #{message}"
   end
 
 end

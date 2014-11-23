@@ -2,30 +2,37 @@ module Crucible
   module Tests
     class BaseTest
 
+      include Crucible::Tests::Assertions
+
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title']
+      STATUS = {
+        pass: 'pass',
+        fail: 'fail',
+        error: 'error',
+        skip: 'skip'
+      }
 
       def initialize(client)
         @client = client
       end
 
       def execute
+        [{test_name => {
+            test_file: test_name,
+            tests: execute_test_methods
+        }}]
+      end
+
+      def execute_test_methods
         result = {}
-        self.methods.grep(/_test$/).each do |test_method|
+        tests.each do |test_method|
           puts "executing: #{test_method}..."
           begin
-            test_result = self.method(test_method).call().to_hash
-            #status = 'passed'
+            result[test_method] = self.method(test_method).call().to_hash
           rescue => e
-            # test_result = "#{test_method} failed. Fatal Error: #{e.message}."
-            test_result = TestResult.new('ERROR', "Error executing #{test_method}", 'error', "#{test_method} failed.", "Fatal Error: #{e.message}").to_hash
-            # if e.message.include? 'Implementation missing'
-            #   status = 'missing'
-            # else
-            #   status = 'failed'
-            # end
+            result[test_method] = TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash
           end
-          result[test_method] = test_result
         end
         result
       end
@@ -43,6 +50,10 @@ module Crucible
       def id
         # String used to order test files for execution
         self.object_id.to_s
+      end
+
+      def test_name
+        self.class.name.demodulize.to_sym
       end
 
       def tests
@@ -74,6 +85,27 @@ module Crucible
         messages
       end
 
+      def self.test(key, description, &block)
+        test_method = "#{key} #{description} test".downcase.tr(' ', '_').to_sym
+        contents = block
+        wrapped = -> () do 
+          description = supplement_test_description(description) if respond_to? :supplement_test_description
+          begin
+            instance_eval &block
+            TestResult.new(key, description, STATUS[:pass], '','')
+          rescue AssertionException => e
+            TestResult.new(key, description, STATUS[:fail], e.message, e.data)
+          rescue SkipException => e
+            TestResult.new(key, description, STATUS[:skip], "Skipped: #{test_method}", '')
+          rescue => e
+            TestResult.new(key, description, STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
+          end
+        end
+        define_method test_method, wrapped
+      end
+
+
     end
+
   end
 end

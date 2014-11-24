@@ -17,9 +17,8 @@ module Crucible
       def initialize(client)
         super(client)
         # selecting class module by regular expression ignore embedded subclasses
-        # hack, should be generated into resource class
-        @fhir_root_resources = Mongoid.models.select {|c| c.name.include?('FHIR') && c.name.match(/^FHIR::.*::.*$/).nil?}
-      end
+        @fhir_root_resources = Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
+       end
 
       def execute
         @fhir_root_resources.map do | klass |
@@ -52,9 +51,10 @@ module Crucible
       #
       test 'X000', 'Read Type' do
         reply = @client.read_feed(@resource_class)
-        bundle = reply.resource
-        assert !bundle.nil?, 'Service did not respond with bundle.'
-        #result.update(STATUS[:pass], 'Service responded with bundle.', @bundle.raw_xml)
+        @bundle = reply.resource
+        assert !@bundle.nil?, 'Service did not respond with bundle.'
+        # result.update(STATUS[:pass], 'Service responded with bundle.', @bundle.raw_xml)
+        TestResult.new('','', STATUS[:pass], 'Service responded with bundle.', @bundle.raw_xml)
       end
 
       #

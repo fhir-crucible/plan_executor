@@ -90,16 +90,18 @@ module Crucible
         contents = block
         wrapped = -> () do 
           description = supplement_test_description(description) if respond_to? :supplement_test_description
+          result = TestResult.new(key, description, STATUS[:pass], '','')
           begin
-            instance_eval &block
-            TestResult.new(key, description, STATUS[:pass], '','')
+            t = instance_eval &block
+            result.update(t.status, t.message, t.data) if !t.nil?
           rescue AssertionException => e
-            TestResult.new(key, description, STATUS[:fail], e.message, e.data)
+            result.update(STATUS[:fail], e.message, e.data)
           rescue SkipException => e
-            TestResult.new(key, description, STATUS[:skip], "Skipped: #{test_method}", '')
+            result.update(STATUS[:skip], "Skipped: #{test_method}", '')
           rescue => e
-            TestResult.new(key, description, STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
+            result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
           end
+          result
         end
         define_method test_method, wrapped
       end

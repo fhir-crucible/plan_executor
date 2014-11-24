@@ -53,7 +53,6 @@ module Crucible
         reply = @client.read_feed(@resource_class)
         @bundle = reply.resource
         assert !@bundle.nil?, 'Service did not respond with bundle.'
-        # result.update(STATUS[:pass], 'Service responded with bundle.', @bundle.raw_xml)
         TestResult.new('','', STATUS[:pass], 'Service responded with bundle.', @bundle.raw_xml)
       end
 
@@ -63,13 +62,12 @@ module Crucible
       def create_test
         result = TestResult.new('X010',"Create new #{resource_class.name.demodulize}", nil, nil, nil)
         @temp_resource = ResourceGenerator.generate(@resource_class,true)
-
         reply = @client.create @temp_resource
         @temp_id = reply.id
         @temp_version = reply.version
 
         if reply.code==201
-          result.update(STATUS[:pass], 'New #{resource_class.name.demodulize} was created.', reply.body)
+          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
         else
           outcome = self.parse_operation_outcome(reply.body)
           message = self.build_messages(outcome)
@@ -97,7 +95,7 @@ module Crucible
         @preexisting = reply.resource
 
         if @preexisting.nil?
-          return result.update(STATUS[:fail], "Failed to read preexisting #{resource_class.name.demodulize}.", reply.body)
+          return result.update(STATUS[:fail], "Failed to read preexisting #{resource_class.name.demodulize}: #{@preexisting_id}", reply.body)
         end
 
         @preexisting_version = reply.version
@@ -192,12 +190,17 @@ module Crucible
           return result.update(STATUS[:fail], "Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end
 
-        reply = @client.resource_instance_history_version(@resource_class, @preexisting_id, @preexisting_version)
+        reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
 
-        #TODO
-        # binding.pry
+        if reply.resource.nil?
+          return result.update(STATUS[:fail], "Server failed to return preexisting #{resource_class.name.demodulize}.", reply.body)
+        elsif reply.code != 200
+          return result.update(STATUS[:fail], "Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{reply.code}.", nil)
+        elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
+          return result.update(STATUS[:fail], "Server did not respond with correct information in the content-location header.", nil)
+        end
 
-        result.update(STATUS[:skip], "Skipped version read preexisting #{resource_class.name.demodulize}.", nil)
+        result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", nil)
       end
 
       #
@@ -214,12 +217,17 @@ module Crucible
           return result.update(STATUS[:fail], "Previous version of #{resource_class.name.demodulize} unavailable.", nil)
         end
 
-        reply = @client.resource_instance_history_version(@resource_class, @preexisting_id, @preexisting_version)
+        reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
 
-        #TODO
-        # binding.pry
+        if reply.resource.nil?
+          return result.update(STATUS[:fail], "Server failed to return preexisting #{resource_class.name.demodulize}.", reply.body)
+        elsif reply.code != 200
+          return result.update(STATUS[:fail], "Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{reply.code}.", nil)
+        elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
+          return result.update(STATUS[:fail], "Server did not respond with correct information in the content-location header.", nil)
+        end
  
-        result.update(STATUS[:skip], "Skipped version read preexisting #{resource_class.name.demodulize}.", nil)
+        result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", nil)
       end
 
       #

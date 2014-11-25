@@ -42,8 +42,8 @@ module Crucible
         execute_test_methods()
       end
 
-      def supplement_test_description(description)
-        "#{description}: #{resource_class.name.demodulize}"
+      def supplement_test_description(desc)
+        "#{desc}: #{resource_class.name.demodulize}"
       end
 
       #

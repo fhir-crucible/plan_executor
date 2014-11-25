@@ -85,11 +85,16 @@ module Crucible
         messages
       end
 
-      def self.test(key, description, &block)
-        test_method = "#{key} #{description} test".downcase.tr(' ', '_').to_sym
+      def self.test(key, desc, &block)
+        test_method = "#{key} #{desc} test".downcase.tr(' ', '_').to_sym
         contents = block
         wrapped = -> () do 
-          description = supplement_test_description(description) if respond_to? :supplement_test_description
+          description = nil
+          if respond_to? :supplement_test_description
+            description = supplement_test_description(desc) 
+          else 
+            description = desc
+          end
           result = TestResult.new(key, description, STATUS[:pass], '','')
           begin
             t = instance_eval &block

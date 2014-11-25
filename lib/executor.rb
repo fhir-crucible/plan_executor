@@ -30,7 +30,7 @@ module Crucible
           #if t can set class
           if test_file.respond_to? 'resource_class='
             @fhir_classes.each do |klass|
-              if !c.included_modules.find_index(FHIR::Resource).nil?
+              if !klass.included_modules.find_index(FHIR::Resource).nil?
                 test_file.resource_class = klass
                 list["#{test}#{klass.name.demodulize}"] = {}
                 list["#{test}#{klass.name.demodulize}"]['resource_class'] = klass

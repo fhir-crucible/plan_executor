@@ -81,8 +81,14 @@ module Crucible
 
       def build_messages(operation_outcome)
         messages = []
-        operation_outcome.issue.each {|issue| messages << "#{issue.severity} : #{issue.details}" }
+        if !operation_outcome.nil? and !operation_outcome.issue.nil?
+          operation_outcome.issue.each {|issue| messages << "#{issue.severity} : #{issue.details}" }
+        end
         messages
+      end
+
+      def fhir_resources
+        Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
       end
 
       def self.test(key, desc, &block)

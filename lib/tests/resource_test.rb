@@ -14,14 +14,8 @@ module Crucible
       attr_accessor :preexisting_version
       attr_accessor :preexisting
 
-      def initialize(client)
-        super(client)
-        # selecting class module by regular expression ignore embedded subclasses
-        @fhir_root_resources = Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
-       end
-
       def execute
-        @fhir_root_resources.map do | klass |
+        fhir_resources.map do | klass |
           @resource_class = klass
           {"ResourceTest_#{resource_class.name.demodulize}" => {
             test_file: test_name,
@@ -43,7 +37,7 @@ module Crucible
       end
 
       def supplement_test_description(desc)
-        "#{desc}: #{resource_class.name.demodulize}"
+        "#{desc} #{resource_class.name.demodulize}"
       end
 
       #
@@ -230,48 +224,123 @@ module Crucible
         result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", reply.body)
       end
 
-      #
-      # Test if we can delete a preexisting resource.
-      #
-      test 'X060', 'delete existing' do
-        skip
-      end
-
-      #
-      # Test all of the search capabilities on a given resource:
-      # - id
-      # - parameters
-      # - parameter modifiers (:missing, :exact, :text, :[type])
-      # - numbers (= < <= > >= significant-digits)
-      # - date (all of the permutations?)
-      # - token
-      # - quantities
-      # - references
-      # - chained parameters
-      # - composite parameters
-      # - text search logical operators
-      # - tags, profile, security label
-      # - _filter parameter
-      # 
-      # - result relevance
-      # - result sorting (_sort parameter)
-      # - result paging
-      # - _include parameter
-      # - _summary parameter
-      # - result server conformance (report params actually used)
-      # 
-      # - advanced searching with "Query" or _query param
-      #
-      test 'X070', 'Search for existing' do
-        # TODO given the breadth and depth of complexity around searchs alone, should refactor elsewhere...
-        skip
-      end
 
       #
       # Validate the representation of a given resource.
       #
-      test 'X080', 'validate' do
+      def validate_test
+        result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
+
+        @temp_resource = ResourceGenerator.generate(@resource_class,true)
+        reply = @client.validate @temp_resource
+
+        if reply.code==200
+          result.update(STATUS[:pass], "#{resource_class.name.demodulize} was validated.", reply.body)
+        elsif reply.code==201
+          result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
+        else
+          outcome = self.parse_operation_outcome(reply.body)
+          message = self.build_messages(outcome)
+          result.update(STATUS[:fail], message, reply.body)
+        end
+
+        result
+      end
+
+      #
+      # Validate the representation of an existing resource.
+      #
+      def validate_existing_test
+        result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
+
+        if !@bundle.nil? and @bundle.size>0
+          @preexisting_id = @bundle.get(1).resource_id
+          @preexisting = @bundle.get(1).resource    
+        elsif !@temp_resource.nil?
+          @preexisting_id = @temp_id
+          @preexisting = @temp_resource
+        else
+          return result.update(STATUS[:fail], "Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        end
+
+        if @preexisting.nil?
+          result.update(STATUS[:fail], "Unable to validate -- no existing #{resource_class.name.demodulize} is available to be validated.", nil)
+        else
+          ResourceGenerator.set_fields!(@preexisting)
+
+          reply = @client.validate_existing(@preexisting, @preexisting_id)
+
+          if reply.code==200
+            result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was validated.", reply.body)
+          elsif reply.code==201
+            result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
+          else
+            outcome = self.parse_operation_outcome(reply.body)
+            message = self.build_messages(outcome)
+            result.update(STATUS[:fail], message, reply.body)
+          end
+        end
+
+        result
+      end
+
+      #
+      # Validate the representation of a resource against a given profile.
+      #
+      # The client can ask the server to validate against a particular resource by attaching a profile tag to the resource. 
+      # This is an assertion that the resource conforms to the specified profile(s), and the server can check this.
+      #
+      test 'X067', 'Validate against a profile' do
         skip
+      end
+
+      #
+      # Test if we can delete a preexisting resource.
+      #
+      # 204 == deleted
+      # 405 == not allowed
+      # 404 == not found
+      # 409 == conflict, cannot be deleted (e.g. referential integrity won't allow it)
+      #
+      def delete_existing_test
+        result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
+
+        if !@bundle.nil? and @bundle.size>0
+          @preexisting_id = @bundle.get(1).resource_id
+          @preexisting = @bundle.get(1).resource    
+        elsif !@temp_resource.nil?
+          @preexisting_id = @temp_id
+          @preexisting = @temp_resource
+        else
+          return result.update(STATUS[:fail], "Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        end
+
+        reply = @client.destroy(@resource_class,@preexisting_id)
+
+        if reply.code==204
+          result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
+        elsif reply.code==405
+          outcome = self.parse_operation_outcome(reply.body)
+          message = self.build_messages(outcome)
+          message.unshift "Server does not allow deletion of #{resource_class.name.demodulize}"
+          result.update(STATUS[:fail], message, reply.body)
+        elsif reply.code==404
+          outcome = self.parse_operation_outcome(reply.body)
+          message = self.build_messages(outcome)
+          message.unshift "Server was unable to find (404 not found) the #{resource_class.name.demodulize} with the ID `#{preexisting_id}`"
+          result.update(STATUS[:fail], message, reply.body)
+        elsif reply.code==409
+          outcome = self.parse_operation_outcome(reply.body)
+          message = self.build_messages(outcome)
+          message.unshift "Server had a conflict try to delete the #{resource_class.name.demodulize} with the ID `#{preexisting_id}"
+          result.update(STATUS[:fail], message, reply.body)
+        else
+          outcome = self.parse_operation_outcome(reply.body)
+          message = self.build_messages(outcome)
+          result.update(STATUS[:fail], message, reply.body)
+        end
+   
+        result
       end
 
     end

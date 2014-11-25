@@ -179,9 +179,9 @@ module Crucible
         result = TestResult.new('X050',"Version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if !@history_bundle.nil? and @history_bundle.size>0
-          @preexisting_id = @history_bundle.get(1).resource_id
-          @preexisting_version = @history_bundle.get(1).resource_version
-          @preexisting = @history_bundle.get(1).resource    
+          @preexisting_id = @history_bundle.get(0).resource_id
+          @preexisting_version = @history_bundle.get(0).resource_version
+          @preexisting = @history_bundle.get(0).resource    
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting_version = @temp_version
@@ -200,7 +200,7 @@ module Crucible
           return result.update(STATUS[:fail], "Server did not respond with correct information in the content-location header.", nil)
         end
 
-        result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", nil)
+        result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", reply.body)
       end
 
       #
@@ -210,9 +210,9 @@ module Crucible
         result = TestResult.new('X055',"Previous version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if !@history_bundle.nil? and @history_bundle.size>1
-          @preexisting_id = @history_bundle.get(2).resource_id
-          @preexisting_version = @history_bundle.get(2).resource_version
-          @preexisting = @history_bundle.get(2).resource    
+          @preexisting_id = @history_bundle.get(1).resource_id
+          @preexisting_version = @history_bundle.get(1).resource_version
+          @preexisting = @history_bundle.get(1).resource    
         else
           return result.update(STATUS[:fail], "Previous version of #{resource_class.name.demodulize} unavailable.", nil)
         end
@@ -227,7 +227,7 @@ module Crucible
           return result.update(STATUS[:fail], "Server did not respond with correct information in the content-location header.", nil)
         end
  
-        result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", nil)
+        result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", reply.body)
       end
 
       #

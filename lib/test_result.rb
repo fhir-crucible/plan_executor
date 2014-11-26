@@ -34,11 +34,22 @@ module Crucible
       def to_hash
         hash = {}
         hash['id'] = @id
-        hash['description'] = @description
-        hash['status'] = @status
-        hash['message'] = @message
-        hash['data'] = @data
+        hash['description'] = force_encoding(@description)
+        hash['status'] = force_encoding(@status)
+        if @message.class == Array
+          hash['message'] = @message.map { |m| force_encoding(m) }
+        else
+          hash['message'] = force_encoding(@message)
+        end
+        hash['data'] = force_encoding(@data)
         hash
+      end
+
+      private
+
+      def force_encoding(value)
+        return nil if value.blank?
+        value.force_encoding("UTF-8")
       end
 
     end

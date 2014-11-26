@@ -4,13 +4,21 @@ module Crucible
  
       attr_accessor :resource_class
 
-      def execute
-        fhir_resources.map do | klass |
-          @resource_class = klass
-          {"SearchTest_#{resource_class.name.demodulize}" => {
+      def execute(resource_class=nil)
+        if resource_class
+          @resource_class = resource_class
+          [{"SearchTest_#{resource_class.name.demodulize}" => {
             test_file: test_name,
             tests: execute_resource
-          }}
+          }}]
+        else
+          fhir_resources.map do | klass |
+            @resource_class = klass
+            {"SearchTest_#{resource_class.name.demodulize}" => {
+              test_file: test_name,
+              tests: execute_resource
+            }}
+          end
         end
       end
 

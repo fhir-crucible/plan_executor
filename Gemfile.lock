@@ -1,6 +1,6 @@
 GIT
   remote: https://gitlab.mitre.org/tof/fhir_client.git
-  revision: 6fd10f7945811e539e7afac8267e644eb5a480c0
+  revision: 09891639964c9e276d5cf6867bfd0ec6396ec044
   specs:
     fhir_client (1.0.0)
 

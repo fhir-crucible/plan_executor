@@ -7,14 +7,14 @@ module Crucible
       def execute(resource_class=nil)
         if resource_class
           @resource_class = resource_class
-          [{"SearchTest_#{resource_class.name.demodulize}" => {
+          [{"SearchTest_#{@resource_class.name.demodulize}" => {
             test_file: test_name,
             tests: execute_resource
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
-            {"SearchTest_#{resource_class.name.demodulize}" => {
+            {"SearchTest_#{@resource_class.name.demodulize}" => {
               test_file: test_name,
               tests: execute_resource
             }}

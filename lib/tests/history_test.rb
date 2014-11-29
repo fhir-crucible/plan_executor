@@ -65,7 +65,7 @@ module Crucible
 
 
         test "HI02", "full history with since" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI02", "Request the full history for a resource with _since")]
         # public void HistoryForSpecificResourceId()
@@ -89,7 +89,7 @@ module Crucible
         # }
 
         test "HI03", "individual history versions" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI03", "Request individual history versions from a resource")]
         # public void VReadVersions()
@@ -117,7 +117,7 @@ module Crucible
         # }
 
         test "HI04", "history for missing resource" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI04", "Fetching history of non-existing resource returns exception")]
         # public void HistoryForNonExistingResource()
@@ -128,7 +128,7 @@ module Crucible
         # }
 
         test "HI06", "all history for resource with since" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI06", "Get all history for a resource type with _since")]
         # public void HistoryForResourceType()
@@ -156,7 +156,7 @@ module Crucible
 
 
         test "HI08", "all history whole system with since" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI08", "Get the history for the whole system with _since")]
         # public void HistoryForWholeSystem()
@@ -185,7 +185,7 @@ module Crucible
         # }
 
         test "HI09", "resource history page forward" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI09", "Paging forward through a resource type history")]
         # public void PageFwdThroughResourceHistory()
@@ -214,7 +214,7 @@ module Crucible
         # }
 
         test "HI10", "resource history page backwards" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI10", "Page backwards through a resource type history")]
         # public void PageBackThroughResourceHistory()
@@ -245,7 +245,7 @@ module Crucible
         # }
 
         test "HI11", "first page full history" do
-          raise 'Implementation missing...'
+          skip
         end
         # [SprinklerTest("HI11", "Fetch first page of full histroy")]
         # public void FullHistory()

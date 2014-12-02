@@ -24,6 +24,28 @@ namespace :crucible do
     end
   end
 
+  desc 'execute custom'
+  task :execute_custom, [:test] do |t, args|
+
+    urls = [
+      'http://fhir.healthintersections.com.au/open',
+      'http://bonfire.mitre.org:8080/fhir',
+      'http://spark.furore.com/fhir',
+      # 'http://nprogram.azurewebsites.net',
+      # 'https://fhir-api.smartplatforms.org',
+      # 'https://fhir-open-api.smartplatforms.org',
+      # 'https://fhir.orionhealth.com/blaze/fhir',
+      # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/cobalt',
+      # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/bronze',
+      # 'http://fhirtest.uhn.ca/base'
+    ]
+
+    urls.each do |url|
+      Rake::Task['crucible:execute'].invoke(url, args.test)
+      Rake::Task['crucible:execute'].reenable
+    end
+  end
+
   desc 'list all'
   task :list_all do
     puts Crucible::Tests::Executor.list_all

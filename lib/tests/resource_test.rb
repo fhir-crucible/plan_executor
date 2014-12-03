@@ -180,7 +180,7 @@ module Crucible
       def vread_current_test
         result = TestResult.new('X050',"Version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@history_bundle.nil? and @history_bundle.size>0
+        if !@history_bundle.nil? and @history_bundle.size>0 and !@history_bundle.get(0).nil?
           @preexisting_id = @history_bundle.get(0).resource_id
           @preexisting_version = @history_bundle.get(0).resource_version
           @preexisting = @history_bundle.get(0).resource    
@@ -211,7 +211,7 @@ module Crucible
       def vread_previous_test
         result = TestResult.new('X055',"Previous version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@history_bundle.nil? and @history_bundle.size>1
+        if !@history_bundle.nil? and @history_bundle.size>1 and !@history_bundle.get(1).nil?
           @preexisting_id = @history_bundle.get(1).resource_id
           @preexisting_version = @history_bundle.get(1).resource_version
           @preexisting = @history_bundle.get(1).resource    
@@ -236,6 +236,8 @@ module Crucible
       #
       # Validate the representation of a given resource.
       #
+      # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
+      #
       def validate_test
         result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
 
@@ -257,6 +259,8 @@ module Crucible
 
       #
       # Validate the representation of an existing resource.
+      #
+      # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
       def validate_existing_test
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
@@ -298,8 +302,38 @@ module Crucible
       # The client can ask the server to validate against a particular resource by attaching a profile tag to the resource. 
       # This is an assertion that the resource conforms to the specified profile(s), and the server can check this.
       #
+      # Profile Tag has an HTTP header named "Category" with three parts: 
+      #   scheme: [uri]    "http://hl7.org/fhir/tag/profile"
+      #   term:   [uri]    In a profile tag, the term is a URL that references a profile resource.
+      #   label:  [stribg] (optional) A human-readable label for the tag for use when displaying in end-user applications
+      #
+      # Category: [Tag Term]; scheme="[Tag Scheme]"; label="[Tag label]"(, ...)
+      #
+      # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
+      #
       test 'X067', 'Validate against a profile' do
-        skip
+
+        tag = FHIR::Tag.new
+        tag.scheme = "http://hl7.org/fhir/tag/profile"
+        tag.term = "http://www.hl7.org/implement/standards/fhir/us-core.profile.xml" # the DSTU1 US profile to be validated
+        options = { :category => [ tag ] }
+
+        result = TestResult.new('X067',"Validate #{resource_class.name.demodulize} against a profile", nil, nil, nil)
+
+        @temp_resource = ResourceGenerator.generate(@resource_class,true)
+        reply = @client.validate(@temp_resource,options)
+
+        if reply.code==200
+          result.update(STATUS[:pass], "#{resource_class.name.demodulize} was validated.", reply.body)
+        elsif reply.code==201
+          result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
+        else
+          outcome = self.parse_operation_outcome(reply.body)
+          message = self.build_messages(outcome)
+          result.update(STATUS[:fail], message, reply.body)
+        end
+
+        result
       end
 
       #

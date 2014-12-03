@@ -16,6 +16,8 @@ namespace :crucible do
         puts suite_key
         result[suite_key][:tests].each do |test_key, value|
           puts write_result(value['status'], test_key, value['message'])
+
+          puts (value['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if (verbose==true) && value['warnings']
           puts (' '*10) + value['data'] if (verbose==true) && value['data']
         end
 

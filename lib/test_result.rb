@@ -7,6 +7,7 @@ module Crucible
       attr_accessor :status
       attr_accessor :message
       attr_accessor :data
+      attr_accessor :warnings
 
       def initialize(id, description, status, message, data)
         @id = id
@@ -42,6 +43,7 @@ module Crucible
           hash['message'] = force_encoding(@message)
         end
         hash['data'] = force_encoding(@data)
+        hash['warnings'] = warnings if warnings
         hash
       end
 

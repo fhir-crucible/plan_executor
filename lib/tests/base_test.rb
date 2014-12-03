@@ -26,14 +26,17 @@ module Crucible
 
       def execute_test_methods
         result = {}
+        setup if respond_to? :setup
         tests.each do |test_method|
           puts "executing: #{test_method}..."
+          @warnings = nil
           begin
             result[test_method] = self.method(test_method).call().to_hash
           rescue => e
             result[test_method] = TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash
           end
         end
+        teardown if respond_to? :teardown
         result
       end
 
@@ -91,6 +94,15 @@ module Crucible
         Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
       end
 
+      def warning
+        begin
+          yield
+        rescue AssertionException => e
+          @warnings ||= []
+          @warnings << e.message
+        end
+      end
+
       def self.test(key, desc, &block)
         test_method = "#{key} #{desc} test".downcase.tr(' ', '_').to_sym
         contents = block
@@ -104,7 +116,8 @@ module Crucible
           result = TestResult.new(key, description, STATUS[:pass], '','')
           begin
             t = instance_eval &block
-            result.update(t.status, t.message, t.data) if !t.nil?
+            result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
+            result.warnings = @warnings if @warnings
           rescue AssertionException => e
             result.update(STATUS[:fail], e.message, e.data)
           rescue SkipException => e

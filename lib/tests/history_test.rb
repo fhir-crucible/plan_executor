@@ -14,7 +14,7 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
         @patient = @resources.example_patient
 
-        create_date = Time.now
+        @create_date = Time.now.utc
 
         @version = []
         result = @client.create(@patient)
@@ -26,255 +26,186 @@ module Crucible
         update_result = @client.update(@patient, @id)
         @version << update_result.version
 
+        @client.destroy(FHIR::Patient, @id)
+
+        @entry_count = @version.length
+        # add one for deletion
+        @version_count = @entry_count + 1
+
       end
 
       test 'HI01','History for specific resource' do
-        setup
-
         result = @client.resource_instance_history(FHIR::Patient,@id)
-
-        assert result.resource.size == @version.length, "failed test"
-
-        # TestResult.new('HI01','History for specific resource','passed', 'message', 'response')
+        assert_response_ok result
+        assert_equal @version_count, result.resource.size, "the number of returned versions is not correct"
+        assert_equal @entry_count, result.resource.entries.map(&:self_link).size, "all of the returned entries must have a self link"
+        check_sort_order(result.resource.entries)
       end 
 
-        # [SprinklerTest("HI01", "Request the full history for a specific resource")]
-        # public void HistoryForSpecificResource()
-        # {
-        #     Initialize();
-        #     if (_createDate == null) TestResult.Skip();
+      test "HI02", "full history of a resource by id with since" do
+        before = @create_date - 1.minute
+        after = before + 1.hour
 
-        #     _history = Client.History(_location);
-        #     Assert.EntryIdsArePresentAndAbsoluteUrls(_history);
+        all_history = @client.resource_instance_history(FHIR::Patient,@id)
 
-        #     // There's one version less here, because we don't have the deletion
-        #     int expected = Versions.Count + 1;
+        result = @client.resource_instance_history_as_of(FHIR::Patient,@id,before)
+        assert_response_ok result
+        assert_equal @version_count, result.resource.size, "the number of returned versions since the creation date is not correct"
 
-        #     if (_history.Entries.Count != expected)
-        #         Assert.Fail(String.Format("{0} versions expected after crud test, found {1}", expected,
-        #             _history.Entries.Count));
+        entry_ids_are_present_and_absolute_urls(result.resource.entries)
+        check_sort_order(result.resource.entries)
 
-        #     if (!_history.Entries.OfType<ResourceEntry>()
-        #         .All(ent => Versions.Contains(ent.SelfLink)))
-        #         Assert.Fail("Selflinks on returned versions do not match links returned on creation" +
-        #                         _history.Entries.Count);
+        selfs = result.resource.entries.map(&:self_link).compact
+        assert_equal @entry_count, (all_history.resource.entries.select {|e| selfs.include? e.self_link}).size, "there are entries missing "
 
+        result = @client.resource_instance_history_as_of(FHIR::Patient,@id,after)
+        assert_response_ok result
+        assert_equal 0, result.resource.size, "there should not be any history one hour after the creation date"
+      end
 
-        #     CheckSortOrder(_history);
-        # }
-
-
-        test "HI02", "full history with since" do
-          skip
+      test "HI03", "individual history versions" do
+        result = @client.resource_instance_history(FHIR::Patient,@id)
+        assert_response_ok result
+        result.resource.entries.each do |entry|
+          pulled = @client.vread(FHIR::Patient, entry.resource_id, entry.resource_version)
+          assert_response_ok pulled
+          assert !pulled.nil?, "Cannot find version that was present in history"
+          assert url?(pulled.self_link), "#{pulled.self_link} is not a valid url" if pulled.self_link
         end
-        # [SprinklerTest("HI02", "Request the full history for a resource with _since")]
-        # public void HistoryForSpecificResourceId()
-        # {
-        #     if (_createDate == null) TestResult.Skip();
 
-        #     DateTimeOffset before = _createDate.Value.AddMinutes(-1);
-        #     DateTimeOffset after = before.AddHours(1);
-
-        #     Bundle history = Client.History(_location, before);
-        #     Assert.EntryIdsArePresentAndAbsoluteUrls(history);
-        #     CheckSortOrder(history);
-        #     Uri[] historySl = history.Entries.Select(entry => entry.SelfLink).ToArray();
-
-        #     if (!history.Entries.All(entry => historySl.Contains(entry.SelfLink)))
-        #         Assert.Fail("history with _since does not contain all versions of instance");
-
-        #     history = Client.History(_location, after);
-        #     if (history.Entries.Count != 0)
-        #         Assert.Fail("Setting since to after the last update still returns history");
-        # }
-
-        test "HI03", "individual history versions" do
-          skip
+        result.resource.deleted_entries.each do |entry|
+          pulled = @client.vread(FHIR::Patient, entry.resource_id, entry.resource_version)
+          assert pulled.resource.nil?, "resource should not be found since it was deleted"
+          assert_response_gone pulled
         end
-        # [SprinklerTest("HI03", "Request individual history versions from a resource")]
-        # public void VReadVersions()
-        # {
-        #     foreach (ResourceEntry ent in _history.Entries.OfType<ResourceEntry>())
-        #     {
-        #         var identity = new ResourceIdentity(ent.SelfLink);
+      end
 
-        #         ResourceEntry<Patient> version = Client.Read<Patient>(identity);
+      test "HI04", "history for missing resource" do
+        result = @client.resource_instance_history(FHIR::Patient,'3141592unlikely')
+        assert_response_not_found result
+        assert result.resource.nil?, 'bad history request should not return a resource'
+      end
 
-        #         if (version == null) Assert.Fail("Cannot find version that was present in history");
+      test "HI06", "all history for resource with since" do
+        before = @create_date - 1.minute
+        after = Time.now.utc + 1.minute
 
-        #         Assert.ContentLocationPresentAndValid(Client);
-        #         var selfLink = new ResourceIdentity(Client.LastResponseDetails.ContentLocation);
-        #         if (String.IsNullOrEmpty(selfLink.Id) || String.IsNullOrEmpty(selfLink.VersionId))
-        #             Assert.Fail("Optional Content-Location contains an invalid version-specific url");
-        #     }
+        result = @client.resource_history_as_of(FHIR::Patient,before)
+        assert_response_ok result
+        entry_ids_are_present_and_absolute_urls(result.resource.entries)
+        check_sort_order(result.resource.entries)
 
-        #     foreach (DeletedEntry ent in _history.Entries.OfType<DeletedEntry>())
-        #     {
-        #         var identity = new ResourceIdentity(ent.SelfLink);
+        selfs = result.resource.entries.map(&:self_link).compact
+        assert_equal result.resource.entries.size, selfs.size, "history with _since does not contain all versions of instance"
 
-        #         Assert.Fails(Client, () => Client.Read<Patient>(identity), HttpStatusCode.Gone);
-        #     }
-        # }
+        result = @client.resource_history_as_of(FHIR::Patient,after)
+        assert_response_ok result
+        assert_equal 0, result.resource.size, "Setting since to a future moment still returns history"
 
-        test "HI04", "history for missing resource" do
-          skip
+      end
+
+      test "HI08", "all history whole system with since" do
+        before = @create_date - 1.minute
+        after = Time.now.utc + 1.minute
+
+        result = @client.all_history_as_of(before)
+        assert_response_ok result
+        entry_ids_are_present_and_absolute_urls(result.resource.entries)
+        check_sort_order(result.resource.entries)
+
+        warning { assert_navigation_links(result.resource) }
+
+        selfs = result.resource.entries.map(&:self_link).compact
+        assert_equal result.resource.entries.size, selfs.size, "history with _since does not contain all versions of instance"
+
+        result = @client.resource_history_as_of(FHIR::Patient,after)
+        assert_response_ok result
+        assert_equal 0, result.resource.size, "Setting since to a future moment still returns history"
+
+      end
+
+
+      test "HI09", "resource history page forward" do
+        page_size = 30
+        page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
+
+        forward_count = 0
+        # browse forwards
+        while page != nil
+          warning { entry_ids_are_present_and_absolute_urls(page.resource.entries) }
+          assert page.resource.entries.count <= page_size, "Server returned a page with more entries than set by _count"
+          forward_count += page.resource.entries.count
+          page = @client.next_page(page)
         end
-        # [SprinklerTest("HI04", "Fetching history of non-existing resource returns exception")]
-        # public void HistoryForNonExistingResource()
-        # {
-        #     if (_createDate == null) TestResult.Skip();
 
-        #     Assert.Fails(Client, () => Client.History("Patient/3141592unlikely"), HttpStatusCode.NotFound);
-        # }
+        assert forward_count > 2, "there should be at least 2 history entries"
+      end
 
-        test "HI06", "all history for resource with since" do
-          skip
+      test "HI10", "resource history page backwards" do
+        page_size = 30
+        page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
+
+        forward_count = 0
+        last_page = page
+        while page != nil
+          forward_count += page.resource.entries.count
+          page = @client.next_page(page)
+          last_page = page if page
         end
-        # [SprinklerTest("HI06", "Get all history for a resource type with _since")]
-        # public void HistoryForResourceType()
-        # {
-        #     if (_createDate == null) TestResult.Skip();
 
-        #     DateTimeOffset before = _createDate.Value.AddMinutes(-1);
-        #     DateTimeOffset after = before.AddHours(1);
-
-        #     Bundle history = Client.TypeHistory<Patient>(before);
-        #     Assert.EntryIdsArePresentAndAbsoluteUrls(history);
-        #     _typeHistory = history;
-        #     CheckSortOrder(history);
-
-        #     Uri[] historyLinks = history.Entries.Select(be => be.SelfLink).ToArray();
-
-        #     if (!history.Entries.All(ent => historyLinks.Contains(ent.SelfLink)))
-        #         Assert.Fail("history with _since does not contain all versions of instance");
-
-        #     history = Client.History(_location, DateTimeOffset.Now.AddMinutes(1));
-
-        #     if (history.Entries.Count != 0)
-        #         Assert.Fail("Setting since to a future moment still returns history");
-        # }
-
-
-        test "HI08", "all history whole system with since" do
-          skip
+        backward_count = 0
+        page = last_page
+        # browse forwards
+        while page != nil
+          warning { entry_ids_are_present_and_absolute_urls(page.resource.entries) }
+          assert page.resource.entries.count <= page_size, "Server returned a page with more entries than set by _count"
+          backward_count += page.resource.entries.count
+          page = @client.next_page(page, FHIR::Sections::Feed::BACKWARD)
         end
-        # [SprinklerTest("HI08", "Get the history for the whole system with _since")]
-        # public void HistoryForWholeSystem()
-        # {
-        #     if (_createDate == null) TestResult.Skip();
-        #     DateTimeOffset before = _createDate.Value.AddMinutes(-1);
-        #     Bundle history;
+
+        assert_equal forward_count, backward_count, "entry numbers were different moving forwards and backwards"
+
+      end
+
+      test "HI11", "first page full history" do
+        history = @client.all_history
+        assert history.resource.entries.size > 2, "there should be at least 2 history entries"
+      end
+
+      ###
+      ### Test first and last pages
+      ###
 
 
-        #     history = Client.WholeSystemHistory(before);
-        #     Assert.EntryIdsArePresentAndAbsoluteUrls(history);
+      ####
+      #### Check sice with timezones?????
+      ####
 
-        #     Assert.HasAllForwardNavigationLinks(history); // Assumption: system has more history than pagesize
-        #     _systemHistory = history;
-        #     CheckSortOrder(history);
 
-        #     Uri[] historyLinks = history.Entries.Select(be => be.SelfLink).ToArray();
+      def entry_ids_are_present_and_absolute_urls(entries)
+        selfs = entries.map(&:self_link).compact
+        ids = entries.map(&:id).compact
 
-        #     if (!Versions.All(sl => historyLinks.Contains(sl)))
-        #         Assert.Fail("history with _since does not contain all versions of instance");
+        # check that we have ids and self links
+        assert_equal entries.length, selfs.size, "all of the returned entries must have a self link"
+        assert_equal entries.length, ids.size, "all of the returned entries must have an id"
 
-        #     history = Client.History(_location, DateTimeOffset.Now.AddMinutes(1));
+        # check that they are valid URIs
+        assert_equal entries.length, (selfs.select {|e| url?(e) }).size, "all self links must be valid URIs"
+        assert_equal entries.length, (ids.select {|e| url?(e)}).size, "all ids must be valid URIs"
+      end
 
-        #     if (history.Entries.Count != 0)
-        #         Assert.Fail("Setting since to a future moment still returns history");
-        # }
+      def url?(v)
+        v =~ /\A#{URI::regexp}\z/
+      end
 
-        test "HI09", "resource history page forward" do
-          skip
+      def check_sort_order(entries)
+        entries.each_cons(2) do |left, right|
+          assert !right.last_updated.nil?, "result contains entry with no last update: (id: #{right.self_link})"
+          assert !left.last_updated.nil?, "result contains entry with no last update: (id: #{left.self_link})"
+          assert left.last_updated >= right.last_updated, "result is not ordered on last update, first out of order has id: #{left.self_link}"
         end
-        # [SprinklerTest("HI09", "Paging forward through a resource type history")]
-        # public void PageFwdThroughResourceHistory()
-        # {
-        #     int pageSize = 30;
-        #     Bundle page = Client.TypeHistory<Patient>(since: DateTimeOffset.Now.AddHours(-1), pageSize: pageSize);
-        #     Assert.EntryIdsArePresentAndAbsoluteUrls(page);
-
-        #     _forwardCount = 0;
-
-        #     // Browse forwards
-        #     while (page != null)
-        #     {
-        #         if (page.Entries.Count > pageSize)
-        #             Assert.Fail("Server returned a page with more entries than set by _count");
-
-        #         _forwardCount += page.Entries.Count;
-        #         _lastPage = page;
-        #         Assert.EntryIdsArePresentAndAbsoluteUrls(page);
-        #         page = Client.Continue(page);
-        #     }
-
-        #     //if (total.HasValue && forwardCount < total)
-        #     //    TestResult.Fail(String.Format("Paging did not return all entries(expected at least {0}, {1} returned)", 
-        #     //                    total, forwardCount));
-        # }
-
-        test "HI10", "resource history page backwards" do
-          skip
-        end
-        # [SprinklerTest("HI10", "Page backwards through a resource type history")]
-        # public void PageBackThroughResourceHistory()
-        # {
-        #     if (_forwardCount == -1) TestResult.Skip();
-
-        #     int pageSize = 30;
-        #     Bundle page = Client.TypeHistory<Patient>(since: DateTimeOffset.Now.AddHours(-1), pageSize: pageSize);
-        #     Assert.EntryIdsArePresentAndAbsoluteUrls(page);
-
-        #     page = Client.Continue(page, PageDirection.Last);
-        #     int backwardsCount = 0;
-
-        #     // Browse backwards
-        #     while (page != null)
-        #     {
-        #         if (page.Entries.Count > pageSize)
-        #             Assert.Fail("Server returned a page with more entries than set by count");
-
-        #         backwardsCount += page.Entries.Count;
-        #         Assert.EntryIdsArePresentAndAbsoluteUrls(page);
-        #         page = Client.Continue(page, PageDirection.Previous);
-        #     }
-
-        #     if (backwardsCount != _forwardCount)
-        #         Assert.Fail(String.Format("Paging forward returns {0} entries, backwards returned {1}",
-        #             _forwardCount, backwardsCount));
-        # }
-
-        test "HI11", "first page full history" do
-          skip
-        end
-        # [SprinklerTest("HI11", "Fetch first page of full histroy")]
-        # public void FullHistory()
-        # {
-        #     Bundle history = Client.WholeSystemHistory();
-        # }
-
-
-        # private static void CheckSortOrder(Bundle bundle)
-        # {
-        #     DateTimeOffset maxDate = DateTimeOffset.MaxValue;
-
-        #     foreach (BundleEntry be in bundle.Entries)
-        #     {
-        #         DateTimeOffset? lastUpdate = be is ResourceEntry
-        #             ? ((be as ResourceEntry).LastUpdated)
-        #             : ((be as DeletedEntry).When);
-
-        #         if (lastUpdate == null)
-        #             Assert.Fail(String.Format("Result contains entry with no LastUpdate (id: {0})", be.SelfLink));
-
-        #         if (lastUpdate > maxDate)
-        #             Assert.Fail("Result is not ordered on LastUpdate, first out of order has id " + be.SelfLink);
-
-        #         maxDate = lastUpdate.Value;
-        #     }
-        # }
-
-
+      end
 
     end
   end

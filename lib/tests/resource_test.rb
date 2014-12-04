@@ -85,8 +85,8 @@ module Crucible
       #
       def read_test
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
-        if !@bundle.nil? and @bundle.size>0
-          @preexisting_id = @bundle.get(1).resource_id
+        if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
+          @preexisting_id = @bundle.get(0).resource_id
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
         else
@@ -111,9 +111,9 @@ module Crucible
       def update_test
         result = TestResult.new('X030',"Update existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@bundle.nil? and @bundle.size>0
-          @preexisting_id = @bundle.get(1).resource_id
-          @preexisting = @bundle.get(1).resource    
+        if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
+          @preexisting_id = @bundle.get(0).resource_id
+          @preexisting = @bundle.get(0).resource    
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
@@ -265,9 +265,9 @@ module Crucible
       def validate_existing_test
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@bundle.nil? and @bundle.size>0
-          @preexisting_id = @bundle.get(1).resource_id
-          @preexisting = @bundle.get(1).resource    
+        if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
+          @preexisting_id = @bundle.get(0).resource_id
+          @preexisting = @bundle.get(0).resource    
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
@@ -347,9 +347,9 @@ module Crucible
       def delete_existing_test
         result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@bundle.nil? and @bundle.size>0
-          @preexisting_id = @bundle.get(1).resource_id
-          @preexisting = @bundle.get(1).resource    
+        if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
+          @preexisting_id = @bundle.get(0).resource_id
+          @preexisting = @bundle.get(0).resource    
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource

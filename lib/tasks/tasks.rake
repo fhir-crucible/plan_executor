@@ -14,11 +14,11 @@ namespace :crucible do
 
       result.keys.each do |suite_key|
         puts suite_key
-        result[suite_key][:tests].each do |test_key, value|
-          puts write_result(value['status'], test_key, value['message'])
+        result[suite_key][:tests].each do |test|
+          puts write_result(test['status'], test[:test_method], test['message'])
 
-          puts (value['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if (verbose==true) && value['warnings']
-          puts (' '*10) + value['data'] if (verbose==true) && value['data']
+          puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if (verbose==true) && test['warnings']
+          puts (' '*10) + test['data'] if (verbose==true) && test['data']
         end
 
       end

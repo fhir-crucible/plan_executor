@@ -39,6 +39,12 @@ module Crucible
         end
       end
 
+      def assert_bundle_response(response)
+        unless response.resource.class == FHIR::Bundle
+          raise AssertionException.new "Expected FHIR Bundle but found: #{response.resource.class}", response.body
+        end
+      end
+
       def skip
         raise SkipException.new
       end

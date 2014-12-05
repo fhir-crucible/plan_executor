@@ -3,20 +3,23 @@ module Crucible
     class SearchTest < BaseTest
  
       attr_accessor :resource_class
+      attr_accessor :conformance
+      attr_accessor :searchParams
+      attr_reader   :canSearchById
 
       def execute(resource_class=nil)
         if resource_class
           @resource_class = resource_class
           [{"SearchTest_#{@resource_class.name.demodulize}" => {
             test_file: test_name,
-            tests: execute_resource
+            tests: execute_test_methods
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
             {"SearchTest_#{@resource_class.name.demodulize}" => {
               test_file: test_name,
-              tests: execute_resource
+              tests: execute_test_methods
             }}
           end
         end
@@ -30,10 +33,6 @@ module Crucible
         "Execute suite of searches for #{resource_class.name.demodulize} resources."
       end
 
-      def execute_resource()
-        execute_test_methods()
-      end
-
       def supplement_test_description(desc)
         "#{desc} #{resource_class.name.demodulize}"
       end
@@ -44,12 +43,34 @@ module Crucible
       # 2. Lookup the allowed search parameters for each resource.
       # 3. Perform suite of tests against each resource.
       #
+      def setup
+        if @conformance.nil?
+          @conformance = @client.conformanceStatement
+        end
+
+        @canSearchById = false
+
+        @conformance.rest.each do |rest|
+          rest.resource.each do |resource|
+            @searchParams = resource.searchParam if(resource.fhirType.downcase == "#{@resource_class.name.demodulize.downcase}" )
+          end
+        end
+
+        index = @searchParams.find_index {|item| item.name=="_id" }
+        @canSearchById = !index.nil?
+      end
+
+      test 'S000', 'Compare supported search parameters with specification' do
+        searchParamNames = @searchParams.map { |item| item.name }
+        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames)    
+      end
 
       #
       # Test the extent of the search capabilities supported.
-      # no criteria [SE01]
+      # x  no criteria [SE01]
+      # x  limit by _count [S003]
       # non-existing resource [SE02]
-      # id
+      # x  id [S001,S002]
       # parameters [SE03,SE04,SE24,SE25]
       # parameter modifiers (:missing, :exact, :text, :[type]) [SE23]
       # numbers (= >= significant-digits) [SE21,SE22]
@@ -68,10 +89,72 @@ module Crucible
       # _include parameter [SE06]
       # _summary parameter
       # result server conformance (report params actually used)
-      # advanced searching with "Query" or _query param
+      # advanced searching with "Query" or _query param (valueset 'expand' and 'validate' queries should be standard)
       #       
-      test 'SE01', 'Search for existing' do
-        skip
+      test 'S001', 'Search by ID' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              '_id' => '0'
+            }
+          }
+        }
+        reply = @client.search(@resource_class, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+      end
+
+      test 'S002', 'Search without search keyword' do
+        options = {
+          :search => {
+            :flag => false,
+            :compartment => nil,
+            :parameters => {
+              '_id' => '0'
+            }
+          }
+        }
+        reply = @client.search(@resource_class, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+      end
+
+      test 'S003', 'Search limit by _count' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              '_count' => '1'
+            }
+          }
+        }
+        reply = @client.search(@resource_class, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        assert (1 >= reply.resource.all_entries.size), 'The server did not return the correct number of results.'
+      end
+
+      # ********************************************************* #
+      # _____________________Sprinkler Tests_____________________ #
+      # ********************************************************* #
+
+      test 'SE01', 'Search without criteria' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => nil
+          }
+        }
+        reply = @client.search(@resource_class, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        replyB = @client.read_feed(@resource_class)
+        assert_equal replyB.resource.size, reply.resource.size, 'Searching without criteria did not return all the results.'
       end
 
 

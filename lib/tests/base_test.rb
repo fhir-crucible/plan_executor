@@ -25,15 +25,15 @@ module Crucible
       end
 
       def execute_test_methods
-        result = {}
+        result = []
         setup if respond_to? :setup
         tests.each do |test_method|
           puts "executing: #{test_method}..."
           @warnings = nil
           begin
-            result[test_method] = self.method(test_method).call().to_hash
+            result << self.method(test_method).call().to_hash.merge!({:test_method => test_method})
           rescue => e
-            result[test_method] = TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash
+            result << TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
         teardown if respond_to? :teardown

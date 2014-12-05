@@ -19,14 +19,14 @@ module Crucible
           @resource_class = resource_class
           [{"ResourceTest_#{@resource_class.name.demodulize}" => {
             test_file: test_name,
-            tests: execute_resource
+            tests: execute_test_methods
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
             {"ResourceTest_#{@resource_class.name.demodulize}" => {
               test_file: test_name,
-              tests: execute_resource
+              tests: execute_test_methods
             }}
           end
         end
@@ -38,10 +38,6 @@ module Crucible
 
       def description
         "Basic operations for FHIR #{resource_class.name.demodulize} resource (CREATE, READ, VREAD, UPDATE, DELETE, HISTORY, SEARCH, VALIDATE)"
-      end
-
-      def execute_resource()
-        execute_test_methods()
       end
 
       def supplement_test_description(desc)
@@ -63,7 +59,7 @@ module Crucible
       #
       def create_test
         result = TestResult.new('X010',"Create new #{resource_class.name.demodulize}", nil, nil, nil)
-        @temp_resource = ResourceGenerator.generate(@resource_class,true)
+        @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.create @temp_resource
         @temp_id = reply.id
         @temp_version = reply.version
@@ -241,7 +237,7 @@ module Crucible
       def validate_test
         result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
 
-        @temp_resource = ResourceGenerator.generate(@resource_class,true)
+        @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.validate @temp_resource
 
         if reply.code==200
@@ -320,7 +316,7 @@ module Crucible
 
         result = TestResult.new('X067',"Validate #{resource_class.name.demodulize} against a profile", nil, nil, nil)
 
-        @temp_resource = ResourceGenerator.generate(@resource_class,true)
+        @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.validate(@temp_resource,options)
 
         if reply.code==200

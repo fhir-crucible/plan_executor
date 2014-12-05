@@ -4,14 +4,15 @@ module Crucible
 
       #
       # Generate a FHIR resource for the given class `klass`
-      # If `embedded` is true, all embedded children will also
+      # If `embedded` is greater than zero, all embedded children will also
       # be generated.
       #
-      def self.generate(klass,embedded)
+      def self.generate(klass,embedded=0)
         resource = klass.new
+        Time.zone = 'UTC'
         set_fields!(resource)
-        if embedded
-          generate_children!(resource)
+        if(embedded > 0)
+          generate_children!(resource,embedded)
         end
         resource
       end
@@ -33,15 +34,25 @@ module Crucible
                 gen = valid_values[ SecureRandom.random_number( valid_values.length ) ]
               end
             end
-
           elsif type == Integer
             gen = SecureRandom.random_number(100)
-          elsif type == Boolean
+          elsif type == Float
+            gen = SecureRandom.random_number          
+          elsif type == Mongoid::Boolean
             gen = (SecureRandom.random_number(100) % 2 == 0)
-          #else
-          #  puts "Unabled to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
+          elsif type == FHIR::PartialDateTime
+            gen = FHIR::PartialDateTime.new(Time.zone.now,Time.zone)
+          elsif type == DateTime
+            gen = Time.zone.now
+          elsif type == BSON::Binary
+            gen = SecureRandom.random_bytes
+          elsif type == BSON::ObjectId or type == Array or type == Object or type == FHIR::AnyType
+            gen = nil # ignore
+          # else
+          #   puts "Unabled to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
+          #   binding.pry
           end
-          resource[key] = gen if gen
+          resource[key] = gen if !gen.nil?
         end
         resource
       end
@@ -50,11 +61,11 @@ module Crucible
       # 
       # Generate children for this resource.
       #
-      def self.generate_children!(resource)
+      def self.generate_children!(resource,embedded=0)
         children = resource.embedded_relations
         children.each do |key,value|
           klass = resource.get_fhir_class_from_resource_type(value[:class_name])
-          child = generate(klass,false)
+          child = generate(klass,(embedded-1)) if(value[:class_name] != 'FHIR::Extension')
           if value[:relation] == Mongoid::Relations::Embedded::Many
             child = ([] << child) if child
           end

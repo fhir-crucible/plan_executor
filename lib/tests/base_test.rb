@@ -29,15 +29,18 @@ module Crucible
         setup if respond_to? :setup
         tests.each do |test_method|
           puts "executing: #{test_method}..."
-          @warnings = nil
           begin
-            result << self.method(test_method).call().to_hash.merge!({:test_method => test_method})
+            result << execute_test_method(test_method)
           rescue => e
             result << TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
         teardown if respond_to? :teardown
         result
+      end
+
+      def execute_test_method(test_method)
+        self.method(test_method).call().to_hash.merge!({:test_method => test_method})
       end
 
       def author
@@ -98,15 +101,27 @@ module Crucible
         begin
           yield
         rescue AssertionException => e
-          @warnings ||= []
           @warnings << e.message
         end
+      end
+
+      def requires(hash)
+        @requires << hash
+      end
+
+      def validates(hash)
+        @validates << hash
+      end
+
+      def links(url)
+        @links << url
       end
 
       def self.test(key, desc, &block)
         test_method = "#{key} #{desc} test".downcase.tr(' ', '_').to_sym
         contents = block
         wrapped = -> () do 
+          @warnings, @links, @requires, @validates = [],[],[],[]
           description = nil
           if respond_to? :supplement_test_description
             description = supplement_test_description(desc) 
@@ -117,7 +132,6 @@ module Crucible
           begin
             t = instance_eval &block
             result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
-            result.warnings = @warnings if @warnings
           rescue AssertionException => e
             result.update(STATUS[:fail], e.message, e.data)
           rescue SkipException => e
@@ -125,6 +139,10 @@ module Crucible
           rescue => e
             result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
           end
+          result.warnings = @warnings  unless @warnings.empty?
+          result.requires = @requires unless @requires.empty?
+          result.validates = @validates unless @validates.empty?
+          result.links = @links unless @links.empty?
           result
         end
         define_method test_method, wrapped

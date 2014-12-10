@@ -34,7 +34,11 @@ module Crucible
 
       end
 
-      test 'HI01','History for specific resource' do
+      test  'HI01','History for specific resource' do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["history-instance"]
+
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
         assert_equal @version_count, result.resource.size, "the number of returned versions is not correct"
@@ -43,6 +47,10 @@ module Crucible
       end 
 
       test "HI02", "full history of a resource by id with since" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["history-instance"]
+
         before = @create_date - 1.minute
         after = before + 1.hour
 
@@ -56,7 +64,7 @@ module Crucible
         check_sort_order(result.resource.entries)
 
         selfs = result.resource.entries.map(&:self_link).compact
-        assert_equal @entry_count, (all_history.resource.entries.select {|e| selfs.include? e.self_link}).size, "there are entries missing "
+        warning { assert_equal @entry_count, (all_history.resource.entries.select {|e| selfs.include? e.self_link}).size, "there are entries missing "}
 
         result = @client.resource_instance_history_as_of(FHIR::Patient,@id,after)
         assert_response_ok result
@@ -64,6 +72,10 @@ module Crucible
       end
 
       test "HI03", "individual history versions" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["vread", "history-instance"]
+
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
         result.resource.entries.each do |entry|
@@ -81,12 +93,20 @@ module Crucible
       end
 
       test "HI04", "history for missing resource" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["history-instance"]
+
         result = @client.resource_instance_history(FHIR::Patient,'3141592unlikely')
         assert_response_not_found result
         assert result.resource.nil?, 'bad history request should not return a resource'
       end
 
       test "HI06", "all history for resource with since" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["history-type"]
+
         before = @create_date - 1.minute
         after = Time.now.utc + 1.minute
 
@@ -105,6 +125,10 @@ module Crucible
       end
 
       test "HI08", "all history whole system with since" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: nil, methods: ["history-system"]
+
         before = @create_date - 1.minute
         after = Time.now.utc + 1.minute
 
@@ -126,6 +150,10 @@ module Crucible
 
 
       test "HI09", "resource history page forward" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["history-type"]
+
         page_size = 30
         page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
 
@@ -142,6 +170,10 @@ module Crucible
       end
 
       test "HI10", "resource history page backwards" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: "Patient", methods: ["history-type"]
+
         page_size = 30
         page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
 
@@ -168,6 +200,10 @@ module Crucible
       end
 
       test "HI11", "first page full history" do
+        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+        requires resource: "Patient", methods: ["create", "update", "delete"]
+        validates resource: nil, methods: ["history-system"]
+
         history = @client.all_history
         assert history.resource.entries.size > 2, "there should be at least 2 history entries"
       end
@@ -187,11 +223,11 @@ module Crucible
         ids = entries.map(&:id).compact
 
         # check that we have ids and self links
-        assert_equal entries.length, selfs.size, "all of the returned entries must have a self link"
+        warning { assert_equal entries.length, selfs.size, "all of the returned entries must have a self link" }
         assert_equal entries.length, ids.size, "all of the returned entries must have an id"
 
         # check that they are valid URIs
-        assert_equal entries.length, (selfs.select {|e| url?(e) }).size, "all self links must be valid URIs"
+        warning { assert_equal entries.length, (selfs.select {|e| url?(e) }).size, "all self links must be valid URIs" }
         assert_equal entries.length, (ids.select {|e| url?(e)}).size, "all ids must be valid URIs"
       end
 

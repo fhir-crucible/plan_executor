@@ -15,7 +15,6 @@ namespace :crucible do
   def execute_test(client, test)
     results = Crucible::Tests::Executor.new(client).execute(test)
 
-    binding.pry
     results.each do |result|
 
       result.keys.each do |suite_key|

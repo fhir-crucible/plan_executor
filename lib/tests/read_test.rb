@@ -10,20 +10,25 @@ module Crucible
         'Initial Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests.'
       end
 
+      def setup
+        @patient = ReadTest.createPatient("Emerald", "Caro")
+        reply = @client.create(@patient)
+        @id = reply.id
+      end
+
+      def teardown
+        @client.destroy(FHIR::Patient, @id)
+      end
+
       def self.createPatient(family, given)
         patient = FHIR::Patient.new(name: [FHIR::HumanName.new(family: [family], given: [given])])
       end
 
       # [SprinklerTest("R001", "Result headers on normal read")]
       test "R001", "get person data" do
-        patient = ReadTest.createPatient("Emerald", "Caro")
-        test_patient = @client.create(patient)
-
-        # TODO: define a assert outcome method for pulling out the messages?
-        # outcome = self.parse_operation_outcome(test_patient.response.body)
-        # build_messages(outcome)
-
-        assert_equal 201, test_patient.code, "get person data failed.", test_patient.response.body
+        reply = @client.read(FHIR::Patient, @id)
+        assert_response_ok(reply)
+        assert_equal @id, reply.id, 'Server returned wrong patient.'
       end
       #     public void GetTestDataPerson()
       #     {

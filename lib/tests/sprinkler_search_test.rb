@@ -13,6 +13,7 @@ module Crucible
       def setup
         @resources = Crucible::Generator::Resources.new
         @patient = @resources.example_patient
+        @patient.gender = nil
 
         @create_date = Time.now.utc
 
@@ -47,6 +48,8 @@ module Crucible
         @obs_a = create_observation(4.12345)
         @obs_b = create_observation(4.12346)
         @obs_c = create_observation(4.12349)
+        @obs_d = create_observation(5.12)
+        @obs_e = create_observation(6.12)
       end
 
       def create_observation(value)
@@ -77,6 +80,8 @@ module Crucible
         @client.destroy(FHIR::Observation, @obs_a)
         @client.destroy(FHIR::Observation, @obs_b)
         @client.destroy(FHIR::Observation, @obs_c)
+        @client.destroy(FHIR::Observation, @obs_d)
+        @client.destroy(FHIR::Observation, @obs_e)
       end
 
       test 'SE01','Search patients without criteria (except _count)' do
@@ -349,7 +354,97 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert reply.resource.size > 0, 'The server should have Conditions with _include=Condition.subject.'        
-      end         
+      end
+
+      test 'SE21', 'Search for quantity (in observation) - precision tests' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              'value' => '4.1234||mmol'
+            }
+          }
+        }
+        reply = @client.search(FHIR::Observation, options)
+        has_obs_a = has_obs_b = has_obs_c = false
+        while reply != nil
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          has_obs_a = true if reply.resource.get_by_id(@obs_a)
+          has_obs_b = true if reply.resource.get_by_id(@obs_b)
+          has_obs_c = true if reply.resource.get_by_id(@obs_c)
+          reply = @client.next_page(reply)
+        end
+
+        assert has_obs_a,  'Search on quantity value 4.1234 should return 4.12345'                
+        assert !has_obs_b, 'Search on quantity value 4.1234 should not return 4.12346'                
+        assert !has_obs_c, 'Search on quantity value 4.1234 should not return 4.12349'                
+      end
+
+      test 'SE22', 'Search for quantity (in observation) - operators' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              'value' => '>5||mmol'
+            }
+          }
+        }
+        reply = @client.search(FHIR::Observation, options)
+        has_obs_a = has_obs_b = has_obs_c = false
+        while reply != nil
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          has_obs_a = true if reply.resource.get_by_id(@obs_a)
+          has_obs_d = true if reply.resource.get_by_id(@obs_d)
+          has_obs_e = true if reply.resource.get_by_id(@obs_e)
+          reply = @client.next_page(reply)
+        end
+
+        assert !has_obs_a,  'Search greater than quantity should not return lesser value.'                
+        assert has_obs_d, 'Search greater than quantity should return greater value.'                
+        assert has_obs_e, 'Search greater than quantity should return greater value.'                
+      end
+
+      test 'SE23', 'Search with quantifier :missing, on Patient.gender' do
+        # how many patients in the bundle have no gender?
+        expected = 0
+        @entries.each do |entry|
+          patient = entry.resource
+          expected += 1 if patient.gender.nil?
+        end
+
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              'gender:missing' => true
+            }
+          }
+        }
+        reply = @client.search(FHIR::Patient, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        assert_equal expected, reply.resource.size, 'The server did not report the correct number of results.'
+      end
+
+      test 'SE24', 'Search with non-existing parameter.' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              'bonkers' => 'foobar'
+            }
+          }
+        }
+        reply = @client.search(FHIR::Patient, options)
+        outcome = parse_operation_outcome(reply.response.body)
+        assert !outcome.nil?, 'Searching with non-existing parameters should result in OperationOutcome.'        
+      end
 
     end
   end

@@ -69,15 +69,16 @@ module Crucible
       # Test the extent of the search capabilities supported.
       # x  no criteria [SE01]
       # x  limit by _count [S003]
-      # non-existing resource [SE02]
+      # x  non-existing resource [SE02]
       # x  id [S001,S002]
-      # parameters [SE03,SE04,SE24,SE25]
+      # x  parameters [SE03,SE04]
+      # parameters [SE24,SE25]
       # parameter modifiers (:missing, :exact, :text, :[type]) [SE23]
       # numbers (= >= significant-digits) [SE21,SE22]
       # date (all of the permutations?)
       # token
       # quantities [SE21,SE22]
-      # references [SE05]
+      # x  references [SE05]
       # chained parameters
       # composite parameters
       # text search logical operators
@@ -86,7 +87,7 @@ module Crucible
       # result relevance
       # result sorting (_sort parameter)
       # result paging
-      # _include parameter [SE06]
+      # x  _include parameter [SE06]
       # _summary parameter
       # result server conformance (report params actually used)
       # advanced searching with "Query" or _query param (valueset 'expand' and 'validate' queries should be standard)

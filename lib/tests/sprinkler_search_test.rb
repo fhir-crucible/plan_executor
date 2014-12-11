@@ -42,11 +42,41 @@ module Crucible
         @condition.subject.reference = @entries[0].resource_url
         reply = @client.create(@condition)
         @condition_id = reply.id
+
+        # create some observations
+        @obs_a = create_observation(4.12345)
+        @obs_b = create_observation(4.12346)
+        @obs_c = create_observation(4.12349)
+      end
+
+      def create_observation(value)
+        observation = FHIR::Observation.new
+        observation.status = 'preliminary'
+        observation.reliability = 'questionable'
+        code = FHIR::Coding.new
+        code.system = 'http://loinc.org'
+        code.code = '2164-2'
+        observation.name = FHIR::CodeableConcept.new
+        observation.name.coding = [ code ]
+        observation.valueQuantity = FHIR::Quantity.new
+        observation.valueQuantity.system = 'http://unitofmeasure.org'
+        observation.valueQuantity.value = value
+        observation.valueQuantity.units = 'mmol'
+        body = FHIR::Coding.new
+        body.system = 'http://snomed.info/sct'
+        body.code = '182756003'
+        observation.bodySite = FHIR::CodeableConcept.new
+        observation.bodySite.coding = [ body ]
+        reply = @client.create(observation)
+        reply.id
       end
 
       def teardown
         @client.destroy(FHIR::Patient, @id)
         @client.destroy(FHIR::Condition, @condition_id)
+        @client.destroy(FHIR::Observation, @obs_a)
+        @client.destroy(FHIR::Observation, @obs_b)
+        @client.destroy(FHIR::Observation, @obs_c)
       end
 
       test 'SE01','Search patients without criteria (except _count)' do

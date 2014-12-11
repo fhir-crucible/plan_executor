@@ -8,7 +8,12 @@ namespace :crucible do
   desc 'execute'
   task :execute, [:url, :test] do |t, args|
     require 'turn'
-    results = Crucible::Tests::Executor.new(FHIR::Client.new(args.url)).execute(args.test.to_sym)
+    execute_test(FHIR::Client.new(args.url), args.test.to_sym)
+  end
+
+
+  def execute_test(client, test)
+    results = Crucible::Tests::Executor.new(client).execute(test)
 
     results.each do |result|
 
@@ -52,6 +57,37 @@ namespace :crucible do
   task :list_all do
     puts Crucible::Tests::Executor.list_all
   end
+
+  desc 'execute with requirements'
+  task :execute_w_requirements, [:url, :test] do |t, args|
+    require 'turn'
+
+    module Crucible
+      module Tests
+        class BaseTest
+
+          alias execute_test_method_orig execute_test_method
+
+          def execute_test_method(test_method)
+            r = execute_test_method_orig(test_method)
+            @@requirements ||= {}
+            @@requirements[self.class.name] ||= {}
+            @@requirements[self.class.name][test_method] = @client.requirements
+            @client.clear_requirements
+            r
+          end
+
+        end
+      end
+    end
+
+    client = FHIR::Client.new(args.url)
+    client.monitor_requirements
+    test = args.test.to_sym
+    execute_test(client, test)
+    pp Crucible::Tests::BaseTest.class_variable_get :@@requirements
+  end
+
 
   def write_result(status, test_name, message)
     tab_size = 10

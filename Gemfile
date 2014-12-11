@@ -10,7 +10,7 @@ gem 'mongoid-history'
 gem 'nokogiri'
 gem 'date_time_precision'
 gem 'fhir_model', path: '../fhir_dstu1/implementations/ruby/output/model/'
-gem 'fhir_client', git: 'https://gitlab.mitre.org/tof/fhir_client.git'
+gem 'fhir_client', git: 'https://github.com/fhir-crucible/fhir_client.git'
 #gem 'fhir_client', path: '../fhir_client/'
 gem 'rest-client'
 

@@ -4,6 +4,9 @@ module Crucible
 
       include Crucible::Tests::Assertions
 
+      BASE_SPEC_LINK = 'http://www.hl7.org/implement/standards/fhir'
+      REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
+
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title']
       STATUS = {
@@ -143,6 +146,9 @@ module Crucible
           result.requires = @requires unless @requires.empty?
           result.validates = @validates unless @validates.empty?
           result.links = @links unless @links.empty?
+          result.id = key
+          result.id = "#{result.id}_#{result_id_suffix}" if respond_to? :result_id_suffix # add the resource to resource based tests to make ids unique
+
           result
         end
         define_method test_method, wrapped

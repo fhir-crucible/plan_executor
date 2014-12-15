@@ -33,6 +33,11 @@ module Crucible
         "Execute suite of searches for #{resource_class.name.demodulize} resources."
       end
 
+      # this allows results to have unique ids for resource based tests
+      def result_id_suffix
+        resource_class.name.demodulize
+      end
+
       def supplement_test_description(desc)
         "#{desc} #{resource_class.name.demodulize}"
       end

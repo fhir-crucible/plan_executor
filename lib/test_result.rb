@@ -2,6 +2,7 @@ module Crucible
   module Tests
     class TestResult
 
+      attr_accessor :key
       attr_accessor :id
       attr_accessor :description
       attr_accessor :status
@@ -12,8 +13,8 @@ module Crucible
       attr_accessor :validates
       attr_accessor :links
 
-      def initialize(id, description, status, message, data)
-        @id = id
+      def initialize(key, description, status, message, data)
+        @key = key
         @status = status
         @description = description
         @message = message
@@ -37,7 +38,8 @@ module Crucible
 
       def to_hash
         hash = {}
-        hash['id'] = @id
+        hash['key'] = @key
+        hash['id'] = @id || @key
         hash['description'] = force_encoding(@description)
         hash['status'] = force_encoding(@status)
         if @message.class == Array

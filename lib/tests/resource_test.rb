@@ -40,24 +40,32 @@ module Crucible
         "Basic operations for FHIR #{resource_class.name.demodulize} resource (CREATE, READ, VREAD, UPDATE, DELETE, HISTORY, SEARCH, VALIDATE)"
       end
 
+      # this allows results to have unique ids for resource based tests
+      def result_id_suffix
+        resource_class.name.demodulize
+      end
+
       def supplement_test_description(desc)
-        "#{desc} #{resource_class.name.demodulize}"
+        "#{resource_class.name.demodulize}: #{desc}"
       end
 
       #
       # Get and read all the resources of this type. Result is an XML ATOM bundle.
       #
       test 'X000', 'Read Type' do
+        define_links('read')
+
         reply = @client.read_feed(@resource_class)
         @bundle = reply.resource
         assert !@bundle.nil?, 'Service did not respond with bundle.'
-        TestResult.new('','', STATUS[:pass], 'Service responded with bundle.', @bundle.raw_xml)
       end
 
       #
       # Test if we can create a new resource and post it to the server.
       #
-      def create_test
+      test 'X010', 'Create New' do 
+        define_links('create')
+
         result = TestResult.new('X010',"Create new #{resource_class.name.demodulize}", nil, nil, nil)
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.create @temp_resource
@@ -79,7 +87,9 @@ module Crucible
       #
       # Test if we can read a preexisting resource (only works if a bundle was retrieved successfully in X000)
       #
-      def read_test
+      test 'X020', 'Read Existing' do
+        define_links('read')
+
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
         if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
           @preexisting_id = @bundle.get(0).resource_id
@@ -99,12 +109,15 @@ module Crucible
         @preexisting_version = reply.version
 
         result.update(STATUS[:pass], "Successfully read preexisting #{resource_class.name.demodulize}.", @preexisting.to_xml)
+        result
       end
 
       #
       # Test if we can update a preexisting resource.
       #
-      def update_test
+      test 'X030', 'Update Existing' do
+        define_links('update')
+
         result = TestResult.new('X030',"Update existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
@@ -131,7 +144,6 @@ module Crucible
             resulting_id = reply.id
 
             if(@preexisting_id != resulting_id)
-              # binding.pry
               result.update(STATUS[:fail], "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", reply.body)
             else
               result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", reply.body)
@@ -154,7 +166,9 @@ module Crucible
       #
       # Test if we can retrieve the history of a preexisting resource.
       #
-      def history_test
+      test 'X040', 'Read History of existing' do
+        define_links('history')
+
         result = TestResult.new('X040',"Read history of existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if @preexisting_id.nil?
@@ -168,12 +182,15 @@ module Crucible
         end
 
         result.update(STATUS[:pass], 'Service responded with bundle.', @history_bundle.raw_xml)
+        result
       end
 
       #
       # Test if we can read a specific version of a preexisting resource.
       #
-      def vread_current_test
+      test 'X050', 'Version read existing' do
+        define_links('vread')
+
         result = TestResult.new('X050',"Version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if !@history_bundle.nil? and @history_bundle.size>0 and !@history_bundle.get(0).nil?
@@ -199,12 +216,15 @@ module Crucible
         end
 
         result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", reply.body)
+        result
       end
 
       #
       # Test if we can read a specific version of a preexisting resource.
       #
-      def vread_previous_test
+      test 'X055', 'Previous version read existing' do
+        define_links('vread')
+
         result = TestResult.new('X055',"Previous version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if !@history_bundle.nil? and @history_bundle.size>1 and !@history_bundle.get(1).nil?
@@ -234,7 +254,9 @@ module Crucible
       #
       # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
-      def validate_test
+      test 'X060', 'Validate' do
+        define_links('validate')
+
         result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
@@ -258,7 +280,9 @@ module Crucible
       #
       # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
-      def validate_existing_test
+      test 'X065', 'Validate Existing' do
+        define_links('validate')
+
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
 
         if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
@@ -308,6 +332,7 @@ module Crucible
       # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
       test 'X067', 'Validate against a profile' do
+        define_links('validate')
 
         tag = FHIR::Tag.new
         tag.scheme = "http://hl7.org/fhir/tag/profile"
@@ -340,7 +365,9 @@ module Crucible
       # 404 == not found
       # 409 == conflict, cannot be deleted (e.g. referential integrity won't allow it)
       #
-      def delete_existing_test
+      test 'X070', 'Delete Existing' do
+        define_links('delete')
+
         result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
 
         if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
@@ -379,6 +406,12 @@ module Crucible
         end
    
         result
+      end
+
+      def define_links(method)
+        links "#{REST_SPEC_LINK}##{method}"
+        links "#{BASE_SPEC_LINK}#{resource_class.name.demodulize.downcase}.html"
+        validates resource: resource_class.name.demodulize, methods: [method]
       end
 
     end

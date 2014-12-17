@@ -3,7 +3,7 @@ module Crucible
     class ReadTest < BaseTest
 
       def id
-        'A001'
+        'ReadTest'
       end
 
       def description

@@ -446,6 +446,21 @@ module Crucible
         assert !outcome.nil?, 'Searching with non-existing parameters should result in OperationOutcome.'        
       end
 
+      test 'SE25', 'Search with malformed parameters.' do
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              '...' => 'foobar'
+            }
+          }
+        }
+        reply = @client.search(FHIR::Patient, options)
+        outcome = parse_operation_outcome(reply.response.body)
+        assert !outcome.nil?, 'Searching with non-existing parameters should result in OperationOutcome.'
+      end
+
     end
   end
 end

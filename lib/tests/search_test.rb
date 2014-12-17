@@ -77,12 +77,16 @@ module Crucible
       # x  non-existing resource [SE02]
       # x  id [S001,S002]
       # x  parameters [SE03,SE04]
-      # parameters [SE24,SE25]
-      # parameter modifiers (:missing, :exact, :text, :[type]) [SE23]
-      # numbers (= >= significant-digits) [SE21,SE22]
+      # x  parameters [SE24,SE25]
+      # parameter modifiers (
+      # x  :missing, [SE23]
+      # :exact, 
+      # :text, 
+      # :[type]) 
+      # x  numbers (= >= significant-digits) [SE21,SE22]
       # date (all of the permutations?)
       # token
-      # quantities [SE21,SE22]
+      # x  quantities [SE21,SE22]
       # x  references [SE05]
       # chained parameters
       # composite parameters

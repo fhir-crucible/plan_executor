@@ -29,6 +29,9 @@ module Crucible
         reply = @client.read(FHIR::Patient, @id)
         assert_response_ok(reply)
         assert_equal @id, reply.id, 'Server returned wrong patient.'
+        warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_last_modified_present(reply) }
+        warning { assert_valid_content_location_present(reply) }
       end
       #     public void GetTestDataPerson()
       #     {

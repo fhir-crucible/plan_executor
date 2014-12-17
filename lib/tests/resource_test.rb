@@ -410,7 +410,7 @@ module Crucible
 
       def define_links(method)
         links "#{REST_SPEC_LINK}##{method}"
-        links "#{BASE_SPEC_LINK}#{resource_class.name.demodulize.downcase}.html"
+        links "#{BASE_SPEC_LINK}/#{resource_class.name.demodulize.downcase}.html"
         validates resource: resource_class.name.demodulize, methods: [method]
       end
 

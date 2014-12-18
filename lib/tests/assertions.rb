@@ -33,6 +33,12 @@ module Crucible
         end
       end
 
+      def assert_response_bad(response)
+        unless [400].include? response.code
+          raise AssertionException.new "Bad response code expected 400, but found: #{response.code}", response.body
+        end
+      end
+
       def assert_navigation_links(bundle)
         unless bundle.first_link && bundle.last_link && bundle.next_link
           raise AssertionException.new "Expecting first, next and last link to be present"

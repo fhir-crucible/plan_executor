@@ -26,7 +26,9 @@ module Crucible
       end
 
       def id
-        "SearchTest_#{resource_class}"
+        suffix = resource_class
+        suffix = resource_class.name.demodulize if !resource_class.nil?
+        "SearchTest_#{suffix}"
       end
 
       def description

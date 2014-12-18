@@ -33,7 +33,9 @@ module Crucible
       end
 
       def id
-        "ResourceTest_#{resource_class}"
+        suffix = resource_class
+        suffix = resource_class.name.demodulize if !resource_class.nil?
+        "ResourceTest_#{suffix}"
       end
 
       def description

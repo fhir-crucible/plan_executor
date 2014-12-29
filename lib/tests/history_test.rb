@@ -160,6 +160,7 @@ module Crucible
         forward_count = 0
         # browse forwards
         while page != nil
+          assert !page.resource.nil?, "Unable to page forward through results.  A bundle was not returned from the page forward request."
           warning { entry_ids_are_present_and_absolute_urls(page.resource.entries) }
           assert page.resource.entries.count <= page_size, "Server returned a page with more entries than set by _count"
           forward_count += page.resource.entries.count
@@ -180,6 +181,7 @@ module Crucible
         forward_count = 0
         last_page = page
         while page != nil
+          assert !page.resource.nil?, "Unable to page forward through results.  A bundle was not returned from the page forward request."
           forward_count += page.resource.entries.count
           page = @client.next_page(page)
           last_page = page if page

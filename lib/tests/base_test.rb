@@ -120,6 +120,18 @@ module Crucible
         @links << url
       end
 
+      def collect_metadata
+        @metadata_only = true
+        result = execute
+        @metadata_only = false
+        result
+      end
+
+      def metadata(&block)
+        yield
+        skip if @metadata_only
+      end
+
       def self.test(key, desc, &block)
         test_method = "#{key} #{desc} test".downcase.tr(' ', '_').to_sym
         contents = block

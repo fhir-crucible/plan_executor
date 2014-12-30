@@ -21,6 +21,18 @@ module Crucible
         results
       end
 
+      def metadata(test)
+        Crucible::Tests.const_get(test).new(@client).collect_metadata
+      end
+
+      def metadata_all
+        results = []
+        Executor.tests.each do |test|
+          results = results.concat metadata(test)
+        end
+        results
+      end
+
       def self.list_all
         list = {}
         # FIXME: Organize defaults between instance & class methods

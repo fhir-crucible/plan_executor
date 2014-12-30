@@ -35,9 +35,11 @@ module Crucible
       end
 
       test  'HI01','History for specific resource' do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["history-instance"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-instance"]
+        }
 
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
@@ -47,9 +49,11 @@ module Crucible
       end 
 
       test "HI02", "full history of a resource by id with since" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["history-instance"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-instance"]
+        }
 
         before = @create_date - 1.minute
         after = before + 1.hour
@@ -72,9 +76,11 @@ module Crucible
       end
 
       test "HI03", "individual history versions" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["vread", "history-instance"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["vread", "history-instance"]
+        }
 
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
@@ -93,9 +99,11 @@ module Crucible
       end
 
       test "HI04", "history for missing resource" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["history-instance"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-instance"]
+        }
 
         result = @client.resource_instance_history(FHIR::Patient,'3141592unlikely')
         assert_response_not_found result
@@ -103,9 +111,11 @@ module Crucible
       end
 
       test "HI06", "all history for resource with since" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["history-type"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-type"]
+        }
 
         before = @create_date - 1.minute
         after = Time.now.utc + 1.minute
@@ -125,9 +135,11 @@ module Crucible
       end
 
       test "HI08", "all history whole system with since" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: nil, methods: ["history-system"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: nil, methods: ["history-system"]
+        }
 
         before = @create_date - 1.minute
         after = Time.now.utc + 1.minute
@@ -150,9 +162,11 @@ module Crucible
 
 
       test "HI09", "resource history page forward" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["history-type"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-type"]
+        }
 
         page_size = 30
         page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
@@ -171,9 +185,11 @@ module Crucible
       end
 
       test "HI10", "resource history page backwards" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: "Patient", methods: ["history-type"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-type"]
+        }
 
         page_size = 30
         page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
@@ -202,9 +218,11 @@ module Crucible
       end
 
       test "HI11", "first page full history" do
-        links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
-        requires resource: "Patient", methods: ["create", "update", "delete"]
-        validates resource: nil, methods: ["history-system"]
+        metadata {
+          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: nil, methods: ["history-system"]
+        }
 
         history = @client.all_history
         assert history.resource.entries.size > 2, "there should be at least 2 history entries"

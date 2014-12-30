@@ -55,7 +55,9 @@ module Crucible
       # Get and read all the resources of this type. Result is an XML ATOM bundle.
       #
       test 'X000', 'Read Type' do
-        define_links('read')
+        metadata {
+          define_metadata('read')
+        }
 
         reply = @client.read_feed(@resource_class)
         @bundle = reply.resource
@@ -66,7 +68,9 @@ module Crucible
       # Test if we can create a new resource and post it to the server.
       #
       test 'X010', 'Create New' do 
-        define_links('create')
+        metadata {
+          define_metadata('create')
+        }
 
         result = TestResult.new('X010',"Create new #{resource_class.name.demodulize}", nil, nil, nil)
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
@@ -90,7 +94,9 @@ module Crucible
       # Test if we can read a preexisting resource (only works if a bundle was retrieved successfully in X000)
       #
       test 'X020', 'Read Existing' do
-        define_links('read')
+        metadata {
+          define_metadata('read')
+        }
 
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
         if !@bundle.nil? and @bundle.size>0 and !@bundle.get(0).nil?
@@ -118,7 +124,9 @@ module Crucible
       # Test if we can update a preexisting resource.
       #
       test 'X030', 'Update Existing' do
-        define_links('update')
+        metadata {
+          define_metadata('update')
+        }
 
         result = TestResult.new('X030',"Update existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
@@ -169,7 +177,9 @@ module Crucible
       # Test if we can retrieve the history of a preexisting resource.
       #
       test 'X040', 'Read History of existing' do
-        define_links('history')
+        metadata {
+          define_metadata('history')
+        }
 
         result = TestResult.new('X040',"Read history of existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
@@ -191,7 +201,9 @@ module Crucible
       # Test if we can read a specific version of a preexisting resource.
       #
       test 'X050', 'Version read existing' do
-        define_links('vread')
+        metadata {
+          define_metadata('vread')
+        }
 
         result = TestResult.new('X050',"Version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
@@ -225,7 +237,9 @@ module Crucible
       # Test if we can read a specific version of a preexisting resource.
       #
       test 'X055', 'Previous version read existing' do
-        define_links('vread')
+        metadata {
+          define_metadata('vread')
+        }
 
         result = TestResult.new('X055',"Previous version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
@@ -257,7 +271,9 @@ module Crucible
       # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
       test 'X060', 'Validate' do
-        define_links('validate')
+        metadata {
+          define_metadata('validate')
+        }
 
         result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
 
@@ -283,7 +299,9 @@ module Crucible
       # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
       test 'X065', 'Validate Existing' do
-        define_links('validate')
+        metadata {
+          define_metadata('validate')
+        }
 
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
 
@@ -334,7 +352,9 @@ module Crucible
       # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
       #
       test 'X067', 'Validate against a profile' do
-        define_links('validate')
+        metadata {
+          define_metadata('validate')
+        }
 
         tag = FHIR::Tag.new
         tag.scheme = "http://hl7.org/fhir/tag/profile"
@@ -368,7 +388,9 @@ module Crucible
       # 409 == conflict, cannot be deleted (e.g. referential integrity won't allow it)
       #
       test 'X070', 'Delete Existing' do
-        define_links('delete')
+        metadata {
+          define_metadata('delete')
+        }
 
         result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
 
@@ -410,7 +432,7 @@ module Crucible
         result
       end
 
-      def define_links(method)
+      def define_metadata(method)
         links "#{REST_SPEC_LINK}##{method}"
         links "#{BASE_SPEC_LINK}/#{resource_class.name.demodulize.downcase}.html"
         validates resource: resource_class.name.demodulize, methods: [method]

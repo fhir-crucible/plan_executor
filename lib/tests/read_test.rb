@@ -26,9 +26,11 @@ module Crucible
 
       # [SprinklerTest("R001", "Result headers on normal read")]
       test 'R001', 'Result headers on normal read.' do
-        links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
-        requires resource: "Patient", methods: ["create", "read", "delete"]
-        validates resource: "Patient", methods: ["read"]
+        metadata {
+          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
+          requires resource: "Patient", methods: ["create", "read", "delete"]
+          validates resource: "Patient", methods: ["read"]
+        }
 
         reply = @client.read(FHIR::Patient, @id)
         assert_response_ok(reply)
@@ -40,8 +42,10 @@ module Crucible
 
       # [SprinklerTest("R002", "Read unknown resource type")]
       test 'R002', 'Read unknown resource type.' do
-        links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
-        links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
+        metadata {
+          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
+          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
+        }
 
         reply = @client.read(Crucible::Tests::ReadTest, @id)
         assert_response_not_found(reply)
@@ -49,9 +53,11 @@ module Crucible
 
       # [SprinklerTest("R003", "Read non-existing resource id")]
       test 'R003', 'Read non-existing resource id.' do
-        links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
-        requires resource: "Patient", methods: ["create", "read", "delete"]
-        validates resource: "Patient", methods: ["read"]
+        metadata {
+          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
+          requires resource: "Patient", methods: ["create", "read", "delete"]
+          validates resource: "Patient", methods: ["read"]
+        }
 
         reply = @client.read(FHIR::Patient, 'Supercalifragilisticexpialidocious')
         assert_response_not_found(reply)
@@ -59,10 +65,12 @@ module Crucible
 
       # [SprinklerTest("R004", "Read bad formatted resource id")]
       test 'R004', 'Read invalid format resource id' do
-        links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
-        links 'http://hl7.org/implement/standards/FHIR-Develop/datatypes.html#id'
-        requires resource: "Patient", methods: ["create", "read", "delete"]
-        validates resource: "Patient", methods: ["read"]
+        metadata {
+          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
+          links 'http://hl7.org/implement/standards/FHIR-Develop/datatypes.html#id'
+          requires resource: "Patient", methods: ["create", "read", "delete"]
+          validates resource: "Patient", methods: ["read"]
+        }
 
         reply = @client.read(FHIR::Patient, 'Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
         assert_response_bad(reply)

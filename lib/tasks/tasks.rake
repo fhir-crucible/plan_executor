@@ -11,10 +11,21 @@ namespace :crucible do
     execute_test(FHIR::Client.new(args.url), args.test.to_sym)
   end
 
+  desc 'metadata'
+  task :metadata, [:url, :test] do |t, args|
+    require 'turn'
+    collect_metadata(FHIR::Client.new(args.url), args.test.to_sym)
+  end
 
   def execute_test(client, test)
-    results = Crucible::Tests::Executor.new(client).execute(test)
+    output_results Crucible::Tests::Executor.new(client).execute(test)
+  end
 
+  def collect_metadata(client, test)
+    output_results Crucible::Tests::Executor.new(client).metadata(test), true
+  end
+
+  def output_results(results, metadata_only=false)
     results.each do |result|
 
       result.keys.each do |suite_key|
@@ -22,8 +33,16 @@ namespace :crucible do
         result[suite_key][:tests].each do |test|
           puts write_result(test['status'], test[:test_method], test['message'])
 
-          puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if (verbose==true) && test['warnings']
-          puts (' '*10) + test['data'] if (verbose==true) && test['data']
+          if (verbose==true) 
+            # warnings
+            puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if test['warnings']
+            # metadata
+            puts (test['links'].map { |w| "#{(' '*10)}Link: #{w}" }).join("\n") if test['links']
+            puts (test['requires'].map { |w| "#{(' '*10)}Requires: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['requires']
+            puts (test['validates'].map { |w| "#{(' '*10)}Validates: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['validates']
+            # data
+            puts (' '*10) + test['data'] if test['data']
+          end
         end
 
       end

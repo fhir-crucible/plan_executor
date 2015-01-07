@@ -265,9 +265,16 @@ module Crucible
 
       def check_sort_order(entries)
         entries.each_cons(2) do |left, right|
-          assert !right.last_updated.nil?, "result contains entry with no last update: (id: #{right.self_link})"
-          assert !left.last_updated.nil?, "result contains entry with no last update: (id: #{left.self_link})"
-          assert left.last_updated >= right.last_updated, "result is not ordered on last update, first out of order has id: #{left.self_link}"
+          assert !left.resource.meta.nil?, 'Unable to determine if entries are in the correct order -- no meta'
+          assert !right.resource.meta.nil?, 'Unable to determine if entries are in the correct order -- no meta'
+          
+          if !left.resource.meta.versionId.nil? && !right.resource.meta.versionId.nil?
+            assert (left.resource.meta.versionId > right.resource.meta.versionId), 'Result contains entries in the wrong order.'
+          elsif !left.resource.meta.lastUpdated.nil? && !right.resource.meta.lastUpdated.nil?
+            assert (left.resource.meta.lastUpdated >= right.resource.meta.lastUpdated), 'Result contains entries in the wrong order.'
+          else
+            raise AssertionException.new 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
+          end
         end
       end
 

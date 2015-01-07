@@ -161,7 +161,7 @@ module Crucible
       #
       test  'C8T1.3','Retrieve Patient History' do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links 'http://www.hl7.org/implement/standards/FHIR-Develop/http.html#history'
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['history-instance']
         }
@@ -192,6 +192,13 @@ module Crucible
       # Search for a patient on name
       #
       test 'C8T1.4', 'Search patient resource on given name' do
+        metadata {
+          links 'http://www.hl7.org/implement/standards/FHIR-Develop/http.html#search'
+          links 'http://hl7.org/implement/standards/FHIR-Develop/search.html'
+          requires resource: 'Patient', methods: ['create']
+          validates resource: 'Patient', methods: ['search']
+        }
+
         search_string = @patient.name[0].given[0]
         search_regex = Regexp.new(search_string)
 

@@ -12,6 +12,7 @@ module Crucible
       attr_accessor :requires
       attr_accessor :validates
       attr_accessor :links
+      attr_accessor :code
 
       def initialize(key, description, status, message, data)
         @key = key
@@ -52,6 +53,7 @@ module Crucible
         hash['requires'] = requires if requires
         hash['validates'] = validates if validates
         hash['links'] = links if links
+        hash['code'] = @code
         hash
       end
 
@@ -65,4 +67,3 @@ module Crucible
     end
   end
 end
-

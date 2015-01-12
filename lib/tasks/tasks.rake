@@ -17,6 +17,12 @@ namespace :crucible do
     collect_metadata(FHIR::Client.new(args.url), args.test.to_sym)
   end
 
+  desc 'generate ctl'
+  task :generate_ctl do |t, args|
+    Crucible::Tests::Executor.generate_ctl
+  end
+
+
   def execute_test(client, test)
     output_results Crucible::Tests::Executor.new(client).execute(test)
   end
@@ -33,7 +39,7 @@ namespace :crucible do
         result[suite_key][:tests].each do |test|
           puts write_result(test['status'], test[:test_method], test['message'])
 
-          if (verbose==true) 
+          if (verbose==true)
             # warnings
             puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if test['warnings']
             # metadata

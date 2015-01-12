@@ -13,6 +13,7 @@ gem 'fhir_model', :git => 'https://github.com/fhir-crucible/fhir_dstu2_models', 
 gem 'fhir_client', git: 'https://github.com/fhir-crucible/fhir_client.git', :branch => 'dstu2'
 #gem 'fhir_client', path: '../fhir_client/'
 gem 'rest-client'
+gem 'builder'
 
 group :test do
   gem 'simplecov', :require => false

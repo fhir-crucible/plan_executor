@@ -132,6 +132,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  builder
   date_time_precision
   fhir_client!
   fhir_model!

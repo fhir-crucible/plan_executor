@@ -33,19 +33,7 @@
     <postalCode value="3056BE"/>
     <country value="NLD"/><!--  ISO 3166 3 letter code  -->
   </address>
-  <!--     &lt;accreditation&gt;
-  &lt;!-\-NIAZ Accreditatie-\-&gt;
-  &lt;identifier&gt;
-  &lt;!-\-Identifier for the accreditation -\-&gt;
-  &lt;label value=&quot;BMC's NIAZ accreditation&quot;/&gt;
-  &lt;system value=&quot;http://www.niaz.nl/&quot;/&gt;
-  &lt;value value=&quot;NIAZ accreditation&quot;/&gt;
-  &lt;/identifier&gt;
-  &lt;period&gt;
-  &lt;start value=&quot;2008-11-07&quot;/&gt;
-  &lt;end value=&quot;2013-11-07&quot;/&gt;
-  &lt;/period&gt;
-  &lt;/accreditation&gt;  -->
+  <!-- snipped  -->
   <active value="true"/>
   <!--  The BMC is in active use  -->
 </Organization>

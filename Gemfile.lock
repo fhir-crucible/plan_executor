@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 94bdaccc8c6fa52f2dc09db1b2f06a72cd8dc6b5
+  revision: 20193833d452fa24e9cb8aab33ca142f8cb360e6
   branch: dstu2
   specs:
     fhir_client (1.0.0)
@@ -44,6 +44,7 @@ GEM
       multi_json (~> 1.3)
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
+    addressable (2.3.6)
     ansi (1.4.3)
     arel (4.0.2)
     awesome_print (1.2.0)
@@ -51,6 +52,8 @@ GEM
     builder (3.1.4)
     coderay (1.1.0)
     connection_pool (2.0.0)
+    crack (0.4.2)
+      safe_yaml (~> 1.0.0)
     date_time_precision (0.8.0)
     docile (1.1.5)
     easy_diff (0.0.3)
@@ -104,6 +107,7 @@ GEM
     rake (10.3.2)
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    safe_yaml (1.0.3)
     simplecov (0.9.0)
       docile (~> 1.1.0)
       multi_json
@@ -126,6 +130,9 @@ GEM
       ansi
       minitest (~> 4)
     tzinfo (0.3.41)
+    webmock (1.18.0)
+      addressable (>= 2.3.6)
+      crack (>= 0.3.2)
 
 PLATFORMS
   ruby
@@ -147,3 +154,4 @@ DEPENDENCIES
   simplecov
   tilt
   turn
+  webmock

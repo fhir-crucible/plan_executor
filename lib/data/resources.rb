@@ -25,12 +25,12 @@ module Crucible
         FHIR::Patient.from_xml File.read(File.join(fixture_path, 'record', 'patient-example-f201-roel.xml'))
       end
 
-      def example_patient_record_condtion_201
-        FHIR::Condtion.from_xml File.read(File.join(fixture_path, 'record', 'condition-example-f201-fever.xml'))
+      def example_patient_record_condition_201
+        FHIR::Condition.from_xml File.read(File.join(fixture_path, 'record', 'condition-example-f201-fever.xml'))
       end
 
-      def example_patient_record_condtion_205
-        FHIR::Condtion.from_xml File.read(File.join(fixture_path, 'record', 'condition-example-f205-infection.xml'))
+      def example_patient_record_condition_205
+        FHIR::Condition.from_xml File.read(File.join(fixture_path, 'record', 'condition-example-f205-infection.xml'))
       end
 
       def example_patient_record_diagnosticreport_201

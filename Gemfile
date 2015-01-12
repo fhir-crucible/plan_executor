@@ -14,6 +14,7 @@ gem 'fhir_client', git: 'https://github.com/fhir-crucible/fhir_client.git', :bra
 #gem 'fhir_client', path: '../fhir_client/'
 gem 'rest-client'
 gem 'webmock'
+gem 'builder'
 
 group :test do
   gem 'simplecov', :require => false

@@ -71,8 +71,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        # TODO: Determine how start/end scope all patient records (e.g., birthdate?)
-        skip
+        skip # TODO: Determine how start/end scope all patient records (e.g., birthdate?)
       end
 
       #
@@ -110,6 +109,7 @@ module Crucible
 
         reply = @client.create @patient
         @patient_id = reply.id
+        @pat_reply = reply
 
         assert_response_ok(reply)
 
@@ -118,8 +118,7 @@ module Crucible
         assert_response_ok(record)
         assert_bundle_response(record)
 
-        # TODO: Determine how start/end scope a specific patient record (e.g., birthdate?)
-        skip
+        skip # TODO: Determine how start/end scope a specific patient record (e.g., birthdate?)
       end
 
       #
@@ -171,8 +170,6 @@ module Crucible
           validates resource: 'Patient', methods: ['$everything']
         }
 
-        skip # FIXME: Skip this test until unit test has stubs for these resources
-
         create_patient_record
 
         record = @client.fetch_patient_record(@pat_reply.id)
@@ -180,8 +177,7 @@ module Crucible
         assert_response_ok(record)
         assert_bundle_response(record)
 
-        # TODO: Validate returned result against each example record
-        skip
+        skip # TODO: Validate returned result against each example record after determining returned order
       end
 
       def create_patient_record
@@ -197,8 +193,8 @@ module Crucible
         @prac_id = @prac_reply.id
         assert_response_ok(@prac_reply)
 
-        @pat_reply = @client.create @patient
-        @pat_id - @pat_reply.id
+        @pat_reply ||= @client.create @patient
+        @pat_id = @pat_reply.id
         assert_response_ok(@pat_reply)
 
         @cond2_reply = @client.create @condition_2

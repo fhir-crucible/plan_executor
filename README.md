@@ -1,4 +1,4 @@
-# Plan Executor
+# Plan Executor [![Build Status](https://travis-ci.org/fhir-crucible/plan_executor.svg?branch=dstu2)](https://travis-ci.org/fhir-crucible/plan_executor)
 
 Plan Executor runs test suites against a FHIR server.
 

@@ -28,7 +28,7 @@ module Crucible
       #
       # Test if we can create a new Patient.
       #
-      test 'C8T1.1A','Register a new patient' do
+      test 'C8T1_1A','Register a new patient' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#create'
           requires resource: 'Patient', methods: ['create']
@@ -53,7 +53,7 @@ module Crucible
       #
       # Test if we can create a new Patient with US Extensions.
       #
-      test 'C8T1.1B','Register a new patient - BONUS: Extensions' do
+      test 'C8T1_1B','Register a new patient - BONUS: Extensions' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#create'
           requires resource: 'Patient', methods: ['create']
@@ -78,7 +78,7 @@ module Crucible
       #
       # Test if we can update a patient.
       #
-      test 'C8T1.2A','Update a patient' do
+      test 'C8T1_2A','Update a patient' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
           requires resource: 'Patient', methods: ['create', 'update']
@@ -105,7 +105,7 @@ module Crucible
       #
       # Test if we can update a patient with unmodified extensions.
       #
-      test 'C8T1.2B','Update a patient - BONUS: Unmodified Extensions' do
+      test 'C8T1_2B','Update a patient - BONUS: Unmodified Extensions' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
           requires resource: 'Patient', methods: ['create','update']
@@ -132,7 +132,7 @@ module Crucible
       #
       # Test if we can update a patient with modified extensions.
       #
-      test 'C8T1.2C','Update a patient - BONUS: Modified Extensions' do
+      test 'C8T1_2C','Update a patient - BONUS: Modified Extensions' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
           requires resource: 'Patient', methods: ['create','update']
@@ -159,7 +159,7 @@ module Crucible
       #
       # Test if can retrieve patient history
       #
-      test  'C8T1.3','Retrieve Patient History' do
+      test  'C8T1_3','Retrieve Patient History' do
         metadata {
           links 'http://www.hl7.org/implement/standards/FHIR-Develop/http.html#history'
           requires resource: 'Patient', methods: ['create', 'update']
@@ -191,7 +191,7 @@ module Crucible
       #
       # Search for a patient on name
       #
-      test 'C8T1.4', 'Search patient resource on given name' do
+      test 'C8T1_4', 'Search patient resource on given name' do
         metadata {
           links 'http://www.hl7.org/implement/standards/FHIR-Develop/http.html#search'
           links 'http://hl7.org/implement/standards/FHIR-Develop/search.html'

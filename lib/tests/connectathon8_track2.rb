@@ -43,7 +43,7 @@ module Crucible
       #
       # Test if the general Fetch Patient Record operation is supported
       #
-      test 'C8T2.1A', 'Fetch all patient records' do
+      test 'C8T2_1A', 'Fetch all patient records' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
@@ -59,7 +59,7 @@ module Crucible
       #
       # Test if the general Fetch Patient Record operation and start/end parameters are supported
       #
-      test 'C8T2.1B', 'Fetch all patient records with [start, end]' do
+      test 'C8T2_1B', 'Fetch all patient records with [start, end]' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
@@ -77,7 +77,7 @@ module Crucible
       #
       # Test if the specific Fetch Patient Record operation is supported
       #
-      test 'C8T2.2A', 'Fetch specific patient record' do
+      test 'C8T2_2A', 'Fetch specific patient record' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
@@ -99,7 +99,7 @@ module Crucible
       #
       # Test if the specific Fetch Patient Record operation and start/end parameters are supported
       #
-      test 'C8T2.2B', 'Fetch specific patient record with [start, end]' do
+      test 'C8T2_2B', 'Fetch specific patient record with [start, end]' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
@@ -124,7 +124,7 @@ module Crucible
       #
       # Test if we can update parts of a specific Fetch Patient Record operation result
       #
-      test 'C8T2.2C', 'Fetch specific patient record - BONUS: Update' do
+      test 'C8T2_2C', 'Fetch specific patient record - BONUS: Update' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
@@ -155,7 +155,7 @@ module Crucible
       #
       # Test if we can write and read an entire patient record
       #
-      test 'C8T2.3', 'Write and then fetch an entire patient record' do
+      test 'C8T2_3', 'Write and then fetch an entire patient record' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://hl7.org/implement/standards/FHIR-Develop/argonauts.html'

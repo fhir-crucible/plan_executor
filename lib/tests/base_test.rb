@@ -29,7 +29,7 @@ module Crucible
 
       def execute_test_methods
         result = []
-        setup if respond_to? :setup
+        setup if respond_to? :setup and not @metadata_only
         tests.each do |test_method|
           puts "executing: #{test_method}..."
           begin
@@ -38,7 +38,7 @@ module Crucible
             result << TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
-        teardown if respond_to? :teardown
+        teardown if respond_to? :teardown and not @metadata_only
         result
       end
 
@@ -135,12 +135,12 @@ module Crucible
       def self.test(key, desc, &block)
         test_method = "#{key} #{desc} test".downcase.tr(' ', '_').to_sym
         contents = block
-        wrapped = -> () do 
+        wrapped = -> () do
           @warnings, @links, @requires, @validates = [],[],[],[]
           description = nil
           if respond_to? :supplement_test_description
-            description = supplement_test_description(desc) 
-          else 
+            description = supplement_test_description(desc)
+          else
             description = desc
           end
           result = TestResult.new(key, description, STATUS[:pass], '','')
@@ -159,6 +159,7 @@ module Crucible
           result.validates = @validates unless @validates.empty?
           result.links = @links unless @links.empty?
           result.id = key
+          result.code = contents.source
           result.id = "#{result.id}_#{result_id_suffix}" if respond_to? :result_id_suffix # add the resource to resource based tests to make ids unique
 
           result

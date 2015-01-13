@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Patient xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://hl7.org/fhir ../../schema/patient.xsd">
+<Patient xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <text>
     <status value="generated"/>
     <div xmlns="http://www.w3.org/1999/xhtml">
@@ -54,6 +53,8 @@
   </name>
 
   <telecom>
+    <system value="phone"/>
+    <value value="(03) 5555 6474"/>
     <use value="home"/>
     <!-- home communication details aren't known -->
   </telecom>
@@ -64,13 +65,7 @@
   </telecom>
 
   <!-- use FHIR code system for male / female -->
-  <gender>
-    <coding>
-      <system value="http://hl7.org/fhir/v3/AdministrativeGender"/>
-      <code value="M"/>
-      <display value="Male"/>
-    </coding>
-  </gender>
+  <gender value="male" />
   <birthDate value="1974-12-25"/>
   <deceasedBoolean value="false"/>
 
@@ -79,7 +74,7 @@
     <line value="534 Erewhon St"/>
     <city value="PleasantVille"/>
     <state value="Vic"/>
-    <zip value="3999"/>
+    <postalCode value="3999"/>
   </address>
 
   <contact>
@@ -93,7 +88,7 @@
     <name>
       <family value="du">
         <!-- the "du" part is a family name prefix (VV in iso 21090) -->
-        <extension url="http://hl7.org/fhir/Profile/iso-21090#qualifier">
+        <extension url="http://hl7.org/fhir/ExtensionDefinition/iso21090-EN-qualifier">
           <valueCode value="VV"/>
         </extension>
       </family>

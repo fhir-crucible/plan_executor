@@ -34,85 +34,52 @@ module Crucible
       end
 
       def self.generate_ctl
+        self.tests.each do |test|
+          self.generate_test_ctl(test)
+        end
+      end
+
+      def self.generate_test_ctl(test)
         require 'builder'
         Dir.mkdir('./ctl') unless Dir.exists?('./ctl')
+        test_file = Crucible::Tests.const_get(test).new(nil)
 
-        self.tests.each do |test|
-          test_file = Crucible::Tests.const_get(test).new(nil)
-
-          metadata = test_file.collect_metadata()
-          for test_suite in metadata
-            suite_name = test_suite.keys.first
-            file = File.open("./ctl/#{suite_name}.ctl", "w")
-            xml = Builder::XmlMarkup.new(:indent => 2, target: file)
-            xml.instruct!
-            xml.ctl :suite, {name: "#{suite_name}"} do
-              xml.ctl :title, suite_name
-              xml.ctl :"starting-test", "#{suite_name}:base_test"
+        metadata = test_file.collect_metadata()
+        for test_suite in metadata
+          suite_name = test_suite.keys.first
+          setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
+          teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
+          file = File.open("./ctl/#{suite_name}.xml", "w")
+          xml = Builder::XmlMarkup.new(:indent => 2, target: file)
+          xml.xs :schema, {:"xmlns:ctl" => "http://www.occamlab.com/ctl"} do
+            xml.suite(name: "#{suite_name}") do
+              xml.title(suite_name)
+              # Because this element has a dash in the name we have to use this method to call it
+              xml.tag!(:"starting-test", "#{suite_name}:base_test")
             end
 
-            xml.ctl :test, {name: "#{suite_name}::base_test"} do
-              xml.ctl :assertion, "base main"
-              xml.ctl :code do
-                (test_suite[suite_name][:tests]||[]).each {|test| xml.ctl :"call-test", "#{suite_name}::#{test[:test_method]}"}
+            xml.test(name: "#{suite_name}::base_test") do
+              xml.assertion "base main"
+              xml.code do
+                (test_suite[suite_name][:tests]||[]).each {|test| xml.tag!(:"call-test", "#{suite_name}::#{test[:test_method]}")}
               end
             end
 
             for test in test_suite[suite_name][:tests]
-              xml.ctl :test, {name: "#{suite_name}::#{test[:test_method]}"} do
-                xml.ctl :code, "\n#{test["code"]}\n"
-                xml.ctl :context, test["description"]
-                (test["links"]||[]).each {|link| xml.ctl :link, link}
-                xml.ctl :assertion, (test["validates"]||[]).map {|a| "Validates the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}.join("/n")
+              xml.test(name: "#{suite_name}::#{test[:test_method]}", id: test["id"]) do
+                xml.code "#{setup}\n #{test["code"].lines.to_a[1..-2].join()} \n#{teardown}".lstrip.rstrip
+                xml.context test["description"]
+                (test["links"]||[]).each {|link| xml.link link}
+                assertions = []
+                (test["validates"]||[]).map {|a| assertions << "Validates the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}
+                (test["requires"]||[]).map {|a| assertions << "Requires the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}
+                test["code"].scan(/assert.*?,\s["'](.*?)['"]/).map{|a| assertions << "Asserts False: #{a[0]}"}
+                xml.assertion assertions.join("\n")
               end
             end
-            file.close
           end
+          file.close
         end
-
-          #   test_file = Crucible::Tests.const_get(test).new(nil)
-          #   if test_file.respond_to? 'resource_class='
-          #     @fhir_classes.each do |klass|
-          #       if !klass.included_modules.find_index(FHIR::Resource).nil?
-          #         file = File.open("./ctl/#{test_file.send("title")}-#{klass.name.demodulize}", "w")
-          #         xml = Builder::XmlMarkup.new(:indent => 2, target: file)
-          #         xml.instruct!
-          #         test_file.resource_class = klass
-          #         xml.ctl :suite, {name: "#{test_file.send("title")}::#{klass.name.demodulize}"} do
-          #           xml.ctl :title, "#{test_file.send("title")}::#{klass.name.demodulize}"
-          #           xml.ctl :description,  test_file.send("description")
-          #
-          #         end
-          #         test_file.send("tests").each do |test_function|
-          #           xml.ctl :test, {name: "#{test}::#{klass.name.demodulize}::#{test_function}"} do
-          #             test_data = test_file.send(test_function)
-          #             (test_data.links||[]).each {|link| xml.ctl :link, link}
-          #             xml.ctl :code, test_file.method(test_function).source
-          #           end
-          #         end
-          #         file.close
-          #         # xml.target!
-          #       end
-          #     end
-          #   end
-          #   file = File.open("./ctl/#{test_file.send("title")}", "w")
-          #   xml = Builder::XmlMarkup.new(:indent => 2, target: file)
-          #   xml.instruct!
-          #   xml.ctl :suite, {name: test} do
-          #     xml.ctl :title, test_file.send("title")
-          #     xml.ctl :description, test_file.send("description")
-          #   end
-          #   test_file.send("tests").each do |test_function|
-          #     xml.ctl :test, {name: "#{test}::#{test_function}"} do
-          #       test_data = test_file.send(test_function)
-          #       (test_data.links||[]).each {|link| xml.ctl :link, link}
-          #     end
-          #   end
-          #   file.close
-          #   # xml.target!
-          # end
-
-
       end
 
       def self.list_all

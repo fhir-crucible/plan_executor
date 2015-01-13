@@ -2,7 +2,7 @@ module Crucible
   module Generator
     class Resources
 
-      FIXTURE_DIR = File.join('fixtures')
+      FIXTURE_DIR = File.join(File.expand_path(File.join('..','..','..'),File.absolute_path(__FILE__)), 'fixtures')
 
       # FIXME: Determine a better way to share fixture data with Crucible
       def fixture_path

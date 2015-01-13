@@ -33,6 +33,55 @@ module Crucible
         results
       end
 
+      def self.generate_ctl
+        self.tests.each do |test|
+          self.generate_test_ctl(test)
+        end
+      end
+
+      def self.generate_test_ctl(test)
+        require 'builder'
+        Dir.mkdir('./ctl') unless Dir.exists?('./ctl')
+        test_file = Crucible::Tests.const_get(test).new(nil)
+
+        metadata = test_file.collect_metadata()
+        for test_suite in metadata
+          suite_name = test_suite.keys.first
+          setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
+          teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
+          file = File.open("./ctl/#{suite_name}.xml", "w")
+          xml = Builder::XmlMarkup.new(:indent => 2, target: file)
+          xml.xs :schema, {:"xmlns:ctl" => "http://www.occamlab.com/ctl"} do
+            xml.suite(name: "#{suite_name}") do
+              xml.title(suite_name)
+              # Because this element has a dash in the name we have to use this method to call it
+              xml.tag!(:"starting-test", "#{suite_name}:base_test")
+            end
+
+            xml.test(name: "#{suite_name}::base_test") do
+              xml.assertion "base main"
+              xml.code do
+                (test_suite[suite_name][:tests]||[]).each {|test| xml.tag!(:"call-test", "#{suite_name}::#{test[:test_method]}")}
+              end
+            end
+
+            for test in test_suite[suite_name][:tests]
+              xml.test(name: "#{suite_name}::#{test[:test_method]}", id: test["id"]) do
+                xml.code "#{setup}\n #{test["code"].lines.to_a[1..-2].join()} \n#{teardown}".lstrip.rstrip
+                xml.context test["description"]
+                (test["links"]||[]).each {|link| xml.link link}
+                assertions = []
+                (test["validates"]||[]).map {|a| assertions << "Validates the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}
+                (test["requires"]||[]).map {|a| assertions << "Requires the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}
+                test["code"].scan(/assert.*?,\s["'](.*?)['"]/).map{|a| assertions << "Asserts False: #{a[0]}"}
+                xml.assertion assertions.join("\n")
+              end
+            end
+          end
+          file.close
+        end
+      end
+
       def self.list_all
         list = {}
         # FIXME: Organize defaults between instance & class methods

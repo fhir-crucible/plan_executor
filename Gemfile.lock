@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 20193833d452fa24e9cb8aab33ca142f8cb360e6
+  revision: 135caea7bff047f234d8b20c323d8170c2ef114d
   branch: dstu2
   specs:
     fhir_client (1.0.0)
@@ -139,6 +139,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  builder
   date_time_precision
   fhir_client!
   fhir_model!

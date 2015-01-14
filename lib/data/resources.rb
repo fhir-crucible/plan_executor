@@ -65,6 +65,20 @@ module Crucible
         FHIR::Procedure.from_xml File.read(File.join(fixture_path, 'record', 'procedure-example-f201-tpf.xml'))
       end
 
+      def track3_profile
+        FHIR::Profile.from_xml File.read(File.join(fixture_path, 'validation', 'observation.profile.xml'))
+      end
+
+      def track3_observations
+        # get all observations in fixture_path/validation/observations
+        observations = []
+        files = File.join(fixture_path, 'validation', 'observations', '*.xml')
+        Dir.glob(files).each do |f|
+            observations << FHIR::Observation.from_xml( File.read(f) )
+        end
+        observations
+      end
+
     end
   end
 end

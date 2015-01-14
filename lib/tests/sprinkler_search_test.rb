@@ -126,10 +126,14 @@ module Crucible
         @entries.each do |entry|
           patient = entry.resource
           isMatch = false
-          patient.name.each do |name|
-            name.family.each do |family|
-              if !(family =~ search_regex).nil?
-                isMatch = true
+          if !patient.nil? && !patient.name.nil?
+            patient.name.each do |name|
+              if !name.family.nil?
+                name.family.each do |family|
+                  if !(family =~ search_regex).nil?
+                    isMatch = true
+                  end
+                end
               end
             end
           end
@@ -159,10 +163,14 @@ module Crucible
         @entries.each do |entry|
           patient = entry.resource
           isMatch = false
-          patient.name.each do |name|
-            name.given.each do |given|
-              if !(given =~ search_regex).nil?
-                isMatch = true
+          if !patient.nil? && !patient.name.nil?
+            patient.name.each do |name|
+              if !name.given.nil?
+                name.given.each do |given|
+                  if !(given =~ search_regex).nil?
+                    isMatch = true
+                  end
+                end
               end
             end
           end
@@ -425,7 +433,7 @@ module Crucible
         expected = 0
         @entries.each do |entry|
           patient = entry.resource
-          expected += 1 if patient.gender.nil?
+          expected += 1 if !patient.nil? && patient.gender.nil?
         end
 
         options = {
@@ -440,7 +448,7 @@ module Crucible
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.size, 'The server did not report the correct number of results.'
+        assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
       test 'SE24', 'Search with non-existing parameter.' do

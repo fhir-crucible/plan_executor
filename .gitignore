@@ -34,5 +34,6 @@ build/
 
 # unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
 .rvmrc
-fhir_client.log
-fhir_client_verbose.log
+
+# Logs
+*.log

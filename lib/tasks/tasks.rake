@@ -42,7 +42,7 @@ namespace :crucible do
         result[suite_key][:tests].each do |test|
           puts write_result(test['status'], test[:test_method], test['message'])
 
-          if (verbose==true)
+          if (metadata_only==true)
             # warnings
             puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if test['warnings']
             # metadata
@@ -61,11 +61,12 @@ namespace :crucible do
 
   desc 'execute custom'
   task :execute_custom, [:test] do |t, args|
-
+    require 'turn'
     urls = [
-      'http://fhir.healthintersections.com.au/open',
-      'http://bonfire.mitre.org:8080/fhir',
-      'http://spark.furore.com/fhir',
+      # DSTU1
+      # 'http://fhir.healthintersections.com.au/open',
+      # 'http://bonfire.mitre.org:8080/fhir',
+      # 'http://spark.furore.com/fhir',
       # 'http://nprogram.azurewebsites.net',
       # 'https://fhir-api.smartplatforms.org',
       # 'https://fhir-open-api.smartplatforms.org',
@@ -73,11 +74,27 @@ namespace :crucible do
       # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/cobalt',
       # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/bronze',
       # 'http://fhirtest.uhn.ca/base'
+
+      # DSTU2
+      'http://bonfire.mitre.org:8090/fhir-dstu2',
+      'http://fhirtest.uhn.ca/baseDstu2',
+      'http://zm.oridashi.com.au',
+      'http://demo.oridashi.com.au:8290',
+      'http://demo.oridashi.com.au:8291'
     ]
 
+    puts "# #{args.test}"
+    puts
+
     urls.each do |url|
-      Rake::Task['crucible:execute'].invoke(url, args.test)
-      Rake::Task['crucible:execute'].reenable
+      # TrackOneTest
+      puts "## #{url}"
+      puts "```"
+      output_results Crucible::Tests::Executor.new(FHIR::Client.new(url)).execute(args.test), true
+      puts "```"
+      puts
+      # Rake::Task['crucible:metadata'].invoke(url, args.test)
+      # Rake::Task['crucible:metadata'].reenable
     end
   end
 

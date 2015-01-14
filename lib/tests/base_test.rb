@@ -8,7 +8,7 @@ module Crucible
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
-      JSON_FIELDS = ['author','description','id','tests','title']
+      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver']
       STATUS = {
         pass: 'pass',
         fail: 'fail',
@@ -16,8 +16,13 @@ module Crucible
         skip: 'skip'
       }
 
-      def initialize(client)
+      def initialize(client, client2=nil)
         @client = client
+        @client2 = client2
+      end
+
+      def multiserver
+        false
       end
 
       def execute

@@ -26,6 +26,9 @@ namespace :crucible do
   def execute_test(client, test)
     output_results Crucible::Tests::Executor.new(client).execute(test)
   end
+  def execute_multiserver_test(client, client2, test)
+    output_results Crucible::Tests::Executor.new(client, client2).execute(test)
+  end
 
   def collect_metadata(client, test)
     output_results Crucible::Tests::Executor.new(client).metadata(test), true
@@ -117,6 +120,14 @@ namespace :crucible do
   def write_result(status, test_name, message)
     tab_size = 10
     "#{' '*(tab_size - status.length)}#{Turn::Colorize.method(status.to_sym).call(status.upcase)} #{test_name}: #{message}"
+  end
+
+  namespace :multiserver do
+    desc 'execute'
+    task :execute, [:url1, :url2, :test] do |t, args|
+      require 'turn'
+      execute_multiserver_test(FHIR::Client.new(args.url1), FHIR::Client.new(args.url2), args.test.to_sym)
+    end
   end
 
 end

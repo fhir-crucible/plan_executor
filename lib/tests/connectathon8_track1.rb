@@ -40,11 +40,13 @@ module Crucible
 
         assert_response_ok(reply)
 
-        temp = reply.resource.xmlId
-        reply.resource.xmlId = nil
-        warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-        reply.resource.xmlId = temp
-
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
+        
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }
@@ -65,10 +67,12 @@ module Crucible
 
         assert_response_ok(reply)
 
-        temp = reply.resource.xmlId
-        reply.resource.xmlId = nil
-        warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-        reply.resource.xmlId = temp
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -92,10 +96,12 @@ module Crucible
 
         assert_response_ok(reply)
 
-        temp = reply.resource.xmlId
-        reply.resource.xmlId = nil
-        warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-        reply.resource.xmlId = temp
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -119,10 +125,12 @@ module Crucible
 
         assert_response_ok(reply)
 
-        temp = reply.resource.xmlId
-        reply.resource.xmlId = nil
-        warning { assert @patient_us.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-        reply.resource.xmlId = temp
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -146,10 +154,12 @@ module Crucible
 
         assert_response_ok(reply)
 
-        temp = reply.resource.xmlId
-        reply.resource.xmlId = nil
-        warning { assert @patient_us.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-        reply.resource.xmlId = temp
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }

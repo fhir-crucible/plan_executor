@@ -2,12 +2,14 @@ module Crucible
   module Tests
     class Executor
 
-      def initialize(client)
+      def initialize(client, client2=nil)
         @client = client
+        @client2 = client2
       end
 
       def execute(test)
-        Crucible::Tests.const_get(test).new(@client).execute
+        # for single server tests, client two defaults to nil
+        Crucible::Tests.const_get(test).new(@client, @client2).execute
       end
 
       def execute_all
@@ -82,7 +84,7 @@ module Crucible
         end
       end
 
-      def self.list_all
+      def self.list_all(multiserver=false)
         list = {}
         # FIXME: Organize defaults between instance & class methods
         @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
@@ -103,7 +105,7 @@ module Crucible
             Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test][field] = test_file.send(field)}
           end
         end
-        list
+        list.select {|key,value| value['multiserver'] == multiserver}
       end
 
       def self.tests

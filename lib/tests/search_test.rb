@@ -63,13 +63,14 @@ module Crucible
           end
         end
 
-        index = @searchParams.find_index {|item| item.name=="_id" }
+        index = @searchParams.find_index {|item| item.name=="_id" } if !@searchParams.nil?
         @canSearchById = !index.nil?
       end
 
       test 'S000', 'Compare supported search parameters with specification' do
-        searchParamNames = @searchParams.map { |item| item.name }
-        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames)    
+        searchParamNames = []
+        searchParamNames = @searchParams.map { |item| item.name } if !@searchParams.nil?
+        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames).join(', ')    
       end
 
       #

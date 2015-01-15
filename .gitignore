@@ -36,6 +36,5 @@ build/
 .rvmrc
 
 # Logs
-.log
-fhir_client.log
-fhir_client_verbose.log
+*.log
+*.log.*

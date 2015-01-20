@@ -35,6 +35,37 @@ module Crucible
         results
       end
 
+      def self.generate_all_testscripts
+        self.tests.each do |test|
+          self.generate_testscript(test)
+        end
+      end
+
+      def self.generate_testscript(test)
+        require 'builder'
+        Dir.mkdir('./testScripts') unless Dir.exists?('./testScripts')
+        test_file = Crucible::Tests.const_get(test).new(nil)
+
+        template_directory ||= File.join(File.dirname(__FILE__), 'tests', 'templates')
+        filename = File.join(template_directory, "test-resource.xml.erb")
+        template = File.read(filename)
+
+        metadata = test_file.collect_metadata()
+        for test_suite in metadata
+          suite_name = test_suite.keys.first
+          if metadata.size > 1
+            klass_name = suite_name.split('_').last
+            klass = test_file.resource_class.get_fhir_class_from_resource_type(klass_name)
+            test_file.resource_class = klass
+          end
+          setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
+          teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
+          file = File.open("./testScripts/#{suite_name}.xml", 'w')
+          file.write( test_file.render(template,test_suite[suite_name]) )
+          file.close
+        end
+      end      
+
       def self.generate_ctl
         self.tests.each do |test|
           self.generate_test_ctl(test)

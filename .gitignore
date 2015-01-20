@@ -1,4 +1,5 @@
 results/*
+testScripts/**
 ctl/*
 *.gem
 *.rbc
@@ -39,3 +40,4 @@ build/
 *.log
 *.log.*
 
+**/.DS_Store

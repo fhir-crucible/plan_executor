@@ -30,6 +30,12 @@ namespace :crucible do
     puts "CTL generated in #{b.real} seconds."
   end
 
+  desc 'generate test scripts'
+  task :generate_ts do |t, args|
+    require 'benchmark'
+    b = Benchmark.measure { Crucible::Tests::Executor.generate_all_testscripts }
+    puts "Test Scripts generated in #{b.real} seconds."
+  end
 
   def execute_test(client, test)
     output_results Crucible::Tests::Executor.new(client).execute(test)

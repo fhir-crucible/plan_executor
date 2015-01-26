@@ -15,13 +15,9 @@ module Crucible
         end
       end
 
-      def assert_response_ok(response, error_message=nil)
+      def assert_response_ok(response, error_message="")
         unless [200, 201].include? response.code
-          if error_message
-            raise AssertionException.new "#{error_message}", response.body 
-          else 
-            raise AssertionException.new "Bad response code expected 200, 201, but found: #{response.code}", response.body            
-          end
+          raise AssertionException.new "Bad response code expected 200, 201, but found: #{response.code}.#{" " + error_message}", response.body
         end
       end
 

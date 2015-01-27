@@ -5,7 +5,7 @@ module Crucible
 
       attr_accessor :resource_class
       attr_accessor :client1_bundle
-      attr_accessor :client2_bundle      
+      attr_accessor :client2_bundle
 
       attr_accessor :temp_resource
       attr_accessor :temp_id
@@ -30,18 +30,17 @@ module Crucible
         true
       end
 
-      # FIXME: Remove hardcoded class
       def execute(resource_class=nil)
         if resource_class
           @resource_class = resource_class
-          [{"ResourceTest_#{@resource_class.name.demodulize}" => {
+          [{"ResourceTransferTest_#{@resource_class.name.demodulize}" => {
             test_file: test_name,
             tests: execute_test_methods
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
-            {"ResourceTest_#{@resource_class.name.demodulize}" => {
+            {"ResourceTransferTest_#{@resource_class.name.demodulize}" => {
               test_file: test_name,
               tests: execute_test_methods
             }}
@@ -53,8 +52,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         client1_resource_reply = @client.read_feed(@resource_class)
@@ -95,8 +94,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         client1_resource_reply = @client.read_feed(@resource_class)
@@ -137,8 +136,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         client2_resource_reply = @client2.read_feed(@resource_class)
@@ -179,8 +178,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         client2_resource_reply = @client2.read_feed(@resource_class)
@@ -222,8 +221,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
@@ -261,8 +260,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
@@ -301,8 +300,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
@@ -341,8 +340,8 @@ module Crucible
         metadata {
           links 'http://www.hl7.org/implement/standards/fhir/http.html#read'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#create'
-          requires resource: @resource_class, methods: ["create", "read"]
-          validates resource: @resource_class, methods: ["create", "read"]
+          requires resource: @resource_class.name.demodulize, methods: ["create", "read"]
+          validates resource: @resource_class.name.demodulize, methods: ["create", "read"]
         }
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)

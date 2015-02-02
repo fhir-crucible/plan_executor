@@ -32,10 +32,12 @@ module Crucible
         }}]
       end
 
-      def execute_test_methods
+      def execute_test_methods(test_methods=nil)
         result = []
         setup if respond_to? :setup and not @metadata_only
-        tests.each do |test_method|
+        methods = tests
+        methods = tests & test_methods unless test_methods.blank?
+        methods.each do |test_method|
           puts "executing: #{test_method}..."
           begin
             result << execute_test_method(test_method)
@@ -70,9 +72,17 @@ module Crucible
         self.class.name.demodulize.to_sym
       end
 
-      def tests
+      def tests(keys=nil)
         # Array of test methods within test file
-        self.methods.grep(/_test$/)
+        methods = self.methods.grep(/_test$/)
+        if keys
+          matches = []
+          keys.each do |key|
+            matches << methods.grep(/^#{key}/i)
+          end
+          methods = matches.flatten
+        end
+        methods
       end
 
       def title
@@ -177,7 +187,7 @@ module Crucible
         @render_metadata = rmetadata
         ERB.new(template).result(binding)
       end
-      
+
     end
 
   end

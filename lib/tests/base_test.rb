@@ -35,14 +35,15 @@ module Crucible
       def execute_test_methods(test_methods=nil)
         result = []
         setup if respond_to? :setup and not @metadata_only
+        prefix = if @metadata_only then 'generating metadata' else 'executing' end
         methods = tests
         methods = tests & test_methods unless test_methods.blank?
         methods.each do |test_method|
-          puts "executing: #{test_method}..."
+          puts "[#{test_name}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
             result << execute_test_method(test_method)
           rescue => e
-            result << TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
+            result << TestResult.new('ERROR', "Error #{prefix} #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
         teardown if respond_to? :teardown and not @metadata_only
@@ -135,9 +136,14 @@ module Crucible
         @links << url
       end
 
-      def collect_metadata
+      def collect_metadata(methods_only=false)
         @metadata_only = true
-        result = execute
+        if @resource_class
+          result = execute(@resource_class)
+        else
+          result = execute
+        end
+        result = result.map{|r| r.values.first[:tests]}.flatten if methods_only
         @metadata_only = false
         result
       end
@@ -145,6 +151,30 @@ module Crucible
       def metadata(&block)
         yield
         skip if @metadata_only
+      end
+
+      def tests_by_conformance(conformance_resources=nil, metadata=nil)
+        return tests unless conformance_resources
+        # array of metadata from current suite's test methods
+        suite_metadata = metadata || collect_metadata(true)
+        # { fhirType => supported codes }
+        # conformance_resources = Hash[conformance.rest[0].resource.map{ |r| [r.fhirType, r.interaction.map(&:code)]}]
+        methods = []
+        # include tests with undefined metadata
+        methods.push suite_metadata.select{|sm| sm["requires"].blank?}.map {|sm| sm[:test_method]}
+        # parse tests with defined metadata
+        suite_metadata.select{|sm| !sm["requires"].blank?}.each do |test|
+          unsupported = []
+          test["requires"].each do |req|
+            diffs = (req[:methods] - ( conformance_resources[req[:resource]] || [] ))
+            unsupported.push({req[:resource].to_sym => diffs}) unless diffs.blank?
+          end
+          if !unsupported.blank?
+            puts "UNSUPPORTED #{test[:test_method]}: #{unsupported}"
+            methods.push test[:test_method]
+          end
+        end
+        methods.flatten
       end
 
       def self.test(key, desc, &block)

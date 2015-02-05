@@ -35,6 +35,46 @@ module Crucible
         results
       end
 
+      def list_all_with_conformance(multiserver=false, metadata=nil)
+        list = {}
+        @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
+        conf = @client.conformanceStatement
+        conformance_resources = Hash[conf.rest[0].resource.map{ |r| [r.fhirType, r.interaction.map(&:code)]}] if conf
+        if multiserver
+          conf2 = @client2.conformanceStatement
+          conformance1_resources = conformance_resources
+          conformance2_resources = Hash[conf2.rest[0].resource.map{ |r| [r.fhirType, r.interaction.map(&:code)]}] if conf2
+          fhirTypes = conformance1_resources.keys & conformance2_resources.keys
+          conformance_resources = {}
+          fhirTypes.each do |fhirType|
+            conformance_resources[fhirType] = (conformance1_resources[fhirType] || []) & (conformance2_resources[fhirType] || [])
+          end
+        end
+        metadata ||= Crucible::Tests::Executor.generate_metadata
+        fields = Crucible::Tests::BaseTest::JSON_FIELDS - ['tests']
+        Crucible::Tests::Executor.tests.each do |test|
+          test_file = Crucible::Tests.const_get(test).new(nil)
+          next unless test_file.multiserver == multiserver
+          #if t can set class
+          if test_file.respond_to? 'resource_class='
+            @fhir_classes.each do |klass|
+              if !klass.included_modules.find_index(FHIR::Resource).nil?
+                test_file.resource_class = klass
+                list["#{test}#{klass.name.demodulize}"] = {}
+                list["#{test}#{klass.name.demodulize}"]['resource_class'] = klass
+                fields.each {|field| list["#{test}#{klass.name.demodulize}"][field] = test_file.send(field)}
+                list["#{test}#{klass.name.demodulize}"]['tests'] = test_file.tests_by_conformance(conformance_resources, metadata["#{test}#{klass.name.demodulize}"])
+              end
+            end
+          else
+            list[test] = {}
+            fields.each {|field| list[test][field] = test_file.send(field)}
+            list[test]['tests'] = test_file.tests_by_conformance(conformance_resources, metadata[test])
+          end
+        end
+        list
+      end
+
       def self.generate_all_testscripts
         self.tests.each do |test|
           self.generate_testscript(test)
@@ -64,7 +104,7 @@ module Crucible
           file.write( test_file.render(template,test_suite[suite_name]) )
           file.close
         end
-      end      
+      end
 
       def self.generate_ctl
         self.tests.each do |test|
@@ -142,6 +182,37 @@ module Crucible
       def self.tests
         # sort test files by defined id field
         Crucible::Tests.constants.grep(/Test$/).sort{|t1,t2| Crucible::Tests.const_get(t1).new(nil).id <=> Crucible::Tests.const_get(t2).new(nil).id } - [:BaseTest]
+      end
+
+      def self.generate_metadata
+        @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
+        metadata = {}
+        puts "---"
+        puts "BUILDING METADATA"
+        puts "---"
+        self.tests.each do |test|
+          test_file = Crucible::Tests.const_get(test).new(nil)
+          if test_file.respond_to? 'resource_class='
+            @fhir_classes.each do |klass|
+              if !klass.included_modules.find_index(FHIR::Resource).nil?
+                test_file.resource_class = klass
+                puts "---"
+                puts "BUILDING METADATA - #{test}#{klass.name.demodulize}"
+                puts "---"
+                metadata["#{test}#{klass.name.demodulize}"] = test_file.collect_metadata(true)
+              end
+            end
+          else
+            puts "---"
+            puts "BUILDING METADATA - #{test}"
+            puts "---"
+            metadata[test] = test_file.collect_metadata(true)
+          end
+        end
+        puts "---"
+        puts "FINISHED METADATA"
+        puts "---"
+        metadata
       end
 
     end

@@ -120,7 +120,23 @@ namespace :crucible do
 
   desc 'list all'
   task :list_all do
-    puts Crucible::Tests::Executor.list_all
+    require 'turn'
+    require 'benchmark'
+    b = Benchmark.measure { puts Crucible::Tests::Executor.list_all }
+    puts "List all tests completed in #{b.real} seconds."
+  end
+
+  desc 'list all with conformance'
+  task :list_all_w_conf, [:url1, :url2] do |t, args|
+    require 'turn'
+    require 'benchmark'
+    b = Benchmark.measure {
+      client = FHIR::Client.new(args.url1)
+      client2 = FHIR::Client.new(args.url2) if !args.url2.nil?
+      executor = Crucible::Tests::Executor.new(client, client2)
+      puts executor.list_all_with_conformance(!args.url2.nil?)
+    }
+    puts "List all tests with conformance from #{args.url} completed in #{b.real} seconds."
   end
 
   desc 'execute with requirements'

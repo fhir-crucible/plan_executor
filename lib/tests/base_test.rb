@@ -158,19 +158,21 @@ module Crucible
         # array of metadata from current suite's test methods
         suite_metadata = metadata || collect_metadata(true)
         # { fhirType => supported codes }
-        # conformance_resources = Hash[conformance.rest[0].resource.map{ |r| [r.fhirType, r.interaction.map(&:code)]}]
         methods = []
         # include tests with undefined metadata
         methods.push suite_metadata.select{|sm| sm["requires"].blank?}.map {|sm| sm[:test_method]}
         # parse tests with defined metadata
         suite_metadata.select{|sm| !sm["requires"].blank?}.each do |test|
           unsupported = []
+          # determine if any of the metadata requirements match the conformance information
           test["requires"].each do |req|
             diffs = (req[:methods] - ( conformance_resources[req[:resource]] || [] ))
             unsupported.push({req[:resource].to_sym => diffs}) unless diffs.blank?
           end
+          # print debug if unsupported, otherwise add to supported methods
           if !unsupported.blank?
             puts "UNSUPPORTED #{test[:test_method]}: #{unsupported}"
+          else
             methods.push test[:test_method]
           end
         end

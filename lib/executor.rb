@@ -86,10 +86,6 @@ module Crucible
         Dir.mkdir('./testScripts') unless Dir.exists?('./testScripts')
         test_file = Crucible::Tests.const_get(test).new(nil)
 
-        template_directory ||= File.join(File.dirname(__FILE__), 'tests', 'templates')
-        filename = File.join(template_directory, "test-resource.xml.erb")
-        template = File.read(filename)
-
         metadata = test_file.collect_metadata()
         for test_suite in metadata
           suite_name = test_suite.keys.first
@@ -100,8 +96,69 @@ module Crucible
           end
           setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
           teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
+          
+          testscript = FHIR::TestScript.new
+          testscript.xmlId = test_file.id
+          testscript.text = FHIR::Narrative.new
+          testscript.text.status = 'generated'
+          testscript.text.div = "Setup procedure:\n\n #{setup} \n\n Teardown procedure:\n\n #{teardown}"
+          testscript.name = test_file.test_name
+          testscript.description = test_file.description
+
+          testscript.setup = FHIR::TestScript::TestScriptSetupComponent.new
+          # TODO create setup operations
+          testscript.teardown = FHIR::TestScript::TestScriptTeardownComponent.new
+          # TODO create teardown operations
+
+          testscript.test = []
+          test_suite[suite_name][:tests].each do |test|
+            t = FHIR::TestScript::TestScriptTestComponent.new
+            t.xmlId = test['key']
+            t.name = test[:test_method]
+            t.description = test['description']
+            t.metadata = FHIR::TestScript::TestScriptTestMetadataComponent.new
+            # embeds_many :link, class_name:'FHIR::TestScript::TestScriptTestMetadataLinkComponent'
+            if !test['links'].nil?
+              t.metadata.link = []
+              test['links'].each do |link|
+                l = FHIR::TestScript::TestScriptTestMetadataLinkComponent.new
+                l.url = link
+                l.description = 'Specification Link'
+                t.metadata.link << l
+              end
+            end
+            # embeds_many :requires, class_name:'FHIR::TestScript::TestScriptTestMetadataRequiresComponent'
+            if !test['requires'].nil?
+              t.metadata.requires = []
+              test['requires'].each do |requirement|
+                r = FHIR::TestScript::TestScriptTestMetadataRequiresComponent.new
+                r.fhirType = requirement[:resource]
+                r.operations = requirement[:methods].join(', ')
+                t.metadata.requires << r
+              end
+            end
+            # embeds_many :validates, class_name:'FHIR::TestScript::TestScriptTestMetadataValidatesComponent'
+            if !test['validates'].nil? 
+              t.metadata.validates = []
+              test['validates'].each do |validation| 
+                v = FHIR::TestScript::TestScriptTestMetadataValidatesComponent.new
+                v.fhirType = validation[:resource]
+                v.operations = validation[:methods].join(', ')
+                t.metadata.validates << v
+              end
+            end
+            # TODO create test operations
+            t.operation = [ FHIR::TestScript::TestScriptTestOperationComponent.new ]
+            t.operation[0].fhirType = 'read'
+            # TODO create test assertions
+            t.assertion = [ FHIR::TestScript::TestScriptTestAssertionComponent.new ]
+            t.assertion[0].fhirType = 'foo'
+
+            testscript.test << t
+          end
+
           file = File.open("./testScripts/#{suite_name}.xml", 'w')
-          file.write( test_file.render(template,test_suite[suite_name]) )
+          file.write( testscript.to_xml )
           file.close
         end
       end

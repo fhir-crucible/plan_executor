@@ -214,12 +214,6 @@ module Crucible
         define_method test_method, wrapped
       end
 
-      def render(template,rmetadata)
-        require 'erb'
-        @render_metadata = rmetadata
-        ERB.new(template).result(binding)
-      end
-
     end
 
   end

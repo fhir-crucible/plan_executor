@@ -1,6 +1,10 @@
-# Plan Executor
+# Plan Executor [![Build Status](https://travis-ci.org/fhir-crucible/plan_executor.svg?branch=master)](https://travis-ci.org/fhir-crucible/plan_executor)
 
 Plan Executor runs test suites against a FHIR server.
+
+# DSTU2
+
+Updated to support the FHIR [DSTU2 branch](http://hl7.org/fhir-develop).
 
 # License
 
@@ -17,4 +21,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-

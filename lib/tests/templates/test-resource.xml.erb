@@ -1,0 +1,131 @@
+<TestScript>
+
+  <id value="<%= id %>"></id>
+  <text>
+    <status value="generated"/>
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <%= description %>
+    </div>
+  </text>
+  <name value="<%= test_name %>"></name>
+  <description value="<%= description %>"/>
+
+  <resources>
+    <!-- TODO
+    <resource id="1">
+      <Patient></Patient>
+    </resource>
+    <resource id="2">
+      <Patient></Patient>
+    </resource>
+    -->
+  </resources>
+
+  <suite>
+    <id value="<%= id %>"></id>
+    <text>
+      <status value="generated"/>
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <%= description %>
+      </div>
+    </text>
+    <name value="<%= test_name %>"></name>
+    <description value="<%= description %>"/>
+    <%
+      all_links = []
+      all_requires = {}
+      all_validates = {}
+      # binding.pry if metadata.nil?
+      # binding.pry if metadata.last.nil?
+      # binding.pry if (metadata.last[id].nil? && metadata.last[test_name].nil?)
+      @render_metadata[:tests].each do |test|
+        if !test['links'].nil?
+          test['links'].each do |link|
+            all_links << link
+          end
+        end
+        if !test['requires'].nil?
+          test['requires'].each do |requirement|
+            all_requires[requirement[:resource]] ||= []
+            all_requires[requirement[:resource]] << requirement[:methods]
+          end
+        end
+        if !test['validates'].nil?
+          test['validates'].each do |validation|
+            all_validates[validation[:resource]] ||= []
+            all_validates[validation[:resource]] << validation[:methods]
+          end
+        end
+      end
+      all_links.uniq!
+    %>
+    <% if !all_links.nil? || !all_requires.nil? || !all_validates.nil? %>
+    <metadata>
+      <% if !all_links.nil? %><links>
+        <% all_links.each do |link| %><link url="<%= link %>" description="Specification Link"/>
+        <% end %>
+      </links><% end %>
+      <% if !all_requires.nil? %><requires>
+        <% all_requires.each do |r,o| %><requirement resource="<%= r %>" operations="<%= o.uniq.join(', ') %>"/>
+        <% end %>
+      </requires><% end %>
+      <% if !all_validates.nil? %><validates>
+        <% all_validates.each do |r,o| %><validation resource="<%= r %>" operations="<%= o.uniq.join(', ') %>"/>
+        <% end %>
+      </validates><% end %>
+    </metadata><% end %>
+
+    <setup>
+      <!-- TODO 
+        <operation type="create" source="1"/>
+      -->
+    </setup>
+
+    <%
+      @render_metadata[:tests].each do |test|
+    %>
+    <test><!-- 0..N -->
+      <id value="<%= test['key'] %>"></id>
+      <text>
+        <status value="generated"/>
+        <div xmlns="http://www.w3.org/1999/xhtml">
+          <%= test['description'] %>
+        </div>        
+      </text>
+      <name value="<%= test[:test_method] %>"></name>
+      <description value="<%= test['description'] %>"/>
+      <metadata>
+        <% if !test['links'].nil? %><links>
+          <% test['links'].each do |link| %><link url="<%= link %>" description="Specification Link"/>
+          <% end %>
+        </links><% end %>
+        <% if !test['requires'].nil? %><requires>
+          <% test['requires'].each do |requirement| %><requirement resource="<%= requirement[:resource] %>" operations="<%= requirement[:methods].join(', ') %>"/>
+          <% end %>
+        </requires><% end %>
+        <% if !test['validates'].nil? %><validates>
+          <% test['validates'].each do |validation| %><validation resource="<%= validation[:resource] %>" operations="<%= validation[:methods].join(', ') %>"/>
+          <% end %>
+        </validates><% end %>
+      </metadata>
+<!--
+      <operation type="update" source="2" target="1"/>
+
+      <assertion type="responseOkay"/>
+      <assertion type="assert_last_modified_present"/>
+      <assertion type="assert_valid_content_location_present"/>
+
+      <assertion type="body" resource="Patient"></assertion>
+      <assertion type="xpath" path="Patient/name/given/[contains(text(),'Chalmers')]"></assertion>
+      <assertion type="header" header="content-location" ></assertion>
+-->
+    </test>
+    <% end %>
+
+    <teardown>
+      <!-- TODO
+      <operation type="delete" target="1"/>
+      -->
+    </teardown>
+  </suite>
+</TestScript>

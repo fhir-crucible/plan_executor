@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: cecfe2fb5149c7663fc3c39a52ed53a2ed264e0d
+  revision: d8d590fee3a50e27320ec36940b517fd122e09ab
   branch: master
   specs:
     fhir_client (1.0.0)
 
 GIT
-  remote: https://github.com/fhir-crucible/fhir_dstu1_models
-  revision: 3aab47f3016df507b2ed25c61a78d410a9436de6
+  remote: https://github.com/fhir-crucible/fhir_dstu2_models
+  revision: febf4fc0e6c546edcc30ae8676f53cca4879ca53
   branch: master
   specs:
     fhir_model (1.0.0)
@@ -44,6 +44,7 @@ GEM
       multi_json (~> 1.3)
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
+    addressable (2.3.6)
     ansi (1.4.3)
     arel (4.0.2)
     awesome_print (1.2.0)
@@ -51,6 +52,8 @@ GEM
     builder (3.1.4)
     coderay (1.1.0)
     connection_pool (2.0.0)
+    crack (0.4.2)
+      safe_yaml (~> 1.0.0)
     date_time_precision (0.8.0)
     docile (1.1.5)
     easy_diff (0.0.3)
@@ -104,6 +107,7 @@ GEM
     rake (10.3.2)
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    safe_yaml (1.0.3)
     simplecov (0.9.0)
       docile (~> 1.1.0)
       multi_json
@@ -126,12 +130,16 @@ GEM
       ansi
       minitest (~> 4)
     tzinfo (0.3.41)
+    webmock (1.18.0)
+      addressable (>= 2.3.6)
+      crack (>= 0.3.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   awesome_print
+  builder
   date_time_precision
   fhir_client!
   fhir_model!
@@ -147,3 +155,4 @@ DEPENDENCIES
   simplecov
   tilt
   turn
+  webmock

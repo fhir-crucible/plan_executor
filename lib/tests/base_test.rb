@@ -8,7 +8,7 @@ module Crucible
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
-      JSON_FIELDS = ['author','description','id','tests','title']
+      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver']
       STATUS = {
         pass: 'pass',
         fail: 'fail',
@@ -16,8 +16,13 @@ module Crucible
         skip: 'skip'
       }
 
-      def initialize(client)
+      def initialize(client, client2=nil)
         @client = client
+        @client2 = client2
+      end
+
+      def multiserver
+        false
       end
 
       def execute
@@ -27,18 +32,21 @@ module Crucible
         }}]
       end
 
-      def execute_test_methods
+      def execute_test_methods(test_methods=nil)
         result = []
-        setup if respond_to? :setup
-        tests.each do |test_method|
-          puts "executing: #{test_method}..."
+        setup if respond_to? :setup and not @metadata_only
+        prefix = if @metadata_only then 'generating metadata' else 'executing' end
+        methods = tests
+        methods = tests & test_methods unless test_methods.blank?
+        methods.each do |test_method|
+          puts "[#{test_name}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
             result << execute_test_method(test_method)
           rescue => e
-            result << TestResult.new('ERROR', "Error executing #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
+            result << TestResult.new('ERROR', "Error #{prefix} #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
-        teardown if respond_to? :teardown
+        teardown if respond_to? :teardown and not @metadata_only
         result
       end
 
@@ -65,9 +73,17 @@ module Crucible
         self.class.name.demodulize.to_sym
       end
 
-      def tests
+      def tests(keys=nil)
         # Array of test methods within test file
-        self.methods.grep(/_test$/)
+        methods = self.methods.grep(/_test$/)
+        if keys
+          matches = []
+          keys.each do |key|
+            matches << methods.grep(/^#{key}/i)
+          end
+          methods = matches.flatten
+        end
+        methods
       end
 
       def title
@@ -120,9 +136,14 @@ module Crucible
         @links << url
       end
 
-      def collect_metadata
+      def collect_metadata(methods_only=false)
         @metadata_only = true
-        result = execute
+        if @resource_class
+          result = execute(@resource_class)
+        else
+          result = execute
+        end
+        result = result.map{|r| r.values.first[:tests]}.flatten if methods_only
         @metadata_only = false
         result
       end
@@ -132,15 +153,41 @@ module Crucible
         skip if @metadata_only
       end
 
+      def tests_by_conformance(conformance_resources=nil, metadata=nil)
+        return tests unless conformance_resources
+        # array of metadata from current suite's test methods
+        suite_metadata = metadata || collect_metadata(true)
+        # { fhirType => supported codes }
+        methods = []
+        # include tests with undefined metadata
+        methods.push suite_metadata.select{|sm| sm["requires"].blank?}.map {|sm| sm[:test_method]}
+        # parse tests with defined metadata
+        suite_metadata.select{|sm| !sm["requires"].blank?}.each do |test|
+          unsupported = []
+          # determine if any of the metadata requirements match the conformance information
+          test["requires"].each do |req|
+            diffs = (req[:methods] - ( conformance_resources[req[:resource]] || [] ))
+            unsupported.push({req[:resource].to_sym => diffs}) unless diffs.blank?
+          end
+          # print debug if unsupported, otherwise add to supported methods
+          if !unsupported.blank?
+            puts "UNSUPPORTED #{test[:test_method]}: #{unsupported}"
+          else
+            methods.push test[:test_method]
+          end
+        end
+        methods.flatten
+      end
+
       def self.test(key, desc, &block)
         test_method = "#{key} #{desc} test".downcase.tr(' ', '_').to_sym
         contents = block
-        wrapped = -> () do 
+        wrapped = -> () do
           @warnings, @links, @requires, @validates = [],[],[],[]
           description = nil
           if respond_to? :supplement_test_description
-            description = supplement_test_description(desc) 
-          else 
+            description = supplement_test_description(desc)
+          else
             description = desc
           end
           result = TestResult.new(key, description, STATUS[:pass], '','')
@@ -159,6 +206,7 @@ module Crucible
           result.validates = @validates unless @validates.empty?
           result.links = @links unless @links.empty?
           result.id = key
+          result.code = contents.source
           result.id = "#{result.id}_#{result_id_suffix}" if respond_to? :result_id_suffix # add the resource to resource based tests to make ids unique
 
           result
@@ -166,6 +214,11 @@ module Crucible
         define_method test_method, wrapped
       end
 
+      def render(template,rmetadata)
+        require 'erb'
+        @render_metadata = rmetadata
+        ERB.new(template).result(binding)
+      end
 
     end
 

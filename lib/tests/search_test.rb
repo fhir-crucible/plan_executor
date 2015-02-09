@@ -63,13 +63,14 @@ module Crucible
           end
         end
 
-        index = @searchParams.find_index {|item| item.name=="_id" }
+        index = @searchParams.find_index {|item| item.name=="_id" } if !@searchParams.nil?
         @canSearchById = !index.nil?
       end
 
       test 'S000', 'Compare supported search parameters with specification' do
-        searchParamNames = @searchParams.map { |item| item.name }
-        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames)    
+        searchParamNames = []
+        searchParamNames = @searchParams.map { |item| item.name } if !@searchParams.nil?
+        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames).join(', ')    
       end
 
       #
@@ -146,7 +147,7 @@ module Crucible
         reply = @client.search(@resource_class, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert (1 >= reply.resource.all_entries.size), 'The server did not return the correct number of results.'
+        assert (1 >= reply.resource.entry.size), 'The server did not return the correct number of results.'
       end
 
       # ********************************************************* #
@@ -166,7 +167,7 @@ module Crucible
         assert_bundle_response(reply)
 
         replyB = @client.read_feed(@resource_class)
-        assert_equal replyB.resource.size, reply.resource.size, 'Searching without criteria did not return all the results.'
+        assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
       end
 
 

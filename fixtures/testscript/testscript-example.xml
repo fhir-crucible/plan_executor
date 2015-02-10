@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hl7.org/fhir ../../schema/[name].xsd">
+  <text>
+    <status value="generated" />
+    <div xmlns="http://www.w3.org/1999/xhtml">An example TestScript.</div>
+  </text>
+
+  <!-- insert contents here -->
+  <id value="example"></id>
+  <name value="ReadTest"></name>
+  <description value="Initial Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests."/>
+</TestScript>

@@ -50,7 +50,6 @@ module Crucible
             gen = nil # ignore
           # else
           #   puts "Unabled to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
-          #   binding.pry
           end
           resource[key] = gen if !gen.nil?
         end

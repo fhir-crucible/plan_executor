@@ -7,6 +7,7 @@ class BasicTest < Test::Unit::TestCase
   def test_suite_list
     executor = Crucible::Tests::Executor
     tests = executor.list_all
+    puts tests.keys.count
     assert !tests.blank?, "Failed to list tests."
   end
 

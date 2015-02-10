@@ -247,7 +247,7 @@ module Crucible
 
 
       def entry_ids_are_present_and_absolute_urls(entries)
-        # selfs = entries.select {|x| x.fhirDeleted.nil? }.map(&:self_link).compact rescue binding.pry
+        # selfs = entries.select {|x| x.fhirDeleted.nil? }.map(&:self_link).compact
         ids = entries.map(&:xmlId).compact
 
         # check that we have ids and self links

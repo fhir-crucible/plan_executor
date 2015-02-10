@@ -1,12 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<TestScript xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hl7.org/fhir ../../schema/[name].xsd">
-  <text>
-    <status value="generated" />
-    <div xmlns="http://www.w3.org/1999/xhtml">An example TestScript.</div>
-  </text>
-
-  <!-- insert contents here -->
-  <id value="example"></id>
-  <name value="ReadTest"></name>
-  <description value="Initial Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests."/>
+<TestScript xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hl7.org/fhir ../../schema/testscript.xsd">
+  <id value="example"/>
+  <name value="Test Script 1"/>
+  <description value="Example Test Script"/>
+  <fixture id="F1">
+    <uri value="../path/to/resource.xml"/>
+  </fixture>
+  <setup>
+    <operation>
+      <type value="create"/>
+      <source value="F1"/>
+    </operation>
+  </setup>
+  <test id="READ01">
+    <name value="Read Patient"/>
+    <description value="Read a patient and validate response."/>
+    <metadata>
+      <link>
+        <url value="http://fhir.org/spec.html"/>
+        <description value="link to the FHIR specification"/>
+      </link>
+      <requires>
+        <type value="Patient"/>
+        <operations value="create"/>
+      </requires>
+      <validates>
+        <type value="Patient"/>
+        <operations value="read"/>
+      </validates>
+    </metadata>
+    <operation>
+      <type value="read"/>
+      <target value="F1"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="response_okay"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="valid_content_location_present"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="resource_type:Patient"/>
+    </operation>
+  </test>
+  <teardown>
+    <operation>
+      <type value="delete"/>
+      <target value="F1"/>
+    </operation>
+  </teardown>
 </TestScript>

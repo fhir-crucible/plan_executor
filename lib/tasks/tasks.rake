@@ -37,9 +37,11 @@ namespace :crucible do
     puts "Test Scripts generated in #{b.real} seconds."
   end
 
-  def execute_test(client, test)
-    output_results Crucible::Tests::Executor.new(client).execute(test)
+  def execute_test(client, key)
+    executor = Crucible::Tests::Executor.new(client)
+    output_results executor.execute(executor.find_test(key))
   end
+
   def execute_multiserver_test(client, client2, test)
     output_results Crucible::Tests::Executor.new(client, client2).execute(test)
   end

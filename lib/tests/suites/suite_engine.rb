@@ -13,7 +13,7 @@ module Crucible
 
       def metadata_all
         results = []
-        Executor.tests.each do |test|
+        tests.each do |test|
           results = results.concat metadata(test)
         end
         results
@@ -34,9 +34,9 @@ module Crucible
             conformance_resources[fhirType] = (conformance1_resources[fhirType] || []) & (conformance2_resources[fhirType] || [])
           end
         end
-        metadata ||= Crucible::Tests::Executor.generate_metadata
+        metadata ||= SuiteEngine.generate_metadata
         fields = Crucible::Tests::BaseTest::JSON_FIELDS - ['tests']
-        Crucible::Tests::Executor.tests.each do |test|
+        tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
           next unless test_file.multiserver == multiserver
           #if t can set class
@@ -60,7 +60,7 @@ module Crucible
       end
 
       def self.generate_all_testscripts
-        self.tests.each do |test|
+        SuiteEngine.new(nil).tests.each do |test|
           self.generate_testscript(test)
         end
       end
@@ -148,7 +148,7 @@ module Crucible
       end
 
       def self.generate_ctl
-        self.tests.each do |test|
+        SuiteEngine.new(nil).tests.each do |test|
           self.generate_test_ctl(test)
         end
       end
@@ -220,8 +220,12 @@ module Crucible
         list
       end
 
-      def self.tests
+      def tests
         (Crucible::Tests.constants.grep(/Test$/) - [:BaseTest]).map {|t| Crucible::Tests.const_get(t).new(@client, @client2)}
+      end
+
+      def find_test(key)
+        Crucible::Tests.const_get(key).new(@client, @client2)
       end
 
       def self.generate_metadata
@@ -230,7 +234,7 @@ module Crucible
         puts "---"
         puts "BUILDING METADATA"
         puts "---"
-        self.tests.each do |test|
+        SuiteEngine.new(nil).tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
           if test_file.respond_to? 'resource_class='
             @fhir_classes.each do |klass|

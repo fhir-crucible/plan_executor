@@ -28,9 +28,14 @@ module Crucible
         list.select {|key,value| value['multiserver'] == multiserver}
       end
 
-      def self.tests
+      def tests
         tests = Crucible::Tests::SuiteEngine.tests.concat Crucible::Tests::TestScriptEngine.tests
         tests.sort{|t1,t2| t1.id <=> t2.id }
+      end
+
+      # finds a test by class name for suites, and by filename for testscript
+      def find_test(key)
+        @suite_engine.find_test(key) || @testscript_engine.find_test(key)
       end
 
     end

@@ -11,7 +11,7 @@ namespace :crucible do
   task :execute, [:url, :test] do |t, args|
     require 'turn'
     require 'benchmark'
-    b = Benchmark.measure { execute_test(FHIR::Client.new(args.url), args.test.to_sym) }
+    b = Benchmark.measure { execute_test(FHIR::Client.new(args.url), args.test) }
     puts "Execute #{args.test} completed in #{b.real} seconds."
   end
 
@@ -19,7 +19,7 @@ namespace :crucible do
   task :metadata, [:url, :test] do |t, args|
     require 'turn'
     require 'benchmark'
-    b = Benchmark.measure { collect_metadata(FHIR::Client.new(args.url), args.test.to_sym) }
+    b = Benchmark.measure { collect_metadata(FHIR::Client.new(args.url), args.test) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
   end
 

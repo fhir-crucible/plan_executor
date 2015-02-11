@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class ReadTest < BaseTest
+    class ReadTest < BaseSuite
 
       def id
         'ReadTest'

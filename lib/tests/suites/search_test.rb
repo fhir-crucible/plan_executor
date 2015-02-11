@@ -1,7 +1,7 @@
 module Crucible
   module Tests
-    class SearchTest < BaseTest
- 
+    class SearchTest < BaseSuite
+
       attr_accessor :resource_class
       attr_accessor :conformance
       attr_accessor :searchParams
@@ -44,7 +44,7 @@ module Crucible
         "#{desc} #{resource_class.name.demodulize}"
       end
 
-      # 
+      #
       # Search Test
       # 1. First, get the conformance statement.
       # 2. Lookup the allowed search parameters for each resource.
@@ -70,7 +70,7 @@ module Crucible
       test 'S000', 'Compare supported search parameters with specification' do
         searchParamNames = []
         searchParamNames = @searchParams.map { |item| item.name } if !@searchParams.nil?
-        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames).join(', ')    
+        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames).join(', ')
       end
 
       #
@@ -83,9 +83,9 @@ module Crucible
       # x  parameters [SE24,SE25]
       # parameter modifiers (
       # x  :missing, [SE23]
-      # :exact, 
-      # :text, 
-      # :[type]) 
+      # :exact,
+      # :text,
+      # :[type])
       # x  numbers (= >= significant-digits) [SE21,SE22]
       # date (all of the permutations?)
       # token
@@ -103,7 +103,7 @@ module Crucible
       # _summary parameter
       # result server conformance (report params actually used)
       # advanced searching with "Query" or _query param (valueset 'expand' and 'validate' queries should be standard)
-      #       
+      #
       test 'S001', 'Search by ID' do
         options = {
           :search => {

@@ -15,7 +15,7 @@ module Crucible
       def initialize(client, client2=nil)
         @client = client
         @client2 = client2
-        @scripts = Crucible::Generator::Resources.new.testscripts(self)
+        @scripts = Crucible::Generator::Resources.new.testscripts.map {|ts| Crucible::Tests::BaseTestScript.new(ts) }
       end
 
       def list_all_with_conformance(multiserver=false, metadata=nil)
@@ -27,16 +27,15 @@ module Crucible
       end
 
       def find_test(key)
-        @scripts.find{|s| s.xmlId == key} || []
+        @scripts.find{|s| s.id == key} || []
       end
 
       def self.list_all
         list = {}
-        fields = Crucible::Tests::BaseTest::JSON_FIELDS
         # TODO: Determine if we need resource-based testscript listing support
         TestScriptEngine.new(nil).tests.each do |test|
-          list[test.name] = {}
-          fields.each {|field| list[test.name][field] = test.send(TESTSCRIPT_JSON_FIELDS[field])}
+          list[test.title] = {}
+          Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test.title][field] = test.send(field)}
         end
         list
       end

@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class TrackOneTest < BaseTest
+    class TrackOneTest < BaseSuite
 
       def id
         'Connectathon8Track1'
@@ -46,7 +46,7 @@ module Crucible
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
           reply.resource.xmlId = temp
         end
-        
+
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }
@@ -88,7 +88,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['update']
         }
-        
+
         @patient.telecom[0].value='1-800-TOLL-FREE'
         @patient.name[0].given = ["Crocodile","Pants"]
 
@@ -106,7 +106,7 @@ module Crucible
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }
-      end 
+      end
 
       #
       # Test if we can update a patient with unmodified extensions.
@@ -117,7 +117,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
         }
-        
+
         @patient_us.telecom[0].value='1-800-TOLL-FREE'
         @patient_us.name[0].given = ["Alligator","Pants"]
 
@@ -135,7 +135,7 @@ module Crucible
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }
-      end 
+      end
 
       #
       # Test if we can update a patient with modified extensions.
@@ -187,7 +187,7 @@ module Crucible
         entries.each_cons(2) do |left, right|
           assert !left.resource.meta.nil?, 'Unable to determine if entries are in the correct order -- no meta'
           assert !right.resource.meta.nil?, 'Unable to determine if entries are in the correct order -- no meta'
-          
+
           if !left.resource.meta.versionId.nil? && !right.resource.meta.versionId.nil?
             assert (left.resource.meta.versionId > right.resource.meta.versionId), 'Result contains entries in the wrong order.'
           elsif !left.resource.meta.lastUpdated.nil? && !right.resource.meta.lastUpdated.nil?
@@ -224,7 +224,7 @@ module Crucible
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert (reply.resource.total > 0), 'The server did not report any results.'        
+        assert (reply.resource.total > 0), 'The server did not report any results.'
       end
 
     end

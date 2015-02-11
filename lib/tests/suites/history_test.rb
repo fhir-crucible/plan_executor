@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class HistoryTest < BaseTest
+    class HistoryTest < BaseSuite
 
       def id
         'History001'
@@ -46,7 +46,7 @@ module Crucible
         assert_equal @version_count, result.resource.total, "the number of returned versions is not correct"
         assert_equal @entry_count, result.resource.entry.map(&:self_link).size, "all of the returned entries must have a self link"
         check_sort_order(result.resource.entry)
-      end 
+      end
 
       test "HI02", "full history of a resource by id with since" do
         metadata {
@@ -267,7 +267,7 @@ module Crucible
         entries.each_cons(2) do |left, right|
           assert !left.resource.meta.nil?, 'Unable to determine if entries are in the correct order -- no meta'
           assert !right.resource.meta.nil?, 'Unable to determine if entries are in the correct order -- no meta'
-          
+
           if !left.resource.meta.versionId.nil? && !right.resource.meta.versionId.nil?
             assert (left.resource.meta.versionId > right.resource.meta.versionId), 'Result contains entries in the wrong order.'
           elsif !left.resource.meta.lastUpdated.nil? && !right.resource.meta.lastUpdated.nil?

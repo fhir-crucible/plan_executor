@@ -79,13 +79,13 @@ module Crucible
         observations
       end
 
-      def testscripts(engine)
+      def testscripts(engine=nil)
         # get all TestScript's in fixture_path/testscript
         testscripts = []
         files = File.join(fixture_path, 'testscript', '*.xml')
         Dir.glob(files).each do |f|
           testscript = FHIR::TestScript.from_xml( File.read(f) )
-          testscript.engine = engine
+          testscript.engine = engine if engine
           testscripts << testscript
         end
         testscripts

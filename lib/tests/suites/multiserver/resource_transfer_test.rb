@@ -1,7 +1,7 @@
 
 module Crucible
   module Tests
-    class ResourceTransferTest < BaseTest
+    class ResourceTransferTest < BaseSuite
 
       attr_accessor :resource_class
       attr_accessor :client1_bundle

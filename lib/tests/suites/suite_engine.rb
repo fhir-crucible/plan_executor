@@ -225,7 +225,7 @@ module Crucible
       end
 
       def find_test(key)
-        Crucible::Tests.const_get(key).new(@client, @client2)
+        Crucible::Tests.const_get(key.to_sym).new(@client, @client2) if Crucible::Tests.constants.include? key.to_sym
       end
 
       def self.generate_metadata

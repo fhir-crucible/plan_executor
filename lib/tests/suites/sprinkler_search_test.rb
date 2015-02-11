@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class SprinklerSearchTest < BaseTest
+    class SprinklerSearchTest < BaseSuite
 
       def id
         'Search001'
@@ -43,7 +43,7 @@ module Crucible
         options = {
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
-        } 
+        }
         @condition.subject.reference = @client.resource_url(options)
         reply = @client.create(@condition)
         @condition_id = reply.id
@@ -189,7 +189,7 @@ module Crucible
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'        
+        assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
       test 'SE05.0', 'Search condition by subject reference url' do
@@ -199,7 +199,7 @@ module Crucible
         options = {
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
-        } 
+        }
         patient_url = @client.resource_url(options)
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -215,7 +215,7 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
       test 'SE05.1', 'Search condition by subject reference id' do
@@ -237,7 +237,7 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
       test 'SE05.2', 'Search condition by subject:Patient reference url' do
@@ -247,7 +247,7 @@ module Crucible
         options = {
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
-        } 
+        }
         patient_url = @client.resource_url(options)
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -263,8 +263,8 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
-      end   
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+      end
 
       test 'SE05.3', 'Search condition by subject:Patient reference id' do
         # pick some search parameters... we previously created
@@ -285,8 +285,8 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
-      end   
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+      end
 
       test 'SE05.4', 'Search condition by subject:_id reference' do
         # pick some search parameters... we previously created
@@ -307,8 +307,8 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
-      end   
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+      end
 
       test 'SE05.5', 'Search condition by subject:name reference' do
         # pick some search parameters... we previously created
@@ -329,8 +329,8 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
-      end   
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+      end
 
       test 'SE05.6', 'Search condition by subject:identifier reference' do
         # pick some search parameters... we previously created
@@ -351,8 +351,8 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'        
-      end  
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+      end
 
       test 'SE06', 'Search condition by _include' do
         # pick some search parameters... we previously created
@@ -373,7 +373,7 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.total > 0, 'The server should have Conditions with _include=Condition.subject.'        
+        assert reply.resource.total > 0, 'The server should have Conditions with _include=Condition.subject.'
       end
 
       test 'SE21', 'Search for quantity (in observation) - precision tests' do
@@ -397,9 +397,9 @@ module Crucible
           reply = @client.next_page(reply)
         end
 
-        assert has_obs_a,  'Search on quantity value 4.1234 should return 4.12345'                
-        assert !has_obs_b, 'Search on quantity value 4.1234 should not return 4.12346'                
-        assert !has_obs_c, 'Search on quantity value 4.1234 should not return 4.12349'                
+        assert has_obs_a,  'Search on quantity value 4.1234 should return 4.12345'
+        assert !has_obs_b, 'Search on quantity value 4.1234 should not return 4.12346'
+        assert !has_obs_c, 'Search on quantity value 4.1234 should not return 4.12349'
       end
 
       test 'SE22', 'Search for quantity (in observation) - operators' do
@@ -423,9 +423,9 @@ module Crucible
           reply = @client.next_page(reply)
         end
 
-        assert !has_obs_a,  'Search greater than quantity should not return lesser value.'                
-        assert has_obs_d, 'Search greater than quantity should return greater value.'                
-        assert has_obs_e, 'Search greater than quantity should return greater value.'                
+        assert !has_obs_a,  'Search greater than quantity should not return lesser value.'
+        assert has_obs_d, 'Search greater than quantity should return greater value.'
+        assert has_obs_e, 'Search greater than quantity should return greater value.'
       end
 
       test 'SE23', 'Search with quantifier :missing, on Patient.gender' do
@@ -463,7 +463,7 @@ module Crucible
         }
         reply = @client.search(FHIR::Patient, options)
         outcome = parse_operation_outcome(reply.response.body)
-        assert !outcome.nil?, 'Searching with non-existing parameters should result in OperationOutcome.'        
+        assert !outcome.nil?, 'Searching with non-existing parameters should result in OperationOutcome.'
       end
 
       test 'SE25', 'Search with malformed parameters.' do

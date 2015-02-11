@@ -23,8 +23,8 @@ module Crucible
         @suite_engine.list_all_with_conformance(multiserver, metadata).merge @testscript_engine.list_all_with_conformance(multiserver, metadata)
       end
 
-      def self.list_all(multiserver=false)
-        list = Crucible::Tests::SuiteEngine.list_all.merge Crucible::Tests::TestScriptEngine.list_all
+      def list_all(multiserver=false)
+        list = Crucible::Tests::SuiteEngine.new(nil).list_all.merge Crucible::Tests::TestScriptEngine.list_all
         list.select {|key,value| value['multiserver'] == multiserver}
       end
 

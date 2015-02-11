@@ -196,11 +196,11 @@ module Crucible
         end
       end
 
-      def self.list_all
+      def list_all
         list = {}
         # FIXME: Organize defaults between instance & class methods
         @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
-        self.tests.each do |test|
+        tests.each do |test|
           test_class = test.class.name.demodulize
           #if t can set class
           if test.respond_to? 'resource_class='

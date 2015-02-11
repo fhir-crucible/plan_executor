@@ -86,7 +86,7 @@ module Crucible
           testscript.text = FHIR::Narrative.new
           testscript.text.status = 'generated'
           testscript.text.div = "Setup procedure:\n\n #{setup} \n\n Teardown procedure:\n\n #{teardown}"
-          testscript.name = test_file.test_name
+          testscript.name = test_file.title
           testscript.description = test_file.description
 
           testscript.setup = FHIR::TestScript::TestScriptSetupComponent.new

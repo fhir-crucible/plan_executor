@@ -2,6 +2,10 @@ module Crucible
   module Tests
     class BaseSuite < BaseTest
 
+      def title
+        self.class.name.demodulize
+      end
+
       def parse_operation_outcome(body)
         # body should be a String
         outcome = nil

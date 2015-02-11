@@ -11,14 +11,14 @@ module Crucible
         if resource_class
           @resource_class = resource_class
           [{"SearchTest_#{@resource_class.name.demodulize}" => {
-            test_file: test_name,
+            test_file: title,
             tests: execute_test_methods
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
             {"SearchTest_#{@resource_class.name.demodulize}" => {
-              test_file: test_name,
+              test_file: title,
               tests: execute_test_methods
             }}
           end

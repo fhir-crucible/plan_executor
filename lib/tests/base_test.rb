@@ -26,8 +26,8 @@ module Crucible
       end
 
       def execute
-        [{test_name => {
-            test_file: test_name,
+        [{title => {
+            test_file: title,
             tests: execute_test_methods
         }}]
       end
@@ -39,7 +39,7 @@ module Crucible
         methods = tests
         methods = tests & test_methods unless test_methods.blank?
         methods.each do |test_method|
-          puts "[#{test_name}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
+          puts "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
             result << execute_test_method(test_method)
           rescue => e
@@ -69,10 +69,6 @@ module Crucible
         self.object_id.to_s
       end
 
-      def test_name
-        self.class.name.demodulize.to_sym
-      end
-
       def tests(keys=nil)
         # Array of test methods within test file
         methods = self.methods.grep(/_test$/)
@@ -84,11 +80,6 @@ module Crucible
           methods = matches.flatten
         end
         methods
-      end
-
-      def title
-        # String containing test file title
-        self.class.name.split('::').last
       end
 
     end

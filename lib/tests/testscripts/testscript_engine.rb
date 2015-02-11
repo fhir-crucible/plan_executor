@@ -2,16 +2,6 @@ module Crucible
   module Tests
     class TestScriptEngine
 
-      # map base_test methods to testscript methods
-      TESTSCRIPT_JSON_FIELDS = {
-        'author' => 'name', # might not have a field for this yet
-        'description' => 'description',
-        'id' => 'xmlId',
-        'tests' => 'tests',
-        'title' => 'name',
-        'multiserver' => 'multiserver' # might not have a flag for this yet
-        }
-
       def initialize(client=nil, client2=nil)
         @client = client
         @client2 = client2

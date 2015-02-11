@@ -20,7 +20,7 @@ module Crucible
       end
 
       def title
-        @testscript.name
+        id
       end
 
       def tests

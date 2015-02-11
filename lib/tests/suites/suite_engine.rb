@@ -2,7 +2,7 @@ module Crucible
   module Tests
     class SuiteEngine
 
-      def initialize(client, client2=nil)
+      def initialize(client=nil, client2=nil)
         @client = client
         @client2 = client2
       end
@@ -35,7 +35,7 @@ module Crucible
           end
         end
         metadata ||= SuiteEngine.generate_metadata
-        fields = Crucible::Tests::BaseTest::JSON_FIELDS - ['tests']
+        fields = BaseTest::JSON_FIELDS - ['tests']
         tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
           next unless test_file.multiserver == multiserver
@@ -60,7 +60,7 @@ module Crucible
       end
 
       def self.generate_all_testscripts
-        SuiteEngine.new(nil).tests.each do |test|
+        SuiteEngine.new.tests.each do |test|
           self.generate_testscript(test)
         end
       end
@@ -148,7 +148,7 @@ module Crucible
       end
 
       def self.generate_ctl
-        SuiteEngine.new(nil).tests.each do |test|
+        SuiteEngine.new.tests.each do |test|
           self.generate_test_ctl(test)
         end
       end
@@ -196,11 +196,11 @@ module Crucible
         end
       end
 
-      def list_all
+      def self.list_all
         list = {}
         # FIXME: Organize defaults between instance & class methods
         @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
-        tests.each do |test|
+        SuiteEngine.new.tests.each do |test|
           test_class = test.class.name.demodulize
           #if t can set class
           if test.respond_to? 'resource_class='
@@ -209,12 +209,12 @@ module Crucible
                 test.resource_class = klass
                 list["#{test_class}#{klass.name.demodulize}"] = {}
                 list["#{test_class}#{klass.name.demodulize}"]['resource_class'] = klass
-                Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list["#{test_class}#{klass.name.demodulize}"][field] = test.send(field)}
+                BaseTest::JSON_FIELDS.each {|field| list["#{test_class}#{klass.name.demodulize}"][field] = test.send(field)}
               end
             end
           else
             list[test] = {}
-            Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test][field] = test.send(field)}
+            BaseTest::JSON_FIELDS.each {|field| list[test][field] = test.send(field)}
           end
         end
         list
@@ -234,7 +234,7 @@ module Crucible
         puts "---"
         puts "BUILDING METADATA"
         puts "---"
-        SuiteEngine.new(nil).tests.each do |test|
+        SuiteEngine.new.tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
           if test_file.respond_to? 'resource_class='
             @fhir_classes.each do |klass|

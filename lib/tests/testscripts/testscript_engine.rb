@@ -12,10 +12,10 @@ module Crucible
         'multiserver' => 'multiserver' # might not have a flag for this yet
         }
 
-      def initialize(client, client2=nil)
+      def initialize(client=nil, client2=nil)
         @client = client
         @client2 = client2
-        @scripts = Crucible::Generator::Resources.new.testscripts.map {|ts| Crucible::Tests::BaseTestScript.new(ts) }
+        @scripts = Crucible::Generator::Resources.new.testscripts.map {|ts| BaseTestScript.new(ts) }
       end
 
       def list_all_with_conformance(multiserver=false, metadata=nil)
@@ -33,9 +33,9 @@ module Crucible
       def self.list_all
         list = {}
         # TODO: Determine if we need resource-based testscript listing support
-        TestScriptEngine.new(nil).tests.each do |test|
+        TestScriptEngine.new.tests.each do |test|
           list[test.title] = {}
-          Crucible::Tests::BaseTest::JSON_FIELDS.each {|field| list[test.title][field] = test.send(field)}
+          BaseTest::JSON_FIELDS.each {|field| list[test.title][field] = test.send(field)}
         end
         list
       end

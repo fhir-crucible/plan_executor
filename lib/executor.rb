@@ -5,8 +5,8 @@ module Crucible
       def initialize(client, client2=nil)
         @client = client
         @client2 = client2
-        @suite_engine = Crucible::Tests::SuiteEngine.new(@client, @client2)
-        @testscript_engine = Crucible::Tests::TestScriptEngine.new(@client, @client2)
+        @suite_engine = SuiteEngine.new(@client, @client2)
+        @testscript_engine = TestScriptEngine.new(@client, @client2)
       end
 
       def execute(test)
@@ -23,13 +23,13 @@ module Crucible
         @suite_engine.list_all_with_conformance(multiserver, metadata).merge @testscript_engine.list_all_with_conformance(multiserver, metadata)
       end
 
-      def list_all(multiserver=false)
-        list = Crucible::Tests::SuiteEngine.new(nil).list_all.merge Crucible::Tests::TestScriptEngine.list_all
+      def self.list_all(multiserver=false)
+        list = SuiteEngine.list_all.merge TestScriptEngine.list_all
         list.select {|key,value| value['multiserver'] == multiserver}
       end
 
       def tests
-        tests = Crucible::Tests::SuiteEngine.tests.concat Crucible::Tests::TestScriptEngine.tests
+        tests = SuiteEngine.tests.concat TestScriptEngine.tests
         tests.sort{|t1,t2| t1.id <=> t2.id }
       end
 

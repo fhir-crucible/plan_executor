@@ -80,7 +80,7 @@ module Crucible
           end
           setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
           teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
-          
+
           testscript = FHIR::TestScript.new
           testscript.xmlId = test_file.id
           testscript.text = FHIR::Narrative.new
@@ -122,9 +122,9 @@ module Crucible
               end
             end
             # embeds_many :validates, class_name:'FHIR::TestScript::TestScriptTestMetadataValidatesComponent'
-            if !test['validates'].nil? 
+            if !test['validates'].nil?
               t.metadata.validates = []
-              test['validates'].each do |validation| 
+              test['validates'].each do |validation|
                 v = FHIR::TestScript::TestScriptTestMetadataValidatesComponent.new
                 v.fhirType = validation[:resource]
                 v.operations = validation[:methods].join(', ')

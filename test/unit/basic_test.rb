@@ -11,4 +11,17 @@ class BasicTest < Test::Unit::TestCase
     assert !tests.blank?, "Failed to list tests."
   end
 
+  def test_testscript_list
+    tests = Crucible::Tests::TestScriptEngine.list_all
+    assert !tests.blank?, "Failed to list testscripts."
+
+    testscript_engine = Crucible::Tests::TestScriptEngine.new(nil)
+
+    keyed_test = testscript_engine.find_test('example')
+    assert !keyed_test.nil?, "Failed to find testscript by key"
+
+    results = keyed_test.execute
+    assert !results.nil? && !results.blank?, "Failed to execute testscript"
+  end
+
 end

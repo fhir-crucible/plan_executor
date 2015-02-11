@@ -92,7 +92,11 @@ module Crucible
           @id_map.delete(operation.target)
         when 'assertion'
           assertion = "assert_#{operation.parameter}".to_sym
-          self.method(assertion).call(@last_response)
+          if self.methods.include?(assertion)
+            self.method(assertion).call(@last_response)
+          else
+            raise "Undefined assertion for #{@testscript.name}-#{title}: #{assertion}"
+          end
         end
       end
 

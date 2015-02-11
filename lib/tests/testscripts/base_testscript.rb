@@ -80,6 +80,7 @@ module Crucible
       end
 
       def execute_operation(operation)
+        return if @client.nil?
         case operation.fhirType
         when 'create'
           @last_response = @client.create @fixtures[operation.source]

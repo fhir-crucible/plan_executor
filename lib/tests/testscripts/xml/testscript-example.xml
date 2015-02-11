@@ -35,7 +35,7 @@
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="response_okay"/>
+      <parameter value="response_ok"/>
     </operation>
     <operation>
       <type value="assertion"/>

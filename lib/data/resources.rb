@@ -79,16 +79,9 @@ module Crucible
         observations
       end
 
-      def testscripts(engine=nil)
-        # get all TestScript's in fixture_path/testscript
-        testscripts = []
-        files = File.join(fixture_path, 'testscript', '*.xml')
-        Dir.glob(files).each do |f|
-          testscript = FHIR::TestScript.from_xml( File.read(f) )
-          testscript.engine = engine if engine
-          testscripts << testscript
-        end
-        testscripts
+      def load_fixture(path, resource_class)
+        klass = "FHIR::#{resource_class}".constantize
+        klass.from_xml File.read(File.join(fixture_path, path))
       end
 
     end

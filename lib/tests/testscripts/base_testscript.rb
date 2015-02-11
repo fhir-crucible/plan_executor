@@ -2,9 +2,12 @@ module Crucible
   module Tests
     class BaseTestScript < BaseTest
 
-      def initialize(testscript)
+      def initialize(testscript, client, client2=nil)
+        super(client, client2)
         @testscript = testscript
         define_tests
+        load_fixtures
+        @id_map = {}
       end
 
       def author
@@ -34,10 +37,20 @@ module Crucible
         end
       end
 
+      def load_fixtures
+        @fixtures = {}
+        @testscript.fixture.each do |fixture|
+          # FIXME: Determine fixture data resource class dynamically!
+          @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri, "Patient".to_sym)
+        end
+      end
+
       def process_test(test)
         result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
         begin
-          puts "Executing #{test.name}"
+          test.operation.each do |op|
+            execute_operation op
+          end
           # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
         rescue AssertionException => e
           result.update(STATUS[:fail], e.message, e.data)
@@ -53,12 +66,34 @@ module Crucible
       end
 
       def setup
-        # @testscript.setup
-        puts 'Setup' if !@testscript.setup.blank?
+        return if @testscript.setup.blank?
+        @testscript.setup.operation.each do |op|
+          execute_operation op
+        end
       end
 
       def teardown
-        puts 'Teardown' if !@testscript.teardown.blank?
+        return if @testscript.teardown.blank?
+        @testscript.teardown.operation.each do |op|
+          execute_operation op
+        end
+      end
+
+      def execute_operation(operation)
+        case operation.fhirType
+        when 'create'
+          @last_response = @client.create @fixtures[operation.source]
+          @id_map[operation.source] = @last_response.id
+        when 'read'
+          @last_response = @client.read @fixtures[operation.target].class, @id_map[operation.target]
+        when 'delete'
+          @client.destroy(FHIR::Condition, @cond1_reply.id) if !@cond1_id.nil?
+          @last_response = @client.destroy @fixtures[operation.target].class, @id_map[operation.target]
+          @id_map.delete(operation.target)
+        when 'assertion'
+          assertion = "assert_#{operation.parameter}".to_sym
+          self.method(assertion).call(@last_response)
+        end
       end
 
       #
@@ -71,14 +106,6 @@ module Crucible
       #   result.code = test_item.to_xml
       #
       #   result.to_hash.merge!({:test_method => test_method})
-      # end
-      #
-      # def execute_setup
-      #   puts "Setting up... #{@testscript.setup}"
-      # end
-      #
-      # def execute_teardown
-      #   puts "Tearing down... #{@testscript.teardown}"
       # end
 
     end

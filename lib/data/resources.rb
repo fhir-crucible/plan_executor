@@ -79,9 +79,8 @@ module Crucible
         observations
       end
 
-      def load_fixture(path, resource_class)
-        klass = "FHIR::#{resource_class}".constantize
-        klass.from_xml File.read(File.join(fixture_path, path))
+      def load_fixture(path)
+        FHIR::Resource.from_contents(File.read(File.join(fixture_path, path)))
       end
 
     end

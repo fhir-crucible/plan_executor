@@ -41,7 +41,7 @@ module Crucible
         @fixtures = {}
         @testscript.fixture.each do |fixture|
           # FIXME: Determine fixture data resource class dynamically!
-          @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri, "Patient".to_sym)
+          @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri)
         end
       end
 

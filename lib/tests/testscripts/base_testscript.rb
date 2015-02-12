@@ -40,7 +40,6 @@ module Crucible
       def load_fixtures
         @fixtures = {}
         @testscript.fixture.each do |fixture|
-          # FIXME: Determine fixture data resource class dynamically!
           @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri)
         end
       end

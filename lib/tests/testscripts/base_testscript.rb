@@ -2,6 +2,31 @@ module Crucible
   module Tests
     class BaseTestScript < BaseTest
 
+      ASSERTION_MAP = {
+        # equals	expected (value1 or xpath expression2) actual (value1 or xpath expression2)	Asserts that "expected" is equal to "actual".
+        "equals" => :assert_equal,
+        # response_code	code (numeric HTTP response code)	Asserts that the response code equals "code".
+        "response_code" => :assert_response_code,
+        # response_okay	N/A	Asserts that the response code is in the set (200, 201).
+        "response_okay" => :assert_response_ok,
+        # response_gone	N/A	Asserts that the response code is 410.
+        "response_gone" => :assert_response_gone,
+        # response_not_found	N/A	Asserts that the response code is 404.
+        "response_not_found" => :assert_response_not_found,
+        # response_bad	N/A	Asserts that the response code is 400.
+        "response_bad" => :assert_response_bad,
+        # navigation_links	Bundle	Asserts that the Bundle contains first, last, and next links.
+        "navigation_links" => :assert_nagivation_links,
+        # resource_type	resourceType (string)	Asserts that the response contained a FHIR Resource of the given "resourceType".
+        "resource_type" => :assert_resource_type,
+        # valid_content_type	N/A	Asserts that the response contains a "content-type" is either "application/xml+fhir" or "application/json+fhir" and that "charset" is specified as "UTF-8"
+        "valid_content_type" => :assert_valid_resource_content_type_present,
+        # valid_content_location	N/A	Asserts that the response contains a valid "content-location" header.
+        "valid_content_location" => :assert_valid_content_location_present,
+        # valid_last_modified	N/A	Asserts that the response contains a valid "last-modified" header.
+        "valid_last_modified" => :assert_last_modified_present
+      }
+
       def initialize(testscript, client, client2=nil)
         super(client, client2)
         @testscript = testscript
@@ -91,11 +116,25 @@ module Crucible
           @last_response = @client.destroy @fixtures[operation.target].class, @id_map[operation.target]
           @id_map.delete(operation.target)
         when 'assertion'
-          assertion = "assert_#{operation.parameter}".to_sym
-          if self.methods.include?(assertion)
-            self.method(assertion).call(@last_response)
+          assertion = operation.parameter
+          if operation.parameter.start_with? "resource_type"
+            assertion = operation.parameter.split(":").first
+            resource_type = "FHIR::#{operation.parameter.split(":").last}".constantize
+          elsif operation.parameter.start_with? "code"
+            assertion = operation.parameter.split(":").first
+            code = operation.parameter.split(":").last
+          end
+          if self.methods.include?(ASSERTION_MAP[assertion])
+            case assertion
+            when "code"
+              self.method(ASSERTION_MAP[assertion]).call(@last_response, code)
+            when "resource_type"
+              self.method(ASSERTION_MAP[assertion]).call(@last_response, resource_type)
+            else
+              self.method(ASSERTION_MAP[assertion]).call(@last_response)
+            end
           else
-            raise "Undefined assertion for #{@testscript.name}-#{title}: #{assertion}"
+            raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
           end
         end
       end

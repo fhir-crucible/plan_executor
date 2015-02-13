@@ -35,11 +35,11 @@
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="response_ok"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="valid_content_location_present"/>
+      <parameter value="valid_content_location"/>
     </operation>
     <operation>
       <type value="assertion"/>

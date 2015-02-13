@@ -53,14 +53,14 @@ module Crucible
 
       def assert_valid_resource_content_type_present(client_reply)
         header = client_reply.response.headers[:content_type]
-        
+
         content_type = header
         charset = encoding = nil
-        
+
         content_type = header[0, header.index(';')] if !header.index(';').nil?
         charset = header[header.index(';charset=')+9..-1] if !header.index(';charset=').nil?
         encoding = Encoding.find(charset) if !charset.nil?
-        
+
         unless encoding == Encoding::UTF_8
           raise AssertionException.new "Response content-type specifies encoding other than UTF-8: #{charset}", header
         end
@@ -72,12 +72,24 @@ module Crucible
       def assert_last_modified_present(client_reply)
         header = client_reply.response.headers[:last_modified]
         assert !header.nil?, 'Last-modified HTTP header is missing.'
-      end  
-      
+      end
+
       def assert_valid_content_location_present(client_reply)
         header = client_reply.response.headers[:content_location]
         assert !header.nil?, 'Content-location HTTP header is missing.'
-      end   
+      end
+
+      def assert_response_code(response, code)
+        unless code == response.code
+          raise AssertionException.new "Bad response code expected #{code}, but found: #{response.code}", response.body
+        end
+      end
+
+      def assert_resource_type(response, resource_type)
+        unless !response.resource.nil? && response.resource.class == resource_type
+          raise AssertionException.new "Bad response type expected #{resource_type}, but found: #{response.resource.class}", response.body
+        end
+      end
 
       def skip
         raise SkipException.new

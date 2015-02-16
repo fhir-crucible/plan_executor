@@ -9,7 +9,9 @@ module Crucible
         "response_code" => :assert_response_code,
         # response_okay	N/A	Asserts that the response code is in the set (200, 201).
         "response_okay" => :assert_response_ok,
-        # response_gone	N/A	Asserts that the response code is 410.
+        # response_created N/A Asserts that the response code is 201.
+        "response_created" => :assert_response_created,
+        # response_gone N/A Asserts that the response code is 410.
         "response_gone" => :assert_response_gone,
         # response_not_found	N/A	Asserts that the response code is 404.
         "response_not_found" => :assert_response_not_found,
@@ -109,6 +111,10 @@ module Crucible
         when 'create'
           @last_response = @client.create @fixtures[operation.source]
           @id_map[operation.source] = @last_response.id
+        when 'update'
+          target_id = @id_map[operation.target]
+          fixture = @fixtures[operation.source]
+          @last_response = @client.update fixture, target_id
         when 'read'
           @last_response = @client.read @fixtures[operation.target].class, @id_map[operation.target]
         when 'delete'
@@ -125,17 +131,21 @@ module Crucible
             code = operation.parameter.split(":").last
           end
           if self.methods.include?(ASSERTION_MAP[assertion])
+            method = self.method(ASSERTION_MAP[assertion])
+            puts "ASSERTING: #{assertion}"
             case assertion
             when "code"
-              self.method(ASSERTION_MAP[assertion]).call(@last_response, code)
+              method.call(@last_response, code)
             when "resource_type"
-              self.method(ASSERTION_MAP[assertion]).call(@last_response, resource_type)
+              method.call(@last_response, resource_type)
             else
-              self.method(ASSERTION_MAP[assertion]).call(@last_response)
+              method.call(@last_response)
             end
           else
             raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
           end
+        else
+          raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
       end
 

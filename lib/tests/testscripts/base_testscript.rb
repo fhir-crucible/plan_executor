@@ -25,8 +25,12 @@ module Crucible
         "valid_content_type" => :assert_valid_resource_content_type_present,
         # valid_content_location	N/A	Asserts that the response contains a valid "content-location" header.
         "valid_content_location" => :assert_valid_content_location_present,
-        # valid_last_modified	N/A	Asserts that the response contains a valid "last-modified" header.
-        "valid_last_modified" => :assert_last_modified_present
+        # valid_last_modified N/A Asserts that the response contains a valid "last-modified" header.
+        "valid_last_modified" => :assert_last_modified_present,
+        # bundle_response N/A Asserts that the response is a bundle.
+        "bundle_response" => :assert_bundle_response,
+        # bundle_entry_count count (number of entries expected) Asserts that the number of entries matches expectations.
+        "bundle_entry_count" => :assert_bundle_entry_count
       }
 
       def initialize(testscript, client, client2=nil)
@@ -121,31 +125,40 @@ module Crucible
           @client.destroy(FHIR::Condition, @cond1_reply.id) if !@cond1_id.nil?
           @last_response = @client.destroy @fixtures[operation.target].class, @id_map[operation.target]
           @id_map.delete(operation.target)
+        when 'history'
+          target_id = @id_map[operation.target]
+          fixture = @fixtures[operation.target]
+          @last_response = @client.resource_instance_history(fixture.class,target_id)
         when 'assertion'
-          assertion = operation.parameter
-          if operation.parameter.start_with? "resource_type"
-            assertion = operation.parameter.split(":").first
-            resource_type = "FHIR::#{operation.parameter.split(":").last}".constantize
-          elsif operation.parameter.start_with? "code"
-            assertion = operation.parameter.split(":").first
-            code = operation.parameter.split(":").last
-          end
-          if self.methods.include?(ASSERTION_MAP[assertion])
-            method = self.method(ASSERTION_MAP[assertion])
-            puts "ASSERTING: #{assertion}"
-            case assertion
-            when "code"
-              method.call(@last_response, code)
-            when "resource_type"
-              method.call(@last_response, resource_type)
-            else
-              method.call(@last_response)
-            end
-          else
-            raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
-          end
+          handle_assertion(operation)
         else
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
+        end
+      end
+
+      def handle_assertion(operation)
+        assertion = operation.parameter.first
+        if assertion.start_with? "resource_type"
+          resource_type = "FHIR::#{assertion.split(":").last}".constantize
+          assertion = assertion.split(":").first
+        elsif assertion.start_with? "code"
+          code = assertion.split(":").last
+          assertion = assertion.split(":").first
+        end
+        if self.methods.include?(ASSERTION_MAP[assertion])
+          method = self.method(ASSERTION_MAP[assertion])
+          puts "ASSERTING: #{assertion}"
+          case assertion
+          when "code"
+            method.call(@last_response, code)
+          when "resource_type"
+            method.call(@last_response, resource_type)
+          else
+            params = operation.parameter[1..-1]
+            method.call(@last_response, *params)
+          end
+        else
+          raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
         end
       end
 

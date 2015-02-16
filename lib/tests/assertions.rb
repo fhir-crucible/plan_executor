@@ -56,6 +56,11 @@ module Crucible
           raise AssertionException.new "Expected FHIR Bundle but found: #{response.resource.class}", response.body
         end
       end
+      def assert_bundle_entry_count(response, count)
+        unless response.resource.total == count.to_i
+          raise AssertionException.new "Expected FHIR Bundle with #{count} entries but found: #{response.resource.total} entries", response.body
+        end
+      end
 
       def assert_valid_resource_content_type_present(client_reply)
         header = client_reply.response.headers[:content_type]

@@ -71,12 +71,13 @@ module Crucible
       def load_fixtures
         @fixtures = {}
         @testscript.fixture.each do |fixture|
-          @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri)
+          @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri) if !fixture.uri.nil?
         end
       end
 
       def process_test(test)
         result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
+        @last_response = nil # clear out any responses from previous tests
         begin
           test.operation.each do |op|
             execute_operation op
@@ -120,7 +121,13 @@ module Crucible
           fixture = @fixtures[operation.source]
           @last_response = @client.update fixture, target_id
         when 'read'
-          @last_response = @client.read @fixtures[operation.target].class, @id_map[operation.target]
+          if !operation.target.nil?
+            @last_response = @client.read @fixtures[operation.target].class, @id_map[operation.target]
+          else
+            resource_type = operation.parameter.try(:first)
+            resource_id = operation.parameter.try(:second)
+            @last_response = @client.read "FHIR::#{resource_type}", resource_id
+          end
         when 'delete'
           @client.destroy(FHIR::Condition, @cond1_reply.id) if !@cond1_id.nil?
           @last_response = @client.destroy @fixtures[operation.target].class, @id_map[operation.target]

@@ -4,8 +4,15 @@
   <name value="ReadTestScript"/>
   <description value="TestScript for Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests."/>
   <fixture id="F1">
-    <!-- I would like to include the raw Patient XML here instead of creating a fixture... -->
-    <uri value="/patient/patient-minimal.xml"/>
+    <resource>
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Patient xmlns="http://hl7.org/fhir">
+        <name>
+          <family value="Emerald"/>
+          <given value="Caro"/>
+        </name>
+      </Patient>
+    </resource>
   </fixture>
   <setup>
     <operation>

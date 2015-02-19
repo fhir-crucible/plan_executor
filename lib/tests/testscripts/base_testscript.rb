@@ -71,7 +71,11 @@ module Crucible
       def load_fixtures
         @fixtures = {}
         @testscript.fixture.each do |fixture|
-          @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri) if !fixture.uri.nil?
+          if !fixture.uri.nil?
+            @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri)
+          else
+            @fixtures[fixture.xmlId] = fixture.resource
+          end
         end
       end
 

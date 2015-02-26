@@ -9,6 +9,8 @@ module Crucible
         "response_code" => :assert_response_code,
         # response_okay	N/A	Asserts that the response code is in the set (200, 201).
         "response_okay" => :assert_response_ok,
+        # response_not_okay	N/A	Asserts that the response code is not in the set (200, 201).
+        "response_not_okay" => :assert_response_not_ok,
         # response_created N/A Asserts that the response code is 201.
         "response_created" => :assert_response_created,
         # response_gone N/A Asserts that the response code is 410.
@@ -140,6 +142,10 @@ module Crucible
           target_id = @id_map[operation.target]
           fixture = @fixtures[operation.target]
           @last_response = @client.resource_instance_history(fixture.class,target_id)
+        when '$expand'
+          @last_response = @client.value_set_expansion( extract_operation_parameters(operation) )
+        when '$validate'
+          @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
         when 'assertion'
           handle_assertion(operation)
         else
@@ -164,6 +170,9 @@ module Crucible
             method.call(@last_response, code)
           when "resource_type"
             method.call(@last_response, resource_type)
+          when "response_code"
+            code = operation.parameter[1]
+            method.call(@last_response, code.to_i)
           else
             params = operation.parameter[1..-1]
             method.call(@last_response, *params)
@@ -171,6 +180,17 @@ module Crucible
         else
           raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
         end
+      end
+
+      def extract_operation_parameters(operation)
+        options = {
+          :id => @id_map[operation.target]
+        }
+        operation.parameter.each do |param|
+          key, value = param.split("=")
+          options[key.to_sym] = value
+        end unless operation.parameter.blank?
+        options
       end
 
       #

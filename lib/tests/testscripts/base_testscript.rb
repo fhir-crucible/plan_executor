@@ -173,6 +173,10 @@ module Crucible
           when "response_code"
             code = operation.parameter[1]
             method.call(@last_response, code.to_i)
+          when "equals"
+            raise "'equals' assertion requires two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
+            expected, actual = handle_xpaths(operation)
+            method.call(expected, actual)
           else
             params = operation.parameter[1..-1]
             method.call(@last_response, *params)
@@ -191,6 +195,22 @@ module Crucible
           options[key.to_sym] = value
         end unless operation.parameter.blank?
         options
+      end
+
+      def handle_xpaths(operation)
+        expected = operation.parameter[1]
+        # some xpaths operate on OperationOutcome, which is in the response body
+        resource_xml = @last_response.resource.try(:to_xml) || @last_response.body
+        resource_doc = Nokogiri::XML(resource_xml)
+        resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
+        element = resource_doc.xpath(operation.parameter[2])
+        # for multiple possible values, just pick the first matching one...
+        if element.length>1
+          actual = ( element.detect { |e| actual = e.try(:value) if e.try(:value) == expected } ).try(:value)
+        else
+          actual = element.first.try(:value)
+        end
+        return expected, actual
       end
 
       #

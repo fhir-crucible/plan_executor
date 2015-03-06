@@ -32,18 +32,22 @@
     <operation>
       <type value="read"/>
       <target value="F1"/>
+      <responseId value="F1-read"/>
     </operation>
     <operation>
       <type value="assertion"/>
       <parameter value="response_okay"/>
+      <responseId value="F1-read"/>
     </operation>
     <operation>
       <type value="assertion"/>
       <parameter value="valid_content_location"/>
+      <responseId value="F1-read"/>
     </operation>
     <operation>
       <type value="assertion"/>
       <parameter value="resource_type:Patient"/>
+      <responseId value="F1-read"/>
     </operation>
   </test>
   <teardown>

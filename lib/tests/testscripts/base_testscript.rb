@@ -41,6 +41,7 @@ module Crucible
         define_tests
         load_fixtures
         @id_map = {}
+        @response_map = {}
       end
 
       def author
@@ -61,6 +62,14 @@ module Crucible
 
       def tests
         @testscript.test.map { |test| "#{test.xmlId} #{test.name} test".downcase.tr(' ', '_').to_sym }
+      end
+
+      def debug_prefix
+        "[TESTSCRIPT]:\t"
+      end
+
+      def log(message)
+        puts "#{debug_prefix}#{message}"
       end
 
       def define_tests
@@ -151,10 +160,12 @@ module Crucible
         else
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
+        handle_response(operation)
       end
 
       def handle_assertion(operation)
         assertion = operation.parameter.first
+        response = @response_map[operation.responseId] || @last_response
         if assertion.start_with? "resource_type"
           resource_type = "FHIR::#{assertion.split(":").last}".constantize
           assertion = assertion.split(":").first
@@ -164,22 +175,22 @@ module Crucible
         end
         if self.methods.include?(ASSERTION_MAP[assertion])
           method = self.method(ASSERTION_MAP[assertion])
-          puts "ASSERTING: #{assertion}"
+          log "ASSERTING: #{assertion}"
           case assertion
           when "code"
-            method.call(@last_response, code)
+            method.call(response, code)
           when "resource_type"
-            method.call(@last_response, resource_type)
+            method.call(response, resource_type)
           when "response_code"
             code = operation.parameter[1]
-            method.call(@last_response, code.to_i)
+            method.call(response, code.to_i)
           when "equals"
             raise "'equals' assertion requires two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
             expected, actual = handle_xpaths(operation)
             method.call(expected, actual)
           else
             params = operation.parameter[1..-1]
-            method.call(@last_response, *params)
+            method.call(response, *params)
           end
         else
           raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
@@ -211,6 +222,14 @@ module Crucible
           actual = element.first.try(:value)
         end
         return expected, actual
+      end
+
+      def handle_response(operation)
+        if !operation.responseId.blank? && operation.fhirType != 'assertion'
+          log "Overwriting response #{operation.responseId}..." if @response_map.keys.include?(operation.responseId)
+          log "Storing response #{operation.responseId}..."
+          @response_map[operation.responseId] = @last_response
+        end
       end
 
       #

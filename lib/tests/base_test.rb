@@ -82,6 +82,14 @@ module Crucible
         methods
       end
 
+      def warning
+        begin
+          yield
+        rescue AssertionException => e
+          @warnings << e.message
+        end
+      end
+
     end
   end
 end

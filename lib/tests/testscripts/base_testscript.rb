@@ -9,8 +9,6 @@ module Crucible
         "response_code" => :assert_response_code,
         # response_okay	N/A	Asserts that the response code is in the set (200, 201).
         "response_okay" => :assert_response_ok,
-        # response_not_okay	N/A	Asserts that the response code is not in the set (200, 201).
-        "response_not_okay" => :assert_response_not_ok,
         # response_created N/A Asserts that the response code is 201.
         "response_created" => :assert_response_created,
         # response_gone N/A Asserts that the response code is 410.
@@ -42,6 +40,7 @@ module Crucible
         load_fixtures
         @id_map = {}
         @response_map = {}
+        @warnings = []
       end
 
       def author
@@ -95,6 +94,8 @@ module Crucible
         @last_response = nil # clear out any responses from previous tests
         begin
           test.operation.each do |op|
+            @negated = false
+            @warned = false
             execute_operation op
           end
           # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
@@ -107,6 +108,7 @@ module Crucible
           result.requires = test.metadata.requires.map {|r| {resource: r.fhirType, methods: r.operations} } if !test.metadata.requires.empty?
           result.validates = test.metadata.validates.map {|r| {resource: r.fhirType, methods: r.operations} } if !test.metadata.requires.empty?
           result.links = test.metadata.link.map(&:url) if !test.metadata.link.empty?
+          result.warnings = @warnings unless @warnings.empty?
         end
         result
       end
@@ -157,6 +159,12 @@ module Crucible
           @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
         when 'assertion'
           handle_assertion(operation)
+        when 'assertion_false'
+          @negated = true
+          handle_assertion(operation)
+        when 'assertion_warning'
+          @warned = true
+          handle_assertion(operation)
         else
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
@@ -175,25 +183,33 @@ module Crucible
         end
         if self.methods.include?(ASSERTION_MAP[assertion])
           method = self.method(ASSERTION_MAP[assertion])
-          log "ASSERTING: #{assertion}"
+          log "ASSERTING: #{operation.fhirType} - #{assertion}"
           case assertion
           when "code"
-            method.call(response, code)
+            call_assertion(method, response, [code])
           when "resource_type"
-            method.call(response, resource_type)
+            call_assertion(method, response, [resource_type])
           when "response_code"
             code = operation.parameter[1]
-            method.call(response, code.to_i)
+            call_assertion(method, response, [code.to_i])
           when "equals"
             raise "'equals' assertion requires two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
             expected, actual = handle_xpaths(operation)
-            method.call(expected, actual)
+            call_assertion(method, expected, [actual])
           else
             params = operation.parameter[1..-1]
-            method.call(response, *params)
+            call_assertion(method, response, params)
           end
         else
           raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
+        end
+      end
+
+      def call_assertion(method, value, params)
+        if @warned
+          warning { method.call(value, *params) }
+        else
+          method.call(value, *params)
         end
       end
 
@@ -225,7 +241,7 @@ module Crucible
       end
 
       def handle_response(operation)
-        if !operation.responseId.blank? && operation.fhirType != 'assertion'
+        if !operation.responseId.blank? && !operation.fhirType.start_with?('assertion')
           log "Overwriting response #{operation.responseId}..." if @response_map.keys.include?(operation.responseId)
           log "Storing response #{operation.responseId}..."
           @response_map[operation.responseId] = @last_response

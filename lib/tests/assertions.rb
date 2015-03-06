@@ -9,61 +9,55 @@ module Crucible
       end
 
       def assert_equal(expected, actual, message="", data="")
-        unless expected == actual
+        unless assertion_bool( expected == actual )
           message += " Expected: #{expected}, but found: #{actual}."
           raise AssertionException.new message, data
         end
       end
 
       def assert_response_ok(response, error_message="")
-        unless [200, 201].include? response.code
+        unless assertion_bool( [200, 201].include?(response.code) )
           raise AssertionException.new "Bad response code expected 200, 201, but found: #{response.code}.#{" " + error_message}", response.body
         end
       end
 
-      def assert_response_not_ok(response, error_message="")
-        unless ![200, 201].include? response.code
-          raise AssertionException.new "Expected bad response code (not 200 or 201), but found: #{response.code}.#{" " + error_message}", response.body
-        end
-      end
-
       def assert_response_created(response, error_message="")
-        unless [201].include? response.code
+        unless assertion_bool( [201].include?(response.code) )
           raise AssertionException.new "Bad response code expected 201, but found: #{response.code}.#{" " + error_message}", response.body
         end
       end
 
       def assert_response_gone(response)
-        unless [410].include? response.code
+        unless assertion_bool( [410].include?(response.code) )
           raise AssertionException.new "Bad response code expected 410, but found: #{response.code}", response.body
         end
       end
 
       def assert_response_not_found(response)
-        unless [404].include? response.code
+        unless assertion_bool( [404].include?(response.code) )
           raise AssertionException.new "Bad response code expected 404, but found: #{response.code}", response.body
         end
       end
 
       def assert_response_bad(response)
-        unless [400].include? response.code
+        unless assertion_bool( [400].include?(response.code) )
           raise AssertionException.new "Bad response code expected 400, but found: #{response.code}", response.body
         end
       end
 
       def assert_navigation_links(bundle)
-        unless bundle.first_link && bundle.last_link && bundle.next_link
+        unless assertion_bool( bundle.first_link && bundle.last_link && bundle.next_link )
           raise AssertionException.new "Expecting first, next and last link to be present"
         end
       end
 
       def assert_bundle_response(response)
-        unless response.resource.class == FHIR::Bundle
+        unless assertion_bool( response.resource.class == FHIR::Bundle )
           raise AssertionException.new "Expected FHIR Bundle but found: #{response.resource.class}", response.body
         end
       end
       def assert_bundle_entry_count(response, count)
-        unless response.resource.total == count.to_i
+        unless assertion_bool( response.resource.total == count.to_i )
           raise AssertionException.new "Expected FHIR Bundle with #{count} entries but found: #{response.resource.total} entries", response.body
         end
       end
@@ -78,34 +72,38 @@ module Crucible
         charset = header[header.index(';charset=')+9..-1] if !header.index(';charset=').nil?
         encoding = Encoding.find(charset) if !charset.nil?
 
-        unless encoding == Encoding::UTF_8
+        unless assertion_bool( encoding == Encoding::UTF_8 )
           raise AssertionException.new "Response content-type specifies encoding other than UTF-8: #{charset}", header
         end
-        unless (content_type == FHIR::Formats::ResourceFormat::RESOURCE_XML) || (content_type == FHIR::Formats::ResourceFormat::RESOURCE_JSON)
+        unless assertion_bool( (content_type == FHIR::Formats::ResourceFormat::RESOURCE_XML) || (content_type == FHIR::Formats::ResourceFormat::RESOURCE_JSON) )
           raise AssertionException.new "Invalid FHIR content-type: #{content_type}", header
         end
       end
 
       def assert_last_modified_present(client_reply)
         header = client_reply.response.headers[:last_modified]
-        assert !header.nil?, 'Last-modified HTTP header is missing.'
+        assert assertion_bool( !header.nil? ), 'Last-modified HTTP header is missing.'
       end
 
       def assert_valid_content_location_present(client_reply)
         header = client_reply.response.headers[:content_location]
-        assert !header.nil?, 'Content-location HTTP header is missing.'
+        assert assertion_bool( !header.nil? ), 'Content-location HTTP header is missing.'
       end
 
       def assert_response_code(response, code)
-        unless code == response.code
+        unless assertion_bool( code == response.code )
           raise AssertionException.new "Bad response code expected #{code}, but found: #{response.code}", response.body
         end
       end
 
       def assert_resource_type(response, resource_type)
-        unless !response.resource.nil? && response.resource.class == resource_type
+        unless assertion_bool( !response.resource.nil? && response.resource.class == resource_type )
           raise AssertionException.new "Bad response type expected #{resource_type}, but found: #{response.resource.class}", response.body
         end
+      end
+
+      def assertion_bool(expression)
+        if @negated then !expression else expression end
       end
 
       def skip

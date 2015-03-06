@@ -29,14 +29,6 @@ module Crucible
         Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
       end
 
-      def warning
-        begin
-          yield
-        rescue AssertionException => e
-          @warnings << e.message
-        end
-      end
-
       def requires(hash)
         @requires << hash
       end

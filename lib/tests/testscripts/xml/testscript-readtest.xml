@@ -46,15 +46,15 @@
       <parameter value="response_okay"/>
     </operation>
     <operation>
-      <type value="assertion"/>
+      <type value="assertion_warning"/>
       <parameter value="valid_content_type"/>
     </operation>
     <operation>
-      <type value="assertion"/>
+      <type value="assertion_warning"/>
       <parameter value="valid_last_modified"/>
     </operation>
     <operation>
-      <type value="assertion"/>
+      <type value="assertion_warning"/>
       <parameter value="valid_content_location"/>
     </operation>
   </test>

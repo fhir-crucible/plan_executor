@@ -4259,8 +4259,8 @@
       <target value="intensional-case-3"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5448,8 +5448,8 @@
       <parameter value="code=emergency"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5512,8 +5512,8 @@
       <parameter value="code=emergencyX"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5620,8 +5620,8 @@
       <parameter value="display=Systolic%20blood%20pressure%20at%20First%20encounterX"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5684,8 +5684,8 @@
       <parameter value="code=11378-7"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5748,8 +5748,8 @@
       <parameter value="code=11378-7X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5812,8 +5812,8 @@
       <parameter value="code=13457-7"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5920,8 +5920,8 @@
       <parameter value="display=Systolic%20dysfunctionX"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -5984,8 +5984,8 @@
       <parameter value="code=371037005"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6048,8 +6048,8 @@
       <parameter value="code=371037005X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6112,8 +6112,8 @@
       <parameter value="code=102261002"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6220,8 +6220,8 @@
       <parameter value="display=childX"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6284,8 +6284,8 @@
       <parameter value="code=CHILD"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6348,8 +6348,8 @@
       <parameter value="code=child"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6412,8 +6412,8 @@
       <parameter value="code=FULLINS"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6520,8 +6520,8 @@
       <parameter value="display=Diastolic%20blood%20pressure%20at%20First%20encounterX"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6584,8 +6584,8 @@
       <parameter value="code=11377-9"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6648,8 +6648,8 @@
       <parameter value="code=11377-9X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6712,8 +6712,8 @@
       <parameter value="code=13457-7"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6820,8 +6820,8 @@
       <parameter value="display=Chronic%20hypertension%20in%20obstetric%20context%20(disorder)X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6884,8 +6884,8 @@
       <parameter value="code=8762007"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -6948,8 +6948,8 @@
       <parameter value="code=8762007X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -7012,8 +7012,8 @@
       <parameter value="code=102261002"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -7120,8 +7120,8 @@
       <parameter value="display=Chronic%20hypertension%20in%20obstetric%20context%20(disorder)X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -7184,8 +7184,8 @@
       <parameter value="code=8762007"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -7248,8 +7248,8 @@
       <parameter value="code=8762007X"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -7312,8 +7312,8 @@
       <parameter value="code=102261002"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>
@@ -7421,8 +7421,8 @@
       <parameter value="display=EmergencyX"/>
     </operation>
     <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_okay"/>
+      <type value="assertion_false"/>
+      <parameter value="response_okay"/>
     </operation>
     <operation>
       <type value="assertion"/>

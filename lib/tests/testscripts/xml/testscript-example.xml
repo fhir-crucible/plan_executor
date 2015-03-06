@@ -40,7 +40,7 @@
       <responseId value="F1-read"/>
     </operation>
     <operation>
-      <type value="assertion"/>
+      <type value="assertion_warning"/>
       <parameter value="valid_content_location"/>
       <responseId value="F1-read"/>
     </operation>

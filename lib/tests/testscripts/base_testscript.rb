@@ -94,8 +94,9 @@ module Crucible
         @last_response = nil # clear out any responses from previous tests
         begin
           test.operation.each do |op|
-            @negated = false
-            @warned = false
+            next if @setup_failed
+            @negated = false # clear out any negations from previous tests
+            @warned = false # clear out any warnings from previous tests
             execute_operation op
           end
           # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
@@ -104,6 +105,7 @@ module Crucible
         rescue => e
           result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
         end
+        result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
         if !test.metadata.nil?
           result.requires = test.metadata.requires.map {|r| {resource: r.fhirType, methods: r.operations} } if !test.metadata.requires.empty?
           result.validates = test.metadata.validates.map {|r| {resource: r.fhirType, methods: r.operations} } if !test.metadata.requires.empty?
@@ -115,14 +117,21 @@ module Crucible
 
       def setup
         return if @testscript.setup.blank?
-        @testscript.setup.operation.each do |op|
-          execute_operation op
+        @setup_failed = false
+        begin
+          @testscript.setup.operation.each do |op|
+            execute_operation op
+          end
+        rescue AssertionException => e
+          @setup_failed = true
         end
       end
 
       def teardown
         return if @testscript.teardown.blank?
         @testscript.teardown.operation.each do |op|
+          # Assertions in teardown have no effect
+          next if op.fhirType.start_with?('assertion')
           execute_operation op
         end
       end

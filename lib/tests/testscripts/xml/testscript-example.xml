@@ -11,6 +11,10 @@
       <type value="create"/>
       <source value="F1"/>
     </operation>
+    <operation>
+      <type value="assertion_false"/>
+      <parameter value="valid_content_location"/>
+    </operation>
   </setup>
   <test id="READ01">
     <name value="Read Patient"/>

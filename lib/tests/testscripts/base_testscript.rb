@@ -240,9 +240,9 @@ module Crucible
         resource_doc = Nokogiri::XML(resource_xml)
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         element = resource_doc.xpath(operation.parameter[2])
-        # for multiple possible values, just pick the first matching one...
+        # if the xpath resolves to multiple values, fail the test
         if element.length>1
-          actual = ( element.detect { |e| actual = e.try(:value) if e.try(:value) == expected } ).try(:value)
+          raise AssertionException.new "assert_equals with [#{operation.parameter[2]}] resolved to multiple values instead of a single value", element.to_s
         else
           actual = element.first.try(:value)
         end

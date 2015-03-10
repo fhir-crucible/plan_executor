@@ -41,12 +41,14 @@ module Crucible
 
       def initialize(testscript, client, client2=nil)
         super(client, client2)
-        @testscript = testscript
-        define_tests
-        load_fixtures
         @id_map = {}
         @response_map = {}
         @warnings = []
+        @autocreate = []
+        @autodelete = []
+        @testscript = testscript
+        define_tests
+        load_fixtures
       end
 
       def author
@@ -92,6 +94,8 @@ module Crucible
           else
             @fixtures[fixture.xmlId] = fixture.resource
           end
+          @autocreate << fixture.xmlId if fixture.autocreate
+          @autodelete << fixture.xmlId if fixture.autodelete
         end
       end
 
@@ -122,24 +126,32 @@ module Crucible
       end
 
       def setup
-        return if @testscript.setup.blank?
+        return if @testscript.setup.blank? && @autocreate.empty?
         @setup_failed = false
         begin
+          @autocreate.each do |fixture_id|
+            @last_response = @client.create @fixtures[fixture_id]
+            @id_map[fixture_id] = @last_response.id
+          end
           @testscript.setup.operation.each do |op|
             execute_operation op
-          end
+          end unless @testscript.setup.blank?
         rescue AssertionException
           @setup_failed = true
         end
       end
 
       def teardown
-        return if @testscript.teardown.blank?
+        return if @testscript.teardown.blank? && @autodelete.empty?
+        @autodelete.each do |fixture_id|
+          @last_response = @client.destroy @fixtures[fixture_id].class, @id_map[fixture_id]
+          @id_map.delete(fixture_id)
+        end
         @testscript.teardown.operation.each do |op|
           # Assertions in teardown have no effect
           next if op.fhirType.start_with?('assertion')
           execute_operation op
-        end
+        end unless @testscript.teardown.blank?
       end
 
       def execute_operation(operation)
@@ -161,7 +173,6 @@ module Crucible
             @last_response = @client.read "FHIR::#{resource_type}", resource_id
           end
         when 'delete'
-          @client.destroy(FHIR::Condition, @cond1_reply.id) if !@cond1_id.nil?
           @last_response = @client.destroy @fixtures[operation.target].class, @id_map[operation.target]
           @id_map.delete(operation.target)
         when 'history'

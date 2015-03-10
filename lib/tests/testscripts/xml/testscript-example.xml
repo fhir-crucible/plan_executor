@@ -5,6 +5,8 @@
   <description value="Example Test Script"/>
   <fixture id="F1">
     <uri value="/patient/patient-example.xml"/>
+    <autocreate value="true"/>
+    <autodelete value="true"/>
   </fixture>
   <fixture id="F1-min">
     <resource>
@@ -17,12 +19,6 @@
       </Patient>
     </resource>
   </fixture>
-  <setup>
-    <operation>
-      <type value="create"/>
-      <source value="F1"/>
-    </operation>
-  </setup>
   <test id="READ01">
     <name value="Read Patient"/>
     <description value="Read a patient and validate response."/>
@@ -91,10 +87,4 @@
       <parameter value="F1-min"/>
     </operation>
   </test>
-  <teardown>
-    <operation>
-      <type value="delete"/>
-      <target value="F1"/>
-    </operation>
-  </teardown>
 </TestScript>

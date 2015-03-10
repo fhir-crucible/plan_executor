@@ -102,6 +102,24 @@ module Crucible
         end
       end
 
+      def assert_minimum(response, fixture)
+        resource_xml = response.try(:resource).try(:to_xml)
+        fixture_xml = fixture.try(:to_xml)
+
+        resource_doc = Nokogiri::XML(resource_xml)
+        resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
+
+        fixture_doc = Nokogiri::XML(fixture_xml)
+        fixture_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
+
+        diffs = []
+        fixture_doc.diff(resource_doc, :removed => true){|change, node| diffs << node.to_xml}
+
+        unless assertion_bool( diffs.empty? )
+          raise AssertionException.new "Found #{diffs.length} difference(s) between minimum and actual resource.", diffs.to_s
+        end
+      end
+
       def assertion_bool(expression)
         if @negated then !expression else expression end
       end

@@ -6,6 +6,17 @@
   <fixture id="F1">
     <uri value="/patient/patient-example.xml"/>
   </fixture>
+  <fixture id="F1-min">
+    <resource>
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Patient xmlns="http://hl7.org/fhir">
+        <name>
+          <family value="Chalmers"/>
+          <given value="Peter"/>
+        </name>
+      </Patient>
+    </resource>
+  </fixture>
   <setup>
     <operation>
       <type value="create"/>
@@ -37,17 +48,47 @@
     <operation>
       <type value="assertion"/>
       <parameter value="response_okay"/>
-      <responseId value="F1-read"/>
     </operation>
     <operation>
       <type value="assertion_warning"/>
       <parameter value="valid_content_location"/>
-      <responseId value="F1-read"/>
     </operation>
     <operation>
       <type value="assertion"/>
       <parameter value="resource_type:Patient"/>
-      <responseId value="F1-read"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="equals"/>
+      <parameter value="Chalmers"/>
+      <parameter value="fhir:Patient/fhir:name/fhir:family/@value"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="fixture_equals"/>
+      <parameter value="F1"/>
+      <parameter value="fhir:Patient/fhir:name/fhir:family/@value"/>
+      <parameter value="Chalmers"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="fixture_equals"/>
+      <parameter value="F1-read"/>
+      <parameter value="fhir:Patient/fhir:name/fhir:family/@value"/>
+      <parameter value="fhir:Patient/fhir:name/fhir:family/@value"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="fixture_compare"/>
+      <parameter value="F1"/>
+      <parameter value="fhir:Patient/fhir:name/fhir:family/@value"/>
+      <parameter value="F1-read"/>
+      <parameter value="fhir:Patient/fhir:name/fhir:family/@value"/>
+    </operation>
+    <operation>
+      <type value="assertion"/>
+      <parameter value="minimum"/>
+      <parameter value="F1-min"/>
     </operation>
   </test>
   <teardown>

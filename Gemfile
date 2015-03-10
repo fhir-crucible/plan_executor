@@ -16,6 +16,7 @@ gem 'fhir_client', git: 'https://github.com/fhir-crucible/fhir_client.git', :bra
 gem 'rest-client'
 gem 'webmock'
 gem 'builder'
+gem 'nokogiri-diff'
 
 group :test do
   gem 'simplecov', :require => false

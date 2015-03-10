@@ -5,6 +5,10 @@ module Crucible
       ASSERTION_MAP = {
         # equals	expected (value1 or xpath expression2) actual (value1 or xpath expression2)	Asserts that "expected" is equal to "actual".
         "equals" => :assert_equal,
+        # fixture_equals expected_fixture_id, expected_xpath, actual_fixture_id, actual_xpath Asserts that "expected_xpath" in "expected_fixture_id" is equal to "actual_xpath" in "actual_fixture_id"
+        "fixture_equals" => :assert_equal,
+        # fixture_compare fixture_id, fixture_xpath, actual (value or xpath expression) Asserts that "fixture_xpath" in "fixture_id" is equal to "actual"
+        "fixture_compare" => :assert_equal,
         # response_code	code (numeric HTTP response code)	Asserts that the response code equals "code".
         "response_code" => :assert_response_code,
         # response_okay	N/A	Asserts that the response code is in the set (200, 201).
@@ -30,7 +34,9 @@ module Crucible
         # bundle_response N/A Asserts that the response is a bundle.
         "bundle_response" => :assert_bundle_response,
         # bundle_entry_count count (number of entries expected) Asserts that the number of entries matches expectations.
-        "bundle_entry_count" => :assert_bundle_entry_count
+        "bundle_entry_count" => :assert_bundle_entry_count,
+        # minimum fixture_id Assert that the last response's resource contains at least the components in "fixture_id"
+        "minimum" => :assert_minimum
       }
 
       def initialize(testscript, client, client2=nil)
@@ -122,7 +128,7 @@ module Crucible
           @testscript.setup.operation.each do |op|
             execute_operation op
           end
-        rescue AssertionException => e
+        rescue AssertionException
           @setup_failed = true
         end
       end
@@ -202,9 +208,18 @@ module Crucible
             code = operation.parameter[1]
             call_assertion(method, response, [code.to_i])
           when "equals"
-            raise "'equals' assertion requires two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
-            expected, actual = handle_xpaths(operation)
+            expected, actual = handle_equals(operation, response, method)
             call_assertion(method, expected, [actual])
+          when "fixture_equals"
+            expected, actual = handle_fixture_equals(operation, response, method)
+            call_assertion(method, expected, [actual])
+          when "fixture_compare"
+            expected, actual = handle_fixture_compare(operation, response, method)
+            call_assertion(method, expected, [actual])
+          when "minimum"
+            fixture_id = operation.parameter[1]
+            fixture = @fixtures[fixture_id] || @response_map[fixture_id].try(:resource)
+            call_assertion(method, response, [fixture])
           else
             params = operation.parameter[1..-1]
             call_assertion(method, response, params)
@@ -233,28 +248,86 @@ module Crucible
         options
       end
 
-      def handle_xpaths(operation)
-        expected = operation.parameter[1]
-        # some xpaths operate on OperationOutcome, which is in the response body
-        resource_xml = @last_response.resource.try(:to_xml) || @last_response.body
-        resource_doc = Nokogiri::XML(resource_xml)
-        resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
-        element = resource_doc.xpath(operation.parameter[2])
-        # if the xpath resolves to multiple values, fail the test
-        if element.length>1
-          raise AssertionException.new "assert_equals with [#{operation.parameter[2]}] resolved to multiple values instead of a single value", element.to_s
-        else
-          actual = element.first.try(:value)
-        end
-        return expected, actual
-      end
-
       def handle_response(operation)
-        if !operation.responseId.blank? && !operation.fhirType.start_with?('assertion')
+        if !operation.responseId.blank? && !operation.fhirType.start_with?('assertion') && operation.fhirType != 'delete'
           log "Overwriting response #{operation.responseId}..." if @response_map.keys.include?(operation.responseId)
           log "Storing response #{operation.responseId}..."
           @response_map[operation.responseId] = @last_response
         end
+      end
+
+      def handle_equals(operation, response, method)
+        raise "#{method} expects two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
+        expected, actual = operation.parameter[1..2]
+        resource_xml = response.try(:resource).try(:to_xml) || response.body
+
+        if is_xpath(expected)
+          expected = extract_xpath_value(method, resource_xml, expected)
+        end
+        if is_xpath(actual)
+          actual = extract_xpath_value(method, resource_xml, actual)
+        end
+
+        return expected, actual
+      end
+
+      def handle_fixture_equals(operation, response, method)
+        # fixture_equals(fixture-id, fixture-xpath, actual)
+
+        fixture_id, fixture_xpath, actual = operation.parameter[1..3]
+        raise "#{method} expects a fixture_id as the second operation parameter" unless !fixture_id.blank?
+        raise "#{fixture_id} does not exist" unless ( @fixtures.keys.include?(fixture_id) || @response_map.keys.include?(fixture_id) )
+        raise "#{method} expects a fixture_xpath as the third operation parameter" unless !fixture_xpath.blank?
+        raise "#{method} expects an actual value as the fourth operation parameter" unless !actual.blank?
+        raise "#{method} expects fixture_xpath to be a valid xpath" unless is_xpath(fixture_xpath)
+
+        fixture = @fixtures[fixture_id] || @response_map[fixture_id].try(:resource)
+        expected = extract_xpath_value(method, fixture.try(:to_xml), fixture_xpath)
+
+        if is_xpath(actual)
+          response_xml = response.resource.try(:to_xml) || response.body
+          actual = extract_xpath_value(method, response_xml, actual)
+        end
+
+        return expected, actual
+      end
+
+      def handle_fixture_compare(operation, response, method)
+        # fixture_compare(expected_fixture_id, expected_xpath, actual_fixture, actual_xpath)
+
+        expected_fixture_id, expected_xpath, actual_fixture_id, actual_xpath = operation.parameter[1..4]
+        raise "#{method} expects expected_fixture_id as the operation parameter" unless !expected_fixture_id.blank?
+        raise "#{expected_fixture_id} does not exist" unless ( @fixtures.keys.include?(expected_fixture_id) || @response_map.keys.include?(expected_fixture_id) )
+        raise "#{method} expects expected_xpath as the operation parameter" unless !expected_xpath.blank?
+        raise "#{method} expects actual_fixture_id as the operation parameter" unless !actual_fixture_id.blank?
+        raise "#{actual_fixture_id} does not exist" unless ( @fixtures.keys.include?(actual_fixture_id) || @response_map.keys.include?(actual_fixture_id) )
+        raise "#{method} expects actual_xpath as the operation parameter" unless !actual_xpath.blank?
+
+        expected_fixture = @fixtures[expected_fixture_id] || @response_map[expected_fixture_id].try(:resource)
+        actual_fixture = @fixtures[actual_fixture_id] || @response_map[actual_fixture_id].try(:resource)
+
+        raise "expected: #{expected_xpath} is not an xpath" unless is_xpath(expected_xpath)
+        raise "actual: #{actual_xpath} is not an xpath" unless is_xpath(actual_xpath)
+        expected = extract_xpath_value(method, expected_fixture.try(:to_xml), expected_xpath)
+        actual = extract_xpath_value(method, actual_fixture.try(:to_xml), actual_xpath)
+
+        return expected, actual
+      end
+
+      private
+
+      # Crude method of detecting xpath expressions
+      def is_xpath(value)
+        value.start_with?("fhir:") && value.include?("@")
+      end
+
+      def extract_xpath_value(method, resource_xml, resource_xpath)
+        resource_doc = Nokogiri::XML(resource_xml)
+        resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
+        resource_element = resource_doc.xpath(resource_xpath)
+
+        raise AssertionException.new("#{method} with [#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
+        resource_element.first.try(:value)
       end
 
       #

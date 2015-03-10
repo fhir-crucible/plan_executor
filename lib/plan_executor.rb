@@ -5,6 +5,7 @@ require 'yaml'
 require 'nokogiri'
 require 'fhir_model'
 require 'fhir_client'
+require 'nokogiri/diff'
 
 require_relative File.join('.','executor.rb')
 require_relative File.join('.','test_result.rb')

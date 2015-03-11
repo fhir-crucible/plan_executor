@@ -132,7 +132,7 @@ module Crucible
           @autocreate.each do |fixture_id|
             @last_response = @client.create @fixtures[fixture_id]
             @id_map[fixture_id] = @last_response.id
-          end
+          end unless @client.nil?
           @testscript.setup.operation.each do |op|
             execute_operation op
           end unless @testscript.setup.blank?
@@ -146,7 +146,7 @@ module Crucible
         @autodelete.each do |fixture_id|
           @last_response = @client.destroy @fixtures[fixture_id].class, @id_map[fixture_id]
           @id_map.delete(fixture_id)
-        end
+        end unless @client.nil?
         @testscript.teardown.operation.each do |op|
           # Assertions in teardown have no effect
           next if op.fhirType.start_with?('assertion')

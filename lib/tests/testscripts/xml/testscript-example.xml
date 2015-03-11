@@ -51,7 +51,8 @@
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="resource_type:Patient"/>
+      <parameter value="resource_type"/>
+      <parameter value="Patient"/>
     </operation>
     <operation>
       <type value="assertion"/>

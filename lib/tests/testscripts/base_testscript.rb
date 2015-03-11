@@ -200,10 +200,7 @@ module Crucible
       def handle_assertion(operation)
         assertion = operation.parameter.first
         response = @response_map[operation.responseId] || @last_response
-        if assertion.start_with? "resource_type"
-          resource_type = "FHIR::#{assertion.split(":").last}".constantize
-          assertion = assertion.split(":").first
-        elsif assertion.start_with? "code"
+        if assertion.start_with? "code"
           code = assertion.split(":").last
           assertion = assertion.split(":").first
         end
@@ -214,6 +211,7 @@ module Crucible
           when "code"
             call_assertion(method, response, [code])
           when "resource_type"
+            resource_type = "FHIR::#{operation.parameter[1]}".constantize
             call_assertion(method, response, [resource_type])
           when "response_code"
             code = operation.parameter[1]

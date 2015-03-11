@@ -47,12 +47,14 @@
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="bundle_response"/>
+      <parameter value="resource_type"/>
+      <parameter value="Bundle"/>
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="bundle_entry_count"/>
+      <parameter value="equals"/>
       <parameter value="2"/>
+      <parameter value="fhir:Bundle/fhir:total/@value"/>
     </operation>
   </test>
   <teardown>

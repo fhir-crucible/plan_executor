@@ -43,7 +43,8 @@
     </operation>
     <operation>
       <type value="assertion"/>
-      <parameter value="response_created"/>
+      <parameter value="response_code"/>
+      <parameter value="201"/>
     </operation>
     <operation>
       <type value="assertion"/>

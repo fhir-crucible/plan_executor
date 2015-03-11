@@ -107,9 +107,11 @@ module Crucible
         fixture_xml = fixture.try(:to_xml)
 
         resource_doc = Nokogiri::XML(resource_xml)
+        raise "Could not retrieve Resource as XML from response" if resource_doc.root.nil?
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
 
         fixture_doc = Nokogiri::XML(fixture_xml)
+        raise "Could not retrieve Resource as XML from fixture" if fixture_doc.root.nil?
         fixture_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
 
         diffs = []

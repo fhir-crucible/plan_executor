@@ -42,8 +42,9 @@ namespace :crucible do
     output_results executor.execute(executor.find_test(key))
   end
 
-  def execute_multiserver_test(client, client2, test)
-    output_results Crucible::Tests::Executor.new(client, client2).execute(test)
+  def execute_multiserver_test(client, client2, key)
+    executor = Crucible::Tests::Executor.new(client)
+    output_results executor.execute(executor.find_test(key))
   end
 
   def collect_metadata(client, test)
@@ -182,7 +183,7 @@ namespace :crucible do
     task :execute, [:url1, :url2, :test] do |t, args|
       require 'turn'
       require 'benchmark'
-      b = Benchmark.measure { execute_multiserver_test(FHIR::Client.new(args.url1), FHIR::Client.new(args.url2), args.test.to_sym) }
+      b = Benchmark.measure { execute_multiserver_test(FHIR::Client.new(args.url1), FHIR::Client.new(args.url2), args.test) }
       puts "Execute multiserver #{args.test} completed in #{b.real} seconds."
     end
   end

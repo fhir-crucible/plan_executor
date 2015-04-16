@@ -5,6 +5,7 @@ module Crucible
       def initialize(client=nil, client2=nil)
         @client = client
         @client2 = client2
+        @suites = {}
       end
 
       def metadata(test)
@@ -59,143 +60,6 @@ module Crucible
         list
       end
 
-      def self.generate_all_testscripts
-        SuiteEngine.new.tests.each do |test|
-          self.generate_testscript(test)
-        end
-      end
-
-      def self.generate_testscript(test)
-        require 'builder'
-        Dir.mkdir('./testScripts') unless Dir.exists?('./testScripts')
-        test_file = Crucible::Tests.const_get(test).new(nil)
-
-        metadata = test_file.collect_metadata()
-        for test_suite in metadata
-          suite_name = test_suite.keys.first
-          if metadata.size > 1
-            klass_name = suite_name.split('_').last
-            klass = test_file.resource_class.get_fhir_class_from_resource_type(klass_name)
-            test_file.resource_class = klass
-          end
-          setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
-          teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
-
-          testscript = FHIR::TestScript.new
-          testscript.xmlId = test_file.id
-          testscript.text = FHIR::Narrative.new
-          testscript.text.status = 'generated'
-          testscript.text.div = "Setup procedure:\n\n #{setup} \n\n Teardown procedure:\n\n #{teardown}"
-          testscript.name = test_file.title
-          testscript.description = test_file.description
-
-          testscript.setup = FHIR::TestScript::TestScriptSetupComponent.new
-          # TODO create setup operations
-          testscript.teardown = FHIR::TestScript::TestScriptTeardownComponent.new
-          # TODO create teardown operations
-
-          testscript.test = []
-          test_suite[suite_name][:tests].each do |test|
-            t = FHIR::TestScript::TestScriptTestComponent.new
-            t.xmlId = test['key']
-            t.name = test[:test_method]
-            t.description = test['description']
-            t.metadata = FHIR::TestScript::TestScriptTestMetadataComponent.new
-            # embeds_many :link, class_name:'FHIR::TestScript::TestScriptTestMetadataLinkComponent'
-            if !test['links'].nil?
-              t.metadata.link = []
-              test['links'].each do |link|
-                l = FHIR::TestScript::TestScriptTestMetadataLinkComponent.new
-                l.url = link
-                l.description = 'Specification Link'
-                t.metadata.link << l
-              end
-            end
-            # embeds_many :requires, class_name:'FHIR::TestScript::TestScriptTestMetadataRequiresComponent'
-            if !test['requires'].nil?
-              t.metadata.requires = []
-              test['requires'].each do |requirement|
-                r = FHIR::TestScript::TestScriptTestMetadataRequiresComponent.new
-                r.fhirType = requirement[:resource]
-                r.operations = requirement[:methods].join(', ')
-                t.metadata.requires << r
-              end
-            end
-            # embeds_many :validates, class_name:'FHIR::TestScript::TestScriptTestMetadataValidatesComponent'
-            if !test['validates'].nil?
-              t.metadata.validates = []
-              test['validates'].each do |validation|
-                v = FHIR::TestScript::TestScriptTestMetadataValidatesComponent.new
-                v.fhirType = validation[:resource]
-                v.operations = validation[:methods].join(', ')
-                t.metadata.validates << v
-              end
-            end
-            # TODO create test operations
-            t.operation = [ FHIR::TestScript::TestScriptTestOperationComponent.new ]
-            t.operation[0].fhirType = 'read'
-            # TODO create test assertions
-            t.assertion = [ FHIR::TestScript::TestScriptTestAssertionComponent.new ]
-            t.assertion[0].fhirType = 'foo'
-
-            testscript.test << t
-          end
-
-          file = File.open("./testScripts/#{suite_name}.xml", 'w')
-          file.write( testscript.to_xml )
-          file.close
-        end
-      end
-
-      def self.generate_ctl
-        SuiteEngine.new.tests.each do |test|
-          self.generate_test_ctl(test)
-        end
-      end
-
-      def self.generate_test_ctl(test)
-        require 'builder'
-        Dir.mkdir('./ctl') unless Dir.exists?('./ctl')
-        test_file = Crucible::Tests.const_get(test).new(nil)
-
-        metadata = test_file.collect_metadata()
-        for test_suite in metadata
-          suite_name = test_suite.keys.first
-          setup = test_file.method(:setup).source.lines.to_a[1..-2].join() if test_file.respond_to? 'setup'
-          teardown = test_file.method(:teardown).source.lines.to_a[1..-2].join() if test_file.respond_to? 'teardown'
-          file = File.open("./ctl/#{suite_name}.xml", "w")
-          xml = Builder::XmlMarkup.new(:indent => 2, target: file)
-          xml.xs :schema, {:"xmlns:ctl" => "http://www.occamlab.com/ctl"} do
-            xml.suite(name: "#{suite_name}") do
-              xml.title(suite_name)
-              # Because this element has a dash in the name we have to use this method to call it
-              xml.tag!(:"starting-test", "#{suite_name}:base_test")
-            end
-
-            xml.test(name: "#{suite_name}::base_test") do
-              xml.assertion "base main"
-              xml.code do
-                (test_suite[suite_name][:tests]||[]).each {|test| xml.tag!(:"call-test", "#{suite_name}::#{test[:test_method]}")}
-              end
-            end
-
-            for test in test_suite[suite_name][:tests]
-              xml.test(name: "#{suite_name}::#{test[:test_method]}", id: test["id"]) do
-                xml.code "#{setup}\n #{test["code"].lines.to_a[1..-2].join()} \n#{teardown}".lstrip.rstrip
-                xml.context test["description"]
-                (test["links"]||[]).each {|link| xml.link link}
-                assertions = []
-                (test["validates"]||[]).map {|a| assertions << "Validates the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}
-                (test["requires"]||[]).map {|a| assertions << "Requires the #{(a[:methods].join(",")).upcase} methods on #{a[:resource]}"}
-                test["code"].scan(/assert.*?,\s["'](.*?)['"]/).map{|a| assertions << "Asserts False: #{a[0]}"}
-                xml.assertion assertions.join("\n")
-              end
-            end
-          end
-          file.close
-        end
-      end
-
       def self.list_all
         list = {}
         # FIXME: Organize defaults between instance & class methods
@@ -213,19 +77,27 @@ module Crucible
               end
             end
           else
-            list[test] = {}
-            BaseTest::JSON_FIELDS.each {|field| list[test][field] = test.send(field)}
+            list[test.title] = {}
+            BaseTest::JSON_FIELDS.each {|field| list[test.title][field] = test.send(field)}
           end
         end
         list
       end
 
+      # Build all the test suites if none exist, but only reference the class
       def tests
-        (Crucible::Tests.constants.grep(/Test$/) - [:BaseTest]).map {|t| Crucible::Tests.const_get(t).new(@client, @client2)}
+        if @suites.blank?
+          (Crucible::Tests.constants.grep(/Test$/) - [:BaseTest]).each do |suite|
+            @suites[suite] = Crucible::Tests.const_get(suite)
+          end
+        end
+        # return newly-initialized copies of the tests
+        @suites.values.map {|suite| suite.new(@client, @client2)}
       end
 
+      # Use the built test suites to find a given test suite
       def find_test(key)
-        Crucible::Tests.const_get(key.to_sym).new(@client, @client2) if Crucible::Tests.constants.include? key.to_sym
+        @suites[key.to_sym].new(@client, @client2) if @suites.keys.include?(key.to_sym)
       end
 
       def self.generate_metadata

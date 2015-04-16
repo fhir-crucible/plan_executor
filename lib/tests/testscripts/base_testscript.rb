@@ -143,15 +143,15 @@ module Crucible
 
       def teardown
         return if @testscript.teardown.blank? && @autodelete.empty?
-        @autodelete.each do |fixture_id|
-          @last_response = @client.destroy @fixtures[fixture_id].class, @id_map[fixture_id]
-          @id_map.delete(fixture_id)
-        end unless @client.nil?
         @testscript.teardown.operation.each do |op|
           # Assertions in teardown have no effect
           next if op.fhirType.start_with?('assertion')
           execute_operation op
         end unless @testscript.teardown.blank?
+        @autodelete.each do |fixture_id|
+          @last_response = @client.destroy @fixtures[fixture_id].class, @id_map[fixture_id]
+          @id_map.delete(fixture_id)
+        end unless @client.nil?
       end
 
       def execute_operation(operation)

@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class ResourceTest < BaseTest
+    class ResourceTest < BaseSuite
 
       attr_accessor :resource_class
       attr_accessor :bundle
@@ -18,14 +18,14 @@ module Crucible
         if resource_class
           @resource_class = resource_class
           [{"ResourceTest_#{@resource_class.name.demodulize}" => {
-            test_file: test_name,
+            test_file: title,
             tests: execute_test_methods
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
             {"ResourceTest_#{@resource_class.name.demodulize}" => {
-              test_file: test_name,
+              test_file: title,
               tests: execute_test_methods
             }}
           end
@@ -67,7 +67,7 @@ module Crucible
       #
       # Test if we can create a new resource and post it to the server.
       #
-      test 'X010', 'Create New' do 
+      test 'X010', 'Create New' do
         metadata {
           define_metadata('create')
         }
@@ -132,7 +132,7 @@ module Crucible
 
         if !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.xmlId
-          @preexisting = @bundle.entry[0].resource    
+          @preexisting = @bundle.entry[0].resource
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
@@ -245,7 +245,7 @@ module Crucible
         result = TestResult.new('X055',"Previous version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if !@history_bundle.nil? && @history_bundle.total>0 && !@history_bundle.entry[0].nil? && !@history_bundle.entry[0].resource.nil?
-          @preexisting = @history_bundle.entry[0].resource  
+          @preexisting = @history_bundle.entry[0].resource
           @preexisting_id = @preexisting.xmlId
           @preexisting_version = nil
           @preexisting_version = @preexisting.meta.versionId if !@preexisting.meta.nil?
@@ -262,7 +262,7 @@ module Crucible
         elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
           raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
         end
- 
+
         result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", reply.body)
       end
 
@@ -309,7 +309,7 @@ module Crucible
 
         if !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.xmlId
-          @preexisting = @bundle.entry[0].resource    
+          @preexisting = @bundle.entry[0].resource
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
@@ -341,10 +341,10 @@ module Crucible
       #
       # Validate the representation of a resource against a given profile.
       #
-      # The client can ask the server to validate against a particular resource by attaching a profile tag to the resource. 
+      # The client can ask the server to validate against a particular resource by attaching a profile tag to the resource.
       # This is an assertion that the resource conforms to the specified profile(s), and the server can check this.
       #
-      # Profile Tag has an HTTP header named "Category" with three parts: 
+      # Profile Tag has an HTTP header named "Category" with three parts:
       #   scheme: [uri]    "http://hl7.org/fhir/tag/profile"
       #   term:   [uri]    In a profile tag, the term is a URL that references a profile resource.
       #   label:  [stribg] (optional) A human-readable label for the tag for use when displaying in end-user applications
@@ -398,7 +398,7 @@ module Crucible
 
         if !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.xmlId
-          @preexisting = @bundle.entry[0].resource    
+          @preexisting = @bundle.entry[0].resource
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
@@ -430,7 +430,7 @@ module Crucible
           message = self.build_messages(outcome)
           result.update(STATUS[:fail], message, reply.body)
         end
-   
+
         result
       end
 

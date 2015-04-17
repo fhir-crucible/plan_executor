@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class TrackThreeTest < BaseTest
+    class TrackThreeTest < BaseSuite
 
       def id
         'Connectathon8Track3'
@@ -14,11 +14,11 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
 
         @profile = @resources.track3_profile
-        @profile.xmlId = nil 
+        @profile.xmlId = nil
         @profile.identifier = nil # clear the identifiers, in case the server checks for duplicates
         reply = @client.create @profile
         @profile.xmlId = reply.id if !reply.id.nil?
-        
+
         options = {
           id: @profile.xmlId,
           resource: @profile.class,

@@ -1,7 +1,7 @@
 
 module Crucible
   module Tests
-    class FetchPatientRecordTest < BaseTest
+    class FetchPatientRecordTest < BaseSuite
 
       def id
         'MultiServerFetchPatientRecord001'

@@ -1,7 +1,7 @@
 
 module Crucible
   module Tests
-    class PatientTransferTest < BaseTest
+    class PatientTransferTest < BaseSuite
 
       def id
         'MultiServerPatientTransfer001'

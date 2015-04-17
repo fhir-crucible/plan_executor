@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class FormatTest < BaseTest
+    class FormatTest < BaseSuite
 
       def id
         'Format001'

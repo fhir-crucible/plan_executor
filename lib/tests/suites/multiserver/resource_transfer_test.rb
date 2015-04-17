@@ -1,7 +1,7 @@
 
 module Crucible
   module Tests
-    class ResourceTransferTest < BaseTest
+    class ResourceTransferTest < BaseSuite
 
       attr_accessor :resource_class
       attr_accessor :client1_bundle
@@ -34,14 +34,14 @@ module Crucible
         if resource_class
           @resource_class = resource_class
           [{"ResourceTransferTest_#{@resource_class.name.demodulize}" => {
-            test_file: test_name,
+            test_file: title,
             tests: execute_test_methods
           }}]
         else
           fhir_resources.map do | klass |
             @resource_class = klass
             {"ResourceTransferTest_#{@resource_class.name.demodulize}" => {
-              test_file: test_name,
+              test_file: title,
               tests: execute_test_methods
             }}
           end

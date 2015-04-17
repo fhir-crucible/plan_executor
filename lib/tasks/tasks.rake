@@ -43,7 +43,7 @@ namespace :crucible do
   end
 
   def execute_multiserver_test(client, client2, key)
-    executor = Crucible::Tests::Executor.new(client)
+    executor = Crucible::Tests::Executor.new(client, client2)
     output_results executor.execute(executor.find_test(key))
   end
 

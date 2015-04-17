@@ -5,7 +5,7 @@ module Crucible
       def initialize(client=nil, client2=nil)
         @client = client
         @client2 = client2
-        @suites = {}
+        build_suites_map
       end
 
       def metadata(test)
@@ -86,11 +86,6 @@ module Crucible
 
       # Build all the test suites if none exist, but only reference the class
       def tests
-        if @suites.blank?
-          (Crucible::Tests.constants.grep(/Test$/) - [:BaseTest]).each do |suite|
-            @suites[suite] = Crucible::Tests.const_get(suite)
-          end
-        end
         # return newly-initialized copies of the tests
         @suites.values.map {|suite| suite.new(@client, @client2)}
       end
@@ -98,6 +93,13 @@ module Crucible
       # Use the built test suites to find a given test suite
       def find_test(key)
         @suites[key.to_sym].new(@client, @client2) if @suites.keys.include?(key.to_sym)
+      end
+
+      def build_suites_map
+        @suites = {}
+        (Crucible::Tests.constants.grep(/Test$/) - [:BaseTest]).each do |suite|
+          @suites[suite] = Crucible::Tests.const_get(suite)
+        end
       end
 
       def self.generate_metadata

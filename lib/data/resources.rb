@@ -66,7 +66,7 @@ module Crucible
       end
 
       def track3_profile
-        FHIR::Profile.from_xml File.read(File.join(fixture_path, 'validation', 'observation.profile.xml'))
+        FHIR::StructureDefinition.from_xml File.read(File.join(fixture_path, 'validation', 'observation.profile.xml'))
       end
 
       def track3_observations

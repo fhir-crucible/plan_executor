@@ -1,19 +1,21 @@
-<Condition xmlns="http://hl7.org/fhir">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Condition xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <id value="f205"/>
-  <subject>
+  <patient>
     <reference value="Patient/f201"/>
     <display value="Roel"/>
-  </subject>
+  </patient>
   <asserter>
     <reference value="Practitioner/f201"/>
   </asserter>
-  <dateAsserted value="2013-04-04"/><!--  The problem was entered at April fourth  -->
-  <code><!--  The problem is a bacterial infection   -->
+  <dateAsserted value="2013-04-04"/><!--The problem was entered at April fourth-->
+  <code><!--The problem is a bacterial infection -->
     <coding>
       <system value="http://snomed.info/sct"/>
       <code value="87628006"/>
       <display value="Bacterial infectious disease"/>
     </coding>
   </code>
-  <status value="working"/>
+  <clinicalStatus value="working"/>
 </Condition>

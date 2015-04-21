@@ -1,22 +1,23 @@
-<Patient xmlns="http://hl7.org/fhir">
+<?xml version="1.0" encoding="UTF-8"?>
+<Patient xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <id value="f201"/>
   <identifier>
-    <!--  The identifier for the person as this patient (fictive)  -->
+    <!--The identifier for the person as this patient (fictive)-->
     <use value="official"/>
-    <label value="BSN"/>
+    <type><text value="BSN"/></type>
     <system value="urn:oid:2.16.840.1.113883.2.4.6.3"/>
     <value value="123456789"/>
   </identifier>
-  <!--  Demographics  -->
+  <!--Demographics-->
   <identifier>
-    <!--  The identifier for this individual  -->
+    <!--The identifier for this individual-->
     <use value="official"/>
-    <label value="BSN"/>
+    <type><text value="BSN"/></type>
     <system value="urn:oid:2.16.840.1.113883.2.4.6.3"/>
     <value value="123456789"/>
   </identifier>
   <name>
-    <!--  The name associated with the individual (fictive)  -->
+    <!--The name associated with the individual (fictive)-->
     <use value="official"/>
     <text value="Roel"/>
     <family value="Bor"/>
@@ -25,31 +26,31 @@
     <suffix value="PDEng."/>
   </name>
   <telecom>
-    <!--  The mobile contact detail for the individual  -->
+    <!--The mobile contact detail for the individual-->
     <system value="phone"/>
     <value value="+31612345678"/>
     <use value="mobile"/>
   </telecom>
   <telecom>
-    <!--  The home contact detail for the individual  -->
+    <!--The home contact detail for the individual-->
     <system value="phone"/>
     <value value="+31201234567"/>
     <use value="home"/>
   </telecom>
-  <gender value="male"/>
+  <gender value="male" />
   <birthDate value="1960-03-13"/>
-  <!--  The date and time of birth for the individual   -->
+  <!--The date and time of birth for the individual -->
   <deceasedBoolean value="false"/>
-  <!--  Indicates that the individual is not deceased  -->
-  <address><!--  Home address for the individual  -->
+  <!--Indicates that the individual is not deceased-->
+  <address><!--Home address for the individual-->
     <use value="home"/>
     <line value="Bos en Lommerplein 280"/>
     <city value="Amsterdam"/>
     <postalCode value="1055RW"/>
-    <country value="NLD"/><!--  ISO 3166 3 letter code  -->
+    <country value="NLD"/><!--ISO 3166 3 letter code-->
   </address>
   <maritalStatus>
-    <!--  Marital status of the person  -->
+    <!--Marital status of the person-->
     <coding>
       <system value="http://snomed.info/sct"/>
       <code value="36629006"/>
@@ -62,13 +63,13 @@
   </maritalStatus>
   <multipleBirthBoolean value="false"/>
   <photo>
-    <contentType value="image/jpeg"/>
+    <contentType value="image/jpeg" />
     <url value="binary/@f006"/>
   </photo>
   <contact>
-    <!--  Contact of the patient  -->
+    <!--Contact of the patient-->
     <relationship>
-      <!--  Indicates that the contact is the patient's wife  -->
+      <!--Indicates that the contact is the patient's wife-->
       <coding>
         <system value="http://snomed.info/sct"/>
         <code value="127850001"/>
@@ -80,29 +81,32 @@
       </coding>
     </relationship>
     <name>
-      <!--  The name of the contact  -->
+      <!--The name of the contact-->
       <use value="usual"/>
       <text value="Ariadne Bor-Jansma"/>
     </name>
     <telecom>
-      <!--  The home contact detail  -->
+      <!--The home contact detail-->
       <system value="phone"/>
       <value value="+31201234567"/>
       <use value="home"/>
     </telecom>
   </contact>
   <communication>
-    <coding>
-      <system value="urn:std:iso:639-1"/>
-      <code value="nl-NL"/>
-      <display value="Dutch"/>
-    </coding>
+    <language>
+      <coding>
+        <system value="urn:std:iso:639-1"/>
+        <code value="nl-NL"/>
+        <display value="Dutch"/>
+      </coding>
+    </language>
+    <preferred value="true" />
   </communication>
   <managingOrganization>
     <reference value="Organization/f201"/>
     <display value="AUMC"/>
   </managingOrganization>
 
-  <!--  Indicates that the patient is not part of a multiple birth   -->
+  <!--Indicates that the patient is not part of a multiple birth -->
   <active value="true"/>
 </Patient>

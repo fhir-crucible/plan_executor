@@ -1,45 +1,46 @@
-<Condition xmlns="http://hl7.org/fhir">
+<?xml version="1.0" encoding="UTF-8"?>
+<Condition xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <id value="f201"/>
-  <subject><!--  It entails Roel's problem  -->
+  <patient><!--It entails Roel's problem-->
     <reference value="Patient/f201"/>
     <display value="Roel"/>
-  </subject>
+  </patient>
   <encounter>
     <reference value="Encounter/f201"/>
   </encounter>
   <asserter>
     <reference value="Practitioner/f201"/>
   </asserter>
-  <dateAsserted value="2013-04-04"/><!--  The problem was entered at April fourth  -->
-  <code><!--  The problem is a fever  -->
+  <dateAsserted value="2013-04-04"/><!--The problem was entered at April fourth-->
+  <code><!--The problem is a fever-->
     <coding>
       <system value="http://snomed.info/sct"/>
       <code value="386661006"/>
       <display value="Fever"/>
     </coding>
   </code>
-  <category><!--  The fever is a mild problem  -->
+  <category><!--The fever is a mild problem-->
     <coding>
       <system value="http://snomed.info/sct"/>
       <code value="55607006"/>
       <display value="Problem"/>
     </coding>
     <coding>
-      <system value="http://hl7.org/fhir/condition-category"/>
-      <code value="condition"/>
+      <system value="http://hl7.org/fhir/condition-category" />
+      <code value="condition" />
     </coding>
   </category>
-  <status value="confirmed"/>
-  <severity><!--  The fever is mild   -->
+  <clinicalStatus value="confirmed"/>
+  <severity><!--The fever is mild -->
     <coding>
       <system value="http://snomed.info/sct"/>
       <code value="255604002"/>
       <display value="Mild"/>
     </coding>
   </severity>
-  <onsetDateTime value="2013-04-02"/><!--  Problem began on April second  -->
-  <!--  No remission means no &lt;rebatement&gt;  -->
-  <evidence><!--  Problem is confirmed by 39 degrees Celsius  -->
+  <onsetDateTime value="2013-04-02"/><!--Problem began on April second-->
+  <!--No remission means no <rebatement>-->
+  <evidence><!--Problem is confirmed by 39 degrees Celsius-->
     <code>
       <coding>
         <system value="http://snomed.info/sct"/>
@@ -52,23 +53,23 @@
       <display value="Temperature"/>
     </detail>
   </evidence>
-  <location><!--  Fever applies to whole body  -->
-    <code>
+  <location><!--Fever applies to whole body-->
+    <siteCodeableConcept>
       <coding>
         <system value="http://snomed.info/sct"/>
         <code value="38266002"/>
         <display value="Entire body as a whole"/>
       </coding>
-    </code>
+    </siteCodeableConcept>
   </location>
-  <dueTo>  <!--   0..* Causes or precedents for this problem   -->
+  <dueTo>  <!-- 0..* Causes or precedents for this problem -->
 
     <target>
       <reference value="Procedure/f201"/>
       <display value="TPF chemokuur"/>
     </target>
   </dueTo>
-  <dueTo>  <!--   0..* Causes or precedents for this problem   -->
+  <dueTo>  <!-- 0..* Causes or precedents for this problem -->
 
     <target>
       <reference value="Condition/f205"/>

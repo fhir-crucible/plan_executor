@@ -1,13 +1,6 @@
 GIT
-  remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: cf0b2e8b940d08d7ec7f7ea4a4cf09c6ed0dea16
-  branch: master
-  specs:
-    fhir_client (1.0.0)
-
-GIT
   remote: https://github.com/fhir-crucible/fhir_dstu2_models
-  revision: dabb6741a4af915c388051b22ac85a4a4713ac39
+  revision: 89a08e5e9f0167ddb901342199840fb6ad216d10
   branch: master
   specs:
     fhir_model (1.0.0)
@@ -16,6 +9,11 @@ PATH
   remote: .
   specs:
     plan_executor (1.0.0)
+
+PATH
+  remote: ../fhir_client/
+  specs:
+    fhir_client (1.0.0)
 
 GEM
   remote: http://rubygems.org/
@@ -48,6 +46,8 @@ GEM
     ansi (1.4.3)
     arel (4.0.2)
     awesome_print (1.2.0)
+    bcp47 (0.3.3)
+      i18n
     bson (2.3.0)
     builder (3.1.4)
     coderay (1.1.0)
@@ -143,6 +143,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  bcp47
   builder
   date_time_precision
   fhir_client!

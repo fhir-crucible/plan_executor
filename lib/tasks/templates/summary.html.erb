@@ -29,8 +29,9 @@
     <% results.each_with_index do |result, index| %>
       <% suite_key = result.keys.first %>
       <% suite = result.values.first %>
-      <% failed = suite[:tests].detect{|t| t["status"] != "pass"} %>
-      <div class="panel panel-<%= if failed then "danger" else "success" end %>">
+      <% errored = suite[:tests].detect{|t| t["status"] == "error"} %>
+      <% failed = suite[:tests].detect{|t| t["status"] == "fail"} %>
+      <div class="panel panel-<%= if errored then "danger" elsif failed then "warning" else "success" end %>">
         <div class="panel-heading" role="tab" id="heading<%= index %>">
           <h3 class="panel-title">
             <a data-toggle="collapse" data-parent="#accordion" href="#collapse<%= index %>" aria-expanded="true" aria-controls="collapse<%= index %>">

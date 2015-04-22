@@ -244,7 +244,7 @@ module Crucible
       #
       # Test if we can write and read an entire patient record - almost
       #
-      test 'C8T2_3_B', 'Fetch an entire patient record - ignore meta' do
+      test 'C8T2_3_B', 'Fetch an entire patient record - ignore meta & text' do
         metadata {
           links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
           links 'http://hl7.org/implement/standards/FHIR-Develop/argonauts.html'
@@ -264,34 +264,34 @@ module Crucible
           when FHIR::Organization
             case bundle_entry.resource.xmlId
             when @org1_id
-              mismatches << bundle_entry.resource.mismatch(@organization_1, ['_id', 'meta']) unless bundle_entry.resource.equals?(@organization_1)
+              mismatches << bundle_entry.resource.mismatch(@organization_1, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@organization_1)
             when @org2_id
-              mismatches << bundle_entry.resource.mismatch(@organization_2, ['_id', 'meta']) unless bundle_entry.resource.equals?(@organization_2)
+              mismatches << bundle_entry.resource.mismatch(@organization_2, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@organization_2)
             end
           when FHIR::Practitioner
-            mismatches << bundle_entry.resource.mismatch(@practitioner, ['_id', 'meta']) unless bundle_entry.resource.equals?(@practitioner)
+            mismatches << bundle_entry.resource.mismatch(@practitioner, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@practitioner)
           when FHIR::Patient
-            mismatches << bundle_entry.resource.mismatch(@patient, ['_id', 'meta']) unless bundle_entry.resource.equals?(@patient)
+            mismatches << bundle_entry.resource.mismatch(@patient, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@patient)
           when FHIR::Condition
             case bundle_entry.resource.xmlId
             when @cond1_id
-              mismatches << bundle_entry.resource.mismatch(@condition_1, ['_id', 'meta']) unless bundle_entry.resource.equals?(@condition_1)
+              mismatches << bundle_entry.resource.mismatch(@condition_1, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@condition_1)
             when @cond2_id
-              mismatches << bundle_entry.resource.mismatch(@condition_2, ['_id', 'meta']) unless bundle_entry.resource.equals?(@condition_2)
+              mismatches << bundle_entry.resource.mismatch(@condition_2, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@condition_2)
             end
           when FHIR::Observation
-            mismatches << bundle_entry.resource.mismatch(@observation, ['_id', 'meta']) unless bundle_entry.resource.equals?(@observation)
+            mismatches << bundle_entry.resource.mismatch(@observation, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@observation)
           when FHIR::DiagnosticReport
-            mismatches << bundle_entry.resource.mismatch(@diagnosticreport, ['_id', 'meta']) unless bundle_entry.resource.equals?(@diagnosticreport)
+            mismatches << bundle_entry.resource.mismatch(@diagnosticreport, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@diagnosticreport)
           when FHIR::Encounter
             case bundle_entry.resource.xmlId
             when @enc1_id
-              mismatches << bundle_entry.resource.mismatch(@encounter_1, ['_id', 'meta']) unless bundle_entry.resource.equals?(@encounter_1)
+              mismatches << bundle_entry.resource.mismatch(@encounter_1, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@encounter_1)
             when @enc2_id
-              mismatches << bundle_entry.resource.mismatch(@encounter_2, ['_id', 'meta']) unless bundle_entry.resource.equals?(@encounter_2)
+              mismatches << bundle_entry.resource.mismatch(@encounter_2, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@encounter_2)
             end
           when FHIR::Procedure
-            mismatches << bundle_entry.resource.mismatch(@procedure, ['_id', 'meta']) unless bundle_entry.resource.equals?(@procedure)
+            mismatches << bundle_entry.resource.mismatch(@procedure, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@procedure)
           end
         end
 
@@ -352,7 +352,7 @@ module Crucible
         @ids_count[FHIR::Organization.to_s] << @org2_id
         assert_response_ok(@org2_reply)
 
-        @practitioner.organization.reference = "Organization/#{@org1_id}"
+        @practitioner.practitionerRole[0].managingOrganization.reference = "Organization/#{@org1_id}"
         @prac_reply = @client.create @practitioner
         @prac_id = @prac_reply.id
         @practitioner.xmlId = @prac_id
@@ -366,7 +366,7 @@ module Crucible
         @ids_count[FHIR::Patient.to_s] << @pat_id
         assert_response_ok(@pat_reply)
 
-        @condition_2.subject.reference = "Patient/#{@pat_id}"
+        @condition_2.patient.reference = "Patient/#{@pat_id}"
         @condition_2.asserter.reference = "Practitioner/#{@prac_id}"
         @cond2_reply = @client.create @condition_2
         @cond2_id = @cond2_reply.id
@@ -422,7 +422,7 @@ module Crucible
         @enc2_reply = @client.update @encounter_2, @enc2_id
         assert_response_ok(@enc2_reply)
 
-        @condition_1.subject.reference = "Patient/#{@pat_id}"
+        @condition_1.patient.reference = "Patient/#{@pat_id}"
         @condition_1.encounter.reference = "Encounter/#{@enc1_id}"
         @condition_1.asserter.reference = "Practitioner/#{@prac_id}"
         @condition_1.evidence[0].detail[0].reference = "Observation/#{@obs_id}"

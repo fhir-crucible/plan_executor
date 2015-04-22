@@ -52,13 +52,14 @@
                   <% test.each do |key, value| %>
                     <% next if ["key", "code", :test_method].include?(key) %>
                     <div class="row">
-                      <div class="col-md-1"><%= key %></div>
+                      <div class="col-md-1"><strong><%= key %></strong></div>
                       <div class="col-md-11">
+                        <% if key == "data" %><pre><% end %>
                         <% if value.class == Hash %>
                           <% value.each do |k, v| %>
                             <div class="row">
                               <div class="col-md-1"><%= k %></div>
-                              <div class="col-md-11"><pre><%= v %></pre></div>
+                              <div class="col-md-11"><%= v %></div>
                             </div>
                           <% end %>
                         <% elsif value.class == Array %>
@@ -67,20 +68,19 @@
                               <% v.each do |vk, vv| %>
                                 <div class="row">
                                   <div class="col-md-1"><%= vk %></div>
-                                  <div class="col-md-11"><pre><%= vv %></pre></div>
+                                  <div class="col-md-11"><%= vv %></div>
                                 </div>
                               <% end %>
                             <% else %>
                               <div class="row">
-                                <div class="col-md-12"><pre><%= v %></pre></div>
+                                <div class="col-md-12"><%= v %></div>
                               </div>
                             <% end %>
                           <% end %>
                         <% else %>
-                          <pre>
-                            <%= value %>
-                          </pre>
+                          <%= value %>
                         <% end %>
+                        <% if key == "data" %></pre><% end %>
                       </div>
                     </div>
                   <% end %>

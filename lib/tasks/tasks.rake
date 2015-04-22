@@ -19,7 +19,7 @@ namespace :crucible do
         suite = result.values.first
         suite[:tests].map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
       end
-      template = Tilt.new("/Users/jfernandes/dev/tof/plan_executor/lib/tasks/templates/summary.html.erb")
+      template = Tilt.new(File.join(File.dirname(__FILE__), "templates", "summary.html.erb"))
       timestamp = Time.now
       summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => args.url})
       summary_file = "Execute_All_Results_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"

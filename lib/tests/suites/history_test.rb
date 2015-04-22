@@ -44,7 +44,8 @@ module Crucible
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
         assert_equal @version_count, result.resource.total, "the number of returned versions is not correct"
-        assert_equal @entry_count, result.resource.entry.map(&:self_link).size, "all of the returned entries must have a self link"
+        self_links = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.size
+        assert_equal @entry_count, self_links, "all of the returned entries must have a self link"
         check_sort_order(result.resource.entry)
       end
 
@@ -67,7 +68,7 @@ module Crucible
         entry_ids_are_present_and_absolute_urls(result.resource.entry)
         check_sort_order(result.resource.entry)
 
-        selfs = result.resource.entry.map(&:self_link).compact
+        selfs = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.compact
         warning { assert_equal @entry_count, (all_history.resource.entry.select {|e| selfs.include? e.self_link}).size, "there are entries missing "}
 
         result = @client.resource_instance_history_as_of(FHIR::Patient,@id,after)
@@ -85,14 +86,14 @@ module Crucible
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
         active_entries(result.resource.entry).each do |entry|
-          pulled = @client.vread(FHIR::Patient, entry.resource_id, entry.resource_version)
+          pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
           assert_response_ok pulled
           assert !pulled.nil?, "Cannot find version that was present in history"
           assert url?(pulled.self_link), "#{pulled.self_link} is not a valid url" if pulled.self_link
         end
 
         deleted_entries(result.resource.entry).each do |entry|
-          pulled = @client.vread(FHIR::Patient, entry.resource_id, entry.resource_version)
+          pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
           assert pulled.resource.nil?, "resource should not be found since it was deleted"
           assert_response_gone pulled
         end
@@ -125,7 +126,7 @@ module Crucible
         entry_ids_are_present_and_absolute_urls(result.resource.entry)
         check_sort_order(result.resource.entry)
 
-        selfs = result.resource.entry.map(&:self_link).compact
+        selfs = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.compact
         assert_equal result.resource.entry.size, selfs.size, "history with _since does not contain all versions of instance"
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
@@ -151,7 +152,7 @@ module Crucible
 
         warning { assert_navigation_links(result.resource) }
 
-        selfs = result.resource.entry.map(&:self_link).compact
+        selfs = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.compact
         assert_equal result.resource.entry.size, selfs.size, "history with _since does not contain all versions of instance"
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
@@ -238,11 +239,11 @@ module Crucible
       ####
 
       def deleted_entries(entries)
-        entries.select {|x| x.fhirDeleted }
+        entries.select{|entry| entry.transaction.try(:method) == "DELETE" }
       end
 
       def active_entries(entries)
-        entries.select {|x| x.fhirDeleted.nil? }
+        entries - deleted_entries(entries)
       end
 
 

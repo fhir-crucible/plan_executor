@@ -7,6 +7,28 @@ namespace :crucible do
     puts "Execute All completed in #{b.real} seconds."
   end
 
+  desc 'execute_all_summary'
+  task :execute_all_summary, [:url] do |t, args|
+    require 'erb'
+    require 'tilt'
+    require 'benchmark'
+    b = Benchmark.measure {
+      results = Crucible::Tests::Executor.new(FHIR::Client.new(args.url)).execute_all
+      totals = Hash.new(0)
+      results.each do |result|
+        suite = result.values.first
+        suite[:tests].map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
+      end
+      template = Tilt.new("/Users/jfernandes/dev/tof/plan_executor/lib/tasks/templates/summary.html.erb")
+      timestamp = Time.now
+      summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => args.url})
+      summary_file = "Execute_All_Results_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"
+      File.write(summary_file, summary)
+      system("open #{summary_file}")
+    }
+    puts "Execute All completed in #{b.real} seconds."
+  end
+
   desc 'execute'
   task :execute, [:url, :test] do |t, args|
     require 'turn'

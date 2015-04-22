@@ -36,7 +36,7 @@ module Crucible
       end
 
       def teardown
-        @client.destroy(FHIR::Profile, @profile.xmlId) if !@profile.xmlId.nil?
+        @client.destroy(FHIR::StructureDefinition, @profile.xmlId) if !@profile.xmlId.nil?
         # @obs.each do |x|
         #   @client.destroy(FHIR::Observation, x.xmlId) if !x.xmlId.nil?
         # end
@@ -51,7 +51,7 @@ module Crucible
           links 'http://hl7.org/implement/standards/FHIR-Develop/profile.html'
           links 'http://hl7.org/implement/standards/FHIR-Develop/observation.html'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#validation'
-          requires resource: 'Profile', methods: ['create']
+          requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
         }
 
@@ -73,7 +73,7 @@ module Crucible
           links 'http://hl7.org/implement/standards/FHIR-Develop/profile.html'
           links 'http://hl7.org/implement/standards/FHIR-Develop/observation.html'
           links 'http://www.hl7.org/implement/standards/fhir/http.html#validation'
-          requires resource: 'Profile', methods: ['create']
+          requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
         }
 

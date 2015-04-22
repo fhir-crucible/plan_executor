@@ -14,9 +14,14 @@ module Crucible
       end
 
       def execute_all
-        Executor.tests.each do |test|
+        results = []
+        self.tests.each do |test|
+          # TODO: Do we want to separate out multiserver tests?
+          next if test.multiserver
+          next if test.id == "Search001"
           results = results.concat execute(test)
         end
+        results
       end
 
       def list_all_with_conformance(multiserver=false, metadata=nil)
@@ -29,7 +34,7 @@ module Crucible
       end
 
       def tests
-        tests = SuiteEngine.tests.concat TestScriptEngine.tests
+        tests = @suite_engine.tests.concat @testscript_engine.tests
         tests.sort{|t1,t2| t1.id <=> t2.id }
       end
 

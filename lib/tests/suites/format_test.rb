@@ -17,7 +17,7 @@ module Crucible
         create_date ||= Time.now
         result ||= @client.create(@resource)
 
-        assert !result.id.blank?, 'failed to create resource on server'
+        assert_response_created result
 
         @id ||= result.id
         @resource.id = @id

@@ -1,0 +1,128 @@
+<html>
+<head>
+  <title>Execute All Summary :: <%= timestamp %></title>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Executed <%= results.length %> Suites, <%= timestamp %></h1>
+    <h2><small><a href="<%= url %>" target="_blank"><%= url %></a></small></h2>
+    <div class="well well-sm">
+      <button class="btn btn-danger">
+        <span class="badge"><%= totals["error"] %></span> Errors
+      </button>
+      <button class="btn btn-warning">
+        <span class="badge"><%= totals["fail"] %></span> Failures
+      </button>
+      <button class="btn btn-success">
+        <span class="badge"><%= totals["pass"] %></span> Passes
+      </button>
+      <button class="btn btn-info">
+        <span class="badge"><%= totals["skip"] %></span> Skips
+      </button>
+    </div>
+
+    <% results.each_with_index do |result, index| %>
+      <% suite_key = result.keys.first %>
+      <% suite = result.values.first %>
+      <% failed = suite[:tests].detect{|t| t["status"] != "pass"} %>
+      <div class="panel panel-<%= if failed then "danger" else "success" end %>">
+        <div class="panel-heading" role="tab" id="heading<%= index %>">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapse<%= index %>" aria-expanded="true" aria-controls="collapse<%= index %>">
+              <%= suite_key.to_s %>
+            </a>
+          </h3>
+        </div>
+        <div id="collapse<%= index %>" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading<%= index %>">
+          <div class="panel-body">
+
+            <% suite[:tests].each do |test| %>
+              <% status_map = {"pass" => "success", "fail" => "warning", "error" => "danger", "skip" => "info"} %>
+              <div class="panel panel-<%= status_map[test["status"]]%>">
+                <div class="panel-heading">
+                  <%= test["status"].upcase %> - <%= test["key"] %> - <%= test[:test_method].to_s %>
+                </div>
+                <% if test["status"] == "fail" || test["status"] == "error" %>
+                <div class="panel-body">
+                  <% test.each do |key, value| %>
+                    <% next if ["key", "code", :test_method].include?(key) %>
+                    <div class="row">
+                      <div class="col-md-1"><%= key %></div>
+                      <div class="col-md-11">
+                        <% if value.class == Hash %>
+                          <% value.each do |k, v| %>
+                            <div class="row">
+                              <div class="col-md-1"><%= k %></div>
+                              <div class="col-md-11"><pre><%= v %></pre></div>
+                            </div>
+                          <% end %>
+                        <% elsif value.class == Array %>
+                          <% value.each do |v| %>
+                            <% if v.class == Hash %>
+                              <% v.each do |vk, vv| %>
+                                <div class="row">
+                                  <div class="col-md-1"><%= vk %></div>
+                                  <div class="col-md-11"><pre><%= vv %></pre></div>
+                                </div>
+                              <% end %>
+                            <% else %>
+                              <div class="row">
+                                <div class="col-md-12"><pre><%= v %></pre></div>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        <% else %>
+                          <pre>
+                            <%= value %>
+                          </pre>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+                <% end %>
+              </div>
+            <% end %>
+
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+  <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script>
+    function toggleErrors() {
+      $(".panel-body > .panel-danger").parents(".panel-danger > .panel-collapse").collapse('toggle');
+      $(".btn-danger").toggleClass("active");
+    }
+
+    function toggleFailures() {
+      $(".panel-body > .panel-warning").parents(".panel-collapse").collapse('toggle');
+      $(".btn-warnings").toggleClass("active");
+    }
+
+    function togglePasses() {
+      $(".panel-body > .panel-success").parents(".panel-collapse").collapse('toggle');
+      $(".btn-success").toggleClass("active");
+    }
+
+    function toggleSkips() {
+      $(".panel-body > .panel-info").parents(".panel-collapse").collapse('toggle');
+      $(".btn-info").toggleClass("active");
+    }
+
+    $(".btn-danger").click(toggleErrors);
+    $(".btn-warning").click(toggleFailures);
+    $(".btn-success").click(togglePasses);
+    $(".btn-info").click(toggleSkips);
+  </script>
+</body>
+</html>

@@ -34,14 +34,22 @@ module Crucible
 
       def execute_test_methods(test_methods=nil)
         result = []
-        setup if respond_to? :setup and not @metadata_only
+        begin
+          setup if respond_to? :setup and not @metadata_only
+        rescue AssertionException => e
+          @setup_failed = e
+        end
         prefix = if @metadata_only then 'generating metadata' else 'executing' end
         methods = tests
         methods = tests & test_methods unless test_methods.blank?
         methods.each do |test_method|
           puts "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
-            result << execute_test_method(test_method)
+            if @setup_failed
+              result << TestResult.new('SKIP', "Setup Assertion Error #{prefix} #{test_method}", STATUS[:skip], "#{test_method} skipped due to setup failure, fatal error: #{@setup_failed.message}", @setup_failed.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
+            else
+              result << execute_test_method(test_method)
+            end
           rescue => e
             result << TestResult.new('ERROR', "Error #{prefix} #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end

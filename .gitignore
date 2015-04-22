@@ -41,3 +41,4 @@ build/
 *.log.*
 
 **/.DS_Store
+*.html

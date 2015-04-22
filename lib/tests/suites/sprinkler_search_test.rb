@@ -27,11 +27,12 @@ module Crucible
         update_result = @client.update(@patient, @id)
         @version << update_result.version
 
+        @client.use_format_param = true
         reply = @client.read_feed(FHIR::Patient)
         @total_count = 0
         @entries = []
 
-        while reply != nil
+        while reply != nil && !reply.resource.nil?
           @total_count += reply.resource.entry.size
           @entries += reply.resource.entry
           reply = @client.next_page(reply)
@@ -39,12 +40,12 @@ module Crucible
 
         # create a condition matching the first patient
         @condition = ResourceGenerator.generate(FHIR::Condition,1)
-        @condition.subject.xmlId = @entries[0].resource.xmlId
+        @condition.patient.xmlId = @entries[0].resource.xmlId
         options = {
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
         }
-        @condition.subject.reference = @client.resource_url(options)
+        @condition.patient.reference = @client.resource_url(options)
         reply = @client.create(@condition)
         @condition_id = reply.id
 
@@ -63,8 +64,8 @@ module Crucible
         code = FHIR::Coding.new
         code.system = 'http://loinc.org'
         code.code = '2164-2'
-        observation.name = FHIR::CodeableConcept.new
-        observation.name.coding = [ code ]
+        observation.code = FHIR::CodeableConcept.new
+        observation.code.coding = [ code ]
         observation.valueQuantity = FHIR::Quantity.new
         observation.valueQuantity.system = 'http://unitofmeasure.org'
         observation.valueQuantity.value = value
@@ -72,8 +73,8 @@ module Crucible
         body = FHIR::Coding.new
         body.system = 'http://snomed.info/sct'
         body.code = '182756003'
-        observation.bodySite = FHIR::CodeableConcept.new
-        observation.bodySite.coding = [ body ]
+        observation.bodySiteCodeableConcept = FHIR::CodeableConcept.new
+        observation.bodySiteCodeableConcept.coding = [ body ]
         reply = @client.create(observation)
         reply.id
       end
@@ -192,7 +193,7 @@ module Crucible
         assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.0', 'Search condition by subject reference url' do
+      test 'SE05.0', 'Search condition by patient reference url' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
@@ -208,7 +209,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject' => patient_url
+              'patient' => patient_url
             }
           }
         }
@@ -218,7 +219,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.1', 'Search condition by subject reference id' do
+      test 'SE05.1', 'Search condition by patient reference id' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
@@ -230,7 +231,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject' => patient_id
+              'patient' => patient_id
             }
           }
         }
@@ -240,7 +241,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.2', 'Search condition by subject:Patient reference url' do
+      test 'SE05.2', 'Search condition by patient:Patient reference url' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
@@ -256,7 +257,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject:Patient' => patient_url
+              'patient:Patient' => patient_url
             }
           }
         }
@@ -266,7 +267,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.3', 'Search condition by subject:Patient reference id' do
+      test 'SE05.3', 'Search condition by patient:Patient reference id' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
@@ -278,7 +279,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject:Patient' => patient_id
+              'patient:Patient' => patient_id
             }
           }
         }
@@ -288,7 +289,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.4', 'Search condition by subject:_id reference' do
+      test 'SE05.4', 'Search condition by patient:_id reference' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
@@ -300,7 +301,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject._id' => patient_id
+              'patient._id' => patient_id
             }
           }
         }
@@ -310,7 +311,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.5', 'Search condition by subject:name reference' do
+      test 'SE05.5', 'Search condition by patient:name reference' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
@@ -322,7 +323,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject.name' => patient_name
+              'patient.name' => patient_name
             }
           }
         }
@@ -332,7 +333,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.6', 'Search condition by subject:identifier reference' do
+      test 'SE05.6', 'Search condition by patient:identifier reference' do
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @patient
@@ -344,7 +345,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'subject.identifier' => patient_identifier
+              'patient.identifier' => patient_identifier
             }
           }
         }
@@ -366,14 +367,14 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              '_include' => 'Condition.subject'
+              '_include' => 'Condition.patient'
             }
           }
         }
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.total > 0, 'The server should have Conditions with _include=Condition.subject.'
+        assert reply.resource.total > 0, 'The server should have Conditions with _include=Condition.patient.'
       end
 
       test 'SE21', 'Search for quantity (in observation) - precision tests' do

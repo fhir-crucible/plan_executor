@@ -18,7 +18,6 @@ module Crucible
         self.tests.each do |test|
           # TODO: Do we want to separate out multiserver tests?
           next if test.multiserver
-          next if test.id == "Search001"
           results = results.concat execute(test)
         end
         results

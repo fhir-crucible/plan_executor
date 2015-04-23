@@ -64,7 +64,7 @@ module Crucible
       end
 
       def title
-        id
+        "TS-#{id}"
       end
 
       def tests

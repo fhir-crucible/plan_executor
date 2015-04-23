@@ -24,7 +24,7 @@
     <description value="Read a patient and validate response."/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>

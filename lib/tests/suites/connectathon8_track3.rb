@@ -48,9 +48,9 @@ module Crucible
       test 'C8T3_2A','Validate Observations against the General Specification' do
         metadata {
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#Track_3_-_Experimental:_Profiles_and_conformance'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/profile.html'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/observation.html'
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#validation'
+          links "#{BASE_SPEC_LINK}/structuredefinition.html"
+          links "#{BASE_SPEC_LINK}/observation.html"
+          links "#{BASE_SPEC_LINK}/operation-resource-validate.html"
           requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
         }
@@ -70,9 +70,9 @@ module Crucible
       test 'C8T3_2B','Validate Observations against a Server-Side Profile' do
         metadata {
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#Track_3_-_Experimental:_Profiles_and_conformance'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/profile.html'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/observation.html'
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#validation'
+          links "#{BASE_SPEC_LINK}/structuredefinition.html"
+          links "#{BASE_SPEC_LINK}/observation.html"
+          links "#{BASE_SPEC_LINK}/operation-resource-validate.html"
           requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
         }

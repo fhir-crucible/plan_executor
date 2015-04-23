@@ -30,7 +30,8 @@ module Crucible
       #
       test 'C8T1_1A','Register a new patient' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#create'
+          links "#{REST_SPEC_LINK}#create"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#1._Register_a_new_patient'
           requires resource: 'Patient', methods: ['create']
           validates resource: 'Patient', methods: ['create']
         }
@@ -57,7 +58,8 @@ module Crucible
       #
       test 'C8T1_1B','Register a new patient - BONUS: Extensions' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#create'
+          links "#{REST_SPEC_LINK}#create"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#1._Register_a_new_patient'
           requires resource: 'Patient', methods: ['create']
           validates resource: 'Patient', methods: ['create']
         }
@@ -84,7 +86,8 @@ module Crucible
       #
       test 'C8T1_2A','Update a patient' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
+          links "#{REST_SPEC_LINK}#update"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['update']
         }
@@ -113,7 +116,8 @@ module Crucible
       #
       test 'C8T1_2B','Update a patient - BONUS: Unmodified Extensions' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
+          links "#{REST_SPEC_LINK}#update"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
         }
@@ -142,7 +146,8 @@ module Crucible
       #
       test 'C8T1_2C','Update a patient - BONUS: Modified Extensions' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
+          links "#{REST_SPEC_LINK}#update"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
         }
@@ -171,7 +176,8 @@ module Crucible
       #
       test  'C8T1_3','Retrieve Patient History' do
         metadata {
-          links 'http://www.hl7.org/implement/standards/FHIR-Develop/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#3._Retrieve_Patient_history'
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['history-instance']
         }
@@ -203,8 +209,9 @@ module Crucible
       #
       test 'C8T1_4', 'Search patient resource on given name' do
         metadata {
-          links 'http://www.hl7.org/implement/standards/FHIR-Develop/http.html#search'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/search.html'
+          links "#{REST_SPEC_LINK}#history"
+          links "#{BASE_SPEC_LINK}/search.html"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#4._Search_for_a_patient_on_name'
           requires resource: 'Patient', methods: ['create']
           validates resource: 'Patient', methods: ['search']
         }

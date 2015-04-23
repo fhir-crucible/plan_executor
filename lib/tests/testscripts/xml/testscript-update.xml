@@ -16,11 +16,11 @@
     <description value="Update a patient and validate response."/>
     <metadata>
       <link>
-        <url value="http://www.hl7.org/implement/standards/fhir/http.html#update"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#update"/>
         <description value="Update Operation"/>
       </link>
       <link>
-        <url value="http://www.hl7.org/implement/standards/fhir/patient.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/patient.html"/>
         <description value="Patient Resource"/>
       </link>
       <requires>

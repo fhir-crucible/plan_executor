@@ -36,7 +36,7 @@ module Crucible
 
       test  'HI01','History for specific resource' do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history-instance"]
         }
@@ -51,7 +51,7 @@ module Crucible
 
       test "HI02", "full history of a resource by id with since" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history-instance"]
         }
@@ -78,7 +78,7 @@ module Crucible
 
       test "HI03", "individual history versions" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["vread", "history-instance"]
         }
@@ -101,7 +101,7 @@ module Crucible
 
       test "HI04", "history for missing resource" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history-instance"]
         }
@@ -113,7 +113,7 @@ module Crucible
 
       test "HI06", "all history for resource with since" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history-type"]
         }
@@ -137,7 +137,7 @@ module Crucible
 
       test "HI08", "all history whole system with since" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: nil, methods: ["history-system"]
         }
@@ -164,7 +164,7 @@ module Crucible
 
       test "HI09", "resource history page forward" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history-type"]
         }
@@ -187,7 +187,7 @@ module Crucible
 
       test "HI10", "resource history page backwards" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history-type"]
         }
@@ -220,7 +220,7 @@ module Crucible
 
       test "HI11", "first page full history" do
         metadata {
-          links 'http://www.hl7.org/implement/standards/fhir/http.html#history'
+          links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: nil, methods: ["history-system"]
         }

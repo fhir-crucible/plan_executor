@@ -24,6 +24,13 @@ module Crucible
       end
 
       test 'CT01', 'Request xml using headers' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patient = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_XML)
           assert compare_resource(patient), 'requested XML (headers) resource does not match created resource'
@@ -33,6 +40,13 @@ module Crucible
       end
 
       test 'CT02', 'Request xml using [_format]' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patient = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_XML, true)
           assert compare_resource(patient), 'requested XML (_format) resource does not match created resource'
@@ -43,6 +57,13 @@ module Crucible
       end
 
       test 'CT03', 'Request json using headers' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patient = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_JSON)
           assert compare_resource(patient), 'requested JSON (headers) resource does not match created resource'
@@ -52,6 +73,13 @@ module Crucible
       end
 
       test 'CT04', 'Request json using [_format]' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patient = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_JSON, true)
           assert compare_resource(patient), 'requested JSON (_format) resource does not match created resource'
@@ -62,6 +90,13 @@ module Crucible
       end
 
       test 'FT01', 'Request xml and json using headers' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patient_xml = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_XML)
           patient_json = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_JSON)
@@ -74,6 +109,13 @@ module Crucible
       end
 
       test 'FT02', 'Request xml and json using [_format]' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patient_xml = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_XML, true)
           patient_json = request_entry(FHIR::Patient, @id, FHIR::Formats::ResourceFormat::RESOURCE_JSON, true)
@@ -86,6 +128,13 @@ module Crucible
       end
 
       test 'FT03', 'Request xml feed using headers' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patients_feed = request_feed(FHIR::Patient, FHIR::Formats::FeedFormat::FEED_XML)
           bundle = patients_feed.resource
@@ -99,6 +148,13 @@ module Crucible
       end
 
       test 'FT04', 'Request xml feed using [_format]' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html"
+          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Patient', methods: ['create','read']
+          validates resource: 'Patient', methods: ['read']
+        }
         begin
           patients_feed = request_feed(FHIR::Patient, FHIR::Formats::FeedFormat::FEED_XML, true)
           bundle = patients_feed.resource

@@ -21,11 +21,11 @@
     <description value="History for specific resource."/>
     <metadata>
       <link>
-        <url value="http://www.hl7.org/implement/standards/fhir/http.html#history"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#history"/>
         <description value="History Operation"/>
       </link>
       <link>
-        <url value="http://www.hl7.org/implement/standards/fhir/patient.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/patient.html"/>
         <description value="Patient Resource"/>
       </link>
       <requires>

@@ -30,7 +30,7 @@
       <% suite_key = result.keys.first %>
       <% suite = result.values.first %>
       <% errored = suite[:tests].detect{|t| t["status"] == "error"} %>
-      <% failed = suite[:tests].detect{|t| t["status"] == "fail"} %>
+      <% failed = suite[:tests].detect{|t| t["status"] == "fail"} || suite[:tests].detect{|t| t["status"] == "pass"}.nil? %>
       <div class="panel panel-<%= if errored then "danger" elsif failed then "warning" else "success" end %>">
         <div class="panel-heading" role="tab" id="heading<%= index %>">
           <h3 class="panel-title">
@@ -95,7 +95,11 @@
       </div>
     <% end %>
 
-    <div class="text-center btn btn-primary elevator-button">Back to Top</div>
+    <div class="text-center">
+      <div class="btn btn-primary elevator-button">
+        <span class="glyphicon glyphicon-triangle-top" aria-hidden="true"></span> Back to Top
+      </div>
+    </div>
   </div>
   <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
   <!-- Latest compiled and minified JavaScript -->

@@ -4,7 +4,7 @@ module Crucible
 
       include Crucible::Tests::Assertions
 
-      BASE_SPEC_LINK = 'http://www.hl7.org/implement/standards/fhir'
+      BASE_SPEC_LINK = 'http://hl7.org/fhir/2015May'
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
       # Base test fields, used in Crucible::Tests::Executor.list_all

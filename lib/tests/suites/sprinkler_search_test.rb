@@ -19,6 +19,7 @@ module Crucible
 
         @version = []
         result = @client.create(@patient)
+        assert_response_created result
         @id = result.id
         @version << result.version
 

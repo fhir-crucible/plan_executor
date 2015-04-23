@@ -2882,7 +2882,7 @@
     <description value="Expanding a fixed limited value set, case #1"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -2914,7 +2914,7 @@
     <description value="Expanding a fixed limited value set, case #2"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -2946,7 +2946,7 @@
     <description value="Expanding a fixed limited value set, case #3"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -2978,7 +2978,7 @@
     <description value="Expanding a fixed limited value set, case #4"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3167,7 +3167,7 @@
     <description value="Expanding a fixed limited value set, case #5"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3199,7 +3199,7 @@
     <description value="Expanding a fixed limited value set, case #6"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3231,7 +3231,7 @@
     <description value="Expanding a fixed limited value set, case #7"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3284,7 +3284,7 @@
     <description value="Expanding a fixed limited value set with a text filter 'f', case #1"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3317,7 +3317,7 @@
     <description value="Expanding a fixed limited value set with a text filter 'mean', case #2"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3350,7 +3350,7 @@
     <description value="Expanding a fixed limited value set with text filter 'fail', case #3"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3383,7 +3383,7 @@
     <description value="Expanding a fixed limited value set with a text filter 'f', case #4"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3416,7 +3416,7 @@
     <description value="Expanding an intensional value set with text filter 'exp', case #1"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3449,7 +3449,7 @@
     <description value="Expanding an intensional value set with text filter = chronic, case #2"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3482,7 +3482,7 @@
     <description value="Expanding an intensional value set with text filter='renin', case #3"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3518,7 +3518,7 @@
     <description value="Check that the code {http://hl7.org/fhir/patient-contact-relationship}emergency is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3552,7 +3552,7 @@
     <description value="Check that the code {http://hl7.org/fhir/patient-contact-relationshipX}emergency is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3585,7 +3585,7 @@
     <description value="Check that the code {http://hl7.org/fhir/patient-contact-relationship}emergencyX is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3619,7 +3619,7 @@
     <description value="Check that the code {http://loinc.org}11378-7 'Systolic blood pressure at First encounter' is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3654,7 +3654,7 @@
     <description value="Check that the code {http://loinc.org}11378-7 'Systolic blood pressure at First encounter' is in the value set, but supply a wrong display"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3688,7 +3688,7 @@
     <description value="Check that the code {http://loinc.orgX}11378-7 'Systolic blood pressure at First encounter' is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3721,7 +3721,7 @@
     <description value="Check that the code {http://loinc.org}11378-7X 'Systolic blood pressure at First encounter' is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3754,7 +3754,7 @@
     <description value="Check that the code {http://loinc.org}13457-7 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3788,7 +3788,7 @@
     <description value="Check that the code {http://snomed.info/sct}371037005 'Systolic dysfunction' is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3823,7 +3823,7 @@
     <description value="Check that the code {http://snomed.info/sct}371037005 'Systolic dysfunction' is in the value set, but give the wrong display`"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3857,7 +3857,7 @@
     <description value="Check that the code {http://snomed.info/sctX}371037005 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3890,7 +3890,7 @@
     <description value="Check that the code {http://snomed.info/sct}371037005X is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3923,7 +3923,7 @@
     <description value="Check that the code {http://snomed.info/sct}102261002 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3957,7 +3957,7 @@
     <description value="Check that the code {http://hl7.org/fhir/v3/RoleCode}CHILD 'child' is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -3992,7 +3992,7 @@
     <description value="Check that the code {http://hl7.org/fhir/v3/RoleCode}CHILD 'child' is in the value set, but give the wrong display`"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4026,7 +4026,7 @@
     <description value="Check that the code {http://hl7.org/fhir/v3/RoleCodeX}CHILD is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4059,7 +4059,7 @@
     <description value="Check that the code {http://hl7.org/fhir/v3/RoleCode}child is not in the value set (note: this coding system is case sensitive, so 'CHILD' is valid, but 'child' is not"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4092,7 +4092,7 @@
     <description value="Check that the code {http://hl7.org/fhir/v3/RoleCode}FULLINS is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4126,7 +4126,7 @@
     <description value="Check that the code {http://loinc.org}11377-9 'Diastolic blood pressure at First encounter' is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4161,7 +4161,7 @@
     <description value="Check that the code {http://loinc.org}11377-9 'Diastolic blood pressure at First encounter' is in the value set, but supply a wrong display"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4195,7 +4195,7 @@
     <description value="Check that the code {http://loinc.orgX}11377-9 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4228,7 +4228,7 @@
     <description value="Check that the code {http://loinc.org}11377-9X is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4261,7 +4261,7 @@
     <description value="Check that the code {http://loinc.org}13457-7 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4295,7 +4295,7 @@
     <description value="Check that the code {http://snomed.info/sct}8762007 'Chronic hypertension in obstetric context (disorder)' is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4330,7 +4330,7 @@
     <description value="Check that the code {http://snomed.info/sct}8762007 'Chronic hypertension in obstetric context (disorder)' is in the value set, but give the wrong display`"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4364,7 +4364,7 @@
     <description value="Check that the code {http://snomed.info/sctX}8762007 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4397,7 +4397,7 @@
     <description value="Check that the code {http://snomed.info/sct}8762007X is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4430,7 +4430,7 @@
     <description value="Check that the code {http://snomed.info/sct}102261002 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4464,7 +4464,7 @@
     <description value="Check that the code {http://snomed.info/sct}8762007 'Chronic hypertension in obstetric context (disorder)' is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4499,7 +4499,7 @@
     <description value="Check that the code {http://snomed.info/sct}8762007 'Chronic hypertension in obstetric context (disorder)' is in the value set, but give the wrong display`"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4533,7 +4533,7 @@
     <description value="Check that the code {http://snomed.info/sctX}8762007 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4566,7 +4566,7 @@
     <description value="Check that the code {http://snomed.info/sct}8762007X is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4599,7 +4599,7 @@
     <description value="Check that the code {http://snomed.info/sct}102261002 is not in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4634,7 +4634,7 @@
     <description value="Check that the code {http://hl7.org/fhir/patient-contact-relationship}emergency is in the value set"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -4669,7 +4669,7 @@
     <description value="Check that the code {http://hl7.org/fhir/patient-contact-relationshipX}emergency is in the value set, but give the wrong display"/>
     <metadata>
       <link>
-        <url value="http://fhir.org/spec.html"/>
+        <url value="http://www.hl7.org/FHIR/2015May/index.html"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>

@@ -25,7 +25,7 @@
     <description value="Result headers on normal read."/>
     <metadata>
       <link>
-        <url value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -63,11 +63,11 @@
     <description value="Read unknown resource type"/>
     <metadata>
       <link>
-        <url value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
         <description value="link to the FHIR specification"/>
       </link>
       <link>
-        <url value="http://hl7.org/implement/standards/FHIR-Develop/http.html#update"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#update"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -94,7 +94,7 @@
     <description value="Read non-existing resource id"/>
     <metadata>
       <link>
-        <url value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>
@@ -121,11 +121,11 @@
     <description value="Read bad formatted resource id"/>
     <metadata>
       <link>
-        <url value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
         <description value="link to the FHIR specification"/>
       </link>
       <link>
-        <url value="http://hl7.org/implement/standards/FHIR-Develop/datatypes.html#id"/>
+        <url value="http://www.hl7.org/FHIR/2015May/datatypes.html#id"/>
         <description value="link to the FHIR specification"/>
       </link>
       <requires>

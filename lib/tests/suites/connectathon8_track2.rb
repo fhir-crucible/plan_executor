@@ -48,8 +48,9 @@ module Crucible
       #
       test 'C8T2_1A', 'Fetch all patient records' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
+          requires resource: 'Patient', methods: ['$everything']
           validates resource: 'Patient', methods: ['$everything']
         }
 
@@ -64,8 +65,9 @@ module Crucible
       #
       test 'C8T2_1B', 'Fetch all patient records with [start, end]' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
+          requires resource: 'Patient', methods: ['$everything']
           validates resource: 'Patient', methods: ['$everything']
         }
 
@@ -82,9 +84,9 @@ module Crucible
       #
       test 'C8T2_2A', 'Fetch specific patient record' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
-          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Patient', methods: ['create', '$everything']
           validates resource: 'Patient', methods: ['create', '$everything']
         }
 
@@ -110,9 +112,9 @@ module Crucible
       #
       test 'C8T2_2B', 'Fetch specific patient record with [start, end]' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
-          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Patient', methods: ['create', '$everything']
           validates resource: 'Patient', methods: ['create', '$everything']
         }
 
@@ -141,9 +143,9 @@ module Crucible
       #
       test 'C8T2_2C', 'Fetch specific patient record - BONUS: Update' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Expose_the_.27Fetch_Patient_Record.27_operation_.28Server.29'
-          requires resource: 'Patient', methods: ['create', 'update']
+          requires resource: 'Patient', methods: ['create', 'update', '$everything']
           validates resource: 'Patient', methods: ['create', 'update', '$everything']
         }
 
@@ -172,8 +174,8 @@ module Crucible
       #
       test 'C8T2_3_A', 'Write and then fetch an entire patient record - exact' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/argonauts.html'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
+          links "#{BASE_SPEC_LINK}/argonauts.html"
           requires resource: 'Organization', methods: ['create']
           requires resource: 'Practitioner', methods: ['create']
           requires resource: 'Patient', methods: ['create']
@@ -246,8 +248,8 @@ module Crucible
       #
       test 'C8T2_3_B', 'Fetch an entire patient record - ignore meta & text' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/argonauts.html'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
+          links "#{BASE_SPEC_LINK}/argonauts.html"
           validates resource: 'Patient', methods: ['$everything']
         }
 
@@ -303,8 +305,8 @@ module Crucible
       #
       test 'C8T2_3_C', 'Fetch an entire patient record - count' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/argonauts.html'
+          links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
+          links "#{BASE_SPEC_LINK}/argonauts.html"
           validates resource: 'Patient', methods: ['$everything']
         }
 

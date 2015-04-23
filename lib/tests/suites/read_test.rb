@@ -27,7 +27,7 @@ module Crucible
       # [SprinklerTest("R001", "Result headers on normal read")]
       test 'R001', 'Result headers on normal read.' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
+          links "#{REST_SPEC_LINK}#read"
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
@@ -43,8 +43,8 @@ module Crucible
       # [SprinklerTest("R002", "Read unknown resource type")]
       test 'R002', 'Read unknown resource type.' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#update'
+          links "#{REST_SPEC_LINK}#read"
+          links "#{REST_SPEC_LINK}#update"
         }
 
         reply = @client.read(Crucible::Tests::ReadTest, @id)
@@ -54,7 +54,7 @@ module Crucible
       # [SprinklerTest("R003", "Read non-existing resource id")]
       test 'R003', 'Read non-existing resource id.' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
+          links "#{REST_SPEC_LINK}#read"
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
@@ -66,8 +66,8 @@ module Crucible
       # [SprinklerTest("R004", "Read bad formatted resource id")]
       test 'R004', 'Read invalid format resource id' do
         metadata {
-          links 'http://hl7.org/implement/standards/FHIR-Develop/http.html#read'
-          links 'http://hl7.org/implement/standards/FHIR-Develop/datatypes.html#id'
+          links "#{REST_SPEC_LINK}#read"
+          links "#{BASE_SPEC_LINK}/datatypes.html#id"
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }

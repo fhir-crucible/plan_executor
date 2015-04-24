@@ -30,10 +30,10 @@ namespace :crucible do
   end
 
   desc 'execute'
-  task :execute, [:url, :test] do |t, args|
+  task :execute, [:url, :test, :resource] do |t, args|
     require 'turn'
     require 'benchmark'
-    b = Benchmark.measure { execute_test(FHIR::Client.new(args.url), args.test) }
+    b = Benchmark.measure { execute_test(FHIR::Client.new(args.url), args.test, args.resource) }
     puts "Execute #{args.test} completed in #{b.real} seconds."
   end
 
@@ -45,9 +45,17 @@ namespace :crucible do
     puts "Metadata #{args.test} completed in #{b.real} seconds."
   end
 
-  def execute_test(client, key)
+  def execute_test(client, key, resourceType=nil)
     executor = Crucible::Tests::Executor.new(client)
-    output_results executor.execute(executor.find_test(key))
+    test = executor.find_test(key)
+    results = nil
+    if !resourceType.nil? && test.respond_to?(:resource_class=)
+      fhir_classes = Mongoid.models.select {|c| c.name.include? 'FHIR'}
+      klass = fhir_classes.find{|x|x.to_s.include?(resourceType)}
+      results = test.execute(klass) if !klass.nil?
+    end
+    results = executor.execute(test) if results.nil?
+    output_results results
   end
 
   def execute_multiserver_test(client, client2, key)

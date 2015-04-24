@@ -43,10 +43,28 @@ module Crucible
 
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
-        assert_equal @version_count, result.resource.total, "the number of returned versions is not correct"
-        self_links = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.size
-        assert_equal @entry_count, self_links, "all of the returned entries must have a self link"
-        check_sort_order(result.resource.entry)
+        bundle = result.resource
+
+        assert_equal "history", bundle.fhirType, "The bundle type is not correct"
+        assert_equal @version_count, bundle.total, "the number of returned versions is not correct"
+        check_sort_order(bundle.entry)
+      end
+
+      test  'HI01.1','History transactions entries' do
+        metadata {
+          links "#{REST_SPEC_LINK}#history"
+          requires resource: "Patient", methods: ["create", "update", "delete"]
+          validates resource: "Patient", methods: ["history-instance"]
+        }
+        result = @client.resource_instance_history(FHIR::Patient,@id)
+        assert_response_ok result
+        bundle = result.resource
+        entries = bundle.entry
+
+        assert_equal 1, entries.select{|entry| entry.transaction.try(:method) == "DELETE" }, "Could not find a deleted transation on entry in the history bundle"
+        assert_equal 1, entries.select{|entry| entry.transaction.try(:method) == "PUT" }, "Could not find a deleted transation on entry in the history bundle"
+        assert_equal 1, entries.select{|entry| entry.transaction.try(:method) == "POST" }, "Could not find a deleted transation on entry in the history bundle"
+
       end
 
       test "HI02", "full history of a resource by id with since" do
@@ -63,17 +81,16 @@ module Crucible
 
         result = @client.resource_instance_history_as_of(FHIR::Patient,@id,before)
         assert_response_ok result
-        assert_equal @version_count, result.resource.total, "the number of returned versions since the creation date is not correct"
+        bundle = result.resource
 
-        entry_ids_are_present_and_absolute_urls(result.resource.entry)
-        check_sort_order(result.resource.entry)
+        assert_equal @version_count, bundle.total, "the number of returned versions since the creation date is not correct"
 
-        selfs = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.compact
-        warning { assert_equal @entry_count, (all_history.resource.entry.select {|e| selfs.include? e.self_link}).size, "there are entries missing "}
+        entry_ids_are_present(bundle.entry)
+        check_sort_order(bundle.entry)
 
         result = @client.resource_instance_history_as_of(FHIR::Patient,@id,after)
         assert_response_ok result
-        assert_equal 0, result.resource.total, "there should not be any history one hour after the creation date"
+        assert_equal 0, bundle.total, "there should not be any history one hour after the creation date"
       end
 
       test "HI03", "individual history versions" do
@@ -85,14 +102,16 @@ module Crucible
 
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
-        active_entries(result.resource.entry).each do |entry|
+
+        bundle = result.resource
+
+        active_entries(bundle.entry).each do |entry|
           pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
           assert_response_ok pulled
           assert !pulled.nil?, "Cannot find version that was present in history"
-          assert url?(pulled.self_link), "#{pulled.self_link} is not a valid url" if pulled.self_link
         end
 
-        deleted_entries(result.resource.entry).each do |entry|
+        deleted_entries(bundle.entry).each do |entry|
           pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
           assert pulled.resource.nil?, "resource should not be found since it was deleted"
           assert_response_gone pulled
@@ -123,15 +142,15 @@ module Crucible
 
         result = @client.resource_history_as_of(FHIR::Patient,before)
         assert_response_ok result
-        entry_ids_are_present_and_absolute_urls(result.resource.entry)
-        check_sort_order(result.resource.entry)
+        bundle = result.resource
 
-        selfs = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.compact
-        assert_equal result.resource.entry.size, selfs.size, "history with _since does not contain all versions of instance"
+        entry_ids_are_present(bundle.entry)
+        check_sort_order(bundle.entry)
+
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
         assert_response_ok result
-        assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
+        assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
 
       end
 
@@ -147,17 +166,15 @@ module Crucible
 
         result = @client.all_history_as_of(before)
         assert_response_ok result
-        entry_ids_are_present_and_absolute_urls(result.resource.entry)
-        check_sort_order(result.resource.entry)
+        bundle = result.resource
+        entry_ids_are_present(bundle.entry)
+        check_sort_order(bundle.entry)
 
-        warning { assert_navigation_links(result.resource) }
-
-        selfs = result.resource.entry.map(&:link).select{|l| l.try(:relation) == "self"}.compact
-        assert_equal result.resource.entry.size, selfs.size, "history with _since does not contain all versions of instance"
+        warning { assert_navigation_links(bundle) }
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
         assert_response_ok result
-        assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
+        assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
 
       end
 
@@ -176,9 +193,9 @@ module Crucible
         # browse forwards
         while page != nil
           assert !page.resource.nil?, "Unable to page forward through results.  A bundle was not returned from the page forward request."
-          warning { entry_ids_are_present_and_absolute_urls(page.resource.entry) }
-          assert page.resource.entry.count <= page_size, "Server returned a page with more entries than set by _count"
-          forward_count += page.resource.entry.count
+          warning { entry_ids_are_present(page.resource.entry) }
+          assert page.resource.entry.size <= page_size, "Server returned a page with more entries than set by _count"
+          forward_count += page.resource.entry.size
           page = @client.next_page(page)
         end
 
@@ -199,7 +216,7 @@ module Crucible
         last_page = page
         while page != nil
           assert !page.resource.nil?, "Unable to page forward through results.  A bundle was not returned from the page forward request."
-          forward_count += page.resource.entry.count
+          forward_count += page.resource.entry.size
           page = @client.next_page(page)
           last_page = page if page
         end
@@ -208,9 +225,9 @@ module Crucible
         page = last_page
         # browse forwards
         while page != nil
-          warning { entry_ids_are_present_and_absolute_urls(page.resource.entry) }
-          assert page.resource.entry.count <= page_size, "Server returned a page with more entries than set by _count"
-          backward_count += page.resource.entry.count
+          warning { entry_ids_are_present(page.resource.entry) }
+          assert page.resource.entry.size <= page_size, "Server returned a page with more entries than set by _count"
+          backward_count += page.resource.entry.size
           page = @client.next_page(page, FHIR::Sections::Feed::BACKWARD)
         end
 
@@ -226,6 +243,7 @@ module Crucible
         }
 
         history = @client.all_history
+        assert !history.resource.nil?, "A bundle was not returned from the history request."
         assert history.resource.entry.size > 2, "there should be at least 2 history entries"
       end
 
@@ -239,7 +257,10 @@ module Crucible
       ####
 
       def deleted_entries(entries)
-        entries.select{|entry| entry.transaction.try(:method) == "DELETE" }
+        entries.select do |entry| 
+          assert !entry.transaction.nil?, "history bundle entries do not have transaction elements, deleted entries cannot be distinguished"
+          entry.transaction.try(:method) == "DELETE" 
+        end
       end
 
       def active_entries(entries)
@@ -247,17 +268,11 @@ module Crucible
       end
 
 
-      def entry_ids_are_present_and_absolute_urls(entries)
-        # selfs = entries.select {|x| x.fhirDeleted.nil? }.map(&:self_link).compact
-        ids = entries.map(&:xmlId).compact
+      def entry_ids_are_present(entries)
+        ids = entries.map(&:resource).map(&:xmlId).compact rescue assert(false, "could not find ids for resources returned by the bundle")
 
         # check that we have ids and self links
-        # warning { assert_equal entries.length, selfs.size, "all of the returned entries must have a self link" }
         assert_equal entries.length, ids.size, "all of the returned entries must have an id"
-
-        # check that they are valid URIs
-        # warning { assert_equal entries.length, (selfs.select {|e| url?(e) }).size, "all self links must be valid URIs" }
-        assert_equal entries.length, (ids.select {|e| url?(e)}).size, "all ids must be valid URIs"
       end
 
       def url?(v)

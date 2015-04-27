@@ -23,6 +23,10 @@ class FixturesTest < Test::Unit::TestCase
     assert !@patient_example.nil?, "Failed to load patient-example.xml"
     FIXTURES["/patient/patient-example.xml"] = @patient_example
 
+    @patient_format_example = resources.example_format_patient
+    assert !@patient_example.nil?, "Failed to load patient-format-example.xml"
+    FIXTURES["/patient/patient-format-example.xml"] = @patient_format_example
+
     @patient_minimal = resources.load_fixture("/patient/patient-minimal.xml")
     assert !@patient_minimal.nil?, "Failed to load patient-minimal.xml"
     assert @patient_minimal.class==FHIR::Patient, "Failed to load patient-minimal.xml as a FHIR::Patient"

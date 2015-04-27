@@ -93,7 +93,7 @@ namespace :crucible do
   end
 
   desc 'execute custom'
-  task :execute_custom, [:test] do |t, args|
+  task :execute_custom, [:test, :resource_type] do |t, args|
     require 'turn'
     require 'benchmark'
 
@@ -111,11 +111,13 @@ namespace :crucible do
       # 'http://fhirtest.uhn.ca/base'
 
       # DSTU2
-      'http://bonfire.mitre.org:8090/fhir-dstu2',
+      'http://bonfire.mitre.org:8100/fhir',
       'http://fhirtest.uhn.ca/baseDstu2',
+      'http://fhir-dev.healthintersections.com.au/open',
+      'http://bp.oridashi.com.au',
+      'http://md.oridashi.com.au',
       'http://zm.oridashi.com.au',
-      'http://demo.oridashi.com.au:8290',
-      'http://demo.oridashi.com.au:8291'
+      'http://wildfhir.aegis.net/fhir2'
     ]
 
     puts "# #{args.test}"
@@ -124,17 +126,14 @@ namespace :crucible do
     seconds = 0.0
 
     urls.each do |url|
-      # TrackOneTest
       puts "## #{url}"
       puts "```"
-      b = Benchmark.measure { output_results(Crucible::Tests::Executor.new(FHIR::Client.new(url)).execute(args.test), true) }
+      b = Benchmark.measure { output_results( execute_test(FHIR::Client.new(url), args.test, args.resource_type), true) }
       seconds += b.real
       puts "```"
       puts
-      # Rake::Task['crucible:metadata'].invoke(url, args.test)
-      # Rake::Task['crucible:metadata'].reenable
     end
-    puts "Execute Custom #{args.test} completed for all servers in #{seconds} seconds."
+    puts "Execute Custom #{args.test} completed for #{urls.length} servers in #{seconds} seconds."
   end
 
   desc 'list all'

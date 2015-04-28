@@ -152,8 +152,8 @@ module Crucible
           validates resource: 'Patient', methods: ['update']
         }
 
-        @patient_us.extensions[0].value[:value].coding[0].code = '1569-3'
-        @patient_us.extensions[1].value[:value].coding[0].code = '2186-5'
+        @patient_us.extension[0].value[:value].coding[0].code = '1569-3'
+        @patient_us.extension[1].value[:value].coding[0].code = '2186-5'
 
         reply = @client.update @patient_us, @patient_us_id
 

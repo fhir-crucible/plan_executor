@@ -52,6 +52,7 @@
                 <div class="panel-body">
                   <% test.each do |key, value| %>
                     <% next if ["key", "code", :test_method].include?(key) %>
+                    <% next if key=="data" && test["status"]!="error" %>
                     <div class="row">
                       <div class="col-md-1"><strong><%= key %></strong></div>
                       <div class="col-md-11">

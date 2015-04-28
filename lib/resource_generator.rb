@@ -14,6 +14,9 @@ module Crucible
         if(embedded > 0)
           generate_children!(resource,embedded)
         end
+        resource.xmlId=nil if resource.respond_to?(:xmlId=)
+        resource.versionId=nil if resource.respond_to?(:versionId=)
+        resource.version=nil if resource.respond_to?(:version=)
         resource
       end
 
@@ -45,7 +48,8 @@ module Crucible
           elsif type == DateTime
             gen = Time.zone.now
           elsif type == BSON::Binary
-            gen = SecureRandom.random_bytes
+            # gen = SecureRandom.random_bytes
+            gen = SecureRandom.base64
           elsif type == BSON::ObjectId or type == Array or type == Object or type == FHIR::AnyType
             gen = nil # ignore
           # else

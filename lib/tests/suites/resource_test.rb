@@ -61,6 +61,7 @@ module Crucible
 
         reply = @client.read_feed(@resource_class)
         @bundle = reply.resource
+        assert_bundle_response reply
         assert !@bundle.nil?, 'Service did not respond with bundle.'
       end
 
@@ -82,7 +83,11 @@ module Crucible
           result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
         else
           outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
+          if outcome.nil?
+            message = "Response code #{reply.code} with no OperationOutcome provided."
+          else
+            message = self.build_messages(outcome)
+          end 
           result.update(STATUS[:fail], message, reply.body)
           @temp_resource = nil
         end
@@ -165,7 +170,11 @@ module Crucible
             end
           else
             outcome = self.parse_operation_outcome(reply.body)
-            message = self.build_messages(outcome)
+            if outcome.nil?
+              message = "Response code #{reply.code} with no OperationOutcome provided."
+            else
+              message = self.build_messages(outcome)
+            end 
             result.update(STATUS[:fail], message, reply.body)
           end
         end
@@ -288,7 +297,11 @@ module Crucible
           result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
         else
           outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
+          if outcome.nil?
+            message = "Response code #{reply.code} with no OperationOutcome provided."
+          else
+            message = self.build_messages(outcome)
+          end
           result.update(STATUS[:fail], message, reply.body)
         end
 
@@ -330,7 +343,11 @@ module Crucible
             result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
           else
             outcome = self.parse_operation_outcome(reply.body)
-            message = self.build_messages(outcome)
+            if outcome.nil?
+              message = "Response code #{reply.code} with no OperationOutcome provided."
+            else
+              message = self.build_messages(outcome)
+            end 
             result.update(STATUS[:fail], message, reply.body)
           end
         end
@@ -374,7 +391,11 @@ module Crucible
           result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
         else
           outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
+          if outcome.nil?
+            message = "Response code #{reply.code} with no OperationOutcome provided."
+          else
+            message = self.build_messages(outcome)
+          end 
           result.update(STATUS[:fail], message, reply.body)
         end
 
@@ -396,12 +417,12 @@ module Crucible
 
         result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
-          @preexisting_id = @bundle.entry[0].resource.xmlId
-          @preexisting = @bundle.entry[0].resource
-        elsif !@temp_resource.nil?
+        if !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
+        elsif !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+          @preexisting_id = @bundle.entry[0].resource.xmlId
+          @preexisting = @bundle.entry[0].resource
         else
           raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end

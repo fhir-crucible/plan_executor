@@ -1,37 +1,42 @@
 namespace :crucible do
 
-  desc 'execute all'
-  task :execute_all, [:url] do |t, args|
-    require 'benchmark'
-    b = Benchmark.measure { Crucible::Tests::Executor.new(FHIR::Client.new(args.url)).execute_all }
-    puts "Execute All completed in #{b.real} seconds."
-  end
+  FHIR_SERVERS = [
+    # DSTU1
+    # 'http://fhir.healthintersections.com.au/open',
+    # 'http://bonfire.mitre.org:8080/fhir',
+    # 'http://spark.furore.com/fhir',
+    # 'http://nprogram.azurewebsites.net',
+    # 'https://fhir-api.smartplatforms.org',
+    # 'https://fhir-open-api.smartplatforms.org',
+    # 'https://fhir.orionhealth.com/blaze/fhir',
+    # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/cobalt',
+    # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/bronze',
+    # 'http://fhirtest.uhn.ca/base'
 
-  desc 'execute_all_summary'
-  task :execute_all_summary, [:url] do |t, args|
-    require 'erb'
-    require 'tilt'
+    # DSTU2
+    'http://bonfire.mitre.org:8100/fhir',
+    'http://fhirtest.uhn.ca/baseDstu2',
+    'http://fhir-dev.healthintersections.com.au/open',
+    'http://bp.oridashi.com.au',
+    'http://md.oridashi.com.au',
+    'http://zm.oridashi.com.au',
+    'http://wildfhir.aegis.net/fhir2'
+  ]
+
+  desc 'execute all'
+  task :execute_all, [:url, :html_summary] do |t, args|
     require 'benchmark'
     b = Benchmark.measure {
-      results = Crucible::Tests::Executor.new(FHIR::Client.new(args.url)).execute_all
-      totals = Hash.new(0)
-      results.each do |result|
-        suite = result.values.first
-        suite[:tests].map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
+      results = execute_all(FHIR::Client.new(args.url))
+      if args.html_summary
+        generate_html_summary(args.url, results, "ExecuteAll")
       end
-      template = Tilt.new(File.join(File.dirname(__FILE__), "templates", "summary.html.erb"))
-      timestamp = Time.now
-      summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => args.url})
-      summary_file = "Execute_All_Results_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"
-      File.write(summary_file, summary)
-      system("open #{summary_file}")
     }
     puts "Execute All completed in #{b.real} seconds."
   end
 
   desc 'execute'
   task :execute, [:url, :test, :resource] do |t, args|
-    require 'turn'
     require 'benchmark'
     b = Benchmark.measure { execute_test(FHIR::Client.new(args.url), args.test, args.resource) }
     puts "Execute #{args.test} completed in #{b.real} seconds."
@@ -39,7 +44,6 @@ namespace :crucible do
 
   desc 'metadata'
   task :metadata, [:url, :test] do |t, args|
-    require 'turn'
     require 'benchmark'
     b = Benchmark.measure { collect_metadata(FHIR::Client.new(args.url), args.test) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
@@ -58,6 +62,11 @@ namespace :crucible do
     output_results results
   end
 
+  def execute_all(client)
+    results = Crucible::Tests::Executor.new(client).execute_all
+    output_results results
+  end
+
   def execute_multiserver_test(client, client2, key)
     executor = Crucible::Tests::Executor.new(client, client2)
     output_results executor.execute(executor.find_test(key))
@@ -68,6 +77,7 @@ namespace :crucible do
   end
 
   def output_results(results, metadata_only=false)
+    require 'turn'
     results.each do |result|
 
       result.keys.each do |suite_key|
@@ -92,53 +102,74 @@ namespace :crucible do
     end
   end
 
+  def generate_html_summary(url, results, id="summary")
+    require 'erb'
+    require 'tilt'
+    totals = Hash.new(0)
+    results.each do |result|
+      suite = result.values.first
+      suite[:tests].map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
+    end
+    template = Tilt.new(File.join(File.dirname(__FILE__), "templates", "summary.html.erb"))
+    timestamp = Time.now
+    summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => url})
+    summary_file = "#{id}_#{url.gsub(/[^a-z0-9]/,'-')}_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"
+    File.write(summary_file, summary)
+    system("open #{summary_file}")
+  end
+
   desc 'execute custom'
-  task :execute_custom, [:test, :resource_type] do |t, args|
-    require 'turn'
+  task :execute_custom, [:test, :resource_type, :html_summary] do |t, args|
     require 'benchmark'
-
-    urls = [
-      # DSTU1
-      # 'http://fhir.healthintersections.com.au/open',
-      # 'http://bonfire.mitre.org:8080/fhir',
-      # 'http://spark.furore.com/fhir',
-      # 'http://nprogram.azurewebsites.net',
-      # 'https://fhir-api.smartplatforms.org',
-      # 'https://fhir-open-api.smartplatforms.org',
-      # 'https://fhir.orionhealth.com/blaze/fhir',
-      # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/cobalt',
-      # 'http://worden.globalgold.co.uk:8080/FHIR_a/farm/bronze',
-      # 'http://fhirtest.uhn.ca/base'
-
-      # DSTU2
-      'http://bonfire.mitre.org:8100/fhir',
-      'http://fhirtest.uhn.ca/baseDstu2',
-      'http://fhir-dev.healthintersections.com.au/open',
-      'http://bp.oridashi.com.au',
-      'http://md.oridashi.com.au',
-      'http://zm.oridashi.com.au',
-      'http://wildfhir.aegis.net/fhir2'
-    ]
 
     puts "# #{args.test}"
     puts
 
     seconds = 0.0
 
-    urls.each do |url|
+    FHIR_SERVERS.each do |url|
       puts "## #{url}"
       puts "```"
-      b = Benchmark.measure { output_results( execute_test(FHIR::Client.new(url), args.test, args.resource_type), true) }
+      b = Benchmark.measure {
+        results = execute_test(FHIR::Client.new(url), args.test, args.resource_type)
+        if args.html_summary
+          generate_html_summary(url, results, args.test)
+        end
+      }
       seconds += b.real
       puts "```"
       puts
     end
-    puts "Execute Custom #{args.test} completed for #{urls.length} servers in #{seconds} seconds."
+    puts "Execute Custom #{args.test} completed for #{FHIR_SERVERS.length} servers in #{seconds} seconds."
+  end
+
+  desc 'execute all custom'
+  task :execute_all_custom, [:html_summary] do |t, args|
+    require 'benchmark'
+
+    puts "# #{args.test}"
+    puts
+
+    seconds = 0.0
+
+    FHIR_SERVERS.each do |url|
+      puts "## #{url}"
+      puts "```"
+      b = Benchmark.measure {
+        results = execute_all(FHIR::Client.new(url))
+        if args.html_summary
+          generate_html_summary(url, results, "ExecuteAll")
+        end
+      }
+      seconds += b.real
+      puts "```"
+      puts
+    end
+    puts "Execute All Custom #{args.test} completed for #{FHIR_SERVERS.length} servers in #{seconds} seconds."
   end
 
   desc 'list all'
   task :list_all do
-    require 'turn'
     require 'benchmark'
     b = Benchmark.measure { puts Crucible::Tests::Executor.list_all }
     puts "List all tests completed in #{b.real} seconds."
@@ -146,7 +177,6 @@ namespace :crucible do
 
   desc 'list all with conformance'
   task :list_all_w_conf, [:url1, :url2] do |t, args|
-    require 'turn'
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url1)

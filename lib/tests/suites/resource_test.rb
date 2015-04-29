@@ -375,15 +375,12 @@ module Crucible
           define_metadata('validate')
         }
 
-        tag = FHIR::Tag.new
-        tag.scheme = "http://hl7.org/fhir/tag/profile"
-        tag.term = "http://www.hl7.org/implement/standards/fhir/us-core.profile.xml" # the DSTU1 US profile to be validated
-        options = { :category => [ tag ] }
+        profile_uri = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with
 
         result = TestResult.new('X067',"Validate #{resource_class.name.demodulize} against a profile", nil, nil, nil)
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
-        reply = @client.validate(@temp_resource,options)
+        reply = @client.validate(@temp_resource,{profile_uri: profile_uri})
 
         if reply.code==200
           result.update(STATUS[:pass], "#{resource_class.name.demodulize} was validated.", reply.body)

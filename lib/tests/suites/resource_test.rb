@@ -117,11 +117,18 @@ module Crucible
 
         if @preexisting.nil?
           raise AssertionException.new("Failed to read preexisting #{resource_class.name.demodulize}: #{@preexisting_id}", reply.body)
+        else
+          begin
+            @preexisting.to_xml
+          rescue Exception => e
+            @preexisting = nil
+            raise AssertionException.new("Read preexisting #{resource_class.name.demodulize}, but it appears invalid.", reply.response)
+          end
         end
 
         @preexisting_version = reply.version
 
-        result.update(STATUS[:pass], "Successfully read preexisting #{resource_class.name.demodulize}.", @preexisting.to_xml)
+        result.update(STATUS[:pass], "Successfully read preexisting #{resource_class.name.demodulize}.", reply.response)
         result
       end
 
@@ -141,12 +148,18 @@ module Crucible
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
-        else
-          raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        end
+
+        if !@preexisting.nil?
+          begin
+            @preexisting.to_xml
+          rescue Exception => e
+            @preexisting = nil
+          end
         end
 
         if @preexisting.nil?
-          result.update(STATUS[:fail], "Unable to update -- no existing #{resource_class.name.demodulize} is available or could be created.", nil)
+          result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
           ResourceGenerator.set_fields!(@preexisting)
 
@@ -193,16 +206,15 @@ module Crucible
         result = TestResult.new('X040',"Read history of existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
         if @preexisting_id.nil?
-          raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
+          result.update(STATUS[:skip], "Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        else
+          reply = @client.resource_instance_history(@resource_class, @preexisting_id)
+          @history_bundle = reply.resource
+          if @history_bundle.nil?
+            raise AssertionException.new('Service did not respond with bundle.', nil)
+          end
+          result.update(STATUS[:pass], 'Service responded with bundle.', reply.body)
         end
-
-        reply = @client.resource_instance_history(@resource_class, @preexisting_id)
-        @history_bundle = reply.resource
-        if @history_bundle.nil?
-          raise AssertionException.new('Service did not respond with bundle.', nil)
-        end
-
-        result.update(STATUS[:pass], 'Service responded with bundle.', reply.body)
         result
       end
 
@@ -225,21 +237,21 @@ module Crucible
           @preexisting_id = @temp_id
           @preexisting_version = @temp_version
           @preexisting = @temp_resource
+        end
+
+        if @preexisting.nil?
+          result.update(STATUS[:skip], "Preexisting #{resource_class.name.demodulize} unknown.", nil)          
         else
-          raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
+          reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
+          if reply.resource.nil?
+            raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", reply.body)
+          elsif reply.code != 200
+            raise AssertionException.new("Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{reply.code}.", nil)
+          elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
+            raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
+          end
+          result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", reply.body)
         end
-
-        reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
-
-        if reply.resource.nil?
-          raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", reply.body)
-        elsif reply.code != 200
-          raise AssertionException.new("Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{reply.code}.", nil)
-        elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
-          raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
-        end
-
-        result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", reply.body)
         result
       end
 
@@ -258,21 +270,22 @@ module Crucible
           @preexisting_id = @preexisting.xmlId
           @preexisting_version = nil
           @preexisting_version = @preexisting.meta.versionId if !@preexisting.meta.nil?
+        end
+
+        if @preexisting.nil?
+          result.update(STATUS[:skip],"Previous version of #{resource_class.name.demodulize} unavailable.", nil)
         else
-          raise AssertionException.new("Previous version of #{resource_class.name.demodulize} unavailable.", nil)
+          reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
+          if reply.resource.nil?
+            raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", reply.body)
+          elsif reply.code != 200
+            raise AssertionException.new("Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{reply.code}.", nil)
+          elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
+            raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
+          end
+          result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", reply.body)
         end
-
-        reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
-
-        if reply.resource.nil?
-          raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", reply.body)
-        elsif reply.code != 200
-          raise AssertionException.new("Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{reply.code}.", nil)
-        elsif (reply.id != @preexisting_id) and (reply.version != @preexisting_version)
-          raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
-        end
-
-        result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", reply.body)
+        result
       end
 
 
@@ -326,12 +339,18 @@ module Crucible
         elsif !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
-        else
-          raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        end
+
+        if !@preexisting.nil?
+          begin
+            @preexisting.to_xml
+          rescue Exception => e
+            @preexisting = nil
+          end
         end
 
         if @preexisting.nil?
-          result.update(STATUS[:fail], "Unable to validate -- no existing #{resource_class.name.demodulize} is available to be validated.", nil)
+          result.update(STATUS[:skip], "Unable to validate -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
           ResourceGenerator.set_fields!(@preexisting)
 
@@ -417,36 +436,38 @@ module Crucible
         if !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
-        elsif !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        end
+        if @preexisting_id.nil? && !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.xmlId
           @preexisting = @bundle.entry[0].resource
-        else
-          raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end
 
-        reply = @client.destroy(@resource_class,@preexisting_id)
-
-        if reply.code==204
-          result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
-        elsif reply.code==405
-          outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
-          message.unshift "Server does not allow deletion of #{resource_class.name.demodulize}"
-          result.update(STATUS[:fail], message, reply.body)
-        elsif reply.code==404
-          outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
-          message.unshift "Server was unable to find (404 not found) the #{resource_class.name.demodulize} with the ID `#{preexisting_id}`"
-          result.update(STATUS[:fail], message, reply.body)
-        elsif reply.code==409
-          outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
-          message.unshift "Server had a conflict try to delete the #{resource_class.name.demodulize} with the ID `#{preexisting_id}"
-          result.update(STATUS[:fail], message, reply.body)
+        if @preexisting_id.nil?
+          result.update(STATUS[:skip],"Preexisting #{resource_class.name.demodulize} unknown.", nil)
         else
-          outcome = self.parse_operation_outcome(reply.body)
-          message = self.build_messages(outcome)
-          result.update(STATUS[:fail], message, reply.body)
+          reply = @client.destroy(@resource_class,@preexisting_id)
+          if reply.code==204
+            result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
+          elsif reply.code==405
+            outcome = self.parse_operation_outcome(reply.body)
+            message = self.build_messages(outcome)
+            message.unshift "Server does not allow deletion of #{resource_class.name.demodulize}"
+            result.update(STATUS[:fail], message, reply.body)
+          elsif reply.code==404
+            outcome = self.parse_operation_outcome(reply.body)
+            message = self.build_messages(outcome)
+            message.unshift "Server was unable to find (404 not found) the #{resource_class.name.demodulize} with the ID `#{preexisting_id}`"
+            result.update(STATUS[:fail], message, reply.body)
+          elsif reply.code==409
+            outcome = self.parse_operation_outcome(reply.body)
+            message = self.build_messages(outcome)
+            message.unshift "Server had a conflict try to delete the #{resource_class.name.demodulize} with the ID `#{preexisting_id}"
+            result.update(STATUS[:fail], message, reply.body)
+          else
+            outcome = self.parse_operation_outcome(reply.body)
+            message = self.build_messages(outcome)
+            result.update(STATUS[:fail], message, reply.body)
+          end
         end
 
         result

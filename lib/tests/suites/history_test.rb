@@ -112,9 +112,12 @@ module Crucible
         end
 
         deleted_entries(bundle.entry).each do |entry|
-          pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
-          assert pulled.resource.nil?, "resource should not be found since it was deleted"
-          assert_response_gone pulled
+          # FIXME: Should we parse the transaction URL or drop this assertion?
+          if entry.resource
+            pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
+            assert pulled.resource.nil?, "resource should not be found since it was deleted"
+            assert_response_gone pulled
+          end
         end
       end
 
@@ -257,9 +260,9 @@ module Crucible
       ####
 
       def deleted_entries(entries)
-        entries.select do |entry| 
+        entries.select do |entry|
           assert !entry.transaction.nil?, "history bundle entries do not have transaction elements, deleted entries cannot be distinguished"
-          entry.transaction.try(:method) == "DELETE" 
+          entry.transaction.try(:method) == "DELETE"
         end
       end
 

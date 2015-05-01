@@ -18,7 +18,7 @@ module Crucible
       end
 
       def find_test(key)
-        @scripts.find{|s| s.id == key} || []
+        @scripts.find{|s| s.id == key || s.title == key} || []
       end
 
       def self.list_all

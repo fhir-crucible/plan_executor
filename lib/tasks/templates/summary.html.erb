@@ -26,6 +26,22 @@
       </button>
     </div>
 
+    <div class="well well-sm">
+    <% metadata.each do |leaf, tags| %>
+      <div class="row">
+        <div class="col-md-2"><strong><%= leaf %></strong></div>
+        <div class="col-md-10">
+          <div class="row">
+          <% tags.each do |leaf, tags| %>
+            <div class="col-md-2"><strong><%= tags.length %> <%= leaf %></strong></div>
+            <div class="col-md-10"><%= tags %></div>
+          <% end %>
+        </div>
+        </div>
+      </div>
+    <% end %>
+    </div>
+
     <% results.each_with_index do |result, index| %>
       <% suite_key = result.keys.first %>
       <% suite = result.values.first %>
@@ -48,7 +64,6 @@
                 <div class="panel-heading">
                   <%= test["status"].upcase %> - <%= test["key"] %> - <%= test[:test_method].to_s %>
                 </div>
-                <% if test["status"] == "fail" || test["status"] == "error" %>
                 <div class="panel-body">
                   <% test.each do |key, value| %>
                     <% next if ["key", "code", :test_method].include?(key) %>
@@ -87,7 +102,6 @@
                     </div>
                   <% end %>
                 </div>
-                <% end %>
               </div>
             <% end %>
 

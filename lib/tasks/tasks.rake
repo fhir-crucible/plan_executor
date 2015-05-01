@@ -16,11 +16,11 @@ namespace :crucible do
     # DSTU2
     'http://bonfire.mitre.org:8100/fhir',
     'http://fhirtest.uhn.ca/baseDstu2',
-    'http://fhir-dev.healthintersections.com.au/open',
     'http://bp.oridashi.com.au',
     'http://md.oridashi.com.au',
     'http://zm.oridashi.com.au',
-    'http://wildfhir.aegis.net/fhir2'
+    'http://wildfhir.aegis.net/fhir2',
+    'http://fhir-dev.healthintersections.com.au/open'
   ]
 
   desc 'execute all'
@@ -106,13 +106,36 @@ namespace :crucible do
     require 'erb'
     require 'tilt'
     totals = Hash.new(0)
+    metadata = Hash.new(0)
     results.each do |result|
       suite = result.values.first
       suite[:tests].map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
+      suite[:tests].map{|t| {k: t["id"], v: t["validates"], s: t["status"]}}.each_with_object(metadata) do |n, h|
+        n[:v].each do |val|
+          resource = val[:resource].try(:titleize).try(:downcase)
+          test_key = n[:k]
+          h[resource] = {pass: [], fail: []} unless h.keys.include?(resource)
+          case n[:s]
+          when "pass"
+            h[resource][:pass] << test_key
+          when "fail", "error"
+            h[resource][:fail] << test_key
+          end
+          val[:methods].each do |meth|
+            h[meth] = {pass: [], fail: []} unless h.keys.include?(meth)
+            case n[:s]
+            when "pass"
+              h[meth][:pass] << test_key
+            when "fail", "error"
+              h[meth][:fail] << test_key
+            end
+          end
+        end if n[:v]
+      end
     end
     template = Tilt.new(File.join(File.dirname(__FILE__), "templates", "summary.html.erb"))
     timestamp = Time.now
-    summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => url})
+    summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => url, :metadata => metadata})
     summary_file = "#{id}_#{url.gsub(/[^a-z0-9]/,'-')}_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"
     File.write(summary_file, summary)
     system("open #{summary_file}")

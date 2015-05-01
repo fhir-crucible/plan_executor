@@ -105,6 +105,9 @@ module Crucible
       # advanced searching with "Query" or _query param (valueset 'expand' and 'validate' queries should be standard)
       #
       test 'S001', 'Search by ID' do
+        metadata {
+          define_metadata('search')
+        }
         options = {
           :search => {
             :flag => true,
@@ -120,6 +123,9 @@ module Crucible
       end
 
       test 'S002', 'Search without search keyword' do
+        metadata {
+          define_metadata('search')
+        }
         options = {
           :search => {
             :flag => false,
@@ -135,6 +141,9 @@ module Crucible
       end
 
       test 'S003', 'Search limit by _count' do
+        metadata {
+          define_metadata('search')
+        }
         options = {
           :search => {
             :flag => true,
@@ -155,6 +164,12 @@ module Crucible
       # ********************************************************* #
 
       test 'SE01', 'Search without criteria' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/#{resource_class.name.demodulize.downcase}.html"
+          links "#{REST_SPEC_LINK}#search"
+          links "#{REST_SPEC_LINK}#read"
+          validates resource: resource_class.name.demodulize, methods: ['read', 'search']
+        }
         options = {
           :search => {
             :flag => true,
@@ -170,6 +185,12 @@ module Crucible
         assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
       end
 
+
+      def define_metadata(method)
+        links "#{REST_SPEC_LINK}##{method}"
+        links "#{BASE_SPEC_LINK}/#{resource_class.name.demodulize.downcase}.html"
+        validates resource: resource_class.name.demodulize, methods: [method]
+      end
 
     end
   end

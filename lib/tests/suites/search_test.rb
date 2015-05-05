@@ -68,6 +68,9 @@ module Crucible
       end
 
       test 'S000', 'Compare supported search parameters with specification' do
+        metadata {
+          define_metadata('search')
+        }
         searchParamNames = []
         searchParamNames = @searchParams.map { |item| item.name } if !@searchParams.nil?
         assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames).join(', ')

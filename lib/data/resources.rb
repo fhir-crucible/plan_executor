@@ -83,6 +83,14 @@ module Crucible
         observations
       end
 
+      def simple_claim
+        FHIR::Claim.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-simple.xml'))
+      end
+
+      def average_claim
+        FHIR::Claim.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-average.xml'))
+      end
+
       def load_fixture(path)
         FHIR::Resource.from_contents(File.read(File.join(fixture_path, path)))
       end

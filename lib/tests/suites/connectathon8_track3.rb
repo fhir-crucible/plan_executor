@@ -76,11 +76,12 @@ module Crucible
           requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
         }
-
+        
+        # @profile_url = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with
         @obs.each do |x|
           x.meta = FHIR::Resource::ResourceMetaComponent.new
           x.meta.profile = [ @profile_url ]
-          reply = @client.validate(x)
+          reply = @client.validate(x,{profile_uri: @profile_url})
           assert_response_ok(reply)
           if !reply.id.nil?
             assert( !reply.id.include?('_validate'), "Server created an Observation with the ID `_validate` rather than validate the resource.", reply.id)

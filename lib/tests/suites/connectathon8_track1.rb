@@ -14,10 +14,12 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
 
         @patient = @resources.example_patient
+        @patient.xmlId = nil # clear the identifier, in case the server checks for duplicates
         @patient.identifier = nil # clear the identifier, in case the server checks for duplicates
 
         @patient_us = @resources.example_patient_us
         @patient_us.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @patient_us.identifier = nil # clear the identifier, in case the server checks for duplicates
       end
 
       def teardown
@@ -38,7 +40,6 @@ module Crucible
 
         reply = @client.create @patient
         @patient_id = reply.id
-
         assert_response_ok(reply)
 
         if !reply.resource.nil?
@@ -91,6 +92,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['update']
         }
+        skip unless @patient_id
 
         @patient.telecom[0].value='1-800-TOLL-FREE'
         @patient.name[0].given = ["Crocodile","Pants"]
@@ -121,6 +123,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
         }
+        skip unless @patient_us_id
 
         @patient_us.telecom[0].value='1-800-TOLL-FREE'
         @patient_us.name[0].given = ["Alligator","Pants"]
@@ -151,6 +154,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
         }
+        skip unless @patient_us_id
 
         @patient_us.extension[0].value[:value].coding[0].code = '1569-3'
         @patient_us.extension[1].value[:value].coding[0].code = '2186-5'
@@ -181,6 +185,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['history-instance']
         }
+        skip unless @patient_id
 
         result = @client.resource_instance_history(FHIR::Patient,@patient_id)
         assert_response_ok result

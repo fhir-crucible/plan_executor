@@ -85,7 +85,7 @@ module Crucible
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }
       end
-      
+
       # ------------------------------------------------------------------------------
 
       #
@@ -189,7 +189,7 @@ module Crucible
       #
       # Search for a ClaimResponse by average claim
       #
-      test 'C9F_2A_request', 'Search ClaimResponse by average claim ID' do
+      test 'C9F_2B_request', 'Search ClaimResponse by average claim ID' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
@@ -221,7 +221,7 @@ module Crucible
       #
       # Search for a ClaimResponse by average claim
       #
-      test 'C9F_2A_text', 'Search ClaimResponse by average claim ID in the text' do
+      test 'C9F_2B_text', 'Search ClaimResponse by average claim ID in the text' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
@@ -253,7 +253,7 @@ module Crucible
       #
       # Search for a ClaimResponse by average claim
       #
-      test 'C9F_2A_content', 'Search ClaimResponse by average claim ID in the content' do
+      test 'C9F_2B_content', 'Search ClaimResponse by average claim ID in the content' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"

@@ -41,4 +41,4 @@ build/
 *.log.*
 
 **/.DS_Store
-*.html
+html_summaries/*

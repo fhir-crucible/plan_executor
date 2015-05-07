@@ -105,6 +105,7 @@ namespace :crucible do
   def generate_html_summary(url, results, id="summary")
     require 'erb'
     require 'tilt'
+    require 'fileutils'
     totals = Hash.new(0)
     metadata = Hash.new(0)
     results.each do |result|
@@ -131,8 +132,9 @@ namespace :crucible do
     timestamp = Time.now
     summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => url, :metadata => metadata})
     summary_file = "#{id}_#{url.gsub(/[^a-z0-9]/,'-')}_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"
-    File.write(summary_file, summary)
-    system("open #{summary_file}")
+    FileUtils::mkdir_p("html_summaries/#{id}")
+    File.write("html_summaries/#{id}/#{summary_file}", summary)
+    system("open html_summaries/#{id}/#{summary_file}")
   end
 
   desc 'execute custom'

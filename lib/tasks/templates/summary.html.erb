@@ -33,7 +33,8 @@
         <div class="col-md-10">
           <div class="row">
           <% tags.each do |leaf, tags| %>
-            <div class="col-md-2"><strong><%= tags.length %> <%= leaf %></strong></div>
+            <% next unless tags.length>0 %>
+            <div class="col-md-2"><strong><%= tags.length %> <%= leaf.to_s.try(:pluralize) %></strong></div>
             <div class="col-md-10"><%= tags %></div>
           <% end %>
         </div>

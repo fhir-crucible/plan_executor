@@ -82,7 +82,7 @@ module Crucible
         if reply.code==201
           result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
         else
-          outcome = self.parse_operation_outcome(reply.body)
+          outcome = self.parse_operation_outcome(reply.body) rescue nil
           if outcome.nil?
             message = "Response code #{reply.code} with no OperationOutcome provided."
           else
@@ -182,7 +182,7 @@ module Crucible
               result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server did not update the resource version number.", reply.body)
             end
           else
-            outcome = self.parse_operation_outcome(reply.body)
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
             if outcome.nil?
               message = "Response code #{reply.code} with no OperationOutcome provided."
             else
@@ -303,13 +303,12 @@ module Crucible
 
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.validate @temp_resource
-
         if reply.code==200
           result.update(STATUS[:pass], "#{resource_class.name.demodulize} was validated.", reply.body)
         elsif reply.code==201
           result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
         else
-          outcome = self.parse_operation_outcome(reply.body)
+          outcome = self.parse_operation_outcome(reply.body) rescue nil
           if outcome.nil?
             message = "Response code #{reply.code} with no OperationOutcome provided."
           else
@@ -361,7 +360,7 @@ module Crucible
           elsif reply.code==201
             result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
           else
-            outcome = self.parse_operation_outcome(reply.body)
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
             if outcome.nil?
               message = "Response code #{reply.code} with no OperationOutcome provided."
             else
@@ -406,7 +405,7 @@ module Crucible
         elsif reply.code==201
           result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
         else
-          outcome = self.parse_operation_outcome(reply.body)
+          outcome = self.parse_operation_outcome(reply.body) rescue nil
           if outcome.nil?
             message = "Response code #{reply.code} with no OperationOutcome provided."
           else
@@ -449,22 +448,22 @@ module Crucible
           if reply.code==204
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
           elsif reply.code==405
-            outcome = self.parse_operation_outcome(reply.body)
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)
             message.unshift "Server does not allow deletion of #{resource_class.name.demodulize}"
             result.update(STATUS[:fail], message, reply.body)
           elsif reply.code==404
-            outcome = self.parse_operation_outcome(reply.body)
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)
             message.unshift "Server was unable to find (404 not found) the #{resource_class.name.demodulize} with the ID `#{preexisting_id}`"
             result.update(STATUS[:fail], message, reply.body)
           elsif reply.code==409
-            outcome = self.parse_operation_outcome(reply.body)
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)
             message.unshift "Server had a conflict try to delete the #{resource_class.name.demodulize} with the ID `#{preexisting_id}"
             result.update(STATUS[:fail], message, reply.body)
           else
-            outcome = self.parse_operation_outcome(reply.body)
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)
             result.update(STATUS[:fail], message, reply.body)
           end

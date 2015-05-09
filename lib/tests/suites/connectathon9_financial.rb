@@ -41,16 +41,30 @@ module Crucible
           validates resource: 'Claim', methods: ['create']
         }
 
-        reply = @client.create @simple
+        reply = @client.create(@simple,'application/xml')
         @simple_id = reply.id
         assert_response_ok(reply)
 
-        if !reply.resource.nil?
+        if !reply.resource.nil?		  
+		  # Response is Claim		  
           temp = reply.resource.xmlId
           reply.resource.xmlId = nil
           warning { assert @simple.equals?(reply.resource), 'The server did not correctly preserve the Claim data.' }
           reply.resource.xmlId = temp
-        end
+        elsif !reply.body.nil?
+		  begin
+		    cr = FHIR::Resource.from_contents(reply.body)
+			if cr.class==FHIR::ClaimResponse
+			  # Response is ClaimResponse
+			  @simple_response_id = cr.xmlId
+			  @simple_id = cr.request.reference if cr.request
+			else
+			  warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
+			end
+		  rescue Exception => ex
+		    warning { assert(false,'The Claim request responded with an unexpected body.',reply.body) }
+		  end
+		end
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -69,18 +83,31 @@ module Crucible
           validates resource: 'Claim', methods: ['create']
         }
 
-        reply = @client.create @average
+        reply = @client.create(@average,'application/xml')
         @average_id = reply.id
 
         assert_response_ok(reply)
 
         if !reply.resource.nil?
+		  # Response is Claim		  
           temp = reply.resource.xmlId
           reply.resource.xmlId = nil
           warning { assert @average.equals?(reply.resource), 'The server did not correctly preserve the Claim data.' }
           reply.resource.xmlId = temp
-        end
-
+        elsif !reply.body.nil?
+		  begin
+		    cr = FHIR::Resource.from_contents(reply.body)
+			if cr.class==FHIR::ClaimResponse
+			  # Response is ClaimResponse
+			  @average_response_id = cr.xmlId
+			  @average_id = cr.request.reference if cr.request
+			else
+			  warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
+			end
+		  rescue Exception => ex
+		    warning { assert(false,'The Claim request responded with an unexpected body.',reply.body) }
+		  end
+		end
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }

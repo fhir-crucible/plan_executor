@@ -69,7 +69,7 @@ module Crucible
         charset = encoding = nil
 
         content_type = header[0, header.index(';')] if !header.index(';').nil?
-        charset = header[header.index(';charset=')+9..-1] if !header.index(';charset=').nil?
+        charset = header[header.index('charset=')+8..-1] if !header.index('charset=').nil?
         encoding = Encoding.find(charset) if !charset.nil?
 
         unless assertion_negated( encoding == Encoding::UTF_8 )

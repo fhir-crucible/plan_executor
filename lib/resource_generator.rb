@@ -27,6 +27,7 @@ module Crucible
         fields = resource.fields
         fields.each do |key,value|
           type = value.options[:type]
+		  next if key=='id' || key=='xmlId'
           gen = nil
           if type == String
             gen = SecureRandom.urlsafe_base64

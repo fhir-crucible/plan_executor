@@ -67,6 +67,7 @@ module Crucible
 
         reply = @client.create @patient_us
         @patient_us_id = reply.id
+		@patient_us.xmlId = reply.resource.xmlId rescue reply.id
 
         assert_response_ok(reply)
 
@@ -94,8 +95,9 @@ module Crucible
         }
         skip unless @patient_id
 
+		@patient.xmlId = @patient_id
         @patient.telecom[0].value='1-800-TOLL-FREE'
-        @patient.name[0].given = ["Crocodile","Pants"]
+        @patient.name[0].given = ['Crocodile','Pants']
 
         reply = @client.update @patient, @patient_id
 
@@ -124,9 +126,9 @@ module Crucible
           validates resource: 'Patient', methods: ['update']
         }
         skip unless @patient_us_id
-
+		
         @patient_us.telecom[0].value='1-800-TOLL-FREE'
-        @patient_us.name[0].given = ["Alligator","Pants"]
+        @patient_us.name[0].given = ['Alligator','Pants']
 
         reply = @client.update @patient_us, @patient_us_id
 
@@ -156,6 +158,7 @@ module Crucible
         }
         skip unless @patient_us_id
 
+		@patient_us.xmlId = @patient_us_id
         @patient_us.extension[0].value[:value].coding[0].code = '1569-3'
         @patient_us.extension[1].value[:value].coding[0].code = '2186-5'
 

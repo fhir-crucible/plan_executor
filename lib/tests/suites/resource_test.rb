@@ -77,6 +77,7 @@ module Crucible
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.create @temp_resource
         @temp_id = reply.id
+		@temp_resource.xmlId = reply.resource.xmlId rescue reply.id
         @temp_version = reply.version
 
         if reply.code==201

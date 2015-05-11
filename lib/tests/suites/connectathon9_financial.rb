@@ -42,8 +42,9 @@ module Crucible
         }
 
         reply = @client.create(@simple,'application/xml')
-        @simple_id = reply.id
         assert_response_ok(reply)
+        @simple_id = reply.id
+		sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
 
         if !reply.resource.nil?		  
 		  # Response is Claim		  
@@ -84,9 +85,9 @@ module Crucible
         }
 
         reply = @client.create(@average,'application/xml')
-        @average_id = reply.id
-
         assert_response_ok(reply)
+        @average_id = reply.id
+		sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
 
         if !reply.resource.nil?
 		  # Response is Claim		  
@@ -145,6 +146,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+		
+		@simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
       end
 
       #
@@ -177,6 +180,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+		
+		@simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
       end
 
       #
@@ -209,6 +214,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+		
+		@simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
       end
 
       # ------------------------------------------------------------------------------
@@ -243,6 +250,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+		
+		@average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
       end
 
       #
@@ -275,6 +284,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+
+		@average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
       end
 
       #
@@ -307,6 +318,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+
+		@average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
       end
 
     end

@@ -75,7 +75,7 @@ module Crucible
           # TODO: Determine if we can generate references or meta information
           next if ['meta'].include? key
           # TODO: Ignore references if we don't exlpicitly require them
-          # next if value[:class_name] == 'FHIR::Reference'
+          next if value[:class_name] == 'FHIR::Reference'
           klass = resource.get_fhir_class_from_resource_type(value[:class_name])
           child = generate(klass,(embedded-1)) if(value[:class_name] != 'FHIR::Extension')
           if value[:relation] == Mongoid::Relations::Embedded::Many

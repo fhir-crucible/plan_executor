@@ -25,6 +25,10 @@ module Crucible
         FHIR::Patient.from_xml File.read(File.join(fixture_path, 'patient', 'patient-example-us-extensions(us01).xml'))
       end
 
+      def minimal_patient
+        FHIR::Patient.from_xml File.read(File.join(fixture_path, 'patient', 'patient-minimal.xml'))
+      end
+
       def example_patient_record_201
         FHIR::Patient.from_xml File.read(File.join(fixture_path, 'record', 'patient-example-f201-roel.xml'))
       end

@@ -45,11 +45,7 @@ module Crucible
         methods.each do |test_method|
           puts "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
-            if @setup_failed
-              result << TestResult.new('SKIP', "Setup Assertion Error #{prefix} #{test_method}", STATUS[:skip], "#{test_method} skipped due to setup failure, fatal error: #{@setup_failed.message}", @setup_failed.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
-            else
-              result << execute_test_method(test_method)
-            end
+            result << execute_test_method(test_method)
           rescue => e
             result << TestResult.new('ERROR', "Error #{prefix} #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end

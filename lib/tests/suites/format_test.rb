@@ -17,7 +17,7 @@ module Crucible
         @xml_format_params = ['xml', 'text/xml', 'application/xml', @xml_format]
         @json_format_params = ['json', 'text/json', 'application/json', @json_format]
         @resources = Crucible::Generator::Resources.new
-        @resource = @resources.example_format_patient
+        @resource = @resources.minimal_patient
         @create_failed = false
 
         create_reply = @client.create(@resource)
@@ -53,7 +53,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format)
@@ -70,7 +70,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[0], true)
@@ -88,7 +88,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[1], true)
@@ -106,7 +106,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[2], true)
@@ -124,7 +124,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[3], true)
@@ -142,7 +142,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format)
@@ -159,7 +159,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[0], true)
@@ -177,7 +177,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[1], true)
@@ -195,7 +195,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[2], true)
@@ -213,7 +213,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[3], true)
@@ -231,7 +231,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
         begin
           patient_xml = request_entry(FHIR::Patient, @id, @xml_format)
@@ -252,7 +252,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
         begin
           patient_xml = request_entry(FHIR::Patient, @id, @xml_format, true)
@@ -273,7 +273,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @xml_format)
@@ -290,7 +290,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[0], true)
@@ -307,7 +307,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[1], true)
@@ -324,7 +324,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[2], true)
@@ -341,7 +341,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[3], true)
@@ -358,7 +358,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @json_format)
@@ -375,7 +375,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @json_format_params[0], true)
@@ -392,7 +392,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @json_format_params[1], true)
@@ -409,7 +409,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @json_format_params[2], true)
@@ -426,7 +426,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#2.1.0.6"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
           patients_bundle = request_bundle(FHIR::Patient, @json_format_params[3], true)

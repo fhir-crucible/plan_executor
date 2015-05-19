@@ -12,7 +12,7 @@ module Crucible
 
       def setup
         @resources = Crucible::Generator::Resources.new
-        @patient = @resources.example_patient
+        @patient = @resources.minimal_patient
 
         @create_date = Time.now.utc
 

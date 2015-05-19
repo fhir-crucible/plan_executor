@@ -55,6 +55,7 @@ module Crucible
 
       def metadata(&block)
         yield
+        skip if @setup_failed
         skip if @metadata_only
       end
 
@@ -106,7 +107,8 @@ module Crucible
           rescue => e
             result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
           end
-          result.warnings = @warnings  unless @warnings.empty?
+          result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
+          result.warnings = @warnings unless @warnings.empty?
           result.requires = @requires unless @requires.empty?
           result.validates = @validates unless @validates.empty?
           result.links = @links unless @links.empty?

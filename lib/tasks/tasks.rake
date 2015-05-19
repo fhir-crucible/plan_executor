@@ -14,7 +14,7 @@ namespace :crucible do
     # 'http://fhirtest.uhn.ca/base'
 
     # DSTU2
-    'http://bonfire.mitre.org:8100/fhir',
+    'https://fhir-api-dstu2.smarthealthit.org',
     'http://fhirtest.uhn.ca/baseDstu2',
     'http://bp.oridashi.com.au',
     'http://md.oridashi.com.au',
@@ -105,6 +105,7 @@ namespace :crucible do
   def generate_html_summary(url, results, id="summary")
     require 'erb'
     require 'tilt'
+    require 'fileutils'
     totals = Hash.new(0)
     metadata = Hash.new(0)
     results.each do |result|
@@ -114,22 +115,16 @@ namespace :crucible do
         n[:v].each do |val|
           resource = val[:resource].try(:titleize).try(:downcase)
           test_key = n[:k]
-          h[resource] = {pass: [], fail: []} unless h.keys.include?(resource)
-          case n[:s]
-          when "pass"
-            h[resource][:pass] << test_key
-          when "fail", "error"
-            h[resource][:fail] << test_key
-          end
+          h[resource] = {pass: [], fail: [], error: [], skip: []} unless h.keys.include?(resource)
+          h[resource][n[:s].to_sym] << test_key
           val[:methods].each do |meth|
-            h[meth] = {pass: [], fail: []} unless h.keys.include?(meth)
-            case n[:s]
-            when "pass"
-              h[meth][:pass] << test_key
-            when "fail", "error"
-              h[meth][:fail] << test_key
-            end
-          end
+            h[meth] = {pass: [], fail: [], error: [], skip: []} unless h.keys.include?(meth)
+            h[meth][n[:s].to_sym] << test_key
+          end if val[:methods]
+          val[:formats].each do |format|
+            h[format] = {pass: [], fail: [], error: [], skip: []} unless h.keys.include?(format)
+            h[format][n[:s].to_sym] << test_key
+          end if val[:formats]
         end if n[:v]
       end
     end
@@ -137,8 +132,9 @@ namespace :crucible do
     timestamp = Time.now
     summary = template.render(self, {:results => results, :timestamp => timestamp.strftime("%D %r"), :totals => totals, :url => url, :metadata => metadata})
     summary_file = "#{id}_#{url.gsub(/[^a-z0-9]/,'-')}_#{timestamp.strftime("%m-%d-%y_%H-%M-%S")}.html"
-    File.write(summary_file, summary)
-    system("open #{summary_file}")
+    FileUtils::mkdir_p("html_summaries/#{id}")
+    File.write("html_summaries/#{id}/#{summary_file}", summary)
+    system("open html_summaries/#{id}/#{summary_file}")
   end
 
   desc 'execute custom'

@@ -27,6 +27,8 @@ module Crucible
       end
 
       def execute
+        @client.use_format_param = false
+        @client2.use_format_param = false if @client2
         [{title => {
             test_file: title,
             tests: execute_test_methods

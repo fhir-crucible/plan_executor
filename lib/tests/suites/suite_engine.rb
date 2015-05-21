@@ -60,7 +60,7 @@ module Crucible
         list
       end
 
-      def self.list_all
+      def self.list_all(metadata=false)
         list = {}
         # FIXME: Organize defaults between instance & class methods
         @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
@@ -74,11 +74,27 @@ module Crucible
                 list["#{test_class}#{klass.name.demodulize}"] = {}
                 list["#{test_class}#{klass.name.demodulize}"]['resource_class'] = klass
                 BaseTest::JSON_FIELDS.each {|field| list["#{test_class}#{klass.name.demodulize}"][field] = test.send(field)}
+                if metadata
+                  test_metadata = test.collect_metadata(true)
+                  BaseTest::METADATA_FIELDS.each do |field|
+                    field_hash = {}
+                    test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+                    list["#{test_class}#{klass.name.demodulize}"][field] = field_hash
+                  end
+                end
               end
             end
           else
             list[test.title] = {}
             BaseTest::JSON_FIELDS.each {|field| list[test.title][field] = test.send(field)}
+            if metadata
+              test_metadata = test.collect_metadata(true)
+              BaseTest::METADATA_FIELDS.each do |field|
+                field_hash = {}
+                test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+                list[test.title][field] = field_hash
+              end
+            end
           end
         end
         list

@@ -15,6 +15,7 @@ module Crucible
         error: 'error',
         skip: 'skip'
       }
+      METADATA_FIELDS = ['links', 'requires', 'validates']
 
       def initialize(client, client2=nil)
         @client = client

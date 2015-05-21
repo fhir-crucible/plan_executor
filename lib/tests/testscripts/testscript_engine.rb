@@ -21,12 +21,20 @@ module Crucible
         @scripts.find{|s| s.id == key || s.title == key} || []
       end
 
-      def self.list_all
+      def self.list_all(metadata=false)
         list = {}
         # TODO: Determine if we need resource-based testscript listing support
         TestScriptEngine.new.tests.each do |test|
           list[test.title] = {}
           BaseTest::JSON_FIELDS.each {|field| list[test.title][field] = test.send(field)}
+          if metadata
+            test_metadata = test.collect_metadata(true)
+            BaseTest::METADATA_FIELDS.each do |field|
+              field_hash = {}
+              test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+              list[test.title][field] = field_hash
+            end
+          end
         end
         list
       end

@@ -27,8 +27,8 @@ module Crucible
         @suite_engine.list_all_with_conformance(multiserver, metadata).merge @testscript_engine.list_all_with_conformance(multiserver, metadata)
       end
 
-      def self.list_all(multiserver=false)
-        list = SuiteEngine.list_all.merge TestScriptEngine.list_all
+      def self.list_all(multiserver=false, metadata=false)
+        list = SuiteEngine.list_all(metadata).merge TestScriptEngine.list_all(metadata)
         list.select {|key,value| value['multiserver'] == multiserver}
       end
 
@@ -40,6 +40,19 @@ module Crucible
       # finds a test by class name for suites, and by filename for testscript
       def find_test(key)
         @suite_engine.find_test(key) || @testscript_engine.find_test(key)
+      end
+
+      # finds a test from the given key and extracts only metadata into a hash
+      def extract_metadata_from_test(key)
+        test = find_test(key)
+        test_metadata = test.collect_metadata(true)
+        extracted_metadata = {}
+        BaseTest::METADATA_FIELDS.each do |field|
+          field_hash = {}
+          test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+          extracted_metadata[field] = field_hash
+        end
+        extracted_metadata
       end
 
     end

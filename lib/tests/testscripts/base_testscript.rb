@@ -99,16 +99,23 @@ module Crucible
         end
       end
 
+      def collect_metadata(methods_only=false)
+        @metadata_only = true
+        result = execute
+        result = result.map{|r| r.values.first[:tests]}.flatten if methods_only
+        @metadata_only = false
+        result
+      end
+
       def process_test(test)
         result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
         @last_response = nil # clear out any responses from previous tests
         begin
           test.operation.each do |op|
-            next if @setup_failed
             @negated = false # clear out any negations from previous tests
             @warned = false # clear out any warnings from previous tests
             execute_operation op
-          end
+          end unless @setup_failed || @metadata_only
           # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
         rescue AssertionException => e
           result.update(STATUS[:fail], e.message, e.data)

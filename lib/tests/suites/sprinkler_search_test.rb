@@ -76,6 +76,7 @@ module Crucible
       end
 
       def teardown
+        @client.use_format_param = false
         @client.destroy(FHIR::Patient, @patient_id) if @patient_id
         @client.destroy(FHIR::Condition, @condition_id) if @condition_id
         @client.destroy(FHIR::Observation, @obs_a) if @obs_a

@@ -48,7 +48,7 @@ module Crucible
         else
           hash['message'] = force_encoding(@message)
         end
-        hash['data'] = force_encoding(@data)
+        hash['data'] = force_encoding(@data) unless hash['status'] == 'pass'
         hash['warnings'] = warnings if warnings
         hash['requires'] = requires if requires
         hash['validates'] = validates if validates

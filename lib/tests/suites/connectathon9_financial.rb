@@ -41,7 +41,7 @@ module Crucible
           validates resource: 'Claim', methods: ['create']
         }
 
-        reply = @client.create(@simple,'application/xml')
+        reply = @client.create(@simple)
         assert_response_ok(reply)
         @simple_id = reply.id
         sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
@@ -84,7 +84,7 @@ module Crucible
           validates resource: 'Claim', methods: ['create']
         }
 
-        reply = @client.create(@average,'application/xml')
+        reply = @client.create(@average)
         assert_response_ok(reply)
         @average_id = reply.id
         sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests

@@ -62,6 +62,8 @@ module Crucible
         end
       end
 
+      # Based on MIME Types defined in
+      # http://hl7.org/fhir/2015May/http.html#2.1.0.6
       def assert_valid_resource_content_type_present(client_reply)
         header = client_reply.response.headers[:content_type]
 

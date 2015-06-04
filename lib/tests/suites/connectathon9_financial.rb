@@ -41,31 +41,31 @@ module Crucible
           validates resource: 'Claim', methods: ['create']
         }
 
-        reply = @client.create(@simple,'application/xml')
+        reply = @client.create(@simple)
         assert_response_ok(reply)
         @simple_id = reply.id
-		sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
+        sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
 
-        if !reply.resource.nil?		  
-		  # Response is Claim		  
+        if !reply.resource.nil?
+          # Response is Claim
           temp = reply.resource.xmlId
           reply.resource.xmlId = nil
           warning { assert @simple.equals?(reply.resource), 'The server did not correctly preserve the Claim data.' }
           reply.resource.xmlId = temp
         elsif !reply.body.nil?
-		  begin
-		    cr = FHIR::Resource.from_contents(reply.body)
-			if cr.class==FHIR::ClaimResponse
-			  # Response is ClaimResponse
-			  @simple_response_id = cr.xmlId
-			  @simple_id = cr.request.reference if cr.request
-			else
-			  warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
-			end
-		  rescue Exception => ex
-		    warning { assert(false,'The Claim request responded with an unexpected body.',reply.body) }
-		  end
-		end
+          begin
+            cr = FHIR::Resource.from_contents(reply.body)
+            if cr.class==FHIR::ClaimResponse
+              # Response is ClaimResponse
+              @simple_response_id = cr.xmlId
+              @simple_id = cr.request.reference if cr.request
+            else
+              warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
+            end
+          rescue Exception => ex
+            warning { assert(false,'The Claim request responded with an unexpected body.',reply.body) }
+          end
+        end
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -84,31 +84,31 @@ module Crucible
           validates resource: 'Claim', methods: ['create']
         }
 
-        reply = @client.create(@average,'application/xml')
+        reply = @client.create(@average)
         assert_response_ok(reply)
         @average_id = reply.id
-		sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
+        sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
 
         if !reply.resource.nil?
-		  # Response is Claim		  
+          # Response is Claim
           temp = reply.resource.xmlId
           reply.resource.xmlId = nil
           warning { assert @average.equals?(reply.resource), 'The server did not correctly preserve the Claim data.' }
           reply.resource.xmlId = temp
         elsif !reply.body.nil?
-		  begin
-		    cr = FHIR::Resource.from_contents(reply.body)
-			if cr.class==FHIR::ClaimResponse
-			  # Response is ClaimResponse
-			  @average_response_id = cr.xmlId
-			  @average_id = cr.request.reference if cr.request
-			else
-			  warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
-			end
-		  rescue Exception => ex
-		    warning { assert(false,'The Claim request responded with an unexpected body.',reply.body) }
-		  end
-		end
+          begin
+            cr = FHIR::Resource.from_contents(reply.body)
+            if cr.class==FHIR::ClaimResponse
+              # Response is ClaimResponse
+              @average_response_id = cr.xmlId
+              @average_id = cr.request.reference if cr.request
+            else
+              warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
+            end
+          rescue Exception => ex
+            warning { assert(false,'The Claim request responded with an unexpected body.',reply.body) }
+          end
+        end
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
         warning { assert_valid_content_location_present(reply) }
@@ -146,8 +146,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
-		
-		@simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
+
+        @simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
       end
 
       #
@@ -180,8 +180,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
-		
-		@simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
+
+        @simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
       end
 
       #
@@ -214,8 +214,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
-		
-		@simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
+
+        @simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
       end
 
       # ------------------------------------------------------------------------------
@@ -250,8 +250,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
-		
-		@average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
+
+        @average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
       end
 
       #
@@ -285,7 +285,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-		@average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
+        @average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
       end
 
       #
@@ -319,7 +319,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-		@average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
+        @average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
       end
 
     end

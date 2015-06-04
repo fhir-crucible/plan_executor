@@ -22,6 +22,11 @@ namespace :crucible do
     'http://wildfhir.aegis.net/fhir2',
     'http://fhir-dev.healthintersections.com.au/open'
   ]
+  
+  desc 'console'
+  task :console, [] do |t, args|
+    binding.pry
+  end
 
   desc 'execute all'
   task :execute_all, [:url, :html_summary] do |t, args|

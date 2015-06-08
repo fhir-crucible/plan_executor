@@ -229,12 +229,12 @@ module Crucible
 
         client1_reply = @client.create @temp_resource
 
-        assert_response_ok client1_reply, "Unable to create resouruce #{resource_class.name.demodulize} on server 1"
+        assert_response_ok client1_reply, "Unable to create resource #{resource_class.name.demodulize} on server 1"
 
         @temp_id = client1_reply.id
         @temp_version = client1_reply.version
 
-        # use for resource comparision later
+        # use for resource comparison later
         client1_reply = @client.read(@resource_class, @temp_id)
 
         # make sure the resource was read
@@ -244,7 +244,7 @@ module Crucible
         assert !@preexisting.nil?, "Failed to read preexisting #{resource_class.name.demodulize}: #{@preexisting_id} from server 1"
 
         # create on client 2
-        # this might fail if you dont drop the id
+        # this might fail if you don't drop the id
         client2_reply = @client2.create @preexisting
 
         assert_response_ok client2_reply, "Failed to create #{resource_class.name.demodulize}: #{@preexisting_id} on server 2"
@@ -268,12 +268,12 @@ module Crucible
 
         client1_reply = @client.create @temp_resource
 
-        assert_response_ok client1_reply, "Unable to create resouruce #{resource_class.name.demodulize} on server 1"
+        assert_response_ok client1_reply, "Unable to create resource #{resource_class.name.demodulize} on server 1"
 
         @temp_id = client1_reply.id
         @temp_version = client1_reply.version
 
-        # use for resource comparision later
+        # use for resource comparison later
         client1_reply = @client.read(@resource_class, @temp_id)
 
         # make sure the resource was read
@@ -308,12 +308,12 @@ module Crucible
 
         client2_reply = @client2.create @temp_resource
 
-        assert_response_ok client2_reply, "Unable to create resouruce #{resource_class.name.demodulize} on server 2"
+        assert_response_ok client2_reply, "Unable to create resource #{resource_class.name.demodulize} on server 2"
 
         @temp_id = client2_reply.id
         @temp_version = client2_reply.version
 
-        # use for resource comparision later
+        # use for resource comparison later
         client2_reply = @client2.read(@resource_class, @temp_id)
 
         # make sure the resource was read
@@ -323,7 +323,7 @@ module Crucible
         assert !@preexisting.nil?, "Failed to read preexisting #{resource_class.name.demodulize}: #{@preexisting_id} from server 2"
 
         # create on client 2
-        # this might fail if you dont drop the id
+        # this might fail if you don't drop the id
         client1_reply = @client.create @preexisting
 
         assert_response_ok client1_reply, "Failed to create #{resource_class.name.demodulize}: #{@preexisting_id} on server 1"
@@ -348,12 +348,12 @@ module Crucible
 
         client2_reply = @client2.create @temp_resource
 
-        assert_response_ok client2_reply, "Unable to create resouruce #{resource_class.name.demodulize} on server 2"
+        assert_response_ok client2_reply, "Unable to create resource #{resource_class.name.demodulize} on server 2"
 
         @temp_id = client2_reply.id
         @temp_version = client2_reply.version
 
-        # use for resource comparision later
+        # use for resource comparison later
         client2_reply = @client2.read(@resource_class, @temp_id)
 
         # make sure the resource was read

@@ -77,7 +77,7 @@ module Crucible
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.create @temp_resource
         @temp_id = reply.id
-		@temp_resource.xmlId = reply.resource.xmlId rescue reply.id
+        @temp_resource.xmlId = reply.resource.xmlId rescue reply.id
         @temp_version = reply.version
 
         if reply.code==201
@@ -88,7 +88,7 @@ module Crucible
             message = "Response code #{reply.code} with no OperationOutcome provided."
           else
             message = self.build_messages(outcome)
-          end 
+          end
           result.update(STATUS[:fail], message, reply.body)
           @temp_resource = nil
         end
@@ -121,7 +121,7 @@ module Crucible
         else
           begin
             @preexisting.to_xml
-          rescue Exception => e
+          rescue Exception
             @preexisting = nil
             raise AssertionException.new("Read preexisting #{resource_class.name.demodulize}, but it appears invalid.", reply.response)
           end
@@ -154,7 +154,7 @@ module Crucible
         if !@preexisting.nil?
           begin
             @preexisting.to_xml
-          rescue Exception => e
+          rescue Exception
             @preexisting = nil
           end
         end
@@ -188,7 +188,7 @@ module Crucible
               message = "Response code #{reply.code} with no OperationOutcome provided."
             else
               message = self.build_messages(outcome)
-            end 
+            end
             result.update(STATUS[:fail], message, reply.body)
           end
         end
@@ -241,7 +241,7 @@ module Crucible
         end
 
         if @preexisting.nil?
-          result.update(STATUS[:skip], "Preexisting #{resource_class.name.demodulize} unknown.", nil)          
+          result.update(STATUS[:skip], "Preexisting #{resource_class.name.demodulize} unknown.", nil)
         else
           reply = @client.vread(@resource_class, @preexisting_id, @preexisting_version)
           if reply.resource.nil?
@@ -293,7 +293,7 @@ module Crucible
       #
       # Validate the representation of a given resource.
       #
-      # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
+      # Interestingly, this functionality is deprecated in the latest "Continuous Integration" branch.
       #
       test 'X060', 'Validate' do
         metadata {
@@ -324,7 +324,7 @@ module Crucible
       #
       # Validate the representation of an existing resource.
       #
-      # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
+      # Interestingly, this functionality is deprecated in the latest "Continuous Integration" branch.
       #
       test 'X065', 'Validate Existing' do
         metadata {
@@ -344,7 +344,7 @@ module Crucible
         if !@preexisting.nil?
           begin
             @preexisting.to_xml
-          rescue Exception => e
+          rescue Exception
             @preexisting = nil
           end
         end
@@ -366,7 +366,7 @@ module Crucible
               message = "Response code #{reply.code} with no OperationOutcome provided."
             else
               message = self.build_messages(outcome)
-            end 
+            end
             result.update(STATUS[:fail], message, reply.body)
           end
         end
@@ -383,11 +383,11 @@ module Crucible
       # Profile Tag has an HTTP header named "Category" with three parts:
       #   scheme: [uri]    "http://hl7.org/fhir/tag/profile"
       #   term:   [uri]    In a profile tag, the term is a URL that references a profile resource.
-      #   label:  [stribg] (optional) A human-readable label for the tag for use when displaying in end-user applications
+      #   label:  [string] (optional) A human-readable label for the tag for use when displaying in end-user applications
       #
       # Category: [Tag Term]; scheme="[Tag Scheme]"; label="[Tag label]"(, ...)
       #
-      # Interestingly, this functionality is deprecrated in the latest "Continuous Integration" branch.
+      # Interestingly, this functionality is deprecated in the latest "Continuous Integration" branch.
       #
       test 'X067', 'Validate against a profile' do
         metadata {
@@ -411,7 +411,7 @@ module Crucible
             message = "Response code #{reply.code} with no OperationOutcome provided."
           else
             message = self.build_messages(outcome)
-          end 
+          end
           result.update(STATUS[:fail], message, reply.body)
         end
 

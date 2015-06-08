@@ -81,7 +81,7 @@ module Crucible
           elsif type == BSON::ObjectId or type == Array or type == Object or type == FHIR::AnyType
             gen = nil # ignore
           # else
-          #   puts "Unabled to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
+          #   puts "Unable to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
           end
           # TODO: Improve field value generation for coded fields
           gen = gen[0..19] if key == 'language'
@@ -106,7 +106,7 @@ module Crucible
           # TODO: Determine if we can generate references or meta information
           next if ['meta'].include? key
           next if multiples.include? key
-          # TODO: Ignore references if we don't exlpicitly require them
+          # TODO: Ignore references if we don't explicitly require them
           next if value[:class_name] == 'FHIR::Reference'
           klass = resource.get_fhir_class_from_resource_type(value[:class_name])
           child = generate(klass,(embedded-1)) if(value[:class_name] != 'FHIR::Extension')

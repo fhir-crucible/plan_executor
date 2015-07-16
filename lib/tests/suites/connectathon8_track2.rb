@@ -93,7 +93,6 @@ module Crucible
         reply = @client.create @patient
         @patient_id = reply.id
         @patient_ids << reply.id
-
         assert_response_ok(reply)
 
         record = @client.fetch_patient_record(@patient_id)

@@ -65,8 +65,7 @@ module Crucible
       # Based on MIME Types defined in
       # http://hl7.org/fhir/2015May/http.html#2.1.0.6
       def assert_valid_resource_content_type_present(client_reply)
-        header = client_reply.response[:headers][:content_type]
-
+        header = client_reply.response[:headers]['content-type']
         content_type = header
         charset = encoding = nil
 
@@ -83,12 +82,12 @@ module Crucible
       end
 
       def assert_last_modified_present(client_reply)
-        header = client_reply.response[:headers][:last_modified]
+        header = client_reply.response[:headers]['last-modified']
         assert assertion_negated( !header.nil? ), 'Last-modified HTTP header is missing.'
       end
 
       def assert_valid_content_location_present(client_reply)
-        header = client_reply.response[:headers][:content_location]
+        header = client_reply.response[:headers]['content-location']
         assert assertion_negated( !header.nil? ), 'Content-location HTTP header is missing.'
       end
 

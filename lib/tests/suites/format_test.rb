@@ -459,7 +459,7 @@ module Crucible
         @client.use_format_param = use_format_param
         entry = @client.read(resource_class, id, format)
         @client.use_format_param = false
-        assert_response_ok entry, "Failed to retrieve resource: #{entry.request.url}"
+        assert_response_ok entry, "Failed to retrieve resource: #{entry.request[:url]}"
         entry.resource.id = id
         entry
       end
@@ -469,7 +469,7 @@ module Crucible
         @client.use_format_param = use_format_param
         entry = @client.read_feed(resource_class, format)
         @client.use_format_param = false
-        assert_response_ok entry, "Failed to retrieve Bundle: #{entry.request.url}"
+        assert_response_ok entry, "Failed to retrieve Bundle: #{entry.request[:url]}"
         entry
       end
 

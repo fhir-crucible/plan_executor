@@ -73,7 +73,7 @@ module Crucible
         }
         searchParamNames = []
         searchParamNames = @searchParams.map { |item| item.name } if !@searchParams.nil?
-        assert_equal 0, (@resource_class::SEARCH_PARAMS - searchParamNames).size, 'The server does not support searching all the parameters specified by the specification.' , (@resource_class::SEARCH_PARAMS - searchParamNames).join(', ')
+        assert ((@resource_class::SEARCH_PARAMS-searchParamNames).size <= 0), 'The server does not support searching all the parameters specified by the specification.'
       end
 
       #

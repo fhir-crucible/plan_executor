@@ -32,7 +32,10 @@ namespace :crucible do
   task :execute_all, [:url, :html_summary] do |t, args|
     require 'benchmark'
     b = Benchmark.measure {
-      results = execute_all(FHIR::Client.new(args.url))
+      client = FHIR::Client.new(args.url)
+      options = client.get_oauth2_metadata_from_conformance
+      set_client_secrets(client,options) unless options.empty?
+      results = execute_all(client)
       if args.html_summary
         generate_html_summary(args.url, results, "ExecuteAll")
       end
@@ -43,7 +46,12 @@ namespace :crucible do
   desc 'execute'
   task :execute, [:url, :test, :resource] do |t, args|
     require 'benchmark'
-    b = Benchmark.measure { execute_test(FHIR::Client.new(args.url), args.test, args.resource) }
+    b = Benchmark.measure { 
+      client = FHIR::Client.new(args.url)
+      options = client.get_oauth2_metadata_from_conformance
+      set_client_secrets(client,options) unless options.empty?
+      execute_test(client, args.test, args.resource) 
+    }
     puts "Execute #{args.test} completed in #{b.real} seconds."
   end
 
@@ -52,6 +60,17 @@ namespace :crucible do
     require 'benchmark'
     b = Benchmark.measure { collect_metadata(FHIR::Client.new(args.url), args.test) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
+  end
+
+  def set_client_secrets(client,options)
+    puts "Using OAuth2 Options: #{options}"
+    print 'Enter client id: '
+    client_id = STDIN.gets.chomp
+    print 'Enter client secret: '
+    client_secret = STDIN.gets.chomp
+    options[:client_id] = client_id
+    options[:client_secret] = client_secret
+    client.set_oauth2_auth(options[:client_id],options[:client_secret],options[:site],options[:authorize_url],options[:token_url])
   end
 
   def execute_test(client, key, resourceType=nil)
@@ -155,7 +174,10 @@ namespace :crucible do
       puts "## #{url}"
       puts "```"
       b = Benchmark.measure {
-        results = execute_test(FHIR::Client.new(url), args.test, args.resource_type)
+        client = FHIR::Client.new(url)
+        options = client.get_oauth2_metadata_from_conformance
+        set_client_secrets(client,options) unless options.empty?
+        results = execute_test(client, args.test, args.resource_type)
         if args.html_summary
           generate_html_summary(url, results, args.test)
         end
@@ -180,7 +202,10 @@ namespace :crucible do
       puts "## #{url}"
       puts "```"
       b = Benchmark.measure {
-        results = execute_all(FHIR::Client.new(url))
+        client = FHIR::Client.new(url)
+        options = client.get_oauth2_metadata_from_conformance
+        set_client_secrets(client,options) unless options.empty?
+        results = execute_all(client)
         if args.html_summary
           generate_html_summary(url, results, "ExecuteAll")
         end
@@ -235,6 +260,8 @@ namespace :crucible do
     end
 
     client = FHIR::Client.new(args.url)
+    options = client.get_oauth2_metadata_from_conformance
+    set_client_secrets(client,options) unless options.empty?
     client.monitor_requirements
     test = args.test.to_sym
     execute_test(client, test)
@@ -252,7 +279,15 @@ namespace :crucible do
     task :execute, [:url1, :url2, :test] do |t, args|
       require 'turn'
       require 'benchmark'
-      b = Benchmark.measure { execute_multiserver_test(FHIR::Client.new(args.url1), FHIR::Client.new(args.url2), args.test) }
+      b = Benchmark.measure { 
+        client1 = FHIR::Client.new(args.url1)
+        options = client1.get_oauth2_metadata_from_conformance
+        set_client_secrets(client1,options) unless options.empty?
+        client2 = FHIR::Client.new(args.url2)
+        options = client2.get_oauth2_metadata_from_conformance
+        set_client_secrets(client2,options) unless options.empty?
+        execute_multiserver_test(client1, client2, args.test) 
+      }
       puts "Execute multiserver #{args.test} completed in #{b.real} seconds."
     end
   end

@@ -67,7 +67,7 @@ module Crucible
 
         reply = @client.create @patient_us
         @patient_us_id = reply.id
-		@patient_us.xmlId = reply.resource.xmlId rescue reply.id
+		    @patient_us.xmlId = reply.resource.xmlId rescue reply.id
 
         assert_response_ok(reply)
 

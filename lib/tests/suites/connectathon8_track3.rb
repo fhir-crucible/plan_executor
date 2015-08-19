@@ -1,13 +1,13 @@
 module Crucible
   module Tests
-    class TrackThreeTest < BaseSuite
+    class Connectathon8ProfileValidationTest < BaseSuite
 
       def id
         'Connectathon8Track3'
       end
 
       def description
-        'Connectathon 8 Track 3 Tests'
+        'Connectathon 8 Track 3 Tests: submit the resource for validation using the validation operation on a server'
       end
 
       def setup

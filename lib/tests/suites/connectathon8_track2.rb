@@ -1,13 +1,13 @@
 module Crucible
   module Tests
-    class Connectathon8TrackTwoTest < BaseSuite
+    class Connectathon8EverythingOperatorTest < BaseSuite
 
       def id
         'Connectathon8Track2'
       end
 
       def description
-        'Connectathon 8 Track 2 Tests'
+        'Connectathon 8 Track 2 Tests: getting a patient with the $everything operator'
       end
 
       def setup

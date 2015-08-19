@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class FinancialTest < BaseSuite
+    class Connectathon9FinancialTest < BaseSuite
 
       def id
         'Connectathon9Financial'

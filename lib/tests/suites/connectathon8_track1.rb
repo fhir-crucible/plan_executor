@@ -1,6 +1,6 @@
 module Crucible
   module Tests
-    class TrackOneTest < BaseSuite
+    class Connectathon8TrackOneTest < BaseSuite
 
       def id
         'Connectathon8Track1'

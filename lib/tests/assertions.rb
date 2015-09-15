@@ -81,14 +81,19 @@ module Crucible
         end
       end
 
+      def assert_etag_present(client_reply)
+        header = client_reply.response[:headers]['etag']
+        assert assertion_negated( !header.nil? ), 'ETag HTTP header is missing.'
+      end
+
       def assert_last_modified_present(client_reply)
         header = client_reply.response[:headers]['last-modified']
         assert assertion_negated( !header.nil? ), 'Last-modified HTTP header is missing.'
       end
 
       def assert_valid_content_location_present(client_reply)
-        header = client_reply.response[:headers]['content-location']
-        assert assertion_negated( !header.nil? ), 'Content-location HTTP header is missing.'
+        header = client_reply.response[:headers]['location']
+        assert assertion_negated( !header.nil? ), 'Location HTTP header is missing.'
       end
 
       def assert_response_code(response, code)

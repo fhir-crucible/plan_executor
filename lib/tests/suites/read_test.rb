@@ -14,6 +14,7 @@ module Crucible
         @patient = ReadTest.createPatient('Emerald', 'Caro')
         reply = @client.create(@patient)
         @id = reply.id
+        @body = reply.body
       end
 
       def teardown
@@ -32,12 +33,13 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
+        assert(@id, 'Setup was unable to create a patient.',@body)
         reply = @client.read(FHIR::Patient, @id)
         assert_response_ok(reply)
         assert_equal @id, reply.id, 'Server returned wrong patient.'
         warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_etag_present(reply) }
         warning { assert_last_modified_present(reply) }
-        warning { assert_valid_content_location_present(reply) }
       end
 
       # [SprinklerTest("R002", "Read unknown resource type")]
@@ -68,6 +70,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#read"
           links "#{BASE_SPEC_LINK}/datatypes.html#id"
+          links "#{BASE_SPEC_LINK}/resource.html#id"
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
@@ -75,6 +78,21 @@ module Crucible
         reply = @client.read(FHIR::Patient, 'Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
         assert_response_bad(reply)
       end
+
+      test 'R005', 'Read _summary=text' do
+        metadata {
+          links "#{REST_SPEC_LINK}#read"
+          links "#{BASE_SPEC_LINK}/datatypes.html#id"
+          links "#{BASE_SPEC_LINK}/resource.html#id"
+          requires resource: "Patient", methods: ["create", "read", "delete"]
+          validates resource: "Patient", methods: ["read"]
+        }
+
+        assert(@id, 'Setup was unable to create a patient.', @body)
+        reply = @client.read(FHIR::Patient, @id, @client.default_format, 'text')
+        assert_response_ok(reply)
+        assert(reply.try(:resource).try(:text), 'Requested summary narrative was not provided.', reply.body)
+      end      
 
     end
   end

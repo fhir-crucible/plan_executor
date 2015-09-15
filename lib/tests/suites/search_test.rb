@@ -51,15 +51,15 @@ module Crucible
       # 3. Perform suite of tests against each resource.
       #
       def setup
-        if @conformance.nil?
-          @conformance = @client.conformanceStatement
-        end
+        @conformance = @client.conformanceStatement if @conformance.nil?
 
         @canSearchById = false
 
-        @conformance.rest.each do |rest|
-          rest.resource.each do |resource|
-            @searchParams = resource.searchParam if(resource.fhirType.downcase == "#{@resource_class.name.demodulize.downcase}" )
+        unless @conformance.nil?
+          @conformance.rest.each do |rest|
+            rest.resource.each do |resource|
+              @searchParams = resource.searchParam if(resource.fhirType.downcase == "#{@resource_class.name.demodulize.downcase}" )
+            end
           end
         end
 

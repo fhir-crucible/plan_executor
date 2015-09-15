@@ -7,14 +7,15 @@ module Crucible
       end
 
       def description
-        'Initial Sprinkler tests () for testing search capabilities.'
+        'Initial Sprinkler tests for testing search capabilities.'
       end
 
       def setup
         # Create a patient with gender:missing
         @resources = Crucible::Generator::Resources.new
-        @patient = @resources.example_patient
-        @patient.gender = nil
+        @patient = @resources.minimal_patient
+        @patient.identifier = [FHIR::Identifier.new]
+        @patient.identifier[0].value = SecureRandom.urlsafe_base64
         result = @client.create(@patient)
         @patient_id = result.id
 
@@ -56,7 +57,6 @@ module Crucible
       def create_observation(value)
         observation = FHIR::Observation.new
         observation.status = 'preliminary'
-        observation.reliability = 'questionable'
         code = FHIR::Coding.new
         code.system = 'http://loinc.org'
         code.code = '2164-2'
@@ -65,12 +65,12 @@ module Crucible
         observation.valueQuantity = FHIR::Quantity.new
         observation.valueQuantity.system = 'http://unitofmeasure.org'
         observation.valueQuantity.value = value
-        observation.valueQuantity.units = 'mmol'
+        observation.valueQuantity.unit = 'mmol'
         body = FHIR::Coding.new
         body.system = 'http://snomed.info/sct'
         body.code = '182756003'
-        observation.bodySiteCodeableConcept = FHIR::CodeableConcept.new
-        observation.bodySiteCodeableConcept.coding = [ body ]
+        observation.bodySite = FHIR::CodeableConcept.new
+        observation.bodySite.coding = [ body ]
         reply = @client.create(observation)
         reply.id
       end
@@ -129,7 +129,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/patient.html#5.1.8"
+          links "#{BASE_SPEC_LINK}/patient.html#search"
           validates resource: "Patient", methods: ["search"]
         }
         skip unless @read_entire_feed
@@ -173,7 +173,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/patient.html#5.1.8"
+          links "#{BASE_SPEC_LINK}/patient.html#search"
           validates resource: "Patient", methods: ["search"]
         }
         skip unless @read_entire_feed
@@ -217,18 +217,20 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @entries[0].resource
         options = {
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
         }
+        flag = @client.use_format_param
+        @client.use_format_param = false
         patient_url = @client.resource_url(options)
+        @client.use_format_param = flag
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
@@ -250,13 +252,12 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @entries[0].resource
         patient_id = @entries[0].resource.xmlId
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -279,19 +280,21 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @entries[0].resource
         options = {
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
         }
+        flag = @client.use_format_param
+        @client.use_format_param = false
         patient_url = @client.resource_url(options)
-
+        @client.use_format_param = flag
+       
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
@@ -312,7 +315,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @read_entire_feed
@@ -341,13 +344,12 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @entries[0].resource
         patient_id = @entries[0].resource.xmlId
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -370,14 +372,13 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @entries[0].resource
-        patient_name = patient.name[0].family[0]
+        patient_name = @patient.name[0].family[0]
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
@@ -399,13 +400,12 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @patient_id
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @patient
         patient_identifier = @patient.identifier[0].value
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -424,18 +424,17 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE06', 'Search condition by _include' do
+      test 'SE06', 'Search condition and _include' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/condition.html#4.3.4"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
         skip unless @patient_id
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient = @patient
-        patient_identifier = patient.identifier[0].value
+        patient_identifier = @patient.identifier[0].value
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
@@ -443,21 +442,26 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              '_include' => 'Condition.patient'
+              '_include' => 'Condition:patient'
             }
           }
         }
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.total > 0, 'The server should have Conditions with _include=Condition.patient.'
+        assert reply.resource.total > 0, 'The server should have Conditions that _include=Condition:patient.'
+        has_patient = false
+        reply.resource.entry.each do |entry|
+          has_patient = true if (entry.resourceType == 'Patient')
+        end
+        assert(has_patient,'The server did not include the Patient referenced in the Condition.', reply.body)
       end
 
       test 'SE21', 'Search for quantity (in observation) - precision tests' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html#quantity"
-          links "#{BASE_SPEC_LINK}/observation.html#4.20.6"
+          links "#{BASE_SPEC_LINK}/observation.html#search"
           validates resource: "Observation", methods: ["search"]
         }
         skip unless (@obs_a && @obs_b && @obs_c)
@@ -491,7 +495,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html#quantity"
-          links "#{BASE_SPEC_LINK}/observation.html#4.20.6"
+          links "#{BASE_SPEC_LINK}/observation.html#search"
           validates resource: "Observation", methods: ["search"]
         }
         skip unless (@obs_a && @obs_d && @obs_e)
@@ -525,7 +529,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/patient.html#5.1.8"
+          links "#{BASE_SPEC_LINK}/patient.html#search"
           validates resource: "Patient", methods: ["search"]
         }
         skip unless @read_entire_feed
@@ -555,7 +559,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/patient.html#5.1.8"
+          links "#{BASE_SPEC_LINK}/patient.html#search"
           validates resource: "Patient", methods: ["search"]
         }
         # non-existing parameters should be ignored
@@ -577,7 +581,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
-          links "#{BASE_SPEC_LINK}/patient.html#5.1.8"
+          links "#{BASE_SPEC_LINK}/patient.html#search"
           validates resource: "Patient", methods: ["search"]
         }
         # a malformed parameters are non-existing parameters, and they should be ignored

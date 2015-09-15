@@ -107,6 +107,27 @@ module Crucible
       # result server conformance (report params actually used)
       # advanced searching with "Query" or _query param (valueset 'expand' and 'validate' queries should be standard)
       #
+
+      # Parameters for all resources
+      #   _id
+      #   _lastUpdated
+      #   _tag
+      #   _profile
+      #   _security
+      #   _text
+      #   _content
+      #   _list
+      #   _query
+      # Search result parameters
+      #   _sort
+      #   _count
+      #   _include
+      #   _revinclude
+      #   _summary
+      #   _elements
+      #   _contained
+      #   _containedType
+      
       test 'S001', 'Search by ID' do
         metadata {
           define_metadata('search')

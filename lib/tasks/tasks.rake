@@ -76,6 +76,10 @@ namespace :crucible do
   def execute_test(client, key, resourceType=nil)
     executor = Crucible::Tests::Executor.new(client)
     test = executor.find_test(key)
+    if test.nil?
+      puts "Unable to find test: #{key}"
+      return
+    end
     results = nil
     if !resourceType.nil? && test.respond_to?(:resource_class=)
       fhir_classes = Mongoid.models.select {|c| c.name.include? 'FHIR'}

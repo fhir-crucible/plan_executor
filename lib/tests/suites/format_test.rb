@@ -22,24 +22,29 @@ module Crucible
 
         create_reply = @client.create(@resource)
 
-        # If create fails, pick one from the Patient Bundle
         begin
           assert_response_created create_reply
           result = create_reply.resource
         rescue AssertionException
           @create_failed = true
-          patients_bundle = request_bundle(FHIR::Patient, @xml_format)
-          assert_response_ok patients_bundle
-          bundle_patient = patients_bundle.resource.entry.first.resource
         end
 
-        # Grab the reference patient's id accordingly
         if @create_failed
-          @id = bundle_patient.xmlId
+          # If create fails, pick one from the Patient Bundle
+          begin
+            bundle_reply = request_bundle(FHIR::Patient, @xml_format)
+            assert_response_ok bundle_reply
+            bundle_patient = bundle_reply.resource.entry.first.resource
+            @id = bundle_patient.xmlId
+            @create_failed = false
+          rescue Exception
+            @create_failed = true            
+          end
         else
           @id = create_reply.id
         end
-        @resource.id = @id
+
+        assert(!@create_failed, 'Unable to create or read a patient.')
       end
 
       # Delete the reference patient if we created it
@@ -50,7 +55,7 @@ module Crucible
       test 'CT01', 'Request xml using headers' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -67,7 +72,7 @@ module Crucible
       test 'CT02A', 'Request [xml] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -85,7 +90,7 @@ module Crucible
       test 'CT02B', 'Request [text/xml] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -103,7 +108,7 @@ module Crucible
       test 'CT02C', 'Request [application/xml] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -121,7 +126,7 @@ module Crucible
       test 'CT02D', 'Request [application/xml+fhir] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -139,7 +144,7 @@ module Crucible
       test 'CT03', 'Request json using headers' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -156,7 +161,7 @@ module Crucible
       test 'CT04A', 'Request [json] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -174,7 +179,7 @@ module Crucible
       test 'CT04B', 'Request [text/json] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -192,7 +197,7 @@ module Crucible
       test 'CT04C', 'Request [application/json] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -210,7 +215,7 @@ module Crucible
       test 'CT04D', 'Request [application/json+fhir] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -228,7 +233,7 @@ module Crucible
       test 'FT01', 'Request xml and json using headers' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
@@ -249,7 +254,7 @@ module Crucible
       test 'FT02', 'Request xml and json using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
@@ -270,7 +275,7 @@ module Crucible
       test 'FT03', 'Request xml Bundle using headers' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -287,7 +292,7 @@ module Crucible
       test 'FT04A', 'Request [xml] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -304,7 +309,7 @@ module Crucible
       test 'FT04B', 'Request [text/xml] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -321,7 +326,7 @@ module Crucible
       test 'FT04C', 'Request [application/xml] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -338,7 +343,7 @@ module Crucible
       test 'FT04D', 'Request [application/xml+fhir] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
@@ -355,7 +360,7 @@ module Crucible
       test 'FT05', 'Request json Bundle using headers' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -372,7 +377,7 @@ module Crucible
       test 'FT06A', 'Request [json] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -389,7 +394,7 @@ module Crucible
       test 'FT06B', 'Request [text/json] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -406,7 +411,7 @@ module Crucible
       test 'FT06C', 'Request [application/json] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
@@ -423,7 +428,7 @@ module Crucible
       test 'FT06D', 'Request [application/json+fhir] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#2.1.0.6"
+          links "#{REST_SPEC_LINK}#mime-type"
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']

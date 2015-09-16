@@ -17,6 +17,7 @@ module Crucible
         resource.xmlId=nil if resource.respond_to?(:xmlId=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
+        resource.text=nil if klass==FHIR::Bundle
         resource
       end
 
@@ -49,7 +50,7 @@ module Crucible
           next if multiples.include? key
           gen = nil
           if type == String
-            gen = SecureRandom.urlsafe_base64
+            gen = SecureRandom.base64
             if valid_codes[key.to_sym]
               valid_values = valid_codes[key.to_sym]
               if !valid_values.nil?
@@ -109,7 +110,7 @@ module Crucible
           # TODO: Ignore references if we don't explicitly require them
           next if value[:class_name] == 'FHIR::Reference'
           klass = resource.get_fhir_class_from_resource_type(value[:class_name])
-          child = generate(klass,(embedded-1)) if(value[:class_name] != 'FHIR::Extension')
+          child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension'].include?(value[:class_name]))
           if value[:relation] == Mongoid::Relations::Embedded::Many
             child = ([] << child) if child
           end

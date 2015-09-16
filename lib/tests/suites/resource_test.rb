@@ -431,6 +431,7 @@ module Crucible
           define_metadata('delete')
         }
 
+        @x070_success = false
         result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
 
         if !@temp_resource.nil?
@@ -447,6 +448,7 @@ module Crucible
         else
           reply = @client.destroy(@resource_class,@preexisting_id)
           if reply.code==204
+            @x070_success = true
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
           elsif reply.code==405
             outcome = self.parse_operation_outcome(reply.body) rescue nil
@@ -463,6 +465,39 @@ module Crucible
             message = self.build_messages(outcome)
             message.unshift "Server had a conflict try to delete the #{resource_class.name.demodulize} with the ID `#{preexisting_id}"
             result.update(STATUS[:fail], message, reply.body)
+          else
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
+            message = self.build_messages(outcome)
+            result.update(STATUS[:fail], message, reply.body)
+          end
+        end
+
+        result
+      end
+
+      test 'X075', 'Get Deleted Resource' do
+        metadata {
+          define_metadata('delete')
+        }
+        skip unless @x070_success
+
+        result = TestResult.new('X075',"Get Deleted #{resource_class.name.demodulize}", nil, nil, nil)
+
+        if !@temp_resource.nil?
+          @preexisting_id = @temp_id
+          @preexisting = @temp_resource
+        end
+        if @preexisting_id.nil? && !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+          @preexisting_id = @bundle.entry[0].resource.xmlId
+          @preexisting = @bundle.entry[0].resource
+        end
+
+        if @preexisting_id.nil?
+          result.update(STATUS[:skip],"Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        else
+          reply = @client.read(@resource_class,@preexisting_id)
+          if reply.code==410
+            result.update(STATUS[:pass], "Deleted #{resource_class.name.demodulize} was correctly reported as gone.", reply.body)
           else
             outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)

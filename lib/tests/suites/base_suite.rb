@@ -9,10 +9,11 @@ module Crucible
       def parse_operation_outcome(body)
         # body should be a String
         outcome = nil
-        if 0==(body =~ /^[<?xml]/)
-          outcome = FHIR::OperationOutcome.from_xml(body)
-        else # treat as JSON
-          outcome = FHIR::OperationOutcome.from_fhir_json(body)
+        begin
+          outcome = FHIR::Resource.from_contents(body)
+          outcome = nil if outcome.class!=FHIR::OperationOutcome
+        rescue
+          outcome = nil
         end
         outcome
       end
@@ -20,7 +21,7 @@ module Crucible
       def build_messages(operation_outcome)
         messages = []
         if !operation_outcome.nil? and !operation_outcome.issue.nil?
-          operation_outcome.issue.each {|issue| messages << "#{issue.severity} : #{issue.details}" }
+          operation_outcome.issue.each {|issue| messages << "#{issue.severity}: #{issue.code}: #{issue.details.try(:text) || issue.diagnostics}" }
         end
         messages
       end

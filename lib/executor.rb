@@ -6,7 +6,7 @@ module Crucible
         @client = client
         @client2 = client2
         @suite_engine = SuiteEngine.new(@client, @client2)
-        @testscript_engine = TestScriptEngine.new(@client, @client2)
+        #@testscript_engine = TestScriptEngine.new(@client, @client2)
       end
 
       def execute(test)
@@ -24,22 +24,22 @@ module Crucible
       end
 
       def list_all_with_conformance(multiserver=false, metadata=nil)
-        @suite_engine.list_all_with_conformance(multiserver, metadata).merge @testscript_engine.list_all_with_conformance(multiserver, metadata)
+        @suite_engine.list_all_with_conformance(multiserver, metadata) #.merge @testscript_engine.list_all_with_conformance(multiserver, metadata)
       end
 
       def self.list_all(multiserver=false, metadata=false)
-        list = SuiteEngine.list_all(metadata).merge TestScriptEngine.list_all(metadata)
+        list = SuiteEngine.list_all(metadata) #.merge TestScriptEngine.list_all(metadata)
         list.select {|key,value| value['multiserver'] == multiserver}
       end
 
       def tests
-        tests = @suite_engine.tests.concat @testscript_engine.tests
+        tests = @suite_engine.tests#.concat @testscript_engine.tests
         tests.sort{|t1,t2| t1.id <=> t2.id }
       end
 
       # finds a test by class name for suites, and by filename for testscript
       def find_test(key)
-        @suite_engine.find_test(key) || @testscript_engine.find_test(key)
+        @suite_engine.find_test(key) #|| @testscript_engine.find_test(key)
       end
 
       # finds a test from the given key and extracts only metadata into a hash

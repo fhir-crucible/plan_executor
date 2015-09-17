@@ -53,6 +53,7 @@ module Crucible
 
       def assert_bundle_response(response)
         unless assertion_negated( response.resource.class == FHIR::Bundle )
+          binding.pry if response.resource==nil
           raise AssertionException.new "Expected FHIR Bundle but found: #{response.resource.class}", response.body
         end
       end

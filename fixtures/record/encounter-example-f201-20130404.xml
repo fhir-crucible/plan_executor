@@ -19,7 +19,7 @@
     <display value="Roel"/>
   </patient>
   <participant>
-    <individual    >
+    <individual>
       <reference value="Practitioner/f201"/>
     </individual>
   </participant>

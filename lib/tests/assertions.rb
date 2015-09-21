@@ -93,7 +93,7 @@ module Crucible
       end
 
       def assert_valid_content_location_present(client_reply)
-        header = client_reply.response[:headers]['locatio;n']
+        header = client_reply.response[:headers]['location']
         assert assertion_negated( !header.nil? ), 'Location HTTP header is missing.'
       end
 

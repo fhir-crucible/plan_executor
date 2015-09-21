@@ -67,7 +67,7 @@ module Crucible
 
         reply = @client.create @patient_us
         @patient_us_id = reply.id
-		    @patient_us.xmlId = reply.resource.xmlId rescue reply.id
+		    @patient_us.xmlId = reply.resource.xmlId || reply.id
 
         assert_response_ok(reply)
 
@@ -131,7 +131,6 @@ module Crucible
         @patient_us.name[0].given = ['Alligator','Pants']
 
         reply = @client.update @patient_us, @patient_us_id
-
         assert_response_ok(reply)
 
         if !reply.resource.nil?
@@ -158,9 +157,9 @@ module Crucible
         }
         skip unless @patient_us_id
 
-		@patient_us.xmlId = @patient_us_id
-        @patient_us.extension[0].value[:value].coding[0].code = '1569-3'
-        @patient_us.extension[1].value[:value].coding[0].code = '2186-5'
+		    @patient_us.xmlId = @patient_us_id
+        @patient_us.extension[0].value.value.coding[0].code = '1569-3'
+        @patient_us.extension[1].value.value.coding[0].code = '2186-5'
 
         reply = @client.update @patient_us, @patient_us_id
 
@@ -229,14 +228,14 @@ module Crucible
 
         options = {
           :search => {
-            :flag => true,
+            :flag => false,
             :compartment => nil,
             :parameters => {
               'given' => search_string
             }
           }
         }
-        @client.use_format_param = true
+        @client.use_format_param = false
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)

@@ -17,31 +17,31 @@ module Crucible
 
       def assert_response_ok(response, error_message="")
         unless assertion_negated( [200, 201].include?(response.code) )
-          raise AssertionException.new "Bad response code expected 200, 201, but found: #{response.code}.#{" " + error_message}", response.body
+          raise AssertionException.new "Bad response code: expected 200, 201, but found #{response.code}.#{" " + error_message}", response.body
         end
       end
 
       def assert_response_created(response, error_message="")
         unless assertion_negated( [201].include?(response.code) )
-          raise AssertionException.new "Bad response code expected 201, but found: #{response.code}.#{" " + error_message}", response.body
+          raise AssertionException.new "Bad response code: expected 201, but found #{response.code}.#{" " + error_message}", response.body
         end
       end
 
       def assert_response_gone(response)
         unless assertion_negated( [410].include?(response.code) )
-          raise AssertionException.new "Bad response code expected 410, but found: #{response.code}", response.body
+          raise AssertionException.new "Bad response code: expected 410, but found #{response.code}", response.body
         end
       end
 
       def assert_response_not_found(response)
         unless assertion_negated( [404].include?(response.code) )
-          raise AssertionException.new "Bad response code expected 404, but found: #{response.code}", response.body
+          raise AssertionException.new "Bad response code: expected 404, but found #{response.code}", response.body
         end
       end
 
       def assert_response_bad(response)
         unless assertion_negated( [400].include?(response.code) )
-          raise AssertionException.new "Bad response code expected 400, but found: #{response.code}", response.body
+          raise AssertionException.new "Bad response code: expected 400, but found #{response.code}", response.body
         end
       end
 
@@ -93,19 +93,19 @@ module Crucible
       end
 
       def assert_valid_content_location_present(client_reply)
-        header = client_reply.response[:headers]['location']
+        header = client_reply.response[:headers]['locatio;n']
         assert assertion_negated( !header.nil? ), 'Location HTTP header is missing.'
       end
 
       def assert_response_code(response, code)
         unless assertion_negated( code == response.code )
-          raise AssertionException.new "Bad response code expected #{code}, but found: #{response.code}", response.body
+          raise AssertionException.new "Bad response code: expected #{code}, but found #{response.code}", response.body
         end
       end
 
       def assert_resource_type(response, resource_type)
         unless assertion_negated( !response.resource.nil? && response.resource.class == resource_type )
-          raise AssertionException.new "Bad response type expected #{resource_type}, but found: #{response.resource.class}", response.body
+          raise AssertionException.new "Bad response type: expected #{resource_type}, but found #{response.resource.class}", response.body
         end
       end
 

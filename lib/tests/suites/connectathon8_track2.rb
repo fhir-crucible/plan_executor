@@ -24,6 +24,13 @@ module Crucible
         @practitioner = @resources.example_patient_record_practitioner_201
         @procedure = @resources.example_patient_record_procedure_201
         @patient_ids = []
+        @created_patient_record = false
+        begin
+          create_patient_record
+          @created_patient_record = true
+        rescue Exception => e
+          @created_patient_record = false
+        end
       end
 
       def teardown
@@ -34,7 +41,7 @@ module Crucible
         @client.destroy(FHIR::DiagnosticReport, @dr_reply.id) if !@dr_id.nil?
         @client.destroy(FHIR::Observation, @obs_reply.id) if !@obs_id.nil?
         @client.destroy(FHIR::Condition, @cond2_reply.id) if !@cond2_id.nil?
-        @client.destroy(FHIR::Patient, @pat_reply.id) if !@pat_id.nil?
+        @client.destroy(FHIR::Patient, @pat_reply.id) if !@patient_id.nil?
         @patient_ids.each do |id|
           @client.destroy(FHIR::Patient, id)
         end
@@ -90,11 +97,7 @@ module Crucible
           validates resource: 'Patient', methods: ['create', '$everything']
         }
 
-        reply = @client.create @patient
-        @patient_id = reply.id
-        @patient_ids << reply.id
-        assert_response_ok(reply)
-
+        skip unless @created_patient_record
         record = @client.fetch_patient_record(@patient_id)
 
         assert_response_ok(record)
@@ -117,13 +120,7 @@ module Crucible
           validates resource: 'Patient', methods: ['create', '$everything']
         }
 
-        reply = @client.create @patient
-        @patient_id = reply.id
-        @pat_reply = reply
-        @patient_ids << reply.id
-
-        assert_response_ok(reply)
-
+        skip unless @created_patient_record
         record = @client.fetch_patient_record(@patient_id, "2012-01-01", "2012-12-31")
 
         assert_response_ok(record)
@@ -148,6 +145,7 @@ module Crucible
           validates resource: 'Patient', methods: ['create', 'update', '$everything']
         }
 
+        skip unless @created_patient_record
         record = @client.fetch_patient_record(@patient_id)
 
         assert_response_ok(record)
@@ -169,9 +167,9 @@ module Crucible
       end
 
       #
-      # Test if we can write and read an entire patient record - exact
+      # Test if we can read an entire patient record - exact
       #
-      test 'C8T2_3_A', 'Write and then fetch an entire patient record - exact' do
+      test 'C8T2_3_A', 'Fetch an entire patient record - exact' do
         metadata {
           links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           links "#{BASE_SPEC_LINK}/argonauts.html"
@@ -194,14 +192,11 @@ module Crucible
           validates resource: 'Procedure', methods: ['create']
         }
 
-        create_patient_record
-
+        skip unless @created_patient_record
         record = @client.fetch_patient_record(@pat_reply.id)
-
         assert_response_ok(record)
         assert_bundle_response(record)
 
-        @created = true
         mismatches = []
         record.resource.entry.each do |bundle_entry|
           case bundle_entry.resource.class
@@ -252,8 +247,7 @@ module Crucible
           validates resource: 'Patient', methods: ['$everything']
         }
 
-        skip unless @created
-
+        skip unless @created_patient_record
         record = @client.fetch_patient_record(@pat_reply.id)
 
         assert_response_ok(record)
@@ -309,10 +303,8 @@ module Crucible
           validates resource: 'Patient', methods: ['$everything']
         }
 
-        skip unless @created
-
+        skip unless @created_patient_record
         record = @client.fetch_patient_record(@pat_reply.id)
-
         assert_response_ok(record)
         assert_bundle_response(record)
 
@@ -341,18 +333,21 @@ module Crucible
           'FHIR::Procedure' => []
         }
 
+        @organization_1.xmlId = nil
         @org1_reply = @client.create @organization_1
         @org1_id = @org1_reply.id
         @organization_1.xmlId = @org1_id
         @ids_count[FHIR::Organization.to_s] << @org1_id
         assert_response_ok(@org1_reply)
 
+        @organization_2.xmlId = nil
         @org2_reply = @client.create @organization_2
         @org2_id = @org2_reply.id
         @organization_2.xmlId = @org2_id
         @ids_count[FHIR::Organization.to_s] << @org2_id
         assert_response_ok(@org2_reply)
 
+        @practitioner.xmlId = nil
         @practitioner.practitionerRole[0].managingOrganization.reference = "Organization/#{@org1_id}"
         @prac_reply = @client.create @practitioner
         @prac_id = @prac_reply.id
@@ -360,14 +355,16 @@ module Crucible
         @ids_count[FHIR::Practitioner.to_s] << @prac_id
         assert_response_ok(@prac_reply)
 
+        @patient.xmlId = nil
         @patient.managingOrganization.reference = "Organization/#{@org1_id}"
         @pat_reply = @client.create @patient
-        @pat_id = @pat_reply.id
-        @patient.xmlId = @pat_id
-        @ids_count[FHIR::Patient.to_s] << @pat_id
+        @patient_id = @pat_reply.id
+        @patient.xmlId = @patient_id
+        @ids_count[FHIR::Patient.to_s] << @patient_id
         assert_response_ok(@pat_reply)
 
-        @condition_2.patient.reference = "Patient/#{@pat_id}"
+        @condition_2.xmlId = nil
+        @condition_2.patient.reference = "Patient/#{@patient_id}"
         @condition_2.asserter.reference = "Practitioner/#{@prac_id}"
         @cond2_reply = @client.create @condition_2
         @cond2_id = @cond2_reply.id
@@ -375,7 +372,8 @@ module Crucible
         @ids_count[FHIR::Condition.to_s] << @cond2_id
         assert_response_ok(@cond2_reply)
 
-        @observation.subject.reference = "Patient/#{@pat_id}"
+        @observation.xmlId = nil
+        @observation.subject.reference = "Patient/#{@patient_id}"
         @observation.performer[0].reference = "Practitioner/#{@prac_id}"
         @obs_reply = @client.create @observation
         @obs_id = @obs_reply.id
@@ -383,7 +381,8 @@ module Crucible
         @ids_count[FHIR::Observation.to_s] << @obs_id
         assert_response_ok(@obs_reply)
 
-        @diagnosticreport.subject.reference = "Patient/#{@pat_id}"
+        @diagnosticreport.xmlId = nil
+        @diagnosticreport.subject.reference = "Patient/#{@patient_id}"
         @diagnosticreport.performer.reference = "Organization/#{@org2_id}"
         @dr_reply = @client.create @diagnosticreport
         @dr_id = @dr_reply.id
@@ -391,7 +390,8 @@ module Crucible
         @ids_count[FHIR::DiagnosticReport.to_s] << @dr_id
         assert_response_ok(@dr_reply)
 
-        @encounter_1.patient.reference = "Patient/#{@pat_id}"
+        @encounter_1.xmlId = nil
+        @encounter_1.patient.reference = "Patient/#{@patient_id}"
         @encounter_1.participant[0].individual.reference = "Practitioner/#{@prac_id}"
         @encounter_1.serviceProvider.reference = "Organization/#{@org1_id}"
         @enc1_reply = @client.create @encounter_1
@@ -400,7 +400,8 @@ module Crucible
         @ids_count[FHIR::Encounter.to_s] << @enc1_id
         assert_response_ok(@enc1_reply)
 
-        @encounter_2.patient.reference = "Patient/#{@pat_id}"
+        @encounter_2.xmlId = nil
+        @encounter_2.patient.reference = "Patient/#{@patient_id}"
         @encounter_2.participant[0].individual.reference = "Practitioner/#{@prac_id}"
         @encounter_2.serviceProvider.reference = "Organization/#{@org1_id}"
         @enc2_reply = @client.create @encounter_2
@@ -409,9 +410,10 @@ module Crucible
         @ids_count[FHIR::Encounter.to_s] << @enc2_id
         assert_response_ok(@enc2_reply)
 
-        @procedure.patient.reference = "Patient/#{@pat_id}"
-        @procedure.indication[0].text = "DiagnosticReport/#{@dr_id}"
-        @procedure.performer[0].person.reference = "Practitioner/#{@prac_id}"
+        @procedure.xmlId = nil
+        @procedure.subject.reference = "Patient/#{@patient_id}"
+        @procedure.report[0].reference = "DiagnosticReport/#{@dr_id}"
+        @procedure.performer[0].actor.reference = "Practitioner/#{@prac_id}"
         @procedure.encounter.reference = "Encounter/#{@enc2_id}"
         @prc_reply = @client.create @procedure
         @prc_id = @prc_reply.id
@@ -423,12 +425,17 @@ module Crucible
         @enc2_reply = @client.update @encounter_2, @enc2_id
         assert_response_ok(@enc2_reply)
 
-        @condition_1.patient.reference = "Patient/#{@pat_id}"
+        @condition_1.xmlId = nil
+        @condition_1.patient.reference = "Patient/#{@patient_id}"
         @condition_1.encounter.reference = "Encounter/#{@enc1_id}"
         @condition_1.asserter.reference = "Practitioner/#{@prac_id}"
         @condition_1.evidence[0].detail[0].reference = "Observation/#{@obs_id}"
-        @condition_1.dueTo[0].target.reference = "Procedure/#{@prc_id}"
-        @condition_1.dueTo[1].target.reference = "Condition/#{@cond2_id}"
+        ref = FHIR::Reference.new
+        ref.reference = "Procedure/#{@prc_id}"
+        @condition_1.evidence[0].detail << ref
+        ref = FHIR::Reference.new
+        ref.reference = "Condition/#{@cond2_id}"
+        @condition_1.evidence[0].detail << ref
         @cond1_reply = @client.create @condition_1
         @cond1_id = @cond1_reply.id
         @condition_1.xmlId = @cond1_id

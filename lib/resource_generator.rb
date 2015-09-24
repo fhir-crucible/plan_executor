@@ -17,7 +17,7 @@ module Crucible
         resource.xmlId=nil if resource.respond_to?(:xmlId=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
-        resource.text=nil if klass==FHIR::Bundle
+        resource.text=nil if [FHIR::Bundle,FHIR::Binary,FHIR::Parameters].include?(klass)
         resource
       end
 
@@ -43,6 +43,12 @@ module Crucible
           valid_codes = resource.class::VALID_CODES
         end
 
+        # Get special codes
+        special_codes = {}
+        if resource.class.constants.include? :SPECIAL_CODES
+          special_codes = resource.class::SPECIAL_CODES
+        end
+
         fields = resource.fields
         fields.each do |key,value|
           type = value.options[:type]
@@ -66,6 +72,12 @@ module Crucible
               elsif date.strftime("%T").match(regex)
                 gen = date.strftime("%T")
               end
+            elsif special_codes[key.to_sym]
+              if special_codes[key.to_sym]=='MimeType'
+                gen = 'text/plain'
+              elsif special_codes[key.to_sym]=='Language'
+                gen = 'en-US'
+              end
             end
           elsif type == Integer
             gen = SecureRandom.random_number(100)
@@ -84,8 +96,7 @@ module Crucible
           # else
           #   puts "Unable to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
           end
-          # TODO: Improve field value generation for coded fields
-          gen = gen[0..19] if key == 'language'
+          gen='en-US' if(key=='language' && type==String)
           resource[key] = gen if !gen.nil?
         end
         resource
@@ -107,10 +118,14 @@ module Crucible
           # TODO: Determine if we can generate references or meta information
           next if ['meta'].include? key
           next if multiples.include? key
-          # TODO: Ignore references if we don't explicitly require them
-          next if value[:class_name] == 'FHIR::Reference'
+          
           klass = resource.get_fhir_class_from_resource_type(value[:class_name])
-          child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension'].include?(value[:class_name]))
+          if klass == FHIR::Reference
+            child = FHIR::Reference.new
+            child.display = "#{key} #{SecureRandom.base64}"
+          end
+
+          child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension','FHIR::Reference'].include?(value[:class_name]))
           if value[:relation] == Mongoid::Relations::Embedded::Many
             child = ([] << child) if child
           end

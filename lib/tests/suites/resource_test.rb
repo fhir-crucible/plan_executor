@@ -77,13 +77,13 @@ module Crucible
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.create @temp_resource
         @temp_id = reply.id
-        @temp_resource.xmlId = reply.resource.xmlId rescue reply.id
+        @temp_resource.xmlId = (reply.resource.try(:xmlId) || reply.id)
         @temp_version = reply.version
 
         if reply.code==201
           result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
         else
-          outcome = self.parse_operation_outcome(reply.body) rescue nil
+          outcome = (self.parse_operation_outcome(reply.body) rescue nil)
           if outcome.nil?
             message = "Response code #{reply.code} with no OperationOutcome provided."
           else
@@ -163,7 +163,6 @@ module Crucible
           result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
           ResourceGenerator.set_fields!(@preexisting)
-
           reply = @client.update @preexisting, @preexisting_id
 
           if reply.code==200

@@ -117,6 +117,54 @@ module Crucible
       # ------------------------------------------------------------------------------
 
       #
+      # Check if our claim now has a reference to a ClaimResponse
+      #
+      test 'C9F_1C','Check on simple claim' do
+        metadata {
+          links "#{REST_SPEC_LINK}#read"
+          links "#{BASE_SPEC_LINK}/claim.html"
+          links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Claim', methods: ['read']
+          validates resource: 'Claim', methods: ['read']
+        }
+
+        reply = @client.read(FHIR::Claim,@simple_id)
+        assert_response_ok(reply)
+        assert_resource_type(reply,FHIR::Claim)
+        reply.resource.coverage.each do |coverage|
+          assert(!coverage.try(:claimResponse).try(:reference).nil?,'Claim does not reference a ClaimResponse.',reply.body)
+        end
+        warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_last_modified_present(reply) }
+        warning { assert_valid_content_location_present(reply) }
+      end
+
+      #
+      # Check if our claim now has a reference to a ClaimResponse
+      #
+      test 'C9F_1D','Check on average claim' do
+        metadata {
+          links "#{REST_SPEC_LINK}#read"
+          links "#{BASE_SPEC_LINK}/claim.html"
+          links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Claim', methods: ['read']
+          validates resource: 'Claim', methods: ['read']
+        }
+
+        reply = @client.read(FHIR::Claim,@average_id)
+        assert_response_ok(reply)
+        assert_resource_type(reply,FHIR::Claim)
+        reply.resource.coverage.each do |coverage|
+          assert(!coverage.try(:claimResponse).try(:reference).nil?,'Claim does not reference a ClaimResponse.',reply.body)
+        end
+        warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_last_modified_present(reply) }
+        warning { assert_valid_content_location_present(reply) }
+      end
+
+      # ------------------------------------------------------------------------------
+
+      #
       # Search for a ClaimResponse by simple claim
       #
       test 'C9F_2A_request', 'Search ClaimResponse by simple claim ID' do

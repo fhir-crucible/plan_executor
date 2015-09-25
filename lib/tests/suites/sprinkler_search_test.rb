@@ -2,6 +2,8 @@ module Crucible
   module Tests
     class SprinklerSearchTest < BaseSuite
 
+      attr_accessor :use_post
+
       def id
         'Search001'
       end
@@ -85,8 +87,12 @@ module Crucible
         @client.destroy(FHIR::Observation, @obs_d) if @obs_d
         @client.destroy(FHIR::Observation, @obs_e) if @obs_e
       end
+ 
+    [true,false].each do |flag|  
+      action = 'GET'
+      action = 'POST' if flag
 
-      test 'SE01','Search patients without criteria (except _count)' do
+      test "SE01#{action[0]}",'Search patients without criteria (except _count)' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -94,7 +100,7 @@ module Crucible
         }
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               '_count' => '1'
@@ -108,7 +114,7 @@ module Crucible
         warning { assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.' }
       end
 
-      test 'SE02', 'Search on non-existing resource' do
+      test "SE02#{action[0]}", 'Search on non-existing resource' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -116,7 +122,7 @@ module Crucible
         options = {
           :resource => Crucible::Tests::SprinklerSearchTest,
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => nil
           }
@@ -125,7 +131,7 @@ module Crucible
         assert( (reply.code >= 400 && reply.code < 600), 'If the search fails, the return value should be status code 4xx or 5xx.', reply)
       end
 
-      test 'SE03','Search patient resource on partial family surname' do
+      test "SE03#{action[0]}",'Search patient resource on partial family surname' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -156,7 +162,7 @@ module Crucible
 
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'family' => search_string
@@ -169,7 +175,7 @@ module Crucible
         assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE04', 'Search patient resource on given name' do
+      test "SE04#{action[0]}", 'Search patient resource on given name' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -200,7 +206,7 @@ module Crucible
 
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'given' => search_string
@@ -213,7 +219,7 @@ module Crucible
         assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.0', 'Search condition by patient reference url' do
+      test "SE05.0#{action[0]}", 'Search condition by patient reference url (partial)' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -227,15 +233,16 @@ module Crucible
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
         }
-        flag = @client.use_format_param
+        temp = @client.use_format_param
         @client.use_format_param = false
         patient_url = @client.resource_url(options)
-        @client.use_format_param = flag
+        patient_url = patient_url[1..-1] if patient_url[0]=='/'
+        @client.use_format_param = temp
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient' => patient_url
@@ -248,7 +255,42 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.1', 'Search condition by patient reference id' do
+      test "SE05.0F#{action[0]}", 'Search condition by patient reference url (full)' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links "#{BASE_SPEC_LINK}/search.html"
+          links "#{BASE_SPEC_LINK}/condition.html#search"
+          validates resource: "Condition", methods: ["search"]
+        }
+        skip unless @read_entire_feed
+        # pick some search parameters... we previously created
+        # a condition for the first (0-index) patient in the setup method.
+        options = {
+          :id => @entries[0].resource.xmlId,
+          :resource => @entries[0].resource.class
+        }
+        temp = @client.use_format_param
+        @client.use_format_param = false
+        patient_url = @client.full_resource_url(options)
+        @client.use_format_param = temp
+
+        # next, we're going execute a series of searches for conditions referencing the patient
+        options = {
+          :search => {
+            :flag => flag,
+            :compartment => nil,
+            :parameters => {
+              'patient' => patient_url
+            }
+          }
+        }
+        reply = @client.search(FHIR::Condition, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+      end
+
+      test "SE05.1#{action[0]}", 'Search condition by patient reference id' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -263,7 +305,7 @@ module Crucible
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient' => patient_id
@@ -276,7 +318,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.2', 'Search condition by patient:Patient reference url' do
+      test "SE05.2#{action[0]}", 'Search condition by patient:Patient reference url' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -290,15 +332,16 @@ module Crucible
           :id => @entries[0].resource.xmlId,
           :resource => @entries[0].resource.class
         }
-        flag = @client.use_format_param
+        temp = @client.use_format_param
         @client.use_format_param = false
         patient_url = @client.resource_url(options)
-        @client.use_format_param = flag
+        patient_url = patient_url[1..-1] if patient_url[0]=='/'
+        @client.use_format_param = temp
        
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient:Patient' => patient_url
@@ -311,7 +354,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.3', 'Search condition by patient:Patient reference id' do
+      test "SE05.3#{action[0]}", 'Search condition by patient:Patient reference id' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -327,7 +370,7 @@ module Crucible
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient:Patient' => patient_id
@@ -340,7 +383,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.4', 'Search condition by patient:_id reference' do
+      test "SE05.4#{action[0]}", 'Search condition by patient:_id reference' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -355,7 +398,7 @@ module Crucible
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient._id' => patient_id
@@ -368,7 +411,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.5', 'Search condition by patient:name reference' do
+      test "SE05.5#{action[0]}", 'Search condition by patient:name reference' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -383,7 +426,7 @@ module Crucible
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient.name' => patient_name
@@ -396,7 +439,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE05.6', 'Search condition by patient:identifier reference' do
+      test "SE05.6#{action[0]}", 'Search condition by patient:identifier reference' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -411,7 +454,7 @@ module Crucible
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'patient.identifier' => patient_identifier
@@ -424,7 +467,7 @@ module Crucible
         assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE06', 'Search condition and _include' do
+      test "SE06#{action[0]}", 'Search condition and _include' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -439,7 +482,7 @@ module Crucible
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               '_include' => 'Condition:patient'
@@ -457,7 +500,7 @@ module Crucible
         assert(has_patient,'The server did not include the Patient referenced in the Condition.', reply.body)
       end
 
-      test 'SE21', 'Search for quantity (in observation) - precision tests' do
+      test "SE21#{action[0]}", 'Search for quantity (in observation) - precision tests' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html#quantity"
@@ -468,7 +511,7 @@ module Crucible
 
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'value-quantity' => '4.1234||mmol'
@@ -491,7 +534,7 @@ module Crucible
         assert !has_obs_c, 'Search on quantity value 4.1234 should not return 4.12349'
       end
 
-      test 'SE22', 'Search for quantity (in observation) - operators' do
+      test "SE22#{action[0]}", 'Search for quantity (in observation) - operators' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html#quantity"
@@ -502,10 +545,10 @@ module Crucible
 
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
-              'value-quantity' => '>5||mmol'
+              'value-quantity' => 'gt5||mmol'
             }
           }
         }
@@ -525,7 +568,7 @@ module Crucible
         assert has_obs_e, 'Search greater than quantity should return greater value.'
       end
 
-      test 'SE23', 'Search with quantifier :missing, on Patient.gender' do
+      test "SE23#{action[0]}", 'Search with quantifier :missing, on Patient.gender' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -542,7 +585,7 @@ module Crucible
 
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'gender:missing' => true
@@ -555,7 +598,7 @@ module Crucible
         assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
       end
 
-      test 'SE24', 'Search with non-existing parameter' do
+      test "SE24#{action[0]}", 'Search with non-existing parameter' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -565,7 +608,7 @@ module Crucible
         # non-existing parameters should be ignored
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               'bonkers' => 'foobar'
@@ -577,7 +620,7 @@ module Crucible
         assert_bundle_response(reply)
       end
 
-      test 'SE25', 'Search with malformed parameters' do
+      test "SE25#{action[0]}", 'Search with malformed parameters' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -587,7 +630,7 @@ module Crucible
         # a malformed parameters are non-existing parameters, and they should be ignored
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               '...' => 'foobar'
@@ -598,6 +641,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
       end
+
+    end # EOF [true,false].each
 
     end
   end

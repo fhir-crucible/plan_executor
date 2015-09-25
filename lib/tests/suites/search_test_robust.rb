@@ -86,14 +86,18 @@ module Crucible
         @client.destroy(FHIR::Observation, @obs_e) if @obs_e
       end
 
-      test 'SR01','Patient Matching using an MPI' do
+    [true,false].each do |flag|  
+      action = 'GET'
+      action = 'POST' if flag
+
+      test "SR01#{action[0]}","Patient Matching using an MPI (#{action})" do
         metadata {
           links "#{BASE_SPEC_LINK}/patient.html#match"
           validates resource: "Patient", methods: ["search"]
         }
         options = {
           :search => {
-            :flag => false,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               '_query' => 'mpi',
@@ -102,25 +106,24 @@ module Crucible
           }
         }
         reply = @client.search(FHIR::Patient, options)
-        has_mpi_data = false
+        assert_response_ok(reply)
+        assert_bundle_response(reply)        
+ 
+        has_mpi_data = true
         has_score = true
         reply.resource.entry.each do |entry|
           has_score = has_score && entry.try(:search).try(:score)
+          entry_has_mpi_data = false
           if entry.search
             entry.search.extension.each do |e|
               if (e.url=='http://hl7.org/fhir/StructureDefinition/patient-mpi-match' && e.value && e.value.type=='code' && ['certain','probable','possible','certainly-not'].include?(e.value.value))
-                has_mpi_data = true
+                entry_has_mpi_data = true
               end
             end
           end
+          has_mpi_data = has_mpi_data && entry_has_mpi_data
         end
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
         assert( has_score && has_mpi_data, "Every Patient Matching result requires a score and 'patient-mpi-match' extension.", reply.body)
-        # TODO assert:
-        #   "All patient records SHALL have a score from 0 to 1, where 1 is the most certain match, 
-        #    along with an extension "patient-mpi-match" that indicates the MPI's position on the match quality"
-        # see: http://hl7.org/fhir/2015Sep/patient.html#match
       end
 
 # Search Parameter Types    
@@ -151,6 +154,7 @@ module Crucible
 #   _elements
 #   _contained
 #   _containedType
+    end # EOF [true,false].each
 
     end
   end

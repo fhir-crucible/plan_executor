@@ -128,13 +128,17 @@ module Crucible
       #   _contained
       #   _containedType
       
-      test 'S001', 'Search by ID' do
+    [true,false].each do |flag|  
+      action = 'GET'
+      action = 'POST' if flag
+
+      test "S001#{action[0]}", "Search by ID (#{action})" do
         metadata {
           define_metadata('search')
         }
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               '_id' => '0'
@@ -146,31 +150,13 @@ module Crucible
         assert_bundle_response(reply)
       end
 
-      test 'S002', 'Search without search keyword' do
+      test "S003#{action[0]}", "Search limit by _count (#{action})" do
         metadata {
           define_metadata('search')
         }
         options = {
           :search => {
-            :flag => false,
-            :compartment => nil,
-            :parameters => {
-              '_id' => '0'
-            }
-          }
-        }
-        reply = @client.search(@resource_class, options)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-      end
-
-      test 'S003', 'Search limit by _count' do
-        metadata {
-          define_metadata('search')
-        }
-        options = {
-          :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => {
               '_count' => '1'
@@ -187,7 +173,7 @@ module Crucible
       # _____________________Sprinkler Tests_____________________ #
       # ********************************************************* #
 
-      test 'SE01', 'Search without criteria' do
+      test "SE01#{action[0]}", "Search without criteria (#{action})" do
         metadata {
           links "#{BASE_SPEC_LINK}/#{resource_class.name.demodulize.downcase}.html"
           links "#{REST_SPEC_LINK}#search"
@@ -196,7 +182,7 @@ module Crucible
         }
         options = {
           :search => {
-            :flag => true,
+            :flag => flag,
             :compartment => nil,
             :parameters => nil
           }
@@ -208,7 +194,7 @@ module Crucible
         replyB = @client.read_feed(@resource_class)
         assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
       end
-
+    end
 
       def define_metadata(method)
         links "#{REST_SPEC_LINK}##{method}"

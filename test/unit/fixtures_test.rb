@@ -4,6 +4,16 @@ class FixturesTest < Test::Unit::TestCase
 
   fixtures = File.join('fixtures','**','*.xml')
 
+  loading = true
+  t = Thread.new { FHIR::StructureDefinition.load_definitions; loading = false }
+
+  print 'Loading StructuredDefinitions'
+  while loading do
+    print '.'
+    sleep(10)
+  end
+  print " done.\n"
+
   # Define test methods to validate example JSON
   Dir.glob(fixtures).each do | file |    
     basename = File.basename(file,'.xml')

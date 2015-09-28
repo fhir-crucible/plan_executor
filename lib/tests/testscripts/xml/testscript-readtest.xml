@@ -20,7 +20,7 @@
       <source value="F1"/>
     </operation>
   </setup>
-  <test id="R001">
+  <test id="R001.TS">
     <name value="Get Test Data Person"/>
     <description value="Result headers on normal read."/>
     <metadata>
@@ -58,7 +58,7 @@
       <parameter value="valid_content_location"/>
     </operation>
   </test>
-  <test id="R002">
+  <test id="R002.TS">
     <name value="Try Read Unknown Resource Type"/>
     <description value="Read unknown resource type"/>
     <metadata>
@@ -89,7 +89,7 @@
       <parameter value="response_not_found"/>
     </opeartion>
   </test>
-  <test id="R003">
+  <test id="R003.TS">
     <name value="Try Read Non Existing Resource"/>
     <description value="Read non-existing resource id"/>
     <metadata>
@@ -116,7 +116,7 @@
       <parameter value="response_not_found"/>
     </operation>
   </test>
-  <test id="R004">
+  <test id="R004.TS">
     <name value="Try Read Bad Formatted Resource Id"/>
     <description value="Read bad formatted resource id"/>
     <metadata>

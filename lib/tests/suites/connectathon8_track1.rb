@@ -1,13 +1,13 @@
 module Crucible
   module Tests
-    class TrackOneTest < BaseSuite
+    class ConnectathonPatientTrackTest < BaseSuite
 
       def id
-        'Connectathon8Track1'
+        'Connectathon Patient Track'
       end
 
       def description
-        'Connectathon 8 Track 1 Tests'
+        'Connectathon Patient Track tests: registering, updating, history, and search'
       end
 
       def setup

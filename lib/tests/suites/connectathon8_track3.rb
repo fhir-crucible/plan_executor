@@ -1,13 +1,13 @@
 module Crucible
   module Tests
-    class TrackThreeTest < BaseSuite
+    class ConnectathonProfileValidationTrackTest < BaseSuite
 
       def id
-        'Connectathon8Track3'
+        'ConnectathonProfileValidationTrackTest'
       end
 
       def description
-        'Connectathon 8 Track 3 Tests'
+        'Connectathon Profile Validation Track Test focuses on validating observations against the general specification and a profile.'
       end
 
       def setup

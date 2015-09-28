@@ -1,13 +1,13 @@
 module Crucible
   module Tests
-    class FinancialTest < BaseSuite
+    class ConnectathonFinancialTrackTest < BaseSuite
 
       def id
-        'Connectathon9Financial'
+        'ConnectathonFinancialTrackTest'
       end
 
       def description
-        'Connectathon 9 Financial Tests'
+        'Connectathon Financial Track Test focuses on submitting Claims and retreiving ClaimResponses.'
       end
 
       def setup

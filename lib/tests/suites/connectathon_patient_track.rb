@@ -154,6 +154,7 @@ module Crucible
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
+          validates extensions: ['modifying extensions']
         }
         skip unless @patient_us_id
 

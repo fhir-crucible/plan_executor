@@ -112,7 +112,11 @@ namespace :crucible do
         puts suite_key
         result[suite_key][:tests].each do |test|
           puts write_result(test['status'], test[:test_method], test['message'])
-
+          if test['status'].upcase=='ERROR'
+            puts " "*12 + "-"*40
+            puts " "*12 + "#{test['data'].gsub("\n","\n"+" "*12)}"
+            puts " "*12 + "-"*40
+          end
           if (metadata_only==true)
             # warnings
             puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if test['warnings']

@@ -53,6 +53,7 @@ module Crucible
           links "#{BASE_SPEC_LINK}/operation-resource-validate.html"
           requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
+          validates profiles: ['validate-profile']
         }
 
         @obs.each do |x|
@@ -75,6 +76,7 @@ module Crucible
           links "#{BASE_SPEC_LINK}/operation-resource-validate.html"
           requires resource: 'StructureDefinition', methods: ['create']
           validates resource: 'Observation', methods: ['validate']
+          validates profiles: ['validate-profile']
         }
         
         # @profile_url = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with

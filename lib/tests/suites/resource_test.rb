@@ -297,6 +297,7 @@ module Crucible
       test 'X060', 'Validate' do
         metadata {
           define_metadata('validate')
+          validates profiles: ['validate-profile']
         }
 
         result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
@@ -328,6 +329,7 @@ module Crucible
       test 'X065', 'Validate Existing' do
         metadata {
           define_metadata('validate')
+          validates profiles: ['validate-profile']
         }
 
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
@@ -391,6 +393,7 @@ module Crucible
       test 'X067', 'Validate against a profile' do
         metadata {
           define_metadata('validate')
+          validates profiles: ['validate-profile']
         }
 
         profile_uri = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with

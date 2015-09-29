@@ -93,7 +93,8 @@ module Crucible
       test "SR01#{action[0]}","Patient Matching using an MPI (#{action})" do
         metadata {
           links "#{BASE_SPEC_LINK}/patient.html#match"
-          validates resource: "Patient", methods: ["search"]
+          validates resource: 'Patient', methods: ['search']
+          validates extensions: ['extensions']
         }
         options = {
           :search => {

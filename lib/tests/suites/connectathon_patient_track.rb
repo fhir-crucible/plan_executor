@@ -63,6 +63,7 @@ module Crucible
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#1._Register_a_new_patient'
           requires resource: 'Patient', methods: ['create']
           validates resource: 'Patient', methods: ['create']
+          validates extensions: ['extensions']
         }
 
         reply = @client.create @patient_us
@@ -95,7 +96,7 @@ module Crucible
         }
         skip unless @patient_id
 
-		@patient.xmlId = @patient_id
+		    @patient.xmlId = @patient_id
         @patient.telecom[0].value='1-800-TOLL-FREE'
         @patient.name[0].given = ['Crocodile','Pants']
 
@@ -118,17 +119,19 @@ module Crucible
       #
       # Test if we can update a patient with unmodified extensions.
       #
-      test 'C8T1_2B','Update a patient - BONUS: Unmodified Extensions' do
+      test 'C8T1_2B','Update a patient - BONUS: Unmodifier Extensions' do
         metadata {
           links "#{REST_SPEC_LINK}#update"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
           requires resource: 'Patient', methods: ['create','update']
           validates resource: 'Patient', methods: ['update']
+          validates extensions: ['extensions']
         }
         skip unless @patient_us_id
 		
-        @patient_us.telecom[0].value='1-800-TOLL-FREE'
-        @patient_us.name[0].given = ['Alligator','Pants']
+        @patient_us.xmlId = @patient_us_id
+        @patient_us.extension[0].value.value.coding[0].code = '1569-3'
+        @patient_us.extension[1].value.value.coding[0].code = '2186-5'
 
         reply = @client.update @patient_us, @patient_us_id
         assert_response_ok(reply)
@@ -148,7 +151,7 @@ module Crucible
       #
       # Test if we can update a patient with modified extensions.
       #
-      test 'C8T1_2C','Update a patient - BONUS: Modified Extensions' do
+      test 'C8T1_2C','Update a patient - BONUS: Modifier Extensions' do
         metadata {
           links "#{REST_SPEC_LINK}#update"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
@@ -159,8 +162,89 @@ module Crucible
         skip unless @patient_us_id
 
 		    @patient_us.xmlId = @patient_us_id
-        @patient_us.extension[0].value.value.coding[0].code = '1569-3'
-        @patient_us.extension[1].value.value.coding[0].code = '2186-5'
+        @patient_us.modifierExtension << FHIR::Extension.new
+        @patient_us.modifierExtension[0].url='http://hl7.org/fhir/StructureDefinition/patient-cadavericDonor'
+        @patient_us.modifierExtension[0].value = FHIR::AnyType.new('Boolean',true)
+
+        reply = @client.update @patient_us, @patient_us_id
+
+        assert_response_ok(reply)
+
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
+
+        warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_last_modified_present(reply) }
+        warning { assert_valid_content_location_present(reply) }
+      end
+
+      #
+      # Test if we can update a patient with primitive extensions.
+      #
+      test 'C8T1_2D','Update a patient - BONUS: Primitive Extensions' do
+        metadata {
+          links "#{REST_SPEC_LINK}#update"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
+          requires resource: 'Patient', methods: ['create','update']
+          validates resource: 'Patient', methods: ['update']
+          validates extensions: ['primitive extensions']
+        }
+        skip unless @patient_us_id
+
+        @patient_us.xmlId = @patient_us_id
+        @patient_us.gender = 'male'
+        pe = FHIR::PrimitiveExtension.new
+        pe.path='_gender'
+        pe['extension'] = [ FHIR::Extension.new ]
+        pe['extension'][0].url = 'http://hl7.org/test/gender'
+        pe['extension'][0].value = FHIR::AnyType.new('String','Male')
+        @patient_us.primitiveExtension << pe
+
+        reply = @client.update @patient_us, @patient_us_id
+
+        assert_response_ok(reply)
+
+        if !reply.resource.nil?
+          temp = reply.resource.xmlId
+          reply.resource.xmlId = nil
+          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          reply.resource.xmlId = temp
+        end
+
+        warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_last_modified_present(reply) }
+        warning { assert_valid_content_location_present(reply) }
+      end
+
+      #
+      # Test if we can update a patient with complex extensions.
+      #
+      test 'C8T1_2E','Update a patient - BONUS: Complex Extensions' do
+        metadata {
+          links "#{REST_SPEC_LINK}#update"
+          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
+          requires resource: 'Patient', methods: ['create','update']
+          validates resource: 'Patient', methods: ['update']
+          validates extensions: ['complex extensions']
+        }
+        skip unless @patient_us_id
+
+        @patient_us.xmlId = @patient_us_id
+        begin
+          @patient_us.primitiveExtension.clear
+        rescue Exception => e
+          # IGNORE: the above call always throws an exception -- even though it succeeds!!
+        end
+        ext = FHIR::Extension.new
+        ext.url = 'http://hl7.org/complex/foo'
+        ext.extension << FHIR::Extension.new
+        ext.extension[0].url='http://complex/foo/bar'
+        ext.extension[0].value=FHIR::AnyType.new('String','foobar')
+        @patient.extension << ext
 
         reply = @client.update @patient_us, @patient_us_id
 

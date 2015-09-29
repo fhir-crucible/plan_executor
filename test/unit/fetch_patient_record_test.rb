@@ -297,10 +297,10 @@ class FetchPatientRecordTest < Test::Unit::TestCase
     client = FHIR::Client.new(TESTING_ENDPOINT)
 
     # only execute the methods that have stubs; remaining methods require complicated stubs
-    trackTwoTest = Crucible::Tests::TrackTwoTest.new(client)
+    trackTwoTest = Crucible::Tests::ConnectathonFetchPatientRecordTest.new(client)
     results = trackTwoTest.execute_test_methods(trackTwoTest.tests(['C8T2_1A', 'C8T2_1B', 'C8T2_2A', 'C8T2_2B', 'C8T2_2C']))
 
-    assert !results.blank?, 'Failed to execute TrackTwoTest.'
+    assert !results.blank?, 'Failed to execute ConnectathonFetchPatientRecordTest.'
   end
 
 end

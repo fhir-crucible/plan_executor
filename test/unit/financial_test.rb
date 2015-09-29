@@ -30,10 +30,10 @@ class FinancialTest < Test::Unit::TestCase
       to_return(:status => 200, :body => "", :headers => {})
 
     client = FHIR::Client.new(TESTING_ENDPOINT)
-    financial = Crucible::Tests::FinancialTest.new(client)
+    financial = Crucible::Tests::ConnectathonFinancialTrackTest.new(client)
     results = financial.execute_test_methods(financial.tests(['C9F_1A', 'C9F_1B']))
 
-    assert !results.blank?, 'Failed to execute FinancialTest.'
+    assert !results.blank?, 'Failed to execute ConnectathonFinancialTrackTest.'
     assert results.map {|r| r["status"] }.all? {|s| s=="pass"}, "FinacialTest methods did execute succesfully: #{results.map {|r| {r["id"] => r["status"]}}}}."
   end
 

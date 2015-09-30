@@ -87,12 +87,40 @@ module Crucible
         observations
       end
 
+      # ------------------------------ CLAIM TEST TRACK ------------------------------
+
       def simple_claim
         FHIR::Claim.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-simple.xml'))
       end
 
       def average_claim
         FHIR::Claim.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-average.xml'))
+      end
+
+      # ------------------------------ SCHEDULING TEST TRACK ------------------------------
+
+      def scheduling_appointment
+        FHIR::Appointment.from_xml File.read(File.join(fixture_path, 'scheduling', 'appointment-simple.xml'))
+      end
+
+      def scheduling_response_patient
+        FHIR::AppointmentResponse.from_xml File.read(File.join(fixture_path, 'scheduling', 'appointmentresponse-patient-simple.xml'))
+      end
+
+      def scheduling_response_practitioner
+        FHIR::AppointmentResponse.from_xml File.read(File.join(fixture_path, 'scheduling', 'appointmentresponse-practitioner-simple.xml'))
+      end
+
+      def scheduling_practitioner
+        FHIR::Practitioner.from_xml File.read(File.join(fixture_path, 'scheduling', 'practitioner-simple.xml'))
+      end
+
+      def scheduling_schedule
+        FHIR::Schedule.from_xml File.read(File.join(fixture_path, 'scheduling', 'schedule-simple.xml'))
+      end
+
+      def scheduling_slot
+        FHIR::Slot.from_xml File.read(File.join(fixture_path, 'scheduling', 'slot-simple.xml'))
       end
 
       def load_fixture(path)

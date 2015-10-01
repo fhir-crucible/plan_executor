@@ -52,7 +52,7 @@ module Crucible
         fields = resource.fields
         fields.each do |key,value|
           type = value.options[:type]
-		      next if key=='id' || key=='xmlId'
+		      next if ['id','xmlId','version','versionId','implicitRules'].include? key
           next if multiples.include? key
           gen = nil
           if type == String
@@ -120,12 +120,31 @@ module Crucible
           next if multiples.include? key
           
           klass = resource.get_fhir_class_from_resource_type(value[:class_name])
-          if klass == FHIR::Reference
+          case klass
+          when FHIR::Reference
             child = FHIR::Reference.new
             child.display = "#{key} #{SecureRandom.base64}"
+          when FHIR::CodeableConcept
+            child = FHIR::CodeableConcept.new
+            child.text = "#{key} #{SecureRandom.base64}"
+          when FHIR::Coding
+            child = FHIR::Coding.new
+            child.display = "#{key} #{SecureRandom.base64}"
+          when FHIR::Quantity
+            child = FHIR::Quantity.new
+            child.value = SecureRandom.random_number
+            child.unit = SecureRandom.base64
+          else
+            child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension','FHIR::Signature'].include?(value[:class_name]))
           end
 
-          child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension','FHIR::Reference'].include?(value[:class_name]))
+          case klass
+          when FHIR::Identifier
+            child.system = nil
+          when FHIR::Attachment
+            child.url = nil
+          end
+
           if value[:relation] == Mongoid::Relations::Embedded::Many
             child = ([] << child) if child
           end

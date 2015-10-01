@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Slot xmlns="http://hl7.org/fhir">
+  <id value="simple"/>
+  <schedule>
+    <reference value="Schedule/simple"/>
+  </schedule>
+  <freeBusyType value="free"/>
+  <start value="2020-12-25T09:15:00Z"/>
+  <end value="2020-12-25T09:30:00Z"/>
+</Slot>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Appointment xmlns="http://hl7.org/fhir">
+  <id value="simple"/>
+  <status value="proposed"/>
+  <description value="patient requests discussion"/>
+  <start value="2020-12-25T09:15:00Z"/>
+  <end value="2020-12-25T09:30:00Z"/>
+  <participant>
+    <actor>
+      <reference value="Patient/simple"/>
+      <display value="Caro Emerald"/>
+    </actor>
+    <required value="required"/>
+    <status value="needs-action"/>
+  </participant>
+  <participant>
+    <actor>
+      <reference value="Practitioner/simple"/>
+      <display value="Dr. Adam Careful"/>
+    </actor>
+    <required value="required"/>
+    <status value="needs-action"/>
+  </participant>
+</Appointment>

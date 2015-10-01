@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AppointmentResponse xmlns="http://hl7.org/fhir">
+  <id value="simple"/>
+  <appointment>
+    <reference value="Appointment/simple"/>
+  </appointment>
+  <actor>
+    <reference value="Practitioner/simple"/>
+    <display value="Dr. Adam Careful"/>
+  </actor>
+  <participantStatus value="needs-action"/>
+</AppointmentResponse>

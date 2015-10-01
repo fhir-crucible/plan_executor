@@ -98,6 +98,7 @@ module Crucible
 
 		    @patient.xmlId = @patient_id
         @patient.telecom[0].value='1-800-TOLL-FREE'
+        @patient.telecom[0].system='phone'
         @patient.name[0].given = ['Crocodile','Pants']
 
         reply = @client.update @patient, @patient_id
@@ -163,12 +164,14 @@ module Crucible
 
 		    @patient_us.xmlId = @patient_us_id
         @patient_us.modifierExtension << FHIR::Extension.new
-        @patient_us.modifierExtension[0].url='http://hl7.org/fhir/StructureDefinition/patient-cadavericDonor'
+        @patient_us.modifierExtension[0].url='http://projectcrucible.org/modifierExtension/foo'
         @patient_us.modifierExtension[0].value = FHIR::AnyType.new('Boolean',true)
 
         reply = @client.update @patient_us, @patient_us_id
 
-        assert_response_ok(reply)
+        @patient_us.modifierExtension.clear
+
+        assert([200,201,422].include?(reply.code), 'The server should except a modifierExtension, or return 422 if it chooses to reject a modifierExtension it does not understand.',"Server response code: #{reply.code}\n#{reply.body}")
 
         if !reply.resource.nil?
           temp = reply.resource.xmlId

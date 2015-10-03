@@ -70,7 +70,8 @@ namespace :crucible do
     client_secret = STDIN.gets.chomp
     options[:client_id] = client_id
     options[:client_secret] = client_secret
-    client.set_oauth2_auth(options[:client_id],options[:client_secret],options[:site],options[:authorize_url],options[:token_url])
+    # set_oauth2_auth(client,secret,authorizePath,tokenPath)
+    client.set_oauth2_auth(options[:client_id],options[:client_secret],options[:authorize_url],options[:token_url])
   end
 
   def execute_test(client, key, resourceType=nil)

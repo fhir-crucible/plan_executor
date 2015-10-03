@@ -49,9 +49,9 @@ module Crucible
         @client.destroy(FHIR::Practitioner, @practitioner.xmlId) if !@practitioner.xmlId.nil?
         @client.destroy(FHIR::Schedule, @schedule.xmlId) if !@schedule.xmlId.nil?
         @client.destroy(FHIR::Slot, @slot.xmlId) if !@slot.xmlId.nil?
-        @client.destroy(FHIR::Appointment, @appointment.xmlId) if !@appointment.xmlId.nil?
-        @client.destroy(FHIR::AppointmentResponse, @appointment_response_patient.xmlId) if !@appointment_response_patient.xmlId.nil?
-        @client.destroy(FHIR::AppointmentResponse, @appointment_response_practitioner.xmlId) if !@appointment_response_practitioner.xmlId.nil?
+        @client.destroy(FHIR::Appointment, @appointment.xmlId) if @appointment && !@appointment.xmlId.nil?
+        @client.destroy(FHIR::AppointmentResponse, @appointment_response_patient.xmlId) if @appointment_response_patient && !@appointment_response_patient.xmlId.nil?
+        @client.destroy(FHIR::AppointmentResponse, @appointment_response_practitioner.xmlId) if @appointment_response_practitioner && !@appointment_response_practitioner.xmlId.nil?
       end
 
       # Find Practitioner's schedule

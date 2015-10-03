@@ -192,7 +192,14 @@ module Crucible
         assert_bundle_response(reply)
 
         replyB = @client.read_feed(@resource_class)
-        assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
+
+        # AuditEvent
+        if resource_class==FHIR::AuditEvent
+          count = (reply.resource.total-replyB.resource.total).abs
+          assert (count <= 1), 'Searching without criteria did not return all the results.'
+        else
+          assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
+        end
       end
     end
 

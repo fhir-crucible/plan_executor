@@ -85,7 +85,7 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'female' },
-                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' }
+                'url' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' }
               }
             }
           }
@@ -106,7 +106,7 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'BRN' },
-                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/v2/0487' }
+                'url' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
               }
             }
           }
@@ -127,7 +127,7 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'BRN' },
-                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/v2/0487' }
+                'url' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
               }
             }
           }

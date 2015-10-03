@@ -74,7 +74,7 @@ module Crucible
           check_expansion_for_concepts(reply.resource)
         end
 
-        test "CT03#{how[0]}", "Validate a code (#{how})" do
+        test "CT03#{how[0]}", "Validate a code using identifier (#{how})" do
           metadata {
             links "#{BASE_SPEC_LINK}/operations.html#executing"
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
@@ -85,7 +85,7 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'female' },
-                'url' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' }
+                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' }
               }
             }
           }
@@ -95,7 +95,7 @@ module Crucible
         end
 
         # validate v2 code
-        test "CT04#{how[0]}", "Validate a v2 code (#{how})" do
+        test "CT04#{how[0]}", "Validate a v2 code using identifier (#{how})" do
           metadata {
             links "#{BASE_SPEC_LINK}/operations.html#executing"
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
@@ -106,7 +106,7 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'BRN' },
-                'url' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
+                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
               }
             }
           }
@@ -116,7 +116,7 @@ module Crucible
         end
 
         # lookup a v2 code
-        test "CT05#{how[0]}", "Lookup a v2 code (#{how})" do
+        test "CT05#{how[0]}", "Lookup a v2 code using identifier (#{how})" do
           metadata {
             links "#{BASE_SPEC_LINK}/operations.html#executing"
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
@@ -127,7 +127,69 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'BRN' },
-                'url' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
+                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
+              }
+            }
+          }
+          reply = @client.value_set_code_lookup(options)
+          assert_response_ok(reply)
+          check_response_params(reply.body,'display','valueString','Burn')
+        end
+
+        test "CT06#{how[0]}", "Validate a code by system (#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
+            validates resource: 'ValueSet', methods: ['$validate-code']
+          }
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'code' => { type: 'Code', value: 'female' },
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/administrative-gender' }
+              }
+            }
+          }
+          reply = @client.value_set_code_validation(options)
+          assert_response_ok(reply)
+          check_response_params(reply.body,'result','valueBoolean','true')
+        end
+
+        # validate v2 code
+        test "CT07#{how[0]}", "Validate a v2 code by system (#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
+            validates resource: 'ValueSet', methods: ['$validate-code']
+          }
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'code' => { type: 'Code', value: 'BRN' },
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/v2/0487' }
+              }
+            }
+          }
+          reply = @client.value_set_code_validation(options)
+          assert_response_ok(reply)
+          check_response_params(reply.body,'result','valueBoolean','true')
+        end
+
+        # lookup a v2 code
+        test "CT08#{how[0]}", "Lookup a v2 code by system (#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
+            validates resource: 'ValueSet', methods: ['$lookup']
+          }
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'code' => { type: 'Code', value: 'BRN' },
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/v2/0487' }
               }
             }
           }
@@ -158,7 +220,7 @@ module Crucible
             doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
             doc.root.add_namespace_definition('xhtml', 'http://www.w3.org/1999/xhtml')
             e = doc.root.xpath("./fhir:parameter[fhir:name[@value=\"#{name}\"]]/fhir:#{attribute}").first
-            assert(e.value==value,"Output parameters do not contain #{name}=#{value}")
+            assert(e[:value]==value,"Output parameters do not contain #{name}=#{value}")
           else
             hash = JSON.parse(contents)
             params = hash['parameter']
@@ -166,6 +228,7 @@ module Crucible
             assert(p[attribute]==value,"Output parameters do not contain #{name}=#{value}")
           end
         rescue Exception => e
+          binding.pry
           raise AssertionException.new 'Unable to parse response parameters', e.message
         end
       end

@@ -97,7 +97,7 @@ module Crucible
       end
 
       #
-      # Test if we can read a preexisting resource (only works if a bundle was retrieved successfully in X000)
+      # Test if we can read a preexisting resource
       #
       test 'X020', 'Read Existing' do
         metadata {
@@ -143,12 +143,12 @@ module Crucible
 
         result = TestResult.new('X030',"Update existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
-          @preexisting_id = @bundle.entry[0].resource.xmlId
-          @preexisting = @bundle.entry[0].resource
-        elsif !@temp_resource.nil?
+        if !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
+        elsif !@bundle.nil? && @bundle.total>0 && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+          @preexisting_id = @bundle.entry[0].resource.xmlId
+          @preexisting = @bundle.entry[0].resource
         end
 
         if !@preexisting.nil?

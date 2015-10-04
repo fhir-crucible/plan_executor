@@ -56,6 +56,9 @@ module Crucible
       end
 
       # Create a Patient then check for Provenance
+      # TODO Provenance must be provided by the client
+      # separately or as a header:
+      # Grahame says: "json format, in the X-Provenance header - I'll pick it up and store it after fixing the target reference (just leave target blank)"
       test 'CAEP2','Create a Patient then check for Provenance' do
         metadata {
           links "#{REST_SPEC_LINK}#create"

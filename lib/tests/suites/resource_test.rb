@@ -146,7 +146,7 @@ module Crucible
         if !@temp_resource.nil?
           @preexisting_id = @temp_id
           @preexisting = @temp_resource
-        if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.xmlId
           @preexisting = @bundle.entry[0].resource
         end

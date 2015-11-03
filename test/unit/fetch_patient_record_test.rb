@@ -20,6 +20,56 @@ class FetchPatientRecordTest < Test::Unit::TestCase
   def test_connectathon_8_track_two_requests
 
     stub_request(:get, "#{TESTING_ENDPOINT}/Patient/$everything").
+     with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 
+        'Accept-Encoding'=>'gzip, deflate', 'Content-Type'=>'application/xml+fhir;charset=UTF-8', 
+        'Format'=>'application/xml+fhir', 'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 
+        'User-Agent'=>'Ruby FHIR Client for FHIR'}).
+        to_return(:status => 200, :body =>
+          '<Bundle xmlns="http://hl7.org/fhir">
+            <id value="example"/>
+            <meta>
+              <versionId value="1"/>
+              <lastUpdated value="2014-08-18T01:43:30Z"/>
+            </meta>
+            <type value="searchset"/>
+            <base value="http://example.com/base"/>
+            <total value="0"/>
+            <link>
+              <relation value="self"/>
+              <url value="https://example.com/base/MedicationPrescription?patient=347"/>
+            </link>
+            <entry>
+            </entry>
+          </Bundle>', :headers => {})
+
+    stub_request(:post, "http://example-dstu2-server.com/Patient/$everything").
+      with(:body => "<Parameters xmlns=\"http://hl7.org/fhir\"></Parameters>",
+           :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 
+            'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'53', 
+            'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Format'=>'application/xml+fhir', 
+            'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 
+            'User-Agent'=>'Ruby FHIR Client for FHIR'}).
+      to_return(:status => 200, :body => 
+        '<Bundle xmlns="http://hl7.org/fhir">
+          <id value="example"/>
+          <meta>
+            <versionId value="1"/>
+            <lastUpdated value="2014-08-18T01:43:30Z"/>
+          </meta>
+          <type value="searchset"/>
+          <base value="http://example.com/base"/>
+          <total value="0"/>
+          <link>
+            <relation value="self"/>
+            <url value="https://example.com/base/MedicationPrescription?patient=347"/>
+          </link>
+          <entry>
+          </entry>
+        </Bundle>', :headers => {})
+    
+    start = (DateTime.now - (6*30)).strftime("%Y-%m-%d")
+    stop = DateTime.now.strftime("%Y-%m-%d")
+    stub_request(:get, "#{TESTING_ENDPOINT}/Patient/$everything?end=#{stop}&start=#{start}").
       with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8',
         'Accept-Encoding'=>'gzip, deflate', 'Content-Type'=>'application/xml+fhir;charset=UTF-8',
         'Format'=>'application/xml+fhir', 'Operation'=>'fetch_patient_record',
@@ -42,12 +92,14 @@ class FetchPatientRecordTest < Test::Unit::TestCase
             </entry>
           </Bundle>', :headers => {})
 
-    stub_request(:get, "#{TESTING_ENDPOINT}/Patient/$everything?end=2012-12-31&start=2012-01-01").
-      with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8',
-        'Accept-Encoding'=>'gzip, deflate', 'Content-Type'=>'application/xml+fhir;charset=UTF-8',
-        'End'=>'2012-12-31', 'Format'=>'application/xml+fhir', 'Operation'=>'fetch_patient_record',
-        'Resource'=>'FHIR::Patient', 'Start'=>'2012-01-01', 'User-Agent'=>'Ruby FHIR Client for FHIR'}).
-        to_return(:status => 200, :body =>
+    stub_request(:post, "http://example-dstu2-server.com/Patient/$everything").
+      with(:body => "<Parameters xmlns=\"http://hl7.org/fhir\"><parameter><name value=\"start\"/><valueDate value=\"#{start}\"></valueDate></parameter><parameter><name value=\"end\"/><valueDate value=\"#{stop}\"></valueDate></parameter></Parameters>",
+            :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 
+              'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'223', 
+              'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Format'=>'application/xml+fhir', 
+              'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 
+              'User-Agent'=>'Ruby FHIR Client for FHIR'}).
+      to_return(:status => 200, :body => 
           '<Bundle xmlns="http://hl7.org/fhir">
             <id value="example"/>
             <meta>

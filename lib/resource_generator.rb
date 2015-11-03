@@ -65,8 +65,8 @@ module Crucible
             elsif validators[key.to_sym]
               date = DateTime.now
               regex = validators[key.to_sym]
-              if date.strftime("%Y-%m-%dT%T.%LZ%z").match(regex)
-                gen = date.strftime("%Y-%m-%dT%T.%LZ%z")
+              if date.strftime("%Y-%m-%dT%T.%LZ").match(regex)
+                gen = date.strftime("%Y-%m-%dT%T.%LZ")
               elsif date.strftime("%Y-%m-%d").match(regex)
                 gen = date.strftime("%Y-%m-%d")
               elsif date.strftime("%T").match(regex)

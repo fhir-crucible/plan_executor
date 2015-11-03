@@ -68,10 +68,14 @@ namespace :crucible do
     client_id = STDIN.gets.chomp
     print 'Enter client secret: '
     client_secret = STDIN.gets.chomp
-    options[:client_id] = client_id
-    options[:client_secret] = client_secret
-    # set_oauth2_auth(client,secret,authorizePath,tokenPath)
-    client.set_oauth2_auth(options[:client_id],options[:client_secret],options[:authorize_url],options[:token_url])
+    if client_id!="" && client_secret!=""
+      options[:client_id] = client_id
+      options[:client_secret] = client_secret
+      # set_oauth2_auth(client,secret,authorizePath,tokenPath)
+      client.set_oauth2_auth(options[:client_id],options[:client_secret],options[:authorize_url],options[:token_url])
+    else
+      puts "Ignoring OAuth2 credentials: empty id or secret. Using unsecured client..."
+    end
   end
 
   def execute_test(client, key, resourceType=nil)

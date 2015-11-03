@@ -36,6 +36,10 @@ class FixturesTest < Test::Unit::TestCase
     
     valid = definition.is_valid?(xml,'XML')
     assert(valid,"XML fixture does not conform to definition: #{definition.name}")
+
+    resource = FHIR::Resource.from_contents(xml)
+    valid = definition.is_valid?(resource)
+    assert(valid,"Resource does not conform to definition: #{definition.name}")    
   end
 
 end

@@ -52,7 +52,7 @@ module Crucible
           links "#{BASE_SPEC_LINK}/observation.html"
           links "#{BASE_SPEC_LINK}/operation-resource-validate.html"
           requires resource: 'StructureDefinition', methods: ['create']
-          validates resource: 'Observation', methods: ['validate']
+          validates resource: 'Observation', methods: ['$validate']
           validates profiles: ['validate-profile']
         }
 
@@ -75,7 +75,7 @@ module Crucible
           links "#{BASE_SPEC_LINK}/observation.html"
           links "#{BASE_SPEC_LINK}/operation-resource-validate.html"
           requires resource: 'StructureDefinition', methods: ['create']
-          validates resource: 'Observation', methods: ['validate']
+          validates resource: 'Observation', methods: ['$validate']
           validates profiles: ['validate-profile']
         }
         

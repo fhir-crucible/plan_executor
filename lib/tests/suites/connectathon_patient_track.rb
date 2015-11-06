@@ -273,7 +273,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#history"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#3._Retrieve_Patient_history'
           requires resource: 'Patient', methods: ['create', 'update']
-          validates resource: 'Patient', methods: ['history-instance']
+          validates resource: 'Patient', methods: ['history']
         }
         skip unless @patient_id
 

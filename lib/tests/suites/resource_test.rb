@@ -296,7 +296,7 @@ module Crucible
       #
       test 'X060', 'Validate' do
         metadata {
-          define_metadata('validate')
+          define_metadata('$validate')
           validates profiles: ['validate-profile']
         }
 
@@ -328,7 +328,7 @@ module Crucible
       #
       test 'X065', 'Validate Existing' do
         metadata {
-          define_metadata('validate')
+          define_metadata('$validate')
           validates profiles: ['validate-profile']
         }
 
@@ -392,7 +392,7 @@ module Crucible
       #
       test 'X067', 'Validate against a profile' do
         metadata {
-          define_metadata('validate')
+          define_metadata('$validate')
           validates profiles: ['validate-profile']
         }
 

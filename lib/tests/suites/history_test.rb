@@ -40,7 +40,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
-          validates resource: "Patient", methods: ["history-instance"]
+          validates resource: "Patient", methods: ["history"]
         }
 
         result = @client.resource_instance_history(FHIR::Patient,@id)
@@ -56,7 +56,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
-          validates resource: "Patient", methods: ["history-instance"]
+          validates resource: "Patient", methods: ["history"]
         }
         result = @client.resource_instance_history(FHIR::Patient,@id)
         assert_response_ok result
@@ -73,7 +73,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
-          validates resource: "Patient", methods: ["history-instance"]
+          validates resource: "Patient", methods: ["history"]
         }
 
         before = @create_date - 1.minute
@@ -99,7 +99,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
-          validates resource: "Patient", methods: ["vread", "history-instance"]
+          validates resource: "Patient", methods: ["vread", "history"]
         }
 
         result = @client.resource_instance_history(FHIR::Patient,@id)
@@ -127,7 +127,7 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#history"
           requires resource: "Patient", methods: ["create", "update", "delete"]
-          validates resource: "Patient", methods: ["history-instance"]
+          validates resource: "Patient", methods: ["history"]
         }
 
         result = @client.resource_instance_history(FHIR::Patient,'3141592unlikely')

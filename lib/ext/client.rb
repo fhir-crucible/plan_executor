@@ -2,38 +2,26 @@ module FHIR
 
   class Client
 
-    attr_reader :requirements
+    attr_accessor :requests
 
-    def record_requirement(operation, *args)
-      if (args && args.is_a?(Array))
-        @requirements ||= []
-        resource = args[0]
-        resource = resource.class unless resource.is_a? Class
-        @requirements << {resource: resource, methods: [operation]}
-      end
+    def record_requests(reply)
+      @requests ||= []
+      @requests << reply
     end
 
-    def clear_requirements
-      @requirements = []
-    end
-
-    def monitor_requirements
+    def monitor_requests
       return if @decorated
       @decorated = true
-      FHIR::Sections.constants.each do |mod|
-        FHIR::Sections.const_get(mod).instance_methods.each do |m|
-          m = m.to_sym
-          class_eval %Q{
-            alias #{m}_original #{m}
-            def #{m}(*args, &block)
-              record_requirement('#{m}', *args)
-              #{m}_original(*args, &block)
-            end
-          }
-        end
+      [:get, :put, :post, :delete, :head].each do |method|
+        class_eval %Q{
+          alias #{method}_original #{method}
+          def #{method}(*args, &block)
+            reply = #{method}_original(*args, &block)
+            record_requests(reply)
+            return reply
+          end
+        }
       end
-
-  end
-
+    end
   end
 end

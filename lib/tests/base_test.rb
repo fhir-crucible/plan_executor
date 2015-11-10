@@ -20,6 +20,8 @@ module Crucible
       def initialize(client, client2=nil)
         @client = client
         @client2 = client2
+        @client.monitor_requests if @client
+        @client2.monitor_requests if @client2
       end
 
       def multiserver
@@ -46,6 +48,7 @@ module Crucible
         methods = tests
         methods = tests & test_methods unless test_methods.blank?
         methods.each do |test_method|
+          @client.requests = [] if @client
           puts "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
             result << execute_test_method(test_method)
@@ -58,7 +61,9 @@ module Crucible
       end
 
       def execute_test_method(test_method)
-        self.method(test_method).call().to_hash.merge!({:test_method => test_method})
+        response = self.method(test_method).call().to_hash.merge!({:test_method => test_method })
+        response.merge!({:requests => @client.requests.map { |r| r.to_hash } }) if @client
+        response
       end
 
       def author

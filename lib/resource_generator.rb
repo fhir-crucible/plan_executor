@@ -153,6 +153,91 @@ module Crucible
         resource
       end
 
+      def self.minimal_patient(identifier='0',name='Name')
+        resource = FHIR::Patient.new
+        resource.identifier = [ minimal_identifier(identifier) ]
+        resource.name = [ minimal_humanname(name) ]
+        resource
+      end
+
+      # Common systems:
+      #   SNOMED  http://snomed.info/sct
+      #   LOINC   http://loinc.org
+      #   ICD-10  http://hl7.org/fhir/sid/icd-10
+      # units: must be UCOM
+      def self.minimal_observation(system='http://loinc.org',code='8302-2',value=170,units='cm',patientId=nil)
+        resource = FHIR::Observation.new
+        resource.status = 'final'
+        resource.code = minimal_codeableconcept(system,code)
+        if patientId
+          ref = FHIR::Reference.new
+          ref.reference = "Patient/#{patientId}"
+          resource.subject = ref
+        end
+        resource.valueQuantity = minimal_quantity(value,units)
+        resource
+      end
+
+      # Default system/code are for SNOMED "Obese (finding)"
+      def self.minimal_condition(system='http://snomed.info/sct',code='414915002',patientId=nil)
+        resource = FHIR::Condition.new
+        resource.patient = FHIR::Reference.new
+        if patientId
+          resource.patient.reference = "Patient/#{patientId}"
+        else
+          resource.patient.display = 'Patient'
+        end
+        resource.code = minimal_codeableconcept(system,code)
+        resource.verificationStatus = 'confirmed'
+        resource
+      end
+
+      def self.minimal_identifier(identifier='0')
+        mid = FHIR::Identifier.new
+        mid.use = 'official'
+        mid.system = 'http://projectcrucible.org'
+        mid.value = identifier
+        mid
+      end
+
+      def self.minimal_humanname(name='Name')
+        hn = FHIR::HumanName.new
+        hn.use = 'official'
+        hn.family = [ 'Crucible' ]
+        hn.given = [ name ]
+        hn.text = "#{hn.given[0]} #{hn.family[0]}"
+        hn
+      end
+
+      # Common systems:
+      #   SNOMED  http://snomed.info/sct
+      #   LOINC   http://loinc.org
+      #   ICD-10  http://hl7.org/fhir/sid/icd-10
+      def self.minimal_codeableconcept(system='http://loinc.org',code='8302-2')
+        concept = FHIR::CodeableConcept.new
+        concept.coding = [ minimal_coding(system,code) ]
+        concept
+      end
+
+      # Common systems:
+      #   SNOMED  http://snomed.info/sct
+      #   LOINC   http://loinc.org
+      #   ICD-10  http://hl7.org/fhir/sid/icd-10
+      def self.minimal_coding(system='http://loinc.org',code='8302-2')
+        coding = FHIR::Coding.new
+        coding.system = system
+        coding.code = code
+        coding
+      end
+
+      def self.minimal_quantity(value=170,units='cm')
+        quantity = FHIR::Quantity.new
+        quantity.value = value
+        quantity.unit = units
+        quantity.system = 'http://unitsofmeasure.org'
+        quantity
+      end
+
     end
   end
 end

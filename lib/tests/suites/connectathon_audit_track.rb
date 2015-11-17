@@ -15,26 +15,14 @@ module Crucible
       end
 
       def teardown
-        @client.destroy(FHIR::Patient, @patient.xmlId) if @patient && !@patient.xmlId.nil?
-        @client.destroy(FHIR::Patient, @patient1.xmlId) if @patient1 && !@patient1.xmlId.nil?
-        @client.destroy(FHIR::Patient, @patient2.xmlId) if @patient2 && !@patient2.xmlId.nil?
         @client.destroy(FHIR::Provenance, @provenance1.xmlId) if @provenance1 && !@provenance1.xmlId.nil?
         @client.destroy(FHIR::Provenance, @provenance2.xmlId) if @provenance2 && !@provenance2.xmlId.nil?
         @client.destroy(FHIR::Provenance, @provenance3.xmlId) if @provenance3 && !@provenance3.xmlId.nil?
         @client.destroy(FHIR::Provenance, @provenance4.xmlId) if @provenance4 && !@provenance4.xmlId.nil?
+        @client.destroy(FHIR::Patient, @patient.xmlId) if @patient && !@patient.xmlId.nil?
+        @client.destroy(FHIR::Patient, @patient1.xmlId) if @patient1 && !@patient1.xmlId.nil?
+        @client.destroy(FHIR::Patient, @patient2.xmlId) if @patient2 && !@patient2.xmlId.nil?
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance') # just in case
-      end
-
-      def pull_out_id(resource,url)
-        id = nil
-        if !resource.nil? && !url.nil?
-          start = url.index("#{resource}/")
-          t = url[start..-1]
-          stop = t.index("/")-1
-          stop = -1 if stop.nil?
-          id = t[0..stop]
-        end
-        id
       end
 
       # Create a Patient then check for AuditEvent
@@ -112,8 +100,8 @@ module Crucible
         assert_bundle_response(reply)
 
         # set the patient id back from nil to whatever the server created
-        @patient1.xmlId = pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-        @provenance1.xmlId = pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
+        @patient1.xmlId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @provenance1.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
 
         options = {
           :search => {
@@ -177,7 +165,7 @@ module Crucible
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Provenance for the test Patient currently in the system.', reply.body)
         assert(reply.resource.entry[0].try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.xmlId), 'The correct Provenance was not returned.', reply.body)
-        @provenance2.xmlId = pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
+        @provenance2.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
       end
 
       # Update a Patient and check for AuditEvent
@@ -248,7 +236,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @provenance3.xmlId = pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
+        @provenance3.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
 
         options = {
           :search => {
@@ -314,8 +302,8 @@ module Crucible
         reply.resource.entry.each do |entry|
           assert(entry.try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.xmlId), 'An incorrect Provenance was returned.', reply.body)
         end
-        @provenance3.xmlId = pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
-        @provenance4.xmlId = pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
+        @provenance3.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
+        @provenance4.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
       end
 
       # Read a Patient and check for AuditEvent

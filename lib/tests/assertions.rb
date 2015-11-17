@@ -70,6 +70,15 @@ module Crucible
         end
       end
 
+      def assert_bundle_transactions_okay(response)
+        response.resource.entry.each do |entry|
+          status = entry.try(:response).try(:status)
+          unless assertion_negated( status && status.start_with?('200','201','204') )
+            raise AssertionException.new "Expected all Bundle.entry.response.status to be 200, 201, or 204; but found: #{status}"
+          end
+        end
+      end
+
       # Based on MIME Types defined in
       # http://hl7.org/fhir/2015May/http.html#2.1.0.6
       def assert_valid_resource_content_type_present(client_reply)

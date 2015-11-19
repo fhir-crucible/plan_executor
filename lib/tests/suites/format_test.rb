@@ -15,7 +15,7 @@ module Crucible
         @xml_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
         @json_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
         @xml_format_params = ['xml', 'text/xml', 'application/xml', @xml_format]
-        @json_format_params = ['json', 'text/json', 'application/json', @json_format]
+        @json_format_params = ['json', 'application/json', @json_format]
         @resources = Crucible::Generator::Resources.new
         @resource = @resources.minimal_patient
         @create_failed = false
@@ -176,7 +176,7 @@ module Crucible
         end
       end
 
-      test 'CT04B', 'Request [text/json] using [_format]' do
+      test 'CT04C', 'Request [application/json] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -194,24 +194,6 @@ module Crucible
         end
       end
 
-      test 'CT04C', 'Request [application/json] using [_format]' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @json_format_params[2], true)
-          assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON (_format) resource does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
-        end
-      end
-
       test 'CT04D', 'Request [application/json+fhir] using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
@@ -221,7 +203,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
-          patient = request_entry(FHIR::Patient, @id, @json_format_params[3], true)
+          patient = request_entry(FHIR::Patient, @id, @json_format_params[2], true)
           assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
           warning { assert compare_response(patient), 'requested JSON (_format) resource does not match created resource' }
         rescue => e
@@ -391,7 +373,7 @@ module Crucible
         end
       end
 
-      test 'FT06B', 'Request [text/json] Bundle using [_format]' do
+      test 'FT06C', 'Request [application/json] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -408,23 +390,6 @@ module Crucible
         end
       end
 
-      test 'FT06C', 'Request [application/json] Bundle using [_format]' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @json_format_params[2], true)
-
-          assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FTO6 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
-        end
-      end
-
       test 'FT06D', 'Request [application/json+fhir] Bundle using [_format]' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
@@ -434,7 +399,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
-          patients_bundle = request_bundle(FHIR::Patient, @json_format_params[3], true)
+          patients_bundle = request_bundle(FHIR::Patient, @json_format_params[2], true)
 
           assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
         rescue => e

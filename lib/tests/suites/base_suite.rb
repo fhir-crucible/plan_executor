@@ -49,7 +49,7 @@ module Crucible
         else
           result = execute
         end
-        result = result.map{|r| r.values.first[:tests]}.flatten if methods_only
+        result = result.values.first if methods_only
         @metadata_only = false
         result
       end
@@ -58,32 +58,6 @@ module Crucible
         yield
         skip if @setup_failed
         skip if @metadata_only
-      end
-
-      def tests_by_conformance(conformance_resources=nil, metadata=nil)
-        return tests unless conformance_resources
-        # array of metadata from current suite's test methods
-        suite_metadata = metadata || collect_metadata(true)
-        # { fhirType => supported codes }
-        methods = []
-        # include tests with undefined metadata
-        methods.push suite_metadata.select{|sm| sm["requires"].blank?}.map {|sm| sm[:test_method]}
-        # parse tests with defined metadata
-        suite_metadata.select{|sm| !sm["requires"].blank?}.each do |test|
-          unsupported = []
-          # determine if any of the metadata requirements match the conformance information
-          test["requires"].each do |req|
-            diffs = (req[:methods] - ( conformance_resources[req[:resource]] || [] ))
-            unsupported.push({req[:resource].to_sym => diffs}) unless diffs.blank?
-          end
-          # print debug if unsupported, otherwise add to supported methods
-          if !unsupported.blank?
-            puts "UNSUPPORTED #{test[:test_method]}: #{unsupported}"
-          else
-            methods.push test[:test_method]
-          end
-        end
-        methods.flatten
       end
 
       def self.test(key, desc, &block)

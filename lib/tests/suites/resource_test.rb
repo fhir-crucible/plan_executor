@@ -17,18 +17,14 @@ module Crucible
       def execute(resource_class=nil)
         if resource_class
           @resource_class = resource_class
-          [{"ResourceTest_#{@resource_class.name.demodulize}" => {
-            test_file: title,
-            tests: execute_test_methods
-          }}]
+          {"ResourceTest_#{@resource_class.name.demodulize}" => execute_test_methods}
         else
-          fhir_resources.map do | klass |
+          results = {}
+          fhir_resources.each do | klass |
             @resource_class = klass
-            {"ResourceTest_#{@resource_class.name.demodulize}" => {
-              test_file: title,
-              tests: execute_test_methods
-            }}
+            results.merge!({"ResourceTest_#{@resource_class.name.demodulize}" => execute_test_methods})
           end
+          results
         end
       end
 

@@ -14,17 +14,13 @@ module Crucible
       end
 
       def execute_all
-        results = []
+        results = {}
         self.tests.each do |test|
           # TODO: Do we want to separate out multiserver tests?
           next if test.multiserver
-          results = results.concat execute(test)
+          results.merge! execute(test)
         end
         results
-      end
-
-      def list_all_with_conformance(multiserver=false, metadata=nil)
-        @suite_engine.list_all_with_conformance(multiserver, metadata) #.merge @testscript_engine.list_all_with_conformance(multiserver, metadata)
       end
 
       def self.list_all(multiserver=false, metadata=false)

@@ -20,46 +20,6 @@ module Crucible
         results
       end
 
-      def list_all_with_conformance(multiserver=false, metadata=nil)
-        list = {}
-        @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
-        conf = @client.conformanceStatement
-        conformance_resources = Hash[conf.rest[0].resource.map{ |r| [r.fhirType, r.interaction.map(&:code)]}] if conf
-        if multiserver
-          conf2 = @client2.conformanceStatement
-          conformance1_resources = conformance_resources
-          conformance2_resources = Hash[conf2.rest[0].resource.map{ |r| [r.fhirType, r.interaction.map(&:code)]}] if conf2
-          fhirTypes = conformance1_resources.keys & conformance2_resources.keys
-          conformance_resources = {}
-          fhirTypes.each do |fhirType|
-            conformance_resources[fhirType] = (conformance1_resources[fhirType] || []) & (conformance2_resources[fhirType] || [])
-          end
-        end
-        metadata ||= SuiteEngine.generate_metadata
-        fields = BaseTest::JSON_FIELDS - ['tests']
-        tests.each do |test|
-          test_file = Crucible::Tests.const_get(test).new(nil)
-          next unless test_file.multiserver == multiserver
-          #if t can set class
-          if test_file.respond_to? 'resource_class='
-            @fhir_classes.each do |klass|
-              if !klass.included_modules.find_index(FHIR::Resource).nil?
-                test_file.resource_class = klass
-                list["#{test}#{klass.name.demodulize}"] = {}
-                list["#{test}#{klass.name.demodulize}"]['resource_class'] = klass
-                fields.each {|field| list["#{test}#{klass.name.demodulize}"][field] = test_file.send(field)}
-                list["#{test}#{klass.name.demodulize}"]['tests'] = test_file.tests_by_conformance(conformance_resources, metadata["#{test}#{klass.name.demodulize}"])
-              end
-            end
-          else
-            list[test] = {}
-            fields.each {|field| list[test][field] = test_file.send(field)}
-            list[test]['tests'] = test_file.tests_by_conformance(conformance_resources, metadata[test])
-          end
-        end
-        list
-      end
-
       def self.list_all(metadata=false)
         list = {}
         # FIXME: Organize defaults between instance & class methods

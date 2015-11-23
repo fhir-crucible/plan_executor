@@ -111,32 +111,28 @@ namespace :crucible do
 
   def output_results(results, metadata_only=false)
     require 'turn'
-    results.each do |result|
-
-      result.keys.each do |suite_key|
-        puts suite_key
-        result[suite_key][:tests].each do |test|
-          puts write_result(test['status'], test[:test_method], test['message'])
-          if test['status'].upcase=='ERROR'
-            puts " "*12 + "-"*40
-            puts " "*12 + "#{test['data'].gsub("\n","\n"+" "*12)}"
-            puts " "*12 + "-"*40
-          end
-          if (metadata_only==true)
-            # warnings
-            puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if test['warnings']
-            # metadata
-            puts (test['links'].map { |w| "#{(' '*10)}Link: #{w}" }).join("\n") if test['links']
-            puts (test['requires'].map { |w| "#{(' '*10)}Requires: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['requires']
-            puts (test['validates'].map { |w| "#{(' '*10)}Validates: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['validates']
-            # data
-            puts (' '*10) + test['data'] if test['data']
-          end
+    results.keys.each do |suite_key|
+      puts suite_key
+      results[suite_key].each do |test|
+        puts write_result(test['status'], test[:test_method], test['message'])
+        if test['status'].upcase=='ERROR'
+          puts " "*12 + "-"*40
+          puts " "*12 + "#{test['data'].gsub("\n","\n"+" "*12)}"
+          puts " "*12 + "-"*40
         end
-
+        if (metadata_only==true)
+          # warnings
+          puts (test['warnings'].map { |w| "#{(' '*10)}WARNING: #{w}" }).join("\n") if test['warnings']
+          # metadata
+          puts (test['links'].map { |w| "#{(' '*10)}Link: #{w}" }).join("\n") if test['links']
+          puts (test['requires'].map { |w| "#{(' '*10)}Requires: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['requires']
+          puts (test['validates'].map { |w| "#{(' '*10)}Validates: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['validates']
+          # data
+          puts (' '*10) + test['data'] if test['data']
+        end
       end
-
     end
+    results
   end
 
   def generate_html_summary(url, results, id="summary")
@@ -145,10 +141,9 @@ namespace :crucible do
     require 'fileutils'
     totals = Hash.new(0)
     metadata = Hash.new(0)
-    results.each do |result|
-      suite = result.values.first
-      suite[:tests].map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
-      suite[:tests].map{|t| {k: t["id"], v: t["validates"], s: t["status"]}}.each_with_object(metadata) do |n, h|
+    results.values.each do |suite|
+      suite.map{|t| t["status"]}.each_with_object(totals) { |n, h| h[n] += 1}
+      suite.map{|t| {k: t["id"], v: t["validates"], s: t["status"]}}.each_with_object(metadata) do |n, h|
         n[:v].each do |val|
           resource = val[:resource].try(:titleize).try(:downcase)
           test_key = n[:k]
@@ -235,18 +230,6 @@ namespace :crucible do
     require 'benchmark'
     b = Benchmark.measure { puts Crucible::Tests::Executor.list_all }
     puts "List all tests completed in #{b.real} seconds."
-  end
-
-  desc 'list all with conformance'
-  task :list_all_w_conf, [:url1, :url2] do |t, args|
-    require 'benchmark'
-    b = Benchmark.measure {
-      client = FHIR::Client.new(args.url1)
-      client2 = FHIR::Client.new(args.url2) if !args.url2.nil?
-      executor = Crucible::Tests::Executor.new(client, client2)
-      puts executor.list_all_with_conformance(!args.url2.nil?)
-    }
-    puts "List all tests with conformance from #{args.url} completed in #{b.real} seconds."
   end
 
   desc 'execute with requirements'

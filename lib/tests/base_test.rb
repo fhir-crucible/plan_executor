@@ -7,6 +7,8 @@ module Crucible
       BASE_SPEC_LINK = 'http://hl7.org/fhir/DSTU2'
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
+      attr_accessor :tests_subset
+
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title', 'multiserver']
       STATUS = {
@@ -31,13 +33,10 @@ module Crucible
       def execute
         @client.use_format_param = false if @client
         @client2.use_format_param = false if @client2
-        [{title => {
-            test_file: title,
-            tests: execute_test_methods
-        }}]
+        {id => execute_test_methods}
       end
 
-      def execute_test_methods(test_methods=nil)
+      def execute_test_methods
         result = []
         begin
           setup if respond_to? :setup and not @metadata_only
@@ -46,7 +45,7 @@ module Crucible
         end
         prefix = if @metadata_only then 'generating metadata' else 'executing' end
         methods = tests
-        methods = tests & test_methods unless test_methods.blank?
+        methods = tests & @tests_subset unless @tests_subset.blank?
         methods.each do |test_method|
           @client.requests = [] if @client
           puts "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."

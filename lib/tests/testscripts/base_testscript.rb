@@ -102,7 +102,7 @@ module Crucible
       def collect_metadata(methods_only=false)
         @metadata_only = true
         result = execute
-        result = result.map{|r| r.values.first[:tests]}.flatten if methods_only
+        result = result.map{|r| r.values.first}.flatten if methods_only
         @metadata_only = false
         result
       end

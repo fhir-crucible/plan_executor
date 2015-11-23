@@ -43,11 +43,10 @@
     <% end %>
     </div>
 
-    <% results.each_with_index do |result, index| %>
-      <% suite_key = result.keys.first %>
-      <% suite = result.values.first %>
-      <% errored = suite[:tests].detect{|t| t["status"] == "error"} %>
-      <% failed = suite[:tests].detect{|t| t["status"] == "fail"} || suite[:tests].detect{|t| t["status"] == "pass"}.nil? %>
+    <% results.keys.each_with_index do |suite_key, index| %>
+      <% suite = results[suite_key] %>
+      <% errored = suite.detect{|t| t["status"] == "error"} %>
+      <% failed = suite.detect{|t| t["status"] == "fail"} || suite.detect{|t| t["status"] == "pass"}.nil? %>
       <div class="panel panel-<%= if errored then "danger" elsif failed then "warning" else "success" end %>">
         <div class="panel-heading" role="tab" id="heading<%= index %>">
           <h3 class="panel-title">
@@ -59,7 +58,7 @@
         <div id="collapse<%= index %>" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading<%= index %>">
           <div class="panel-body">
 
-            <% suite[:tests].each do |test| %>
+            <% suite.each do |test| %>
               <% status_map = {"pass" => "success", "fail" => "warning", "error" => "danger", "skip" => "info"} %>
               <div class="panel panel-<%= status_map[test["status"]]%>">
                 <div class="panel-heading">

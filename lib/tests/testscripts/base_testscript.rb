@@ -161,7 +161,7 @@ module Crucible
           else
             resource_type = operation.resource
             resource_id = operation.params
-            @last_response = @client.read "FHIR::#{resource_type}", id_from_path(resource_id)
+            @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
             
           end
         when 'vread'

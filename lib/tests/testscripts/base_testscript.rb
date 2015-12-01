@@ -1,42 +1,33 @@
 module Crucible
   module Tests
     class BaseTestScript < BaseTest
+      
+      CODE_MAP = {
+        'okay' => 200,
+        'created' => 201,
+        'noContent' => 204,
+        'notModified' => 304,
+        'bad' => 400,
+        'forbidden' => 403,
+        'notFound' => 404,
+        'methodNotAllowed' => 405,
+        'conflict' => 409,
+        'gone' => 410,
+        'preconditionFailed' => 412,
+        'unprocessable' => 422
+      }
 
-      ASSERTION_MAP = {
-        # equals	expected (value1 or xpath expression2) actual (value1 or xpath expression2)	Asserts that "expected" is equal to "actual".
-        "equals" => :assert_equal,
-        # fixture_equals expected_fixture_id, expected_xpath, actual_fixture_id, actual_xpath Asserts that "expected_xpath" in "expected_fixture_id" is equal to "actual_xpath" in "actual_fixture_id"
-        "fixture_equals" => :assert_equal,
-        # fixture_compare fixture_id, fixture_xpath, actual (value or xpath expression) Asserts that "fixture_xpath" in "fixture_id" is equal to "actual"
-        "fixture_compare" => :assert_equal,
-        # response_code	code (numeric HTTP response code)	Asserts that the response code equals "code".
-        "response_code" => :assert_response_code,
-        # response_okay	N/A	Asserts that the response code is in the set (200, 201).
-        "response_okay" => :assert_response_ok,
-        # response_created N/A Asserts that the response code is 201.
-        "response_created" => :assert_response_created,
-        # response_gone N/A Asserts that the response code is 410.
-        "response_gone" => :assert_response_gone,
-        # response_not_found	N/A	Asserts that the response code is 404.
-        "response_not_found" => :assert_response_not_found,
-        # response_bad	N/A	Asserts that the response code is 400.
-        "response_bad" => :assert_response_bad,
-        # navigation_links	Bundle	Asserts that the Bundle contains first, last, and next links.
-        "navigation_links" => :assert_nagivation_links,
-        # resource_type	resourceType (string)	Asserts that the response contained a FHIR Resource of the given "resourceType".
-        "resource_type" => :assert_resource_type,
-        # valid_content_type	N/A	Asserts that the response contains a "content-type" is either "application/xml+fhir" or "application/json+fhir" and that "charset" is specified as "UTF-8"
-        "valid_content_type" => :assert_valid_resource_content_type_present,
-        # valid_content_location	N/A	Asserts that the response contains a valid "content-location" header.
-        "valid_content_location" => :assert_valid_content_location_present,
-        # valid_last_modified N/A Asserts that the response contains a valid "last-modified" header.
-        "valid_last_modified" => :assert_last_modified_present,
-        # bundle_response N/A Asserts that the response is a bundle.
-        "bundle_response" => :assert_bundle_response,
-        # bundle_entry_count count (number of entries expected) Asserts that the number of entries matches expectations.
-        "bundle_entry_count" => :assert_bundle_entry_count,
-        # minimum fixture_id Assert that the last response's resource contains at least the components in "fixture_id"
-        "minimum" => :assert_minimum
+      OPERATOR_MAP = {
+        'equals' => :equals,
+        'notEquals' => :notEquals,
+        'in' => :in,
+        'notIn' => :notIn,
+        'greaterThan' => :greaterThan,
+        'lessThan' => :lessThan,
+        'empty' => :empty,
+        'notEmpty' => :notEmpty,
+        'contains' => :contains,
+        'notContains' => :notContains,
       }
 
       def initialize(testscript, client, client2=nil)
@@ -89,11 +80,8 @@ module Crucible
       def load_fixtures
         @fixtures = {}
         @testscript.fixture.each do |fixture|
-          if !fixture.uri.nil?
-            @fixtures[fixture.xmlId] = Generator::Resources.new.load_fixture(fixture.uri)
-          else
-            @fixtures[fixture.xmlId] = fixture.resource
-          end
+          @fixtures[fixture.xmlId] = get_reference(fixture.resource.reference)
+          @fixtures[fixture.xmlId].xmlId = nil unless @fixtures[fixture.xmlId].nil? #fixture resources cannot have an ID
           @autocreate << fixture.xmlId if fixture.autocreate
           @autodelete << fixture.xmlId if fixture.autodelete
         end
@@ -102,7 +90,7 @@ module Crucible
       def collect_metadata(methods_only=false)
         @metadata_only = true
         result = execute
-        result = result.map{|r| r.values.first}.flatten if methods_only
+        result = result.values.first if methods_only
         @metadata_only = false
         result
       end
@@ -111,23 +99,22 @@ module Crucible
         result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
         @last_response = nil # clear out any responses from previous tests
         begin
-          test.operation.each do |op|
-            @negated = false # clear out any negations from previous tests
-            @warned = false # clear out any warnings from previous tests
-            execute_operation op
+          test.action.each do |action|
+            perform_action action
           end unless @setup_failed || @metadata_only
-          # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
         rescue AssertionException => e
           result.update(STATUS[:fail], e.message, e.data)
         rescue => e
           result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
         end
         result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
-        if !test.metadata.nil?
-          result.requires = test.metadata.requires.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
-          result.validates = test.metadata.validates.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
-          result.links = test.metadata.link.map(&:url) if !test.metadata.link.empty?
-          result.warnings = @warnings unless @warnings.empty?
+        result.warnings = @warnings unless @warnings.empty?
+        unless test.metadata.nil?
+          #todo add in requires and validates
+          # result.requires = test.metadata.requires.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
+          # result.validates = test.metadata.validates.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
+          # result.links = test.metadata.link.map(&:url) if !test.metadata.link.empty?
+          result.links = test.metadata.capability.map(&:link).flatten
         end
         result
       end
@@ -140,8 +127,8 @@ module Crucible
             @last_response = @client.create @fixtures[fixture_id]
             @id_map[fixture_id] = @last_response.id
           end unless @client.nil?
-          @testscript.setup.operation.each do |op|
-            execute_operation op
+          @testscript.setup.action.each do |action|
+            perform_action action
           end unless @testscript.setup.blank?
         rescue AssertionException
           @setup_failed = true
@@ -150,10 +137,8 @@ module Crucible
 
       def teardown
         return if @testscript.teardown.blank? && @autodelete.empty?
-        @testscript.teardown.operation.each do |op|
-          # Assertions in teardown have no effect
-          next if op.fhirType.start_with?('assertion')
-          execute_operation op
+        @testscript.teardown.action.each do |action|
+          execute_operation action.operation unless action.operation.nil?
         end unless @testscript.teardown.blank?
         @autodelete.each do |fixture_id|
           @last_response = @client.destroy @fixtures[fixture_id].class, @id_map[fixture_id]
@@ -161,51 +146,98 @@ module Crucible
         end unless @client.nil?
       end
 
+      def perform_action(action)
+        execute_operation action.operation unless action.operation.nil?
+        handle_assertion action.assert unless action.assert.nil?
+      end
+
       def execute_operation(operation)
         return if @client.nil?
-        case operation.fhirType
-        when 'create'
-          @last_response = @client.create @fixtures[operation.source]
-          @id_map[operation.source] = @last_response.id
-        when 'update'
-          target_id = @id_map[operation.target]
-          fixture = @fixtures[operation.source]
-          @last_response = @client.update fixture, target_id
+        requestHeaders = Hash[operation.requestHeader.all.map{|u| [u.field, u.value]}] #Client needs upgrade to support
+        case operation.fhirType.code
         when 'read'
-          if !operation.target.nil?
-            @last_response = @client.read @fixtures[operation.target].class, @id_map[operation.target]
+          if !operation.targetId.nil?
+            @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
           else
-            resource_type = operation.parameter.try(:first)
-            resource_id = operation.parameter.try(:second)
-            @last_response = @client.read "FHIR::#{resource_type}", resource_id
+            resource_type = operation.resource
+            resource_id = operation.params
+            @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
+            
           end
-        when 'delete'
-          @last_response = @client.destroy @fixtures[operation.target].class, @id_map[operation.target]
-          @id_map.delete(operation.target)
+        when 'vread'
+          raise 'vread not implemented'
+        when 'search'
+          params = extract_operation_parameters(operation)
+          @last_response = @client.search "FHIR::#{operation.resource}".constantize, search: {parameters: params}
         when 'history'
-          target_id = @id_map[operation.target]
-          fixture = @fixtures[operation.target]
+          target_id = @id_map[operation.targetId]
+          fixture = @fixtures[operation.targetId]
           @last_response = @client.resource_instance_history(fixture.class,target_id)
+        when 'create'
+          @last_response = @client.create @fixtures[operation.sourceId]
+          @id_map[operation.sourceId] = @last_response.id
+        when 'update'
+          target_id = @id_map[operation.targetId]
+          fixture = @fixtures[operation.sourceId]
+          @last_response = @client.update fixture, target_id
+        when 'transaction'
+          raise 'transaction not implemented'
+        when 'conformance'
+          raise 'conformance not implemented'
+        when 'delete'
+          if operation.targetId.nil?
+            #todo handle conditional delete see Search
+          else
+            @last_response = @client.destroy @fixtures[operation.targetId].class, @id_map[operation.targetId]
+            @id_map.delete(operation.targetId)
+          end
         when '$expand'
-          @last_response = @client.value_set_expansion( extract_operation_parameters(operation) )
+          raise '$expand not supported'
+          # @last_response = @client.value_set_expansion( extract_operation_parameters(operation) )
         when '$validate'
-          @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
-        when 'assertion'
-          handle_assertion(operation)
-        when 'assertion_false'
-          @negated = true
-          handle_assertion(operation)
-        when 'assertion_warning'
-          @warned = true
-          handle_assertion(operation)
+          raise '$validate not supported'
+          # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
         else
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
         handle_response(operation)
       end
 
-      def handle_assertion(operation)
-        assertion = operation.parameter.first
+      def handle_assertion(assertion)
+
+        operator = :equals
+        operator = OPERATOR_MAP[assertion.operator] unless assertion.operator.nil?
+
+        warningOnly = false
+        warningOnly = assertion.warningOnly unless assertion.warningOnly.nil?
+
+        case
+        when !assertion.contentType.nil?
+          call_assertion(:assert_resource_content_type, warningOnly, @last_response, assertion.contentType)
+        when !assertion.headerField.nil?
+          #todo: handle abstract operators
+          call_assertion(:assert_last_modified_present, warningOnly, @last_response) if operator == :notEmpty && assertion.headerField.downcase == 'last-modified'
+        when !assertion.minimumId.nil?
+          call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
+          #todo
+        when !assertion.navigationLinks.nil?
+          #todo
+        when !assertion.path.nil?
+          #todo
+        when !assertion.resource.nil?
+          call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
+        when !assertion.responseCode.nil?
+          call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
+        when !assertion.response.nil?
+          call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
+        when !assertion.validateProfileId
+          #todo
+        end
+
+      end
+
+      def handle_assertion_old(assertion)
+        # assertion = operation.parameter.first
         response = @response_map[operation.responseId] || @last_response
         if assertion.start_with? "code"
           code = assertion.split(":").last
@@ -245,27 +277,28 @@ module Crucible
         end
       end
 
-      def call_assertion(method, value, params)
-        if @warned
-          warning { method.call(value, *params) }
+      def call_assertion(method, warned, *params)
+        if warned
+          warning { self.method(method).call(*params) }
         else
-          method.call(value, *params)
+          self.method(method).call(*params)
         end
       end
 
       def extract_operation_parameters(operation)
-        options = {
-          :id => @id_map[operation.target]
-        }
-        operation.parameter.each do |param|
+        parameters = {}
+        return parameters if operation.params.nil?
+        params = operation.params
+        params = operation.params[1..-1] if operation.params.length > 0 && operation.params[0] == "?"
+        params.split("&").each do |param|
           key, value = param.split("=")
-          options[key.to_sym] = value
-        end unless operation.parameter.blank?
-        options
+          parameters[key.to_sym] = value
+        end unless operation.params.blank?
+        parameters
       end
 
       def handle_response(operation)
-        if !operation.responseId.blank? && !operation.fhirType.start_with?('assertion') && operation.fhirType != 'delete'
+        if !operation.responseId.blank? && operation.fhirType.code != 'delete'
           log "Overwriting response #{operation.responseId}..." if @response_map.keys.include?(operation.responseId)
           log "Storing response #{operation.responseId}..."
           @response_map[operation.responseId] = @last_response
@@ -346,17 +379,15 @@ module Crucible
         resource_element.first.try(:value)
       end
 
-      #
-      # def execute_test_method(test_method)
-      #   test_item = @testscript.test.select {|t| "#{t.xmlId} #{t.name} test".downcase.tr(' ', '_').to_sym == test_method}.first
-      #   result = Crucible::Tests::TestResult.new(test_item.xmlId, test_item.name, Crucible::Tests::BaseTest::STATUS[:skip], '','')
-      #   # result.warnings = @warnings  unless @warnings.empty?
-      #
-      #   result.id = self.object_id.to_s
-      #   result.code = test_item.to_xml
-      #
-      #   result.to_hash.merge!({:test_method => test_method})
-      # end
+      def id_from_path(path)
+        path[1..-1]
+      end
+
+      def get_reference(url)
+        return nil unless url.start_with?('#') #todo accept more than just contained resources
+        contained_id = url[1..-1]
+        @testscript.contained.select{|r| r.xmlId == contained_id}.first
+      end
 
     end
   end

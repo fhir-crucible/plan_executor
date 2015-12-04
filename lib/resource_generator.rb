@@ -238,6 +238,14 @@ module Crucible
         quantity
       end
 
+      def self.minimal_animal
+        animal = FHIR::Patient::AnimalComponent.new
+        animal.species = minimal_codeableconcept('http://hl7.org/fhir/animal-species','canislf') # dog
+        animal.breed = minimal_codeableconcept('http://hl7.org/fhir/animal-breed','gret') # golden retriever
+        animal.genderStatus = minimal_codeableconcept('http://hl7.org/fhir/animal-genderstatus','intact') # intact
+        animal
+      end
+
     end
   end
 end

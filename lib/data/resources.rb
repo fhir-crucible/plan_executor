@@ -123,6 +123,12 @@ module Crucible
         FHIR::Slot.from_xml File.read(File.join(fixture_path, 'scheduling', 'slot-simple.xml'))
       end
 
+      # ------------------------------ DAF TESTS ------------------------------
+
+      def daf_conformance
+        FHIR::Conformance.from_xml File.read(File.join(fixture_path, 'daf', 'conformance-daf-query-responder.xml'))
+      end
+
       def load_fixture(path)
         FHIR::Resource.from_contents(File.read(File.join(fixture_path, path)))
       end

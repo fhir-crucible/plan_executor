@@ -1,7 +1,22 @@
 module Crucible
   module Tests
     class BaseTestScript < BaseTest
+
+      # variables todo:
+      # Implement in:
+      # - operation.params
+      # - operation.requestHeader.value
+      # - operation.url
+      #
+      # doing next: paths.  see xpath stuff.
+      #
+      # do accept
       
+      FORMAT_MAP = {
+        'json' => FHIR::Formats::ResourceFormat::RESOURCE_JSON,
+        'xml' => FHIR::Formats::ResourceFormat::RESOURCE_XML
+      }
+
       CODE_MAP = {
         'okay' => 200,
         'created' => 201,
@@ -15,6 +30,10 @@ module Crucible
         'gone' => 410,
         'preconditionFailed' => 412,
         'unprocessable' => 422
+      }
+
+      HEADERFIELD_MAP = {
+        'Location' => 'content-location'
       }
 
       OPERATOR_MAP = {
@@ -153,22 +172,32 @@ module Crucible
 
       def execute_operation(operation)
         return if @client.nil?
+        #requestheaders can support variables
         requestHeaders = Hash[operation.requestHeader.all.map{|u| [u.field, u.value]}] #Client needs upgrade to support
+        format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+        format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
+        format = FORMAT_MAP[operation.accept] unless operation.accept.nil?
         case operation.fhirType.code
         when 'read'
           if !operation.targetId.nil?
             @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
           else
-            resource_type = operation.resource
-            resource_id = operation.params
+            resource_type = replace_variables(operation.resource)
+            # can use variables
+            resource_id = replace_variables(operation.params)
             @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
-            
           end
         when 'vread'
           raise 'vread not implemented'
         when 'search'
-          params = extract_operation_parameters(operation)
-          @last_response = @client.search "FHIR::#{operation.resource}".constantize, search: {parameters: params}
+          if operation.url.nil?
+            params = extract_operation_parameters(operation)
+            @last_response = @client.search "FHIR::#{operation.resource}".constantize, {search: {parameters: params}}, format
+          else
+            url = replace_variables(operation.url)
+            last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url
+          end
+
         when 'history'
           target_id = @id_map[operation.targetId]
           fixture = @fixtures[operation.targetId]
@@ -285,6 +314,28 @@ module Crucible
         end
       end
 
+      def replace_variables(input)
+        binding.pry
+        @testscript.variable.each do |var|
+          variable_source = @response_map[var.sourceId]
+          if !var.headerField.nil?
+            variable_value = variable_source.response[:headers][HEADERFIELD_MAP[var.headerField]]
+            input.sub!("${" + var.name + "}", variable_value)
+          elsif !var.path.nil?
+
+            if is_xpath(var.path)
+              resource_xml = variable_source.try(:resource).try(:to_xml) || variable_source.body
+              extracted_value = extract_xpath_value(resource_xml, var.path)
+              input = input.sub("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+            end unless variable_source.nil? or !input.include? "${" + var.name + "}"
+
+          end
+        end
+
+        input
+
+      end
+
       def extract_operation_parameters(operation)
         parameters = {}
         return parameters if operation.params.nil?
@@ -370,12 +421,13 @@ module Crucible
         value.start_with?("fhir:") && value.include?("@")
       end
 
-      def extract_xpath_value(method, resource_xml, resource_xpath)
+      def extract_xpath_value(resource_xml, resource_xpath)
         resource_doc = Nokogiri::XML(resource_xml)
+        binding.pry
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         resource_element = resource_doc.xpath(resource_xpath)
 
-        raise AssertionException.new("#{method} with [#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
+        raise AssertionException.new("[#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
         resource_element.first.try(:value)
       end
 

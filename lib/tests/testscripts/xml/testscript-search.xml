@@ -158,28 +158,26 @@
     
     <!--     Use the Location returned earlier to grab the resource
          to verify that Location was pointing to correct resource.     -->  
-    <!-- TODO Requires Variables
-    <action>
-      <operation>
-        <type>
-          <code value="search"/>
-        </type>
-        <accept value="json"/>
-        <responseId value="R2"/>
-        <url value="${V1}"/>
-      </operation>
-    </action>
-    <action>
-      <assert>
-        <contentType value="json"/>
-      </assert>
-    </action>
-    <action>
-      <assert>
-        <response value="okay"/>
-      </assert>
-    </action>
-    -->
+    <!-- <action> -->
+    <!--   <operation> -->
+    <!--     <type> -->
+    <!--       <code value="search"/> -->
+    <!--     </type> -->
+    <!--     <accept value="json"/> -->
+    <!--     <responseId value="R2"/> -->
+    <!--     <url value="${V1}"/> -->
+    <!--   </operation> -->
+    <!-- </action> -->
+    <!-- <action> -->
+    <!--   <assert> -->
+    <!--     <contentType value="json"/> -->
+    <!--   </assert> -->
+    <!-- </action> -->
+    <!-- <action> -->
+    <!--   <assert> -->
+    <!--     <response value="okay"/> -->
+    <!--   </assert> -->
+    <!-- </action> -->
             
     <!--     Search for the resource but this time using the birthdate 
         as a search parameter to make sure search by birthDate works     -->  
@@ -196,7 +194,7 @@
     </action>  
     <action>
       <assert>
-        <contentType value="xml"/>
+        <contentType value="json"/>
       </assert>
     </action>
     <action>
@@ -224,37 +222,37 @@
     </action>    
     
         
-    <!--     Conditional Create     -->
-    <action>
-      <operation>
-        <type>
-          <code value="create"/>
-        </type>
-        <requestHeader>
-          <field value="If-None-Exist"/>
-          <value value="Patient?given=John&amp;Doe&amp;birthdate=1974-12-31"/>
-        </requestHeader>
-        <sourceId value="F1"/>
-      </operation>
-    </action>  
-    <!--     The response code of 200 verifies that the resource 
-        already exists and did not get created     -->  
-    <action>
-      <assert>
-        <responseCode value="200"/>
-      </assert>
-    </action>      
-        
-    <!--     Conditional Delete     -->
-    <action>
-      <operation>
-        <type>
-          <code value="delete"/>
-        </type>
-        <resource value="Patient"/>
-        <params value="?given=John&amp;family=Doe&amp;birthdate=1974-12-31"/>
-      </operation>
-    </action>  
+    <!-- <!&#45;&#45;     Conditional Create     &#45;&#45;> -->
+    <!-- <action> -->
+    <!--   <operation> -->
+    <!--     <type> -->
+    <!--       <code value="create"/> -->
+    <!--     </type> -->
+    <!--     <requestHeader> -->
+    <!--       <field value="If&#45;None&#45;Exist"/> -->
+    <!--       <value value="Patient?given=John&#38;amp;Doe&#38;amp;birthdate=1974&#45;12&#45;31"/> -->
+    <!--     </requestHeader> -->
+    <!--     <sourceId value="F1"/> -->
+    <!--   </operation> -->
+    <!-- </action>   -->
+    <!-- <!&#45;&#45;     The response code of 200 verifies that the resource  -->
+    <!--     already exists and did not get created     &#45;&#45;>   -->
+    <!-- <action> -->
+    <!--   <assert> -->
+    <!--     <responseCode value="200"/> -->
+    <!--   </assert> -->
+    <!-- </action>       -->
+    <!--      -->
+    <!-- <!&#45;&#45;     Conditional Delete     &#45;&#45;> -->
+    <!-- <action> -->
+    <!--   <operation> -->
+    <!--     <type> -->
+    <!--       <code value="delete"/> -->
+    <!--     </type> -->
+    <!--     <resource value="Patient"/> -->
+    <!--     <params value="?given=John&#38;amp;family=Doe&#38;amp;birthdate=1974&#45;12&#45;31"/> -->
+    <!--   </operation> -->
+    <!-- </action>   -->
     
     <!--     Search again and make sure the patient has been deleted.
           This time perform read by id using variable     -->

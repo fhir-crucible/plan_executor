@@ -79,6 +79,17 @@ module Crucible
         end
       end
 
+      def assert_resource_content_type(client_reply, content_type)
+        header = client_reply.response[:headers]['content-type']
+        response_content_type = header
+        response_content_type = header[0, header.index(';')] if !header.index(';').nil?
+
+        unless assertion_negated( "application/#{content_type}+fhir" == response_content_type )
+          raise AssertionException.new "Expected a #{content_type} content-type", response_content_type
+        end
+
+      end
+
       # Based on MIME Types defined in
       # http://hl7.org/fhir/2015May/http.html#2.1.0.6
       def assert_valid_resource_content_type_present(client_reply)
@@ -114,14 +125,14 @@ module Crucible
       end
 
       def assert_response_code(response, code)
-        unless assertion_negated( code == response.code )
+        unless assertion_negated( code.to_s == response.code.to_s )
           raise AssertionException.new "Bad response code: expected #{code}, but found #{response.code}", response.body
         end
       end
 
       def assert_resource_type(response, resource_type)
         unless assertion_negated( !response.resource.nil? && response.resource.class == resource_type )
-          raise AssertionException.new "Bad response type: expected #{resource_type}, but found #{response.resource.class}", response.body
+          raise AssertionException.new "Bad response type: expected #{resource_type}, but found #{response.resource.class}.", response.body
         end
       end
 

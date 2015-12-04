@@ -1,156 +1,173 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<TestScript xmlns="http://hl7.org/fhir" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hl7.org/fhir ../../schema/testscript.xsd">
+<TestScript xmlns="http://hl7.org/fhir">
   <id value="ReadTestScript"/>
+  <url value="http://hl7.org/fhir/TestScript/ReadTestScript"/>
   <name value="ReadTestScript"/>
+  <status value="draft"/>
   <description value="TestScript for Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests."/>
+  <contained>
+    <Conformance xmlns="http://hl7.org/fhir">
+      <id value="conf1"/>
+      <date value="2012-01-04"/>
+      <kind value="instance"/>
+      <fhirVersion value="1.0.0"/>
+      <acceptUnknown value="both"/>
+      <format value="xml"/>
+      <format value="json"/>
+      <rest>
+        <mode value="server"/>
+        <resource>
+          <type value="Patient"/>
+          <interaction>
+            <code value="read"/>
+          </interaction>
+        </resource>
+      </rest>
+    </Conformance>
+    <Patient xmlns="http://hl7.org/fhir">
+      <id value="patient1"/>
+    </Patient>
+  </contained>
+  <metadata>
+    <capability>
+      <required value="true"/>
+      <validated value="true"/>
+      <description value="Patient Create, Read, Update, and Delete Operations"/>
+      <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
+      <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+      <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#update"/>
+      <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
+      <conformance>
+        <reference value="#conf1"/>
+      </conformance>
+    </capability>
+  </metadata>    
   <fixture id="F1">
     <resource>
-      <?xml version="1.0" encoding="UTF-8"?>
-      <Patient xmlns="http://hl7.org/fhir">
-        <name>
-          <family value="Emerald"/>
-          <given value="Caro"/>
-        </name>
-      </Patient>
+      <reference value="#patient1"/>
+      <display value="Patient resource"/>
     </resource>
-  </fixture>
+  </fixture>  
   <setup>
-    <operation>
-      <type value="create"/>
-      <source value="F1"/>
-    </operation>
+    <action>
+      <operation>
+        <type>
+          <code value="create"/>
+        </type>
+        <sourceId value="F1"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <response value="created"/>
+      </assert>
+    </action>
   </setup>
-  <test id="R001.TS">
+  <test id="R001">
     <name value="Get Test Data Person"/>
     <description value="Result headers on normal read."/>
-    <metadata>
-      <link>
-        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
-        <description value="link to the FHIR specification"/>
-      </link>
-      <requires>
-        <type value="Patient"/>
-        <operations value="create,read,delete"/>
-      </requires>
-      <validates>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </validates>
-    </metadata>
-    <operation>
-      <type value="read"/>
-      <target value="F1"/>
-    </operation>
-    <operation>
-      <type value="assertion"/>
-      <parameter value="response_okay"/>
-    </operation>
-    <operation>
-      <type value="assertion_warning"/>
-      <parameter value="valid_content_type"/>
-    </operation>
-    <operation>
-      <type value="assertion_warning"/>
-      <parameter value="valid_last_modified"/>
-    </operation>
-    <operation>
-      <type value="assertion_warning"/>
-      <parameter value="valid_content_location"/>
-    </operation>
+    <action>
+      <operation>
+        <type>
+          <code value="read"/>
+        </type>
+        <accept value="xml"/>
+        <targetId value="F1"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <response value="okay"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <contentType value="xml"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <contentType value="json"/>
+        <warningOnly value="true"/> <!-- this should throw a warning -->
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <headerField value="Last-Modified"/>
+        <operator value="notEmpty"/>
+      </assert>
+    </action>
   </test>
-  <test id="R002.TS">
+  <test id="R002">
     <name value="Try Read Unknown Resource Type"/>
     <description value="Read unknown resource type"/>
-    <metadata>
-      <link>
-        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
-        <description value="link to the FHIR specification"/>
-      </link>
-      <link>
-        <url value="http://www.hl7.org/FHIR/2015May/http.html#update"/>
-        <description value="link to the FHIR specification"/>
-      </link>
-      <requires>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </requires>
-      <validates>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </validates>
-    </metadata>
-    <operation>
-      <type value="read"/>
-      <parameter value="thisreallywondexist"/>
-      <parameter value="1"/>
-    </operation>
-    <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_found"/>
-    </opeartion>
+    <action>
+      <operation>
+        <type>
+          <code value="read"/>
+        </type>
+        <!--   What we really want here is an illegal type, but the validation in the build process
+         won't that. 
+          But Parameters is a valid resource which doesn't have an end-point so should
+         fail.   -->
+        <resource value="Parameters"/>
+        <params value="/1"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <response value="notFound"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <responseCode value="404"/>
+      </assert>
+    </action>
   </test>
-  <test id="R003.TS">
+  <test id="R003">
     <name value="Try Read Non Existing Resource"/>
     <description value="Read non-existing resource id"/>
-    <metadata>
-      <link>
-        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
-        <description value="link to the FHIR specification"/>
-      </link>
-      <requires>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </requires>
-      <validates>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </validates>
-    </metadata>
-    <operation>
-      <type value="read"/>
-      <parameter value="Patient"/>
-      <parameter value="3141592unlikely"/>
-    </operation>
-    <operation>
-      <type value="assertion"/>
-      <parameter value="response_not_found"/>
-    </operation>
+    <action>
+      <operation>
+        <type>
+          <code value="read"/>
+        </type>
+        <resource value="Patient"/>
+        <params value="/3141592unlikely"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <response value="notFound"/>
+      </assert>
+    </action>
   </test>
-  <test id="R004.TS">
+  <test id="R004">
     <name value="Try Read Bad Formatted Resource Id"/>
     <description value="Read bad formatted resource id"/>
-    <metadata>
-      <link>
-        <url value="http://www.hl7.org/FHIR/2015May/http.html#read"/>
-        <description value="link to the FHIR specification"/>
-      </link>
-      <link>
-        <url value="http://www.hl7.org/FHIR/2015May/datatypes.html#id"/>
-        <description value="link to the FHIR specification"/>
-      </link>
-      <requires>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </requires>
-      <validates>
-        <type value="Patient"/>
-        <operations value="read"/>
-      </validates>
-    </metadata>
-    <operation>
-      <type value="read"/>
-      <parameter value="Patient"/>
-      <parameter value="ID-may-not-contain-CAPITALS"/>
-    </operation>
-    <operation>
-      <type value="assertion"/>
-      <parameter value="response_bad"/>
-    </operation>
+    <action>
+      <operation>
+        <type>
+          <code value="read"/>
+        </type>
+        <resource value="Patient"/>
+        <params value="/ID-may-not-contain-CAPITALS"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <response value="bad"/>
+      </assert>
+    </action>
   </test>
   <teardown>
-    <operation>
-      <type value="delete"/>
-      <target value="F1"/>
-    </operation>
+    <action>
+      <operation>
+        <type>
+          <code value="delete"/>
+        </type>
+        <targetId value="F1"/>
+      </operation>
+    </action>
   </teardown>
 </TestScript>

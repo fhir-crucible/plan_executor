@@ -155,7 +155,7 @@
       <assert>
         <operator value="equals"/>
         <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
-        <value value="Chalmers"/>
+        <value value="Doe"/>
       </assert>
     </action>
     <action>
@@ -163,7 +163,7 @@
         <operator value="equals"/>
         <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
         <sourceId value="F1"/>
-        <value value="Chalmers"/>
+        <value value="Doe"/>
       </assert>
     </action>
     <action>

@@ -183,7 +183,6 @@ module Crucible
             @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
           else
             resource_type = replace_variables(operation.resource)
-            # can use variables
             resource_id = replace_variables(operation.params)
             @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
           end
@@ -197,7 +196,6 @@ module Crucible
             url = replace_variables(operation.url)
             last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url
           end
-
         when 'history'
           target_id = @id_map[operation.targetId]
           fixture = @fixtures[operation.targetId]
@@ -243,29 +241,51 @@ module Crucible
         case
         when !assertion.contentType.nil?
           call_assertion(:assert_resource_content_type, warningOnly, @last_response, assertion.contentType)
+
         when !assertion.headerField.nil?
-          #todo: handle abstract operators
-          call_assertion(:assert_last_modified_present, warningOnly, @last_response) if operator == :notEmpty && assertion.headerField.downcase == 'last-modified'
+          call_assertion(:assert_operator, warningOnly, operator, replace_variables(assertion.value), @last_response.response[:headers][assertion.headerField.downcase], "Header field #{assertion.headerField}")
+
         when !assertion.minimumId.nil?
           call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
-          #todo
+
         when !assertion.navigationLinks.nil?
           #todo
+
         when !assertion.path.nil?
-          extracted_value = nil
+          actual_value = nil
           if is_xpath(assertion.path)
-            resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
-            extracted_value = extract_xpath_value(resource_xml, assertion.path)
+            resource_xml = nil
+            if assertion.sourceId.nil?
+              resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+            else
+              resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
+            end
+
+            actual_value = extract_xpath_value(resource_xml, assertion.path)
           end
-          call_assertion(:assert_operator, warningOnly, OPERATOR_MAP[assertion.operator], assertion.value, extracted_value)
+
+          expected_value = replace_variables(assertion.value)
+          unless assertion.compareToSourceId.nil?
+            resource_xml = @fixtures[assertion.compareToSourceId].try(:to_xml)
+            resource_xml = @response_map[assertion.compareToSourceId].try(:resource).try(:to_xml) || @response_map[assertion.compareToSourceId].body if resource_xml.nil?
+
+            expected_value = extract_xpath_value(resource_xml, assertion.path)
+          end
+
+          call_assertion(:assert_operator, warningOnly, operator, expected_value, actual_value)
+
         when !assertion.resource.nil?
           call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
+
         when !assertion.responseCode.nil?
           call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
+
         when !assertion.response.nil?
           call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
+
         when !assertion.validateProfileId
           #todo
+          #
         end
 
       end
@@ -320,6 +340,8 @@ module Crucible
       end
 
       def replace_variables(input)
+        return nil if input.nil?
+
         @testscript.variable.each do |var|
           variable_source = @response_map[var.sourceId]
           if !var.headerField.nil?

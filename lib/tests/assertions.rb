@@ -213,8 +213,10 @@ module Crucible
         # d2 = Nokogiri::XML('<p><a>2</a><b>3</b></p>')
         # d2.diff(d1, :removed=>true){|change, node| diffs << node.to_xml}
         # diffs.empty? # this returns a list with d2 in it...
+
         diffs = []
         fixture_doc.diff(resource_doc, :removed => true){|change, node| diffs << node.to_xml}
+        diffs.select!{|d| d.strip.length > 0}
 
         unless assertion_negated( diffs.empty? )
           raise AssertionException.new "Found #{diffs.length} difference(s) between minimum and actual resource.", diffs.to_s

@@ -58,7 +58,13 @@
       <birthDate value="1974-12-31" />
     </Patient>
     <Patient xmlns="http://hl7.org/fhir">
-      <id value="patient-min"/><name><use value="official"/><family value="Doe"/><given value="John"/></name></Patient>
+      <id value="patient-min"/>
+      <name>
+        <use value="official"/>
+        <family value="Doe"/>
+        <given value="John"/>
+      </name>
+    </Patient>
   </contained>
   <metadata>
     <capability>

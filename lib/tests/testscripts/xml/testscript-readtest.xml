@@ -6,7 +6,7 @@
   <description value="TestScript for Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests."/>
   <contained>
     <Conformance xmlns="http://hl7.org/fhir">
-      <id value="conf1"/>
+      <id value="conf-overall"/>
       <date value="2012-01-04"/>
       <kind value="instance"/>
       <fhirVersion value="1.0.0"/>
@@ -23,6 +23,29 @@
         </resource>
       </rest>
     </Conformance>
+    <Conformance xmlns="http://hl7.org/fhir">
+      <id value="conf-r001"/>
+      <date value="2012-01-04"/>
+      <kind value="instance"/>
+      <fhirVersion value="1.0.0"/>
+      <acceptUnknown value="both"/>
+      <format value="xml"/>
+      <rest>
+        <mode value="client"/>
+        <resource>
+          <type value="Patient"/>
+          <interaction>
+            <code value="read"/>
+          </interaction>
+          <interaction>
+            <code value="create"/>
+          </interaction>
+          <interaction>
+            <code value="delete"/>
+          </interaction>
+        </resource>
+      </rest>
+    </Conformance>
     <Patient xmlns="http://hl7.org/fhir">
       <id value="patient1"/>
     </Patient>
@@ -31,13 +54,12 @@
     <capability>
       <required value="true"/>
       <validated value="true"/>
-      <description value="Patient Create, Read, Update, and Delete Operations"/>
+      <description value="Patient Create, Read and Delete Operations"/>
       <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
       <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
-      <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#update"/>
       <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
       <conformance>
-        <reference value="#conf1"/>
+        <reference value="#conf-overall"/>
       </conformance>
     </capability>
   </metadata>    
@@ -65,6 +87,19 @@
   <test id="R001">
     <name value="Get Test Data Person"/>
     <description value="Result headers on normal read."/>
+    <metadata>
+      <capability>
+        <required value="true"/>
+        <validated value="true"/>
+        <description value="Patient Read, Update, and Delete Operations"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
+        <conformance>
+          <reference value="#conf-r001"/>
+        </conformance>
+      </capability>
+    </metadata>
     <action>
       <operation>
         <type>
@@ -100,6 +135,19 @@
   <test id="R002">
     <name value="Try Read Unknown Resource Type"/>
     <description value="Read unknown resource type"/>
+    <metadata>
+      <capability>
+        <required value="true"/>
+        <validated value="true"/>
+        <description value="Patient Read, Update, and Delete Operations"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
+        <conformance>
+          <reference value="#conf-r001"/>
+        </conformance>
+      </capability>
+    </metadata>
     <action>
       <operation>
         <type>
@@ -127,6 +175,19 @@
   <test id="R003">
     <name value="Try Read Non Existing Resource"/>
     <description value="Read non-existing resource id"/>
+    <metadata>
+      <capability>
+        <required value="true"/>
+        <validated value="true"/>
+        <description value="Patient Read, Update, and Delete Operations"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
+        <conformance>
+          <reference value="#conf-r001"/>
+        </conformance>
+      </capability>
+    </metadata>
     <action>
       <operation>
         <type>
@@ -145,6 +206,19 @@
   <test id="R004">
     <name value="Try Read Bad Formatted Resource Id"/>
     <description value="Read bad formatted resource id"/>
+    <metadata>
+      <capability>
+        <required value="true"/>
+        <validated value="true"/>
+        <description value="Patient Read, Update, and Delete Operations"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
+        <conformance>
+          <reference value="#conf-r001"/>
+        </conformance>
+      </capability>
+    </metadata>
     <action>
       <operation>
         <type>

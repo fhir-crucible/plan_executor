@@ -129,10 +129,17 @@ module Crucible
         result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
         result.warnings = @warnings unless @warnings.empty?
         unless test.metadata.nil?
-          #todo add in requires and validates
-          # result.requires = test.metadata.requires.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
-          # result.validates = test.metadata.validates.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
-          # result.links = test.metadata.link.map(&:url) if !test.metadata.link.empty?
+          result.requires = []
+          result.validates = []
+          conformances = test.metadata.capability.map(&:conformance).map{|c| get_reference(c.reference)}
+          conformances.each do |conf|
+            conf.rest.each do |rest|
+              validates = rest.resource.map{|resource| { resource: resource.fhirType, methods: resource.interaction.map(&:code)}}
+              result.requires.concat(validates)
+              result.validates.concat(validates) # should this come from elsewhere?
+            end
+          end
+
           result.links = test.metadata.capability.map(&:link).flatten
         end
         result

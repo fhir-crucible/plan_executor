@@ -252,7 +252,12 @@ module Crucible
         when !assertion.navigationLinks.nil?
           #todo
         when !assertion.path.nil?
-          #todo
+          extracted_value = nil
+          if is_xpath(assertion.path)
+            resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+            extracted_value = extract_xpath_value(resource_xml, assertion.path)
+          end
+          call_assertion(:assert_operator, warningOnly, OPERATOR_MAP[assertion.operator], assertion.value, extracted_value)
         when !assertion.resource.nil?
           call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
         when !assertion.responseCode.nil?
@@ -315,7 +320,6 @@ module Crucible
       end
 
       def replace_variables(input)
-        binding.pry
         @testscript.variable.each do |var|
           variable_source = @response_map[var.sourceId]
           if !var.headerField.nil?
@@ -423,7 +427,6 @@ module Crucible
 
       def extract_xpath_value(resource_xml, resource_xpath)
         resource_doc = Nokogiri::XML(resource_xml)
-        binding.pry
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         resource_element = resource_doc.xpath(resource_xpath)
 

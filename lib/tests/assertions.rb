@@ -15,6 +15,65 @@ module Crucible
         end
       end
 
+      def assert_operator(operator, expected, actual, message="", data="")
+        case operator
+        when :equals
+          unless assertion_negated( expected == actual )
+            message += " Expected: #{expected}, but found: #{actual}."
+            raise AssertionException.new message, data
+          end
+        when :notEquals
+          unless assertion_negated( expected != actual )
+            message += " Expected not: #{expected}, but found: #{actual}."
+            raise AssertionException.new message, data
+          end
+        when :in
+          unless assertion_negated(expected.split(",").include?(actual))
+            message += " Expected #{actual} to be in #{expected}."
+            raise AssertionException.new message, data
+          end
+        when :notIn
+          unless assertion_negated(!expected.split(",").include?(actual))
+            message += " Expected #{actual} to not be in: #{expected}."
+            raise AssertionException.new message, data
+          end
+        when :greaterThan
+          unless assertion_negated(actual > expected)
+            message += " Expected #{actual} to be greater than #{expected}."
+            raise AssertionException.new message, data
+          end
+        when :lessThan
+          unless assertion_negated(actual < expected)
+            message += " Expected #{actual} to be greater than #{expected}."
+            raise AssertionException.new message, data
+          end
+        when :empty
+          unless assertion_negated(actual.nil? || actual.length == 0)
+            message += " Expected #{actual} to be empty."
+            raise AssertionException.new message, data
+          end
+        when :notEmpty
+          unless assertion_negated(!actual.nil? && actual.length > 0)
+            message += " Expected #{actual} to not be empty."
+            raise AssertionException.new message, data
+          end
+        when :contains
+          unless assertion_negated(actual.include?(expected))
+            message += " Expected #{actual} to contain #{actual}."
+            raise AssertionException.new message, data
+          end
+        when :notContains
+          unless assertion_negated(!actual.include?(expected))
+            message += " Expected #{actual} to not contain #{actual}."
+            raise AssertionException.new message, data
+          end
+        else
+          message += " Invalid test; unknown operator: #{operator}."
+          raise AssertionExection.new message, data
+        end
+
+      end
+
       def assert_response_ok(response, error_message="")
         unless assertion_negated( [200, 201].include?(response.code) )
           raise AssertionException.new "Bad response code: expected 200, 201, but found #{response.code}.#{" " + error_message}", response.body

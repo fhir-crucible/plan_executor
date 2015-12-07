@@ -8,9 +8,10 @@ module Crucible
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
       attr_accessor :tests_subset
+      attr_accessor :tags
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
-      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver']
+      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags']
       STATUS = {
         pass: 'pass',
         fail: 'fail',
@@ -24,6 +25,7 @@ module Crucible
         @client2 = client2
         @client.monitor_requests if @client
         @client2.monitor_requests if @client2
+        @tags ||= []
       end
 
       def multiserver

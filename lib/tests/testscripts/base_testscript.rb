@@ -2,15 +2,12 @@ module Crucible
   module Tests
     class BaseTestScript < BaseTest
 
-      # variables todo:
-      # Implement in:
-      # - operation.params
-      # - operation.requestHeader.value
-      # - operation.url
-      #
-      # doing next: paths.  see xpath stuff.
-      #
-      # do accept
+      # TODO: 0 = done; 1 = one todo; etc.
+      # [0] Read Test
+      # [1] Example Test
+      # [0] History Test
+      # [6] Search Test
+      # [0] Update Test
       
       FORMAT_MAP = {
         'json' => FHIR::Formats::ResourceFormat::RESOURCE_JSON,
@@ -257,7 +254,7 @@ module Crucible
           call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
 
         when !assertion.navigationLinks.nil?
-          #todo
+          call_assertion(:assert_navigation_links, warningOnly, @last_response.resource)
 
         when !assertion.path.nil?
           actual_value = nil
@@ -267,6 +264,7 @@ module Crucible
               resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
             else
               resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
+              resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
             end
 
             actual_value = extract_xpath_value(resource_xml, assertion.path)
@@ -359,7 +357,8 @@ module Crucible
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         resource_element = resource_doc.xpath(resource_xpath)
 
-        raise AssertionException.new("[#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
+        # This doesn't work on warningOnly; consider putting back in place
+        # raise AssertionException.new("[#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
         resource_element.first.try(:value)
       end
 

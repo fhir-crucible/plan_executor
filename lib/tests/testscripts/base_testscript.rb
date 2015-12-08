@@ -117,6 +117,7 @@ module Crucible
       def process_test(test)
         result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
         @last_response = nil # clear out any responses from previous tests
+        @warnings = [] # clear out any previous warnings
         begin
           test.action.each do |action|
             perform_action action

@@ -298,47 +298,6 @@ module Crucible
 
       end
 
-      def handle_assertion_old(assertion)
-        # assertion = operation.parameter.first
-        response = @response_map[operation.responseId] || @last_response
-        if assertion.start_with? "code"
-          code = assertion.split(":").last
-          assertion = assertion.split(":").first
-        end
-        if self.methods.include?(ASSERTION_MAP[assertion])
-          method = self.method(ASSERTION_MAP[assertion])
-          log "ASSERTING: #{operation.fhirType} - #{assertion}"
-          case assertion
-          when "code"
-            call_assertion(method, response, [code])
-          when "resource_type"
-            resource_type = "FHIR::#{operation.parameter[1]}".constantize
-            call_assertion(method, response, [resource_type])
-          when "response_code"
-            code = operation.parameter[1]
-            call_assertion(method, response, [code.to_i])
-          when "equals"
-            expected, actual = handle_equals(operation, response, method)
-            call_assertion(method, expected, [actual])
-          when "fixture_equals"
-            expected, actual = handle_fixture_equals(operation, response, method)
-            call_assertion(method, expected, [actual])
-          when "fixture_compare"
-            expected, actual = handle_fixture_compare(operation, response, method)
-            call_assertion(method, expected, [actual])
-          when "minimum"
-            fixture_id = operation.parameter[1]
-            fixture = @fixtures[fixture_id] || @response_map[fixture_id].try(:resource)
-            call_assertion(method, response, [fixture])
-          else
-            params = operation.parameter[1..-1]
-            call_assertion(method, response, params)
-          end
-        else
-          raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
-        end
-      end
-
       def call_assertion(method, warned, *params)
         if warned
           warning { self.method(method).call(*params) }
@@ -389,66 +348,6 @@ module Crucible
           @response_map[operation.responseId] = @last_response
         end
       end
-
-      def handle_equals(operation, response, method)
-        raise "#{method} expects two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
-        expected, actual = operation.parameter[1..2]
-        resource_xml = response.try(:resource).try(:to_xml) || response.body
-
-        if is_xpath(expected)
-          expected = extract_xpath_value(method, resource_xml, expected)
-        end
-        if is_xpath(actual)
-          actual = extract_xpath_value(method, resource_xml, actual)
-        end
-
-        return expected, actual
-      end
-
-      def handle_fixture_equals(operation, response, method)
-        # fixture_equals(fixture-id, fixture-xpath, actual)
-
-        fixture_id, fixture_xpath, actual = operation.parameter[1..3]
-        raise "#{method} expects a fixture_id as the second operation parameter" unless !fixture_id.blank?
-        raise "#{fixture_id} does not exist" unless ( @fixtures.keys.include?(fixture_id) || @response_map.keys.include?(fixture_id) )
-        raise "#{method} expects a fixture_xpath as the third operation parameter" unless !fixture_xpath.blank?
-        raise "#{method} expects an actual value as the fourth operation parameter" unless !actual.blank?
-        raise "#{method} expects fixture_xpath to be a valid xpath" unless is_xpath(fixture_xpath)
-
-        fixture = @fixtures[fixture_id] || @response_map[fixture_id].try(:resource)
-        expected = extract_xpath_value(method, fixture.try(:to_xml), fixture_xpath)
-
-        if is_xpath(actual)
-          response_xml = response.resource.try(:to_xml) || response.body
-          actual = extract_xpath_value(method, response_xml, actual)
-        end
-
-        return expected, actual
-      end
-
-      def handle_fixture_compare(operation, response, method)
-        # fixture_compare(expected_fixture_id, expected_xpath, actual_fixture, actual_xpath)
-
-        expected_fixture_id, expected_xpath, actual_fixture_id, actual_xpath = operation.parameter[1..4]
-        raise "#{method} expects expected_fixture_id as the operation parameter" unless !expected_fixture_id.blank?
-        raise "#{expected_fixture_id} does not exist" unless ( @fixtures.keys.include?(expected_fixture_id) || @response_map.keys.include?(expected_fixture_id) )
-        raise "#{method} expects expected_xpath as the operation parameter" unless !expected_xpath.blank?
-        raise "#{method} expects actual_fixture_id as the operation parameter" unless !actual_fixture_id.blank?
-        raise "#{actual_fixture_id} does not exist" unless ( @fixtures.keys.include?(actual_fixture_id) || @response_map.keys.include?(actual_fixture_id) )
-        raise "#{method} expects actual_xpath as the operation parameter" unless !actual_xpath.blank?
-
-        expected_fixture = @fixtures[expected_fixture_id] || @response_map[expected_fixture_id].try(:resource)
-        actual_fixture = @fixtures[actual_fixture_id] || @response_map[actual_fixture_id].try(:resource)
-
-        raise "expected: #{expected_xpath} is not an xpath" unless is_xpath(expected_xpath)
-        raise "actual: #{actual_xpath} is not an xpath" unless is_xpath(actual_xpath)
-        expected = extract_xpath_value(method, expected_fixture.try(:to_xml), expected_xpath)
-        actual = extract_xpath_value(method, actual_fixture.try(:to_xml), actual_xpath)
-
-        return expected, actual
-      end
-
-      private
 
       # Crude method of detecting xpath expressions
       def is_xpath(value)

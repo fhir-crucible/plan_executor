@@ -18,7 +18,16 @@
         <resource>
           <type value="Patient"/>
           <interaction>
-            <code value="read"/>
+            <code value="create"/>
+          </interaction>
+          <interaction>
+            <code value="update"/>
+          </interaction>
+          <interaction>
+            <code value="history"/>
+          </interaction>
+          <interaction>
+            <code value="delete"/>
           </interaction>
         </resource>
       </rest>
@@ -26,17 +35,17 @@
     <Patient xmlns="http://hl7.org/fhir">
       <id value="patient-before"/>
       <name>
-          <use value="official"/>
-          <family value="Chalmers"/>
-          <given value="Peter"/>
+        <use value="official"/>
+        <family value="Chalmers"/>
+        <given value="Peter"/>
       </name>
     </Patient>
     <Patient xmlns="http://hl7.org/fhir">
       <id value="patient-after"/>
       <name>
-          <use value="official"/>
-          <family value="Chalmers"/>
-          <given value="NotPeter"/>
+        <use value="official"/>
+        <family value="Chalmers"/>
+        <given value="NotPeter"/>
       </name>
     </Patient>
   </contained>
@@ -91,7 +100,7 @@
         <description value="Patient History Operation"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#history"/>
         <conformance>
-          <reference value="Conformance/example"/>
+          <reference value="#conf1"/>
         </conformance>
       </capability>
     </metadata>  

@@ -126,19 +126,18 @@ module Crucible
         end
         result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
         result.warnings = @warnings unless @warnings.empty?
+        result.requires = []
+        result.validates = []
         unless test.metadata.nil?
-          result.requires = []
-          result.validates = []
-          conformances = test.metadata.capability.map(&:conformance).map{|c| get_reference(c.reference)}
-          conformances.each do |conf|
+          test.metadata.capability.each do |capability|
+            conf = get_reference(capability.conformance.reference)
             conf.rest.each do |rest|
-              validates = rest.resource.map{|resource| { resource: resource.fhirType, methods: resource.interaction.map(&:code)}}
-              result.requires.concat(validates)
-              result.validates.concat(validates) # should this come from elsewhere?
+              interactions = rest.resource.map{|resource| { resource: resource.fhirType, methods: resource.interaction.map(&:code)}}
+              result.requires.concat(interactions) if capability.required
+              result.validates.concat(interactions) if capability.fhirValidated
             end
           end
-
-          result.links = test.metadata.capability.map(&:link).flatten
+          result.links = test.metadata.capability.map(&:link).flatten.uniq
         end
         result
       end
@@ -177,7 +176,6 @@ module Crucible
 
       def execute_operation(operation)
         return if @client.nil?
-        #requestheaders can support variables
         requestHeaders = Hash[operation.requestHeader.all.map{|u| [u.field, u.value]}] #Client needs upgrade to support
         format = FHIR::Formats::ResourceFormat::RESOURCE_XML
         format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
@@ -199,7 +197,7 @@ module Crucible
             @last_response = @client.search "FHIR::#{operation.resource}".constantize, {search: {parameters: params}}, format
           else
             url = replace_variables(operation.url)
-            last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url
+            last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url #todo implement URL
           end
         when 'history'
           target_id = @id_map[operation.targetId]

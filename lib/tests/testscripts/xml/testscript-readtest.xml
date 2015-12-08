@@ -25,7 +25,24 @@
       </rest>
     </Conformance>
     <Conformance xmlns="http://hl7.org/fhir">
-      <id value="conf-r001"/>
+      <id value="conf-r001-validates"/>
+      <date value="2012-01-04"/>
+      <kind value="instance"/>
+      <fhirVersion value="1.0.0"/>
+      <acceptUnknown value="both"/>
+      <format value="xml"/>
+      <rest>
+        <mode value="client"/>
+        <resource>
+          <type value="Patient"/>
+          <interaction>
+            <code value="read"/>
+          </interaction>
+        </resource>
+      </rest>
+    </Conformance>
+    <Conformance xmlns="http://hl7.org/fhir">
+      <id value="conf-r001-requires"/>
       <date value="2012-01-04"/>
       <kind value="instance"/>
       <fhirVersion value="1.0.0"/>
@@ -90,14 +107,21 @@
     <description value="Result headers on normal read."/>
     <metadata>
       <capability>
-        <required value="true"/>
         <validated value="true"/>
+        <description value="Patient Read Operations"/>
+        <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
+        <conformance>
+          <reference value="#conf-r001-validates"/>
+        </conformance>
+      </capability>
+      <capability>
+        <required value="true"/>
         <description value="Patient Read, Update, and Delete Operations"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#create"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
         <conformance>
-          <reference value="#conf-r001"/>
+          <reference value="#conf-r001-requires"/>
         </conformance>
       </capability>
     </metadata>
@@ -145,7 +169,7 @@
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
         <conformance>
-          <reference value="#conf-r001"/>
+          <reference value="#conf-r001-validates"/>
         </conformance>
       </capability>
     </metadata>
@@ -185,7 +209,7 @@
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
         <conformance>
-          <reference value="#conf-r001"/>
+          <reference value="#conf-r001-validates"/>
         </conformance>
       </capability>
     </metadata>
@@ -216,7 +240,7 @@
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#read"/>
         <link value="http://hl7.org/implement/standards/FHIR-Develop/http.html#delete"/>
         <conformance>
-          <reference value="#conf-r001"/>
+          <reference value="#conf-r001-validates"/>
         </conformance>
       </capability>
     </metadata>

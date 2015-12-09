@@ -11,7 +11,7 @@ module Crucible
       attr_accessor :tags
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
-      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags']
+      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details']
       STATUS = {
         pass: 'pass',
         fail: 'fail',
@@ -75,6 +75,10 @@ module Crucible
       def description
         # String containing test file description
         self.class.name
+      end
+
+      def details
+        {}
       end
 
       def id

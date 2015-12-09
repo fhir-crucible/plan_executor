@@ -14,6 +14,15 @@ module Crucible
         'Argonaut Sprint 1 tests for testing Argonauts Sprint 1 goals: read patient by ID, search for patients by various demographics.'
       end
 
+      def details
+        {
+          'Overview' => 'Argonaut Sprint 1 tests for testing Argonauts Sprint 1 goals: read patient by ID, search for patients by various demographics.',
+          'Instructions' => 'Servers should provide the following information for the sprint: Organization name and contact, FHIR endpoint URL, List of FHIR Patient IDs (that is, Patient.id, not Patient.identifier), Authorization token(s), which are simple fixed values for now (Note: some servers, including Argonaut\'s reference server, may need to issue different tokens to different clients for policy reasons)',
+          'FHIR API Calls' => 'We\'ll focus on the basics, beginning with two FHIR API calls that every participating server should expose, and every participating client should invoke: GET /Patient/{id} Retrieve a patient\'s basic demographics and identifiers, given a unique patient id. Think of this as the "Hello world" of FHIR. And cross-patient demographics search, using a single FHIR API call: GET /Patient?[parameters] Find patients based on a variety of demographic criteria. The following search parameters must be supported at a minimum: (name, family, given, identifier, gender, birthdate)',
+          'Authorization' => 'The first Argonaut sprint will focus on getting data services up and running even before a complete authorization flow is implemented. This way we can ensure that all participating servers have correctly exposed FHIR API endpoints before we lock those endpoints down with a full OAuth approval process. So for this first sprint, each server will publish its FHIR endpoint URL along with an access token that clients can include in an HTTP Authorization header with each API call',
+        }
+      end
+
       def initialize(client1, client2=nil)
         super(client1, client2)
         @tags.append('argonaut')

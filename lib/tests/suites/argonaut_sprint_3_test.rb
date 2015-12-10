@@ -69,15 +69,19 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          assert_equal entry.resource.subject.reference, "Patient/#{patient_id}", "DocumentReference ID does not match patient searched for"
+          assert !entry.resource.content.empty?, "DocumentReference must have at least one 'content' BackboneElement"
+          entry.resource.content.each do |content|
+            attachment = @client.get(URI::encode(@client.strip_base(content.attachment.url)), @client.fhir_headers())
+            assert_response_ok(attachment)
+          end
         end
       end
 
       test 'AS3003', 'GET DocumentReferences with Patient IDs' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
-          requires resource: "DocumentReference", methods: ["read", "search"]
-          validates resource: "DocumentReference", methods: ["read", "search"]
+          requires resource: "Patient", methods: ["read", "search"]
+          validates resource: "Patient", methods: ["read", "search"]
         }
 
         assert @client.client.params["patient"], "No patient parameter was passed to the client"
@@ -99,15 +103,19 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          assert_equal entry.resource.subject.reference, "Patient/#{patient_id}", "DocumentReference ID ()#{entry.resource.subject.reference}) does not match patient ID (patient_id)"
+          assert !entry.resource.content.empty?, "DocumentReference must have at least one 'content' BackboneElement"
+          entry.resource.content.each do |content|
+            attachment = @client.get(URI::encode(@client.strip_base(content.attachment.url)), @client.fhir_headers())
+            assert_response_ok(attachment)
+          end
         end
       end
 
       test 'AS3004', 'GET DocumentReference by Created Date' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
-          requires resource: 'DocumentReference', methods: ['read', 'search']
-          validates resource: 'DocumentReference', methods: ['read', 'search']
+          requires resource: "Patient", methods: ["read", "search"]
+          validates resource: "Patient", methods: ["read", "search"]
         }
 
         assert @client.client.params["patient"], "No patient parameter was passed to the client"
@@ -130,15 +138,19 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          assert_equal entry.resource.subject.reference, "Patient/#{patient_id}", "DocumentReference ID ()#{entry.resource.subject.reference}) does not match patient ID (patient_id)"
+          assert !entry.resource.content.empty?, "DocumentReference must have at least one 'content' BackboneElement"
+          entry.resource.content.each do |content|
+            attachment = @client.get(URI::encode(@client.strip_base(content.attachment.url)), @client.fhir_headers())
+            assert_response_ok(attachment)
+          end
         end
       end
 
       test 'AS3005', 'GET DocumentReference by Type' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
-          requires resource: 'DocumentReference', methods: ['read', 'search']
-          validates resource: 'DocumentReference', methods: ['read', 'search']
+          requires resource: "Patient", methods: ["read", "search"]
+          validates resource: "Patient", methods: ["read", "search"]
         }
 
         assert @client.client.params["patient"], "No patient parameter was passed to the client"
@@ -161,7 +173,11 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          assert_equal entry.resource.subject.reference, "Patient/#{patient_id}", "DocumentReference ID ()#{entry.resource.subject.reference}) does not match patient ID (patient_id)"
+          assert !entry.resource.content.empty?, "DocumentReference must have at least one 'content' BackboneElement"
+          entry.resource.content.each do |content|
+            attachment = @client.get(URI::encode(@client.strip_base(content.attachment.url)), @client.fhir_headers())
+            assert_response_ok(attachment)
+          end
         end
       end
 

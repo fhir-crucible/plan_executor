@@ -197,7 +197,7 @@ module Crucible
             @last_response = @client.search "FHIR::#{operation.resource}".constantize, {search: {parameters: params}}, format
           else
             url = replace_variables(operation.url)
-            last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url #todo implement URL
+            @last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url #todo implement URL
           end
         when 'history'
           target_id = @id_map[operation.targetId]

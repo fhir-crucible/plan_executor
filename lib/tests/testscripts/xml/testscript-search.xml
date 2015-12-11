@@ -190,7 +190,7 @@
         <type>
           <code value="search"/>
         </type>
-        <resource value="Patient"/> <!-- should this return a bundle or patient? -->
+        <resource value="Patient"/>
         <accept value="json"/>
         <params value="?given=John&amp;family=Doe&amp;birthdate=1974-12-31"/>
         <responseId value="R3"/>

@@ -45,6 +45,12 @@
           <interaction>
             <code value="read"/>
           </interaction>
+          <interaction>
+            <code value="create"/>
+          </interaction>
+          <interaction>
+            <code value="delete"/>
+          </interaction>
         </resource>
       </rest>
     </Conformance>
@@ -58,7 +64,13 @@
       <birthDate value="1974-12-31" />
     </Patient>
     <Patient xmlns="http://hl7.org/fhir">
-      <id value="patient-min"/><name><use value="official"/><family value="Doe"/><given value="John"/></name></Patient>
+      <id value="patient-min"/>
+      <name>
+        <use value="official"/>
+        <family value="Doe"/>
+        <given value="John"/>
+      </name>
+    </Patient>
   </contained>
   <metadata>
     <capability>
@@ -93,7 +105,6 @@
     <reference value="http://hl7.org/fhir/StructureDefinition/Patient"/>
   </profile>
   <setup>
-    <!--     Create the patient using fixture     -->
     <action>
       <operation>
         <type>
@@ -155,7 +166,7 @@
       <assert>
         <operator value="equals"/>
         <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
-        <value value="Chalmers"/>
+        <value value="Doe"/>
       </assert>
     </action>
     <action>
@@ -163,7 +174,7 @@
         <operator value="equals"/>
         <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
         <sourceId value="F1"/>
-        <value value="Chalmers"/>
+        <value value="Doe"/>
       </assert>
     </action>
     <action>

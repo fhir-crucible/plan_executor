@@ -18,7 +18,16 @@
         <resource>
           <type value="Patient"/>
           <interaction>
+            <code value="create"/>
+          </interaction>
+          <interaction>
             <code value="read"/>
+          </interaction>
+          <interaction>
+            <code value="update"/>
+          </interaction>
+          <interaction>
+            <code value="delete"/>
           </interaction>
         </resource>
       </rest>
@@ -36,7 +45,7 @@
       <id value="patient-updated"/>
       <name>
         <use value="official"/>
-        <family value="Doeseph"/>
+        <family value="NotDoe"/>
         <given value="John"/>
       </name>
     </Patient>
@@ -95,7 +104,7 @@
     </action>
     <action>
       <assert>
-        <responseCode value="201"/>
+        <responseCode value="200"/>
       </assert>
     </action>
     <action>
@@ -115,6 +124,13 @@
     <action>
       <assert>
         <response value="okay"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <operator value="equals"/>
+        <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
+        <value value="NotDoe"/>
       </assert>
     </action>
   </test>

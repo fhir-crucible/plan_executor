@@ -1,7 +1,19 @@
 module Crucible
   module Tests
     class BaseTestScript < BaseTest
+
+      # TODO: 0 = done; 1 = one todo; etc.
+      # [0] Read Test
+      # [0] Example Test
+      # [0] History Test
+      # [6] Search Test
+      # [0] Update Test
       
+      FORMAT_MAP = {
+        'json' => FHIR::Formats::ResourceFormat::RESOURCE_JSON,
+        'xml' => FHIR::Formats::ResourceFormat::RESOURCE_XML
+      }
+
       CODE_MAP = {
         'okay' => 200,
         'created' => 201,
@@ -15,6 +27,10 @@ module Crucible
         'gone' => 410,
         'preconditionFailed' => 412,
         'unprocessable' => 422
+      }
+
+      HEADERFIELD_MAP = {
+        'Location' => 'content-location'
       }
 
       OPERATOR_MAP = {
@@ -98,6 +114,7 @@ module Crucible
       def process_test(test)
         result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
         @last_response = nil # clear out any responses from previous tests
+        @warnings = [] # clear out any previous warnings
         begin
           test.action.each do |action|
             perform_action action
@@ -109,12 +126,18 @@ module Crucible
         end
         result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
         result.warnings = @warnings unless @warnings.empty?
+        result.requires = []
+        result.validates = []
         unless test.metadata.nil?
-          #todo add in requires and validates
-          # result.requires = test.metadata.requires.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
-          # result.validates = test.metadata.validates.map {|r| {resource: r.fhirType, methods: r.operations.try(:split, ', ')} } unless test.metadata.requires.empty?
-          # result.links = test.metadata.link.map(&:url) if !test.metadata.link.empty?
-          result.links = test.metadata.capability.map(&:link).flatten
+          test.metadata.capability.each do |capability|
+            conf = get_reference(capability.conformance.reference)
+            conf.rest.each do |rest|
+              interactions = rest.resource.map{|resource| { resource: resource.fhirType, methods: resource.interaction.map(&:code)}}
+              result.requires.concat(interactions) if capability.required
+              result.validates.concat(interactions) if capability.fhirValidated
+            end
+          end
+          result.links = test.metadata.capability.map(&:link).flatten.uniq
         end
         result
       end
@@ -154,21 +177,28 @@ module Crucible
       def execute_operation(operation)
         return if @client.nil?
         requestHeaders = Hash[operation.requestHeader.all.map{|u| [u.field, u.value]}] #Client needs upgrade to support
+        format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+        format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
+        format = FORMAT_MAP[operation.accept] unless operation.accept.nil?
         case operation.fhirType.code
         when 'read'
           if !operation.targetId.nil?
             @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
           else
-            resource_type = operation.resource
-            resource_id = operation.params
+            resource_type = replace_variables(operation.resource)
+            resource_id = replace_variables(operation.params)
             @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
-            
           end
         when 'vread'
           raise 'vread not implemented'
         when 'search'
-          params = extract_operation_parameters(operation)
-          @last_response = @client.search "FHIR::#{operation.resource}".constantize, search: {parameters: params}
+          if operation.url.nil?
+            params = extract_operation_parameters(operation)
+            @last_response = @client.search "FHIR::#{operation.resource}".constantize, {search: {parameters: params}}, format
+          else
+            url = replace_variables(operation.url)
+            @last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url #todo implement URL
+          end
         when 'history'
           target_id = @id_map[operation.targetId]
           fixture = @fixtures[operation.targetId]
@@ -214,67 +244,59 @@ module Crucible
         case
         when !assertion.contentType.nil?
           call_assertion(:assert_resource_content_type, warningOnly, @last_response, assertion.contentType)
+
         when !assertion.headerField.nil?
-          #todo: handle abstract operators
-          call_assertion(:assert_last_modified_present, warningOnly, @last_response) if operator == :notEmpty && assertion.headerField.downcase == 'last-modified'
+          call_assertion(:assert_operator, warningOnly, operator, replace_variables(assertion.value), @last_response.response[:headers][assertion.headerField.downcase], "Header field #{assertion.headerField}")
+
         when !assertion.minimumId.nil?
           call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
-          #todo
+
         when !assertion.navigationLinks.nil?
-          #todo
+          call_assertion(:assert_navigation_links, warningOnly, @last_response.resource)
+
         when !assertion.path.nil?
-          #todo
+          actual_value = nil
+          if is_xpath(assertion.path)
+            resource_xml = nil
+            if assertion.sourceId.nil?
+              resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+            else
+              resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
+              resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
+            end
+
+            actual_value = extract_xpath_value(resource_xml, assertion.path)
+          end
+
+          expected_value = replace_variables(assertion.value)
+          unless assertion.compareToSourceId.nil?
+            resource_xml = @fixtures[assertion.compareToSourceId].try(:to_xml)
+            resource_xml = @response_map[assertion.compareToSourceId].try(:resource).try(:to_xml) || @response_map[assertion.compareToSourceId].body if resource_xml.nil?
+
+            expected_value = extract_xpath_value(resource_xml, assertion.path)
+          end
+
+          call_assertion(:assert_operator, warningOnly, operator, expected_value, actual_value)
+
         when !assertion.resource.nil?
           call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
+
         when !assertion.responseCode.nil?
           call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
+
         when !assertion.response.nil?
           call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
-        when !assertion.validateProfileId
-          #todo
-        end
 
-      end
+        when !assertion.validateProfileId.nil?
+          profile_uri = @testscript.profile.first{|p| p.xmlId = assertion.validateProfileId}.reference
+          reply = @client.validate(@last_response.resource,{profile_uri: profile_uri})
+          call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
 
-      def handle_assertion_old(assertion)
-        # assertion = operation.parameter.first
-        response = @response_map[operation.responseId] || @last_response
-        if assertion.start_with? "code"
-          code = assertion.split(":").last
-          assertion = assertion.split(":").first
-        end
-        if self.methods.include?(ASSERTION_MAP[assertion])
-          method = self.method(ASSERTION_MAP[assertion])
-          log "ASSERTING: #{operation.fhirType} - #{assertion}"
-          case assertion
-          when "code"
-            call_assertion(method, response, [code])
-          when "resource_type"
-            resource_type = "FHIR::#{operation.parameter[1]}".constantize
-            call_assertion(method, response, [resource_type])
-          when "response_code"
-            code = operation.parameter[1]
-            call_assertion(method, response, [code.to_i])
-          when "equals"
-            expected, actual = handle_equals(operation, response, method)
-            call_assertion(method, expected, [actual])
-          when "fixture_equals"
-            expected, actual = handle_fixture_equals(operation, response, method)
-            call_assertion(method, expected, [actual])
-          when "fixture_compare"
-            expected, actual = handle_fixture_compare(operation, response, method)
-            call_assertion(method, expected, [actual])
-          when "minimum"
-            fixture_id = operation.parameter[1]
-            fixture = @fixtures[fixture_id] || @response_map[fixture_id].try(:resource)
-            call_assertion(method, response, [fixture])
-          else
-            params = operation.parameter[1..-1]
-            call_assertion(method, response, params)
-          end
         else
-          raise "Undefined assertion for #{@testscript.name}-#{title}: #{operation.parameter}"
+          raise "Unknown Assertion"
+
         end
+
       end
 
       def call_assertion(method, warned, *params)
@@ -283,6 +305,29 @@ module Crucible
         else
           self.method(method).call(*params)
         end
+      end
+
+      def replace_variables(input)
+        return nil if input.nil?
+
+        @testscript.variable.each do |var|
+          variable_source = @response_map[var.sourceId]
+          if !var.headerField.nil?
+            variable_value = variable_source.response[:headers][HEADERFIELD_MAP[var.headerField]]
+            input.sub!("${" + var.name + "}", variable_value)
+          elsif !var.path.nil?
+
+            if is_xpath(var.path)
+              resource_xml = variable_source.try(:resource).try(:to_xml) || variable_source.body
+              extracted_value = extract_xpath_value(resource_xml, var.path)
+              input = input.sub("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+            end unless variable_source.nil? or !input.include? "${" + var.name + "}"
+
+          end
+        end
+
+        input
+
       end
 
       def extract_operation_parameters(operation)
@@ -305,77 +350,18 @@ module Crucible
         end
       end
 
-      def handle_equals(operation, response, method)
-        raise "#{method} expects two parameters: [expected value, actual xpath]" unless operation.parameter.length >= 3
-        expected, actual = operation.parameter[1..2]
-        resource_xml = response.try(:resource).try(:to_xml) || response.body
-
-        if is_xpath(expected)
-          expected = extract_xpath_value(method, resource_xml, expected)
-        end
-        if is_xpath(actual)
-          actual = extract_xpath_value(method, resource_xml, actual)
-        end
-
-        return expected, actual
-      end
-
-      def handle_fixture_equals(operation, response, method)
-        # fixture_equals(fixture-id, fixture-xpath, actual)
-
-        fixture_id, fixture_xpath, actual = operation.parameter[1..3]
-        raise "#{method} expects a fixture_id as the second operation parameter" unless !fixture_id.blank?
-        raise "#{fixture_id} does not exist" unless ( @fixtures.keys.include?(fixture_id) || @response_map.keys.include?(fixture_id) )
-        raise "#{method} expects a fixture_xpath as the third operation parameter" unless !fixture_xpath.blank?
-        raise "#{method} expects an actual value as the fourth operation parameter" unless !actual.blank?
-        raise "#{method} expects fixture_xpath to be a valid xpath" unless is_xpath(fixture_xpath)
-
-        fixture = @fixtures[fixture_id] || @response_map[fixture_id].try(:resource)
-        expected = extract_xpath_value(method, fixture.try(:to_xml), fixture_xpath)
-
-        if is_xpath(actual)
-          response_xml = response.resource.try(:to_xml) || response.body
-          actual = extract_xpath_value(method, response_xml, actual)
-        end
-
-        return expected, actual
-      end
-
-      def handle_fixture_compare(operation, response, method)
-        # fixture_compare(expected_fixture_id, expected_xpath, actual_fixture, actual_xpath)
-
-        expected_fixture_id, expected_xpath, actual_fixture_id, actual_xpath = operation.parameter[1..4]
-        raise "#{method} expects expected_fixture_id as the operation parameter" unless !expected_fixture_id.blank?
-        raise "#{expected_fixture_id} does not exist" unless ( @fixtures.keys.include?(expected_fixture_id) || @response_map.keys.include?(expected_fixture_id) )
-        raise "#{method} expects expected_xpath as the operation parameter" unless !expected_xpath.blank?
-        raise "#{method} expects actual_fixture_id as the operation parameter" unless !actual_fixture_id.blank?
-        raise "#{actual_fixture_id} does not exist" unless ( @fixtures.keys.include?(actual_fixture_id) || @response_map.keys.include?(actual_fixture_id) )
-        raise "#{method} expects actual_xpath as the operation parameter" unless !actual_xpath.blank?
-
-        expected_fixture = @fixtures[expected_fixture_id] || @response_map[expected_fixture_id].try(:resource)
-        actual_fixture = @fixtures[actual_fixture_id] || @response_map[actual_fixture_id].try(:resource)
-
-        raise "expected: #{expected_xpath} is not an xpath" unless is_xpath(expected_xpath)
-        raise "actual: #{actual_xpath} is not an xpath" unless is_xpath(actual_xpath)
-        expected = extract_xpath_value(method, expected_fixture.try(:to_xml), expected_xpath)
-        actual = extract_xpath_value(method, actual_fixture.try(:to_xml), actual_xpath)
-
-        return expected, actual
-      end
-
-      private
-
       # Crude method of detecting xpath expressions
       def is_xpath(value)
         value.start_with?("fhir:") && value.include?("@")
       end
 
-      def extract_xpath_value(method, resource_xml, resource_xpath)
+      def extract_xpath_value(resource_xml, resource_xpath)
         resource_doc = Nokogiri::XML(resource_xml)
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         resource_element = resource_doc.xpath(resource_xpath)
 
-        raise AssertionException.new("#{method} with [#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
+        # This doesn't work on warningOnly; consider putting back in place
+        # raise AssertionException.new("[#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1
         resource_element.first.try(:value)
       end
 

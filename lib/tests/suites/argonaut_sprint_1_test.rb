@@ -29,7 +29,6 @@ module Crucible
       end
 
       def setup
-        @id = ENV['patient_id']
         @searchParams = [:name, :family, :given, :identifier, :gender, :birthdate]
         @rc = FHIR::Patient
       end
@@ -65,10 +64,12 @@ module Crucible
           validates resource: "Patient", methods: ["read", "search"]
         }
 
+        @id = @client.read_feed(@rc).resource.entry.first.resource.xmlId
+
         reply = @client.read(FHIR::Patient, @id)
         assert_response_ok(reply)
         assert_equal @id, reply.id, 'Server returned wrong patient.'
-        @patient = reply.resource.get_by_id(@id)
+        @patient = reply.resource
         assert @patient, "could not get patient by id: #{@id}"
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }

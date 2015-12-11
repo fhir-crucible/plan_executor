@@ -4,7 +4,7 @@ module Crucible
 
       # TODO: 0 = done; 1 = one todo; etc.
       # [0] Read Test
-      # [1] Example Test
+      # [0] Example Test
       # [0] History Test
       # [6] Search Test
       # [0] Update Test
@@ -287,9 +287,14 @@ module Crucible
         when !assertion.response.nil?
           call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
 
-        when !assertion.validateProfileId
-          #todo
-          #
+        when !assertion.validateProfileId.nil?
+          profile_uri = @testscript.profile.first{|p| p.xmlId = assertion.validateProfileId}.reference
+          reply = @client.validate(@last_response.resource,{profile_uri: profile_uri})
+          call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
+
+        else
+          raise "Unknown Assertion"
+
         end
 
       end

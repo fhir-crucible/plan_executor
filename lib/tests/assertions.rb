@@ -74,6 +74,16 @@ module Crucible
 
       end
 
+      def assert_valid_profile(response, klass)
+        unless assertion_negated( response[:code].to_s == "200")
+          
+          raise AssertionException.new "Server created a #{klass.name.demodulize} with the ID `_validate` rather than validate the resource." if response[:code].to_s == "201"
+
+          raise AssertionException.new "Response code #{response[:code]} with no OperationOutcome provided"
+        end
+
+      end
+
       def assert_response_ok(response, error_message="")
         unless assertion_negated( [200, 201].include?(response.code) )
           raise AssertionException.new "Bad response code: expected 200, 201, but found #{response.code}.#{" " + error_message}", response.body

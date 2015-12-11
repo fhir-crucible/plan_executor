@@ -101,7 +101,6 @@
       <display value="Patient resource"/>
     </resource>
   </fixture>
-  <!-- TODO: implement profile checking -->
   <profile id="patient-profile">
     <reference value="http://hl7.org/fhir/StructureDefinition/Patient"/>
   </profile>
@@ -158,7 +157,6 @@
         <resource value="Patient"/>
       </assert>
     </action>
-    <!-- TODO: implement profiles -->
     <action>
       <assert>
         <validateProfileId value="patient-profile"/>

@@ -38,12 +38,12 @@ module Crucible
             raise AssertionException.new message, data
           end
         when :greaterThan
-          unless assertion_negated(actual > expected)
+          unless assertion_negated(!actual.nil? && !expected.nil? && actual > expected)
             message += " Expected #{actual} to be greater than #{expected}."
             raise AssertionException.new message, data
           end
         when :lessThan
-          unless assertion_negated(actual < expected)
+          unless assertion_negated(!actual.nil? && !expected.nil? && actual < expected)
             message += " Expected #{actual} to be greater than #{expected}."
             raise AssertionException.new message, data
           end
@@ -206,7 +206,7 @@ module Crucible
       end
 
       def assert_minimum(response, fixture)
-        resource_xml = response.try(:body)
+        resource_xml = response.try(:resource).try(:to_xml) || response.try(:body)
         fixture_xml = fixture.try(:to_xml)
 
         resource_doc = Nokogiri::XML(resource_xml)

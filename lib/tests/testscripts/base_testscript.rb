@@ -180,7 +180,11 @@ module Crucible
         format = FHIR::Formats::ResourceFormat::RESOURCE_XML
         format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
         format = FORMAT_MAP[operation.accept] unless operation.accept.nil?
-        case operation.fhirType.code
+
+        operationCode = 'empty'
+        operationCode = operation.fhirType.code unless operation.fhirType.nil?
+
+        case operationCode
         when 'read'
           if !operation.targetId.nil?
             @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
@@ -207,7 +211,16 @@ module Crucible
           @last_response = @client.create @fixtures[operation.sourceId]
           @id_map[operation.sourceId] = @last_response.id
         when 'update'
-          target_id = @id_map[operation.targetId]
+          target_id = nil
+          
+          if !operation.targetId.nil? 
+            target_id = @id_map[operation.targetId]
+          elsif !operation.params.nil?
+            target_id = id_from_path(replace_variables(operation.params))
+          end
+
+          raise "No target specified for update" if target_id.nil?
+
           fixture = @fixtures[operation.sourceId]
           @last_response = @client.update fixture, target_id
         when 'transaction'
@@ -216,7 +229,8 @@ module Crucible
           raise 'conformance not implemented'
         when 'delete'
           if operation.targetId.nil?
-            #todo handle conditional delete see Search
+            params = replace_variables(operation.params)
+            @last_response = @client.destroy "FHIR::#{operation.resource}".constantize, nil, params: params
           else
             @last_response = @client.destroy @fixtures[operation.targetId].class, @id_map[operation.targetId]
             @id_map.delete(operation.targetId)
@@ -227,6 +241,13 @@ module Crucible
         when '$validate'
           raise '$validate not supported'
           # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
+        when 'empty'
+
+          if !operation.params.nil? && !operation.resource.nil?
+            resource = "FHIR::#{operation.resource}".constantize 
+            @last_response = @client.read resource, nil, FORMAT_MAP[operation.accept], nil, params: replace_variables(operation.params)
+          end 
+
         else
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
@@ -282,7 +303,9 @@ module Crucible
           call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
 
         when !assertion.responseCode.nil?
-          call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
+          call_assertion(:assert_operator, warningOnly, operator, assertion.responseCode, @last_response.response[:code], "Response Code #{assertion.responseCode}")
+
+          # call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
 
         when !assertion.response.nil?
           call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
@@ -311,19 +334,27 @@ module Crucible
         return nil if input.nil?
 
         @testscript.variable.each do |var|
-          variable_source = @response_map[var.sourceId]
           if !var.headerField.nil?
-            variable_value = variable_source.response[:headers][HEADERFIELD_MAP[var.headerField]]
+            variable_source_response = @response_map[var.sourceId]
+            variable_value = variable_source_response.response[:headers][HEADERFIELD_MAP[var.headerField]]
             input.sub!("${" + var.name + "}", variable_value)
           elsif !var.path.nil?
 
             if is_xpath(var.path)
-              resource_xml = variable_source.try(:resource).try(:to_xml) || variable_source.body
+              resource_xml = nil
+              
+              variable_source_response = @response_map[var.sourceId]
+              unless variable_source_response.nil?
+                resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
+              else
+                resource_xml = @fixtures[var.sourceId].to_xml
+              end
               extracted_value = extract_xpath_value(resource_xml, var.path)
-              input = input.sub("${" + var.name + "}", extracted_value) unless extracted_value.nil?
-            end unless variable_source.nil? or !input.include? "${" + var.name + "}"
 
-          end
+              input = input.sub("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+            end
+
+          end if input.include? "${" + var.name + "}"
         end
 
         input
@@ -337,7 +368,7 @@ module Crucible
         params = operation.params[1..-1] if operation.params.length > 0 && operation.params[0] == "?"
         params.split("&").each do |param|
           key, value = param.split("=")
-          parameters[key.to_sym] = value
+          parameters[key.to_sym] = replace_variables(value)
         end unless operation.params.blank?
         parameters
       end
@@ -369,10 +400,31 @@ module Crucible
         path[1..-1]
       end
 
-      def get_reference(url)
-        return nil unless url.start_with?('#') #todo accept more than just contained resources
-        contained_id = url[1..-1]
-        @testscript.contained.select{|r| r.xmlId == contained_id}.first
+      def get_reference(reference)
+        resource = nil
+        if reference.start_with?('#')
+          contained_id = reference[1..-1]
+          resource = @testscript.contained.select{|r| r.xmlId == contained_id}.first
+        else 
+          return nil unless File.exist? "lib/tests/testscripts/xml#{reference}"
+          file = File.read("lib/tests/testscripts/xml#{reference}")
+          if reference.split('.').last == "json"
+            resourceType = JSON.parse(file)["resourceType"]
+            resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)
+          else
+            resourceType = Nokogiri::XML(file).children[0].name
+            fhirType = "FHIR::#{resourceType}".constantize
+
+            if fhirType.method_defined? "from_xml"
+              resource = fhirType.from_xml(file)
+            else 
+              puts "Unable to load reference: Method from_xml undefined on FHIR::#{resourceType}"
+            end
+
+          end
+        end
+
+        resource
       end
 
     end

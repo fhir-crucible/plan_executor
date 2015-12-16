@@ -35,7 +35,7 @@
 			</coding>
 		</type>
 		<system value="urn:oid:1.2.36.146.595.217.0.1"/>
-		<value value="${CD16}"/>
+		<value value="CD16"/>
 		<period>
 			<start value="2001-05-06"/>
 		</period>

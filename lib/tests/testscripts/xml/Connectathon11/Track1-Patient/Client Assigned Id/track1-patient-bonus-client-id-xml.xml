@@ -47,17 +47,17 @@
 
 	<variable>
 		<name value="createIdentifier"/>
-		<path value="Patient/identifier/value"/>
+        <path value="fhir:Patient/fhiridentifier/fhir:value/@value"/>
 		<sourceId value="patient-create-bonus-PeterChalmers"/>
 	</variable>
 	<variable>
 		<name value="searchFamilyName"/>
-		<path value="Patient/name/family"/>
+        <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
 		<sourceId value="patient-create-bonus-PeterChalmers"/>
 	</variable>
 	<variable>
 		<name value="searchGivenName"/>
-		<path value="Patient/name/given"/>
+        <path value="fhir:Patient/fhir:name/fhir:given/@value"/>
 		<sourceId value="patient-create-bonus-PeterChalmers"/>
 	</variable>
 
@@ -134,7 +134,7 @@
 		<action>
 			<assert>
 				<description value="Confirm that version of resource is 1 after the create. Warning only as the server may re-establish this resource id from a previous deletion."/>
-				<path value="Patient/meta/versionId"/>
+                <path value="fhir:Patient/fhir:meta/fhir:versionId/@value"/>
 				<value value="1"/>
 				<warningOnly value="true"/>
 			</assert>
@@ -200,7 +200,7 @@
 		<action>
 			<assert>
 				<description value="Confirm that version of resource is 2 after the update. Warning only as the server may have re-established this resource id from a previous deletion."/>
-				<path value="Patient/meta/versionId"/>
+                <path value="fhir:Patient/fhir:meta/fhir:versionId/@value"/>
 				<sourceId value="read-update-bonus1-response"/>
 				<value value="2"/>
 				<warningOnly value="true"/>
@@ -267,7 +267,7 @@
 		<action>
 			<assert>
 				<description value="Confirm that version of resource is 3 after the update. Warning only as the server may have re-established this resource id from a previous deletion."/>
-				<path value="Patient/meta/versionId"/>
+                <path value="fhir:Patient/fhir:meta/fhir:versionId/@value"/>
 				<sourceId value="read-update-bonus2-response"/>
 				<value value="3"/>
 				<warningOnly value="true"/>
@@ -307,7 +307,7 @@
 			<assert>
 				<description value="Confirm that there are more than two records returned."/>
 				<operator value="greaterThan"/>
-				<path value="/Bundle/total"/>
+                <path value="fhir:Bundle/fhir:total/@value"/>
 				<value value="2"/>
 				<warningOnly value="true"/>
 			</assert>
@@ -356,7 +356,7 @@
 			<assert>
 				<description value="Confirm that there is at least one record returned. There could be other patient records returned."/>
 				<operator value="greaterThan"/>
-				<path value="/Bundle/total"/>
+                <path value="fhir:Bundle/fhir:total/@value"/>
 				<value value="0"/>
 				<warningOnly value="true"/>
 			</assert>

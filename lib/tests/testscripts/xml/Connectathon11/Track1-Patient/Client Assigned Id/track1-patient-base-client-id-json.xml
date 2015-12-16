@@ -1,7 +1,7 @@
 <TestScript xmlns="http://hl7.org/fhir">
-	<id value="track1-patient-base-client-id-xml"/>
+	<id value="track1-patient-base-client-id-json"/>
 
-	<url value="http://wildfhir.aegis.net/dstu2/TestScript/track1-patient-base-client-id-xml"/>
+	<url value="http://wildfhir.aegis.net/dstu2/TestScript/track1-patient-base-client-id-json"/>
 	<name value="FHIR Connectathon 11 - Track 1 - Patient - Register a new patient"/>
 	<status value="draft"/>
 	<description value="FHIR Connectathon 11 - Track 1 - Patient - JSON Format - Baseline tests to create, update, retrieve history and search a patient, no extensions with client assigned resource id."/>
@@ -124,7 +124,7 @@
 		<action>
 			<assert>
 				<description value="Confirm that version of resource is 1 after the create. Warning only as the server may re-establish this resource id from a previous deletion."/>
-				<path value="Patient/meta/versionId"/>
+                <path value="fhir:Patient/fhir:meta/fhir:versionId/@value"/>
 				<value value="1"/>
 				<warningOnly value="true"/>
 			</assert>

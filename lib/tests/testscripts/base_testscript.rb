@@ -222,7 +222,7 @@ module Crucible
           raise "No target specified for update" if target_id.nil?
 
           fixture = @fixtures[operation.sourceId]
-          @last_response = @client.update fixture, target_id
+          @last_response = @client.update fixture, replace_variables(target_id)
         when 'transaction'
           raise 'transaction not implemented'
         when 'conformance'

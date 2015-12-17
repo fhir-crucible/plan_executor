@@ -337,7 +337,7 @@ module Crucible
           if !var.headerField.nil?
             variable_source_response = @response_map[var.sourceId]
             variable_value = variable_source_response.response[:headers][HEADERFIELD_MAP[var.headerField]]
-            input.sub!("${" + var.name + "}", variable_value)
+            input.gsub!("${" + var.name + "}", variable_value)
           elsif !var.path.nil?
 
             if is_xpath(var.path)
@@ -349,16 +349,21 @@ module Crucible
               else
                 resource_xml = @fixtures[var.sourceId].to_xml
               end
+
               extracted_value = extract_xpath_value(resource_xml, var.path)
 
-              input = input.sub("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+              input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
             end
 
           end if input.include? "${" + var.name + "}"
         end
 
-        input
+        if input.include? '${'
+          puts 'An unknown variable was unable to be replaced!'
+          warning {  assert !input.include?('${'), "An unknown variable was unable to be substituted: #{input}" }
+        end
 
+        input
       end
 
       def extract_operation_parameters(operation)
@@ -407,7 +412,8 @@ module Crucible
           resource = @testscript.contained.select{|r| r.xmlId == contained_id}.first
         else 
           return nil unless File.exist? "lib/tests/testscripts/xml#{reference}"
-          file = File.read("lib/tests/testscripts/xml#{reference}")
+          file = File.open("lib/tests/testscripts/xml#{reference}", "r:UTF-8", &:read)
+          file.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
           if reference.split('.').last == "json"
             resourceType = JSON.parse(file)["resourceType"]
             resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)

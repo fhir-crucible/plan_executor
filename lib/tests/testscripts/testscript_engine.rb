@@ -16,6 +16,16 @@ module Crucible
         @scripts.find{|s| s.id == key || s.title == key} || []
       end
 
+      def execute_all
+        results = {}
+        self.tests.each do |test|
+          # TODO: Do we want to separate out multiserver tests?
+          next if test.multiserver
+          results.merge! test.execute
+        end
+        results
+      end
+
       def self.list_all(metadata=false)
         list = {}
         # TODO: Determine if we need resource-based testscript listing support

@@ -241,6 +241,23 @@ module Crucible
         when '$validate'
           raise '$validate not supported'
           # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
+        when '$validate-code'
+          raise 'could not find params for $validate-code' unless operation.params
+          params = CGI.parse(URI.parse(operation.params).query)
+          raise 'could not find system for $validate-code' unless params['system']
+          raise 'could not find code for $validate-code' unless params['code']
+
+          options = {
+            :operation => {
+              :method => 'GET',
+              :parameters => {
+                'code' => { type: 'Code', value: params['code'] },
+                'identifier' => { type: 'Uri', value: params['system'] }
+              }
+            }
+          }
+          @last_response = @client.value_set_code_validation(options)
+
         when 'empty'
 
           if !operation.params.nil? && !operation.resource.nil?
@@ -249,6 +266,7 @@ module Crucible
           end 
 
         else
+          binding.pry
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
         handle_response(operation)

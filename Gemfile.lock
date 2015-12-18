@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 24644ef538c73870ca060c609bf3a655a8196676
+  revision: 834179a8018a6042a192fecde184b94a1bc93c73
   branch: connectathon11-testscript-updates
   specs:
     fhir_client (1.0.0)

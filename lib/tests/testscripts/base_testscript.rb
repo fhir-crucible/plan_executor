@@ -243,7 +243,14 @@ module Crucible
           # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
         when '$validate-code'
           raise 'could not find params for $validate-code' unless operation.params
-          params = CGI.parse(URI.parse(operation.params).query)
+
+          params = nil
+          # TODO: need to figure this out          
+          # if operation.params =~ URI::regexp
+          #   params = CGI.parse(URI.parse(operation.params).query)
+          # end
+
+          raise 'could not find any parameters for $validate-code' unless params
           raise 'could not find system for $validate-code' unless params['system']
           raise 'could not find code for $validate-code' unless params['code']
 
@@ -266,7 +273,6 @@ module Crucible
           end 
 
         else
-          binding.pry
           raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
         end
         handle_response(operation)
@@ -439,7 +445,7 @@ module Crucible
             resourceType = Nokogiri::XML(file).children[0].name
             fhirType = "FHIR::#{resourceType}".constantize
 
-            if fhirType.method_defined? "from_xml"
+            if fhirType.respond_to? :from_xml
               resource = fhirType.from_xml(file)
             else 
               puts "Unable to load reference: Method from_xml undefined on FHIR::#{resourceType}"

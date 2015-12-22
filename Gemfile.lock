@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: ff08887957deb680c48984560a72f16fa26b4092
+  revision: a5fd88902946d6cc77afd75f1b586d70fd0c014b
   branch: connectathon11-testscript-updates
   specs:
     fhir_client (1.0.0)
@@ -183,3 +183,6 @@ DEPENDENCIES
   tilt
   turn
   webmock
+
+BUNDLED WITH
+   1.10.6

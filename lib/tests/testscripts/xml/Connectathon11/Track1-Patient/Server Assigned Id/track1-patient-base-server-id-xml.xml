@@ -37,22 +37,22 @@
 
 	<variable>
 		<name value="peterChalmersId"/>
-		<path value="Patient/id" />
+        <path value="fhir:Bundle/fhir:entry/fhir:resource/fhir:Patient/fhir:id/@value" />
 		<sourceId value="create-search-response"/>
 	</variable>
 	<variable>
 		<name value="searchIdentifier"/>
-		<path value="Patient/identifier/value"/>
+        <path value="fhir:Patient/fhir:identifier/fhir:value/@value"/>
 		<sourceId value="patient-create-PeterChalmers"/>
 	</variable>
 	<variable>
 		<name value="searchFamilyName"/>
-		<path value="Patient/name/family"/>
+        <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
 		<sourceId value="patient-create-PeterChalmers"/>
 	</variable>
 	<variable>
 		<name value="searchGivenName"/>
-		<path value="Patient/name/given"/>
+        <path value="fhir:Patient/fhir:name/fhir:given/@value"/>
 		<sourceId value="patient-create-PeterChalmers"/>
 	</variable>
 
@@ -193,7 +193,7 @@
 			<assert>
 				<description value="Confirm that version of resource is greater than 1 after the update. Warning only as the server may not support versioning."/>
 				<operator value="greaterThan"/>
-				<path value="Patient/meta/versionId"/>
+                <path value="fhir:Patient/fhir:meta/fhir:versionId/@value"/>
 				<value value="1"/>
 				<warningOnly value="true"/>
 			</assert>
@@ -201,7 +201,7 @@
 		<action>
 			<assert>
 				<description value="Additional confirmation that birthDate got updated to expected value."/>
-				<path value="fhir:Patient/fhir:birthDate"/>
+                <path value="fhir:Patient/fhir:birthDate/@value"/>
 				<value value="1975-01-02"/>
 			</assert>
 		</action>
@@ -239,7 +239,7 @@
 			<assert>
 				<description value="Confirm that there is more than one record returned."/>
 				<operator value="greaterThan" />
-				<path value="/Bundle/total"/>
+                <path value="fhir:Bundle/fhir:total/@value"/>
 				<value value="1"/>
 				<warningOnly value="true"/>
 			</assert>
@@ -288,7 +288,7 @@
 			<assert>
 				<description value="Confirm that there is at least one record returned. There could be other patient records returned."/>
 				<operator value="greaterThan"/>
-				<path value="/Bundle/total"/>
+                <path value="fhir:Bundle/fhir:total/@value"/>
 				<value value="0"/>
 				<warningOnly value="true"/>
 			</assert>

@@ -52,7 +52,7 @@
 	</variable>
 	<variable>
 		<name value="searchFamilyName"/>
-        <path value="fhir:Patient/fhir:name/fhir:family/@avlue"/>
+        <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
 		<sourceId value="patient-create-bonus-PeterChalmers"/>
 	</variable>
 	<variable>

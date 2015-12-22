@@ -383,7 +383,7 @@ module Crucible
         end
 
         if input.include? '${'
-          puts 'An unknown variable was unable to be replaced!'
+          puts "An unknown variable was unable to be replaced: #{input}!"
           warning {  assert !input.include?('${'), "An unknown variable was unable to be substituted: #{input}" }
         end
 

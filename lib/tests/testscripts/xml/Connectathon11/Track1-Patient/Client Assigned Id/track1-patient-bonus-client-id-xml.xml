@@ -47,7 +47,7 @@
 
 	<variable>
 		<name value="createIdentifier"/>
-        <path value="fhir:Patient/fhiridentifier/fhir:value/@value"/>
+        <path value="fhir:Patient/fhir:identifier/fhir:value/@value"/>
 		<sourceId value="patient-create-bonus-PeterChalmers"/>
 	</variable>
 	<variable>

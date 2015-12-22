@@ -38,6 +38,10 @@ module Crucible
         {id => execute_test_methods}
       end
 
+      def requires_authorization
+        true
+      end
+
       def execute_test_methods
         result = []
         begin

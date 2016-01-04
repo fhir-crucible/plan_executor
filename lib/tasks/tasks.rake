@@ -251,7 +251,6 @@ namespace :crucible do
   desc 'list all test scripts'
   task :list_all_test_scripts do
     require 'benchmark'
-    binding.pry
     b = Benchmark.measure { puts Crucible::Tests::TestScriptEngine.list_all.keys }
     puts "List all tests completed in #{b.real} seconds."
   end

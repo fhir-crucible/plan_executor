@@ -43,6 +43,22 @@ namespace :crucible do
     puts "Execute All completed in #{b.real} seconds."
   end
 
+  desc 'execute all test scripts'
+  task :execute_all_testscripts, [:url, :html_summary] do |t, args|
+    require 'benchmark'
+    b = Benchmark.measure {
+      client = FHIR::Client.new(args.url)
+      options = client.get_oauth2_metadata_from_conformance
+      set_client_secrets(client,options) unless options.empty?
+      results = Crucible::Tests::TestScriptEngine.new(client).execute_all
+      output_results results
+      if args.html_summary
+        generate_html_summary(args.url, results, "ExecuteAll")
+      end
+    }
+    puts "Execute All completed in #{b.real} seconds."
+  end
+
   desc 'execute'
   task :execute, [:url, :test, :resource] do |t, args|
     require 'benchmark'
@@ -229,6 +245,13 @@ namespace :crucible do
   task :list_all do
     require 'benchmark'
     b = Benchmark.measure { puts Crucible::Tests::Executor.list_all }
+    puts "List all tests completed in #{b.real} seconds."
+  end
+
+  desc 'list all test scripts'
+  task :list_all_test_scripts do
+    require 'benchmark'
+    b = Benchmark.measure { puts Crucible::Tests::TestScriptEngine.list_all.keys }
     puts "List all tests completed in #{b.real} seconds."
   end
 

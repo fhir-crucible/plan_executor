@@ -16,6 +16,16 @@ module Crucible
         @scripts.find{|s| s.id == key || s.title == key} || []
       end
 
+      def execute_all
+        results = {}
+        self.tests.each do |test|
+          # TODO: Do we want to separate out multiserver tests?
+          next if test.multiserver
+          results.merge! test.execute
+        end
+        results
+      end
+
       def self.list_all(metadata=false)
         list = {}
         # TODO: Determine if we need resource-based testscript listing support
@@ -38,8 +48,9 @@ module Crucible
         # get all TestScript's in testscripts/xml
         @scripts = []
         root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
-        files = File.join(root, 'xml', '*.xml')
+        files = File.join(root, 'xml', '**/*.xml')
         Dir.glob(files).each do |f|
+          next if f.include? "/_reference/" # to support connectathon11 fixtures; review if there is a better way
           @scripts << BaseTestScript.new( FHIR::TestScript.from_xml( File.read(f) ), @client, @client2 )
         end
         @scripts

@@ -11,7 +11,7 @@ module Crucible
 
       def details
         {
-          'Overview' => 'Argonaut Implementation Sprint 5 focuses on the scenario where a clinician launches a care management app from within the EHR. Building on Sprint 4\'s objectives, we add support for exposing a patient\'s problem list, and allergy list as well as more advanced app/EHR integration using additional parameters in SMART\'s "EHR Launch Flow".'
+          'Overview' => 'Argonaut Implementation Sprint 5 focuses on the scenario where a clinician launches a care management app from within the EHR. Building on Sprint 4\'s objectives, we add support for exposing a patient\'s problem list, and allergy list as well as more advanced app/EHR integration using additional parameters in SMART\'s "EHR Launch Flow".',
           'Instructions' => 'If you\'re working on a server, please complete the "servers" tab of the Sprint 5 Spreadsheet. This time around you\'ll need to update the status flag to indicate whether you\'ve begun work (or completed work), so clients will know when to start testing. You\'ll also share details about how a developer can obtain OAuth client credentials (client_id for public apps, or a client_id and client_secret for confidential apps) as well as user login credentials. You might consider simply sharing a set of fixed credentials in this spreadsheet, or else directing users to a web page where they can complete self-service registration. If absolutely necessary, you can ask developers to e-mail you directly.',
           'FHIR API Calls' => 'For this sprint, EHRs should add support for: GET /Patient/{id}/Condition or GET /Condition?patient={id}: Retrieve any conditions (problems) on a patient\'s list, including current as well as resolved conditions, all coded in SNOMED CT per the DAF profile. GET /Patient/{id}/AllergyIntolerance or GET /AllergyIntolerance?patient={id}: Retrieve any allegies on a patient\'s list. Values are coded in NDF-RT (for drug class allergies), RxNorm (for drug ingredient allergies), UNII (for other substance allergies), or SNOMED CT (if all else fails).',
           'Authorization' => 'This sprint builds on Sprint 4\'s authorization scenario, adding two more context parameters to the launch response, both designed to improve the visual integration of third-party apps within a surrounding EHR system: need_patient_banner; indicates whether the app is responsible for displaying a demographic banner identifying the patient (should be set to true when an EHR does not already display such data in a frame around the app), and smart_style_url; indicates a set of style parameters (preferred colors, etc.) that the app may want to use.'
@@ -71,12 +71,15 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          # check for Conditions here, rather than medicationReference
-          # assert (!entry.resource.medicationReference.nil? || !entry.resource.medicationCodeableConcept.nil?), "MedicationOrder was missing a medication reference or codeable concept"
+          assert (entry.resource.patient && entry.resource.patient.reference.include?(patient_id)), "Patient on condition does not match patient requested"
+          entry.resource.code.coding.each do |coding|
+            assert coding.system == "http://snomed.info/sct", "Code System is not SNOMEDCT"
+            assert !coding.code.empty?, "No code defined for coding"
+          end
         end
       end
 
-      test 'AS5003', 'GET MedicationOrder with Patient IDs' do
+      test 'AS5003', 'GET Condition with Patient IDs' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
@@ -103,8 +106,11 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          # check for Conditions here, rather than medicationReference
-          # assert (!entry.resource.medicationReference.nil? || !entry.resource.medicationCodeableConcept.nil?), "MedicationOrder was missing a medication reference or codeable concept"
+          assert (entry.resource.patient && entry.resource.patient.reference.include?(patient_id)), "Patient on condition does not match patient requested"
+          entry.resource.code.coding.each do |coding|
+            assert coding.system == "http://snomed.info/sct", "Code System is not SNOMEDCT"
+            assert !coding.code.empty?, "No code defined for coding"
+          end
         end
       end
 
@@ -134,7 +140,11 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          assert (!entry.resource.medicationReference.nil? || !entry.resource.medicationCodeableConcept.nil?), "MedicationStatement was missing a medication reference or codeable concept"
+          assert (entry.resource.patient && entry.resource.patient.reference.include?(patient_id)), "Patient on AllergyIntolerance does not match patient requested"
+          assert entry.resource.substance, "No substance defined for AllergyIntolerance"
+          entry.resource.substance.coding.each do |coding|
+            assert ['http://fda.gov/UNII/', 'http://rxnav.nlm.nih.gov/REST/Ndfrt', 'http://snomed.info/sct', 'http://www.nlm.nih.gov/research/umls/rxnorm'].include?(coding.system), "Code system #{coding.system} does not match expected code systems."
+          end
         end
       end
 
@@ -165,8 +175,11 @@ module Crucible
         assert_response_ok(reply)
 
         reply.resource.entry.each do |entry|
-          # check for Conditions here, rather than medicationReference
-          # assert (!entry.resource.medicationReference.nil? || !entry.resource.medicationCodeableConcept.nil?), "MedicationStatement was missing a medication reference or codeable concept"
+          assert (entry.resource.patient && entry.resource.patient.reference.include?(patient_id)), "Patient on AllergyIntolerance does not match patient requested"
+          assert entry.resource.substance, "No substance defined for AllergyIntolerance"
+          entry.resource.substance.coding.each do |coding|
+            assert ['http://fda.gov/UNII/', 'http://rxnav.nlm.nih.gov/REST/Ndfrt', 'http://snomed.info/sct', 'http://www.nlm.nih.gov/research/umls/rxnorm'].include?(coding.system), "Code system #{coding.system} does not match expected code systems."
+          end
         end
       end
     end

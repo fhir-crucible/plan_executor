@@ -10,6 +10,11 @@ module Crucible
         'Test support for the U.S. Data Access Framework (DAF) Implementation Guide'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @tags.append('argonaut')
+      end
+
       def setup
         @server_side_resources = {}
         @resources = Crucible::Generator::Resources.new

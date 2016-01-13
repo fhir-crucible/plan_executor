@@ -39,7 +39,7 @@ module Crucible
         reply = @client.read(FHIR::Patient, patient_id, FHIR::Formats::ResourceFormat::RESOURCE_JSON)
 
         assert_response_ok(reply)
-        assert_equal patient_id, reply.id, 'Server returned wrong patient.'
+        assert_equal patient_id.to_s, reply.id.to_s, 'Server returned wrong patient.'
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_etag_present(reply) }
         warning { assert_last_modified_present(reply) }

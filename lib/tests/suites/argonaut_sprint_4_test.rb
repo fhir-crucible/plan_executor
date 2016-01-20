@@ -190,6 +190,8 @@ module Crucible
             rescue
               assert false, "could not get a code to search on"
             end
+          when 'identifier'
+            search_string = search_string.first.value if search_string
           end
 
           assert !search_string.nil? && !match_target.nil?, "could not get a MedicationOrder with a #{field} value to search on"
@@ -203,12 +205,12 @@ module Crucible
               }
             }
           }
-          reply = @client.search(@resource_class, options)
+          reply = @client.search(FHIR::MedicationOrder, options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
           assert reply.resource, "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
-          assert reply.resource.entry.select {|r| r.resource.xmlId == match_target.resource.xmlId}.length > 0, "Search did not find the expected MedicationOrder with ID: #{match_target.resource.xmlId}"
-          assert reply.resource.xmlId == match_target.resource.xmlId, "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
+          assert (reply.resource.entry && reply.resource.entry.length > 0), "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
+          assert getIdList(reply.resource).select {|id| id == match_target.resource.xmlId}.length > 0, "Search did not find the expected MedicationOrder with ID: #{match_target.resource.xmlId}"
         end
 
       end
@@ -235,6 +237,8 @@ module Crucible
             rescue
               assert false, "could not get a code to search on"
             end
+          when 'identifier'
+            search_string = search_string.first.value if search_string
           end
 
           assert !search_string.nil? && !match_target.nil?, "could not get a MedicationStatement with a #{field} value to search on"
@@ -248,12 +252,12 @@ module Crucible
               }
             }
           }
-          reply = @client.search(@resource_class, options)
+          reply = @client.search(FHIR::MedicationOrder, options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          assert reply.resource, "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Statement id: #{match_target.resource.xmlId}"
-          assert reply.resource.entry.select {|r| r.resource.xmlId == match_target.resource.xmlId}.length > 0, "Search did not find the expected MedicationStatement with ID: #{match_target.resource.xmlId}"
-          assert reply.resource.xmlId == match_target.resource.xmlId, "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Statement id: #{match_target.resource.xmlId}"
+          assert reply.resource, "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
+          assert (reply.resource.entry && reply.resource.entry.length > 0), "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
+          assert getIdList(reply.resource).select {|id| id == match_target.resource.xmlId}.length > 0, "Search did not find the expected MedicationStatements with ID: #{match_target.resource.xmlId}"
         end
 
       end
@@ -297,6 +301,19 @@ module Crucible
 
         nil
 
+      end
+
+      def getIdList(bundle)
+        return [] unless bundle.entry
+        bundle.entry.map do |entry|
+          if (entry.fullUrl)
+            FHIR::ResourceAddress.pull_out_id(entry.resourceType, entry.fullUrl)
+          elsif entry.resource
+            entry.resource.xmlId
+          else
+            nil
+          end
+        end
       end
     end
   end

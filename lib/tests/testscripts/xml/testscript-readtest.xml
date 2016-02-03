@@ -250,7 +250,7 @@
           <code value="read"/>
         </type>
         <resource value="Patient"/>
-        <params value="/ID-may-not-contain-CAPITALS"/>
+        <params value="/Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters"/>
       </operation>
     </action>
     <action>

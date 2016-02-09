@@ -92,7 +92,7 @@ module Crucible
 
         result = @client.resource_instance_history_as_of(FHIR::Patient,@id,after)
         assert_response_ok result
-        assert_equal 0, bundle.total, "there should not be any history one hour after the creation date"
+        assert_equal 0, result.resource.total, "there should not be any history one hour after the creation date"
       end
 
       test "HI03", "individual history versions" do
@@ -143,7 +143,7 @@ module Crucible
         }
 
         before = @create_date - 1.minute
-        after = Time.now.utc + 1.minute
+        after = Time.now.utc + 1.hour
 
         result = @client.resource_history_as_of(FHIR::Patient,before)
         assert_response_ok result
@@ -155,7 +155,7 @@ module Crucible
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
         assert_response_ok result
-        assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
+        assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
 
       end
 
@@ -167,7 +167,7 @@ module Crucible
         }
 
         before = @create_date - 1.minute
-        after = Time.now.utc + 1.minute
+        after = Time.now.utc + 1.hour
 
         result = @client.all_history_as_of(before)
         assert_response_ok result
@@ -179,7 +179,7 @@ module Crucible
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
         assert_response_ok result
-        assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
+        assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
 
       end
 

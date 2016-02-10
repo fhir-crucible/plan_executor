@@ -111,7 +111,6 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal 1, reply.resource.entry.size, 'The server did not return the correct number of results.'
-        warning { assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.' }
       end
 
       test "SE02#{action[0]}", 'Search on non-existing resource' do

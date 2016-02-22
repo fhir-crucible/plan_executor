@@ -10,6 +10,11 @@ module Crucible
         'Connectathon AuditEvent and Provenance Track Test focuses on server-created AuditEvents and Provenance resources.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
       end

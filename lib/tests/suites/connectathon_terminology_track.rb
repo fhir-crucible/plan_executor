@@ -10,6 +10,11 @@ module Crucible
         'Connectathon Terminology Track focuses on the $expand, $validate-code, $lookup, and $translate operations.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         # find FHIRDefinedType valueset
         options = {

@@ -10,6 +10,11 @@ module Crucible
         'Connectathon Fetch Patient Record Tests focusing on the $everything operation.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
         @patient = @resources.example_patient_record_201

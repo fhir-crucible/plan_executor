@@ -10,6 +10,11 @@ module Crucible
         'Initial Sprinkler tests (CT01, CT02, CT03, CT04) for testing resource format requests.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Format'
+      end
+
       # Create a patient and store its details for format requests
       def setup
         @xml_format = FHIR::Formats::ResourceFormat::RESOURCE_XML

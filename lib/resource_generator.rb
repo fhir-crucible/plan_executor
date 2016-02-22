@@ -18,6 +18,7 @@ module Crucible
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
         resource.text=nil if [FHIR::Bundle,FHIR::Binary,FHIR::Parameters].include?(klass)
+        apply_invariants!(resource)
         resource
       end
 
@@ -209,6 +210,12 @@ module Crucible
         hn
       end
 
+      def self.textonly_codeableconcept(text='text')
+        concept = FHIR::CodeableConcept.new
+        concept.text = text
+        concept
+      end
+
       # Common systems:
       #   SNOMED  http://snomed.info/sct
       #   LOINC   http://loinc.org
@@ -244,6 +251,88 @@ module Crucible
         animal.breed = minimal_codeableconcept('http://hl7.org/fhir/animal-breed','gret') # golden retriever
         animal.genderStatus = minimal_codeableconcept('http://hl7.org/fhir/animal-genderstatus','intact') # intact
         animal
+      end
+
+      def self.apply_invariants!(resource)
+        case resource.class
+        when FHIR::DiagnosticReport
+          date = DateTime.now
+          resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
+          resource.effectivePeriod = nil
+        when FHIR::Immunization
+          if resource.wasNotGiven
+            resource.explanation.reasonNotGiven = textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}")
+            resource.explanation.reason = nil
+            resource.reaction = nil
+          else
+            resource.explanation.reasonNotGiven = nil
+            resource.explanation.reason = textonly_codeableconcept("reason #{SecureRandom.base64}")
+          end
+        when FHIR::Media
+          if resource.fhirType == 'video'
+            resource.frames = nil
+          elsif resource.fhirType == 'photo'
+            resource.duration = nil
+          elsif resource.fhirType == 'audio'
+            resource.height = nil
+            resource.width = nil
+            resource.frames = nil            
+          else
+            resource.height = nil
+            resource.width = nil
+            resource.frames = nil
+          end
+        when FHIR::Medication
+          if resource.product.try(:ingredient)
+            resource.product.ingredient.each {|i|i.amount = nil}
+          end
+        when FHIR::MedicationAdministration
+          date = DateTime.now
+          resource.effectiveTimeDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
+          resource.effectiveTimePeriod = nil
+          if resource.wasNotGiven
+            resource.reasonGiven = nil
+          else
+            resource.reasonNotGiven = nil
+          end
+          resource.medicationReference = FHIR::Reference.new
+          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationCodeableConcept = nil
+        when FHIR::MedicationDispense
+          resource.medicationReference = FHIR::Reference.new
+          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationCodeableConcept = nil
+          resource.dosageInstruction.each {|d|d.timing = nil }
+        when FHIR::MedicationOrder
+          resource.medicationReference = FHIR::Reference.new
+          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationCodeableConcept = nil
+          resource.dosageInstruction.each {|d|d.timing = nil }
+        when FHIR::MedicationStatement
+          resource.reasonNotTaken = nil if resource.wasNotTaken != true
+          resource.medicationReference = FHIR::Reference.new
+          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationCodeableConcept = nil
+          resource.dosage.each{|d|d.timing=nil}
+        when FHIR::Order
+          resource.when.schedule = nil
+        when FHIR::Patient
+          resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
+        when FHIR::Procedure
+          resource.reasonNotPerformed = nil if resource.notPerformed != true
+          resource.focalDevice.each do |fd|
+            fd.action = minimal_codeableconcept('http://hl7.org/fhir/ValueSet/device-action','implanted')
+          end
+        when FHIR::Questionnaire
+          resource.group.required = true
+          resource.group.group = nil
+          resource.group.question.each {|q|q.options = nil }
+        when FHIR::QuestionnaireResponse
+          resource.group.group = nil
+          resource.group.question.each {|q|q.answer = nil }
+        else
+          # default
+        end
       end
 
     end

@@ -159,6 +159,8 @@ module Crucible
           result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
           ResourceGenerator.set_fields!(@preexisting)
+          ResourceGenerator.apply_invariants!(@preexisting)
+
           reply = @client.update @preexisting, @preexisting_id
 
           if reply.code==200
@@ -349,7 +351,8 @@ module Crucible
         if @preexisting.nil?
           result.update(STATUS[:skip], "Unable to validate -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
-          ResourceGenerator.set_fields!(@preexisting)
+          # ResourceGenerator.set_fields!(@preexisting)
+          # ResourceGenerator.apply_invariants!(@preexisting)
 
           reply = @client.validate_existing(@preexisting, @preexisting_id)
 

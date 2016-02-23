@@ -12,6 +12,11 @@ module Crucible
         'Initial Sprinkler tests for testing search capabilities.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Search'
+      end
+
       def setup
         # Create a patient with gender:missing
         @resources = Crucible::Generator::Resources.new

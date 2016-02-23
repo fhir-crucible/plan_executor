@@ -10,6 +10,11 @@ module Crucible
         'Connectathon Patient Track tests: registering, updating, history, and search'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
 

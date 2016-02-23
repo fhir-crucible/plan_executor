@@ -10,6 +10,11 @@ module Crucible
         'Initial Sprinkler tests (R001, R002, R003, R004) for testing basic READ requests.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Read'
+      end
+
       def setup
         @patient = ReadTest.createPatient('Emerald', 'Caro')
         reply = @client.create(@patient)

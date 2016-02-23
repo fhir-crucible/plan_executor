@@ -10,6 +10,11 @@ module Crucible
         'Connectathon Profile Validation Track Test focuses on validating observations against the general specification and a profile.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
 

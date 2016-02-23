@@ -10,6 +10,11 @@ module Crucible
         'Test server support for transactions and batch processing including conditional logic.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Transaction and Batch'
+      end
+
       def setup
         # nothing
       end

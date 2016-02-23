@@ -360,6 +360,27 @@ module Crucible
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was validated.", reply.body)
           elsif reply.code==201
             result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
+          elsif reply.code==400
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
+
+            if outcome.nil?
+              message = "Response code #{reply.code} with no OperationOutcome provided."
+              result.update(STATUS[:fail], message, reply.body)
+            else
+              message = self.build_messages(outcome)
+              invalid_codes = ['invalid','structure','required','value','invariant']
+              security_codes = ['security','login','unknown','expired','forbidden','suppressed']
+              processing_codes = ['processing','not-supported','duplicate','not-found','too-long','code-invalid','extension','too-costly','business-rule','conflict','incomplete']
+              transient_codes = ['transient','lock-error','no-store','exception','timeout','throttled']
+            
+              status = :pass
+              outcome.issue.each do |issue|
+                if ['fatal','error'].include?(issue.severity)
+                  status = :fail if security_codes.include?(issue.code) || transient_codes.include?(issue.code)
+                end
+              end
+              result.update(STATUS[status], message, reply.body)
+            end
           else
             outcome = self.parse_operation_outcome(reply.body) rescue nil
             if outcome.nil?

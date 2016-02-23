@@ -81,7 +81,7 @@ module Crucible
               end
             end
           elsif type == Integer
-            gen = SecureRandom.random_number(100)
+            gen = (SecureRandom.random_number(100) + 1) # add one in case this is a "positiveInt" which must be > 0
           elsif type == Float
             gen = SecureRandom.random_number
             while gen.to_s.match(/e/) # according to FHIR spec: decimals may not contain exponents
@@ -134,6 +134,9 @@ module Crucible
           when FHIR::Quantity
             child = FHIR::Quantity.new
             child.value = SecureRandom.random_number
+            while child.value.to_s.match(/e/) # according to FHIR spec: decimals may not contain exponents
+              child.value = SecureRandom.random_number
+            end
             child.unit = SecureRandom.base64
           else
             child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension','FHIR::Signature'].include?(value[:class_name]))
@@ -255,6 +258,94 @@ module Crucible
 
       def self.apply_invariants!(resource)
         case resource.class
+        when FHIR::Appointment
+          resource.reason = minimal_codeableconcept('http://snomed.info/sct','219006') # drinker of alcohol
+          resource.participant.each{|p| p.fhirType=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
+        when FHIR::AppointmentResponse
+          resource.participantType = [ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ]
+        when FHIR::AuditEvent
+          resource.object.each do |o|
+            o.query=nil
+            o.name = "name #{SecureRandom.base64}" if o.name.nil?
+          end
+        when FHIR::Bundle
+          resource.total = nil if !['searchset','history'].include?(resource.fhirType)
+          resource.entry.each {|e|e.search=nil} if resource.fhirType!='searchset'
+          resource.entry.each {|e|e.request=nil} if !['batch','transaction','history'].include?(resource.fhirType)
+          resource.entry.each {|e|e.response=nil} if !['batch-response','transaction-response'].include?(resource.fhirType)
+          head = resource.entry.first
+          if !head.nil?
+            if head.request.nil? && head.response.nil? && head.resource.nil?
+              if resource.fhirType == 'document'
+                head.resource = generate(FHIR::Composition,3)
+              elsif resource.fhirType == 'message'
+                head.resource = generate(FHIR::MessageHeader,3)  
+              else
+                head.resource = generate(FHIR::Basic,3)                              
+              end
+            end
+            if head.resource.nil?
+              head.fullUrl = nil
+            else
+              rid = SecureRandom.random_number(100) + 1
+              head.fullUrl = "http://projectcrucible.org/fhir/#{rid}"
+              head.resource.xmlId = "#{rid}"
+            end
+          end
+        when FHIR::CarePlan
+          resource.activity.each {|a| a.reference = nil if a.detail }
+        when FHIR::Claim
+          resource.item.each do |item|
+            item.fhirType = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+            item.detail.each do |detail|
+              detail.fhirType = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+              detail.subDetail.each do |sub|
+                sub.fhirType = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+                sub.service = minimal_coding('http://hl7.org/fhir/ex-USCLS','1205')
+              end
+            end
+          end
+          resource.missingTeeth.each do |mt|
+            mt.tooth = minimal_coding('http://hl7.org/fhir/ex-fdi','42')
+          end
+        when FHIR::ClaimResponse
+          resource.item.each do |item|
+            item.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            item.detail.each do |detail|
+              detail.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+              detail.subDetail.each do |sub|
+                sub.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+              end
+            end
+          end
+          resource.addItem.each do |addItem|
+            addItem.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            addItem.detail.each do |detail|
+              detail.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            end
+          end
+        when FHIR::Communication
+          resource.payload = nil
+        when FHIR::CommunicationRequest
+          resource.payload = nil
+        when FHIR::Composition
+          resource.attester.each {|a| a.mode = ['professional']}
+          resource.section.each do |section|
+            section.emptyReason = nil
+            section.section.each do |sub|
+              sub.emptyReason = nil
+              sub.section = nil
+            end
+          end
+        when FHIR::ConceptMap
+          if(resource.sourceUri.nil? && resource.sourceReference.nil?)
+            resource.sourceReference = FHIR::Reference.new
+            resource.sourceReference.display = "ValueSet #{SecureRandom.base64}" 
+          end
+          if(resource.targetUri.nil? && resource.targetReference.nil?)
+            resource.targetReference = FHIR::Reference.new
+            resource.targetReference.display = "ValueSet #{SecureRandom.base64}" 
+          end         
         when FHIR::DiagnosticReport
           date = DateTime.now
           resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
@@ -314,6 +405,8 @@ module Crucible
           resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
           resource.medicationCodeableConcept = nil
           resource.dosage.each{|d|d.timing=nil}
+        when FHIR::MessageHeader
+          resource.response.identifier.gsub!(/[^0-9A-Za-z]/, '') if resource.try(:response).try(:identifier)
         when FHIR::Order
           resource.when.schedule = nil
         when FHIR::Patient

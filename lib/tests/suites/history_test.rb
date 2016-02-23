@@ -10,6 +10,11 @@ module Crucible
         'Initial Sprinkler tests (HI01,HI02,HI03,HI04,HI05,HI06,HI07,HI08,HI09,HI10,HI11) for testing resource history requests.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'History'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
         @patient = @resources.minimal_patient

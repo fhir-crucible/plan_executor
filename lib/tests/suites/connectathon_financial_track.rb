@@ -10,6 +10,11 @@ module Crucible
         'Connectathon Financial Track Test focuses on submitting Claims and retreiving ClaimResponses.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
 

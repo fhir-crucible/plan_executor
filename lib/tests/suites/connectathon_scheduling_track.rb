@@ -10,6 +10,11 @@ module Crucible
         'Connectathon Scheduling Track Test focuses on creating/cancelling Appointments and retreiving Schedules.'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = 'Connectathon'
+      end
+
       def setup
         @resources = Crucible::Generator::Resources.new
 

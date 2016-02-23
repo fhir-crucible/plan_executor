@@ -9,9 +9,10 @@ module Crucible
 
       attr_accessor :tests_subset
       attr_accessor :tags
+      attr_accessor :category
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
-      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details']
+      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category']
       STATUS = {
         pass: 'pass',
         fail: 'fail',

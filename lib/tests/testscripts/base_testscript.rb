@@ -48,6 +48,7 @@ module Crucible
 
       def initialize(testscript, client, client2=nil)
         super(client, client2)
+        @category = 'TestScript'
         @id_map = {}
         @response_map = {}
         @warnings = []

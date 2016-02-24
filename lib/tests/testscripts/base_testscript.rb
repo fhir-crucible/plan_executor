@@ -112,7 +112,7 @@ module Crucible
       end
 
       def process_test(test)
-        result = TestResult.new(test.xmlId, test.name, STATUS[:pass], '','')
+        result = TestResult.new("TS_#{test.xmlId}", test.name, STATUS[:pass], '','')
         @last_response = nil # clear out any responses from previous tests
         @warnings = [] # clear out any previous warnings
         begin

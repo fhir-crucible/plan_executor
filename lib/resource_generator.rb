@@ -345,11 +345,88 @@ module Crucible
           if(resource.targetUri.nil? && resource.targetReference.nil?)
             resource.targetReference = FHIR::Reference.new
             resource.targetReference.display = "ValueSet #{SecureRandom.base64}" 
-          end         
+          end
+        when FHIR::Conformance
+          resource.fhirVersion = 'DSTU2'
+          resource.format = ['xml','json']
+          if resource.kind == 'capability'
+            resource.implementation = nil
+          elsif resource.kind == 'requirements'
+            resource.implementation = nil
+            resource.software = nil
+          end
+          resource.messaging.each{|m| m.endpoint = nil} if resource.kind != 'instance'
+        when FHIR::Contract
+          resource.actor.each do |actor|
+            actor.entity = FHIR::Reference.new
+            actor.entity.display = "Patient #{SecureRandom.base64}" 
+          end
+          resource.term.each do |term|
+            term.actor.each do |actor|
+              actor.entity = FHIR::Reference.new
+              actor.entity.display = "Organization #{SecureRandom.base64}" 
+            end
+            term.group.each do |group|
+              group.actor.each do |actor|
+                actor.entity = FHIR::Reference.new
+                actor.entity.display = "Organization #{SecureRandom.base64}" 
+              end
+            end
+          end
+          resource.friendly.each do |f|
+            f.contentAttachment = nil
+            f.contentReference = FHIR::Reference.new
+            f.contentReference.display = "DocumentReference #{SecureRandom.base64}" 
+          end
+          resource.legal.each do |f|
+            f.contentAttachment = nil
+            f.contentReference = FHIR::Reference.new
+            f.contentReference.display = "DocumentReference #{SecureRandom.base64}" 
+          end
+          resource.rule.each do |f|
+            f.contentAttachment = nil
+            f.contentReference = FHIR::Reference.new
+            f.contentReference.display = "DocumentReference #{SecureRandom.base64}" 
+          end
+        when FHIR::DataElement
+          resource.mapping.each do |m|
+            m.fhirIdentity = SecureRandom.base64 if m.fhirIdentity.nil?
+            m.fhirIdentity.gsub!(/[^0-9A-Za-z]/, '')
+          end
+        when FHIR::DeviceMetric
+          resource.measurementPeriod = nil
         when FHIR::DiagnosticReport
           date = DateTime.now
           resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
           resource.effectivePeriod = nil
+        when FHIR::DocumentManifest
+          resource.content.each do |c|
+            c.pAttachment = nil
+            c.pReference = FHIR::Reference.new
+            c.pReference.display = "Reference(Any) #{SecureRandom.base64}"
+          end
+        when FHIR::DocumentReference
+          resource.docStatus = minimal_codeableconcept('http://hl7.org/fhir/composition-status','preliminary')
+        when FHIR::ElementDefinition
+          keys = []
+          resource.constraint.each do |constraint|
+            constraint.key = SecureRandom.base64 if constraint.key.nil?
+            constraint.key.gsub!(/[^0-9A-Za-z]/, '')
+            keys << constraint.key
+            constraint.xpath = "/"
+          end
+          resource.condition = keys
+          resource.mapping.each do |m|
+            m.fhirIdentity = SecureRandom.base64 if m.fhirIdentity.nil?
+            m.fhirIdentity.gsub!(/[^0-9A-Za-z]/, '')
+          end
+          resource.max = "#{resource.min+1}"
+          # TODO remove bindings for things that can't be code, Coding, CodeableConcept
+          is_codeable = false
+          resource.fhirType.each do |f|
+            is_codeable = (['code','Coding','CodeableConcept'].include?(f.code))
+          end
+          resource.binding = nil unless is_codeable
         when FHIR::Immunization
           if resource.wasNotGiven
             resource.explanation.reasonNotGiven = textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}")

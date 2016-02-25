@@ -5,6 +5,7 @@ module Crucible
       attr_accessor :conformance
       attr_accessor :searchParams
       attr_reader   :canSearchById
+      attr_accessor :patient_id
 
       def id
         'ArgonautSprint1Test'
@@ -32,6 +33,10 @@ module Crucible
       def setup
         @searchParams = [:name, :family, :given, :identifier, :gender, :birthdate]
         @rc = FHIR::Patient
+
+        if !@client.client.try(:params).nil? && @client.client.params["patient"]
+          @patient_id = @client.client.params["patient"]
+        end
       end
 
       def get_patient_by_param(param, val, flag=true)
@@ -48,7 +53,7 @@ module Crucible
         reply = @client.search(@rc, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.get_by_id(@id).equals?(@patient, ['_id', "text"]), 'Server returned wrong patient.'
+        assert reply.resource.get_by_id(@patient_id).equals?(@patient, ['_id', "text"]), 'Server returned wrong patient.'
       end
 
       def define_metadata(method)
@@ -65,13 +70,13 @@ module Crucible
           validates resource: "Patient", methods: ["read", "search"]
         }
 
-        @id = @client.read_feed(@rc).resource.entry.first.resource.xmlId
+        @patient_id ||= @client.read_feed(@rc).resource.entry.first.resource.xmlId
 
-        reply = @client.read(FHIR::Patient, @id)
+        reply = @client.read(FHIR::Patient, @patient_id)
         assert_response_ok(reply)
-        assert_equal @id, reply.id, 'Server returned wrong patient.'
+        assert_equal @patient_id, reply.id, 'Server returned wrong patient.'
         @patient = reply.resource
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
       end
@@ -80,7 +85,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param(:identifier, @patient[:identifier].first.try(:value))
       end
 
@@ -88,7 +93,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param(:identifier, @patient[:identifier].first.try(:value), false)
       end
 
@@ -96,7 +101,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         name = @patient[:name].first.try(:family).try(:first)
         get_patient_by_param(:name, name)
       end
@@ -105,7 +110,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         name = @patient[:name].first.try(:family).try(:first)
         get_patient_by_param(:name, name, false)
       end
@@ -114,7 +119,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param(:family, @patient[:name].first.try(:family).try(:first))
       end
 
@@ -122,7 +127,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param(:family, @patient[:name].first.try(:family).try(:first), false)
       end
 
@@ -130,7 +135,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param(:given, @patient[:name].first.try(:given).try(:first))
       end
 
@@ -138,7 +143,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param(:given, @patient[:name].first.try(:given).try(:first), false)
       end
 
@@ -146,7 +151,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param('gender', @patient[:gender])
       end
 
@@ -154,7 +159,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param('gender', @patient[:gender], false)
       end
 
@@ -162,7 +167,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param('birthdate', @patient[:birthDate])
       end
 
@@ -170,7 +175,7 @@ module Crucible
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@id}"
+        assert @patient, "could not get patient by id: #{@patient_id}"
         get_patient_by_param('birthdate', @patient[:birthDate], false)
       end
 

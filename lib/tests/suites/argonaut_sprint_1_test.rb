@@ -70,7 +70,13 @@ module Crucible
           validates resource: "Patient", methods: ["read", "search"]
         }
 
-        @patient_id ||= @client.read_feed(@rc).resource.entry.first.resource.xmlId
+        begin
+          @patient_id ||= @client.read_feed(@rc).resource.entry.first.resource.xmlId
+        rescue NoMethodError => e
+          @patient = nil
+        end
+
+        assert @patient_id, "No patient ID was supplied, and none could be retrieved via search"
 
         reply = @client.read(FHIR::Patient, @patient_id)
         assert_response_ok(reply)

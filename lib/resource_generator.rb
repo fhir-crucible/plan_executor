@@ -157,6 +157,14 @@ module Crucible
         resource
       end
 
+      def self.random_oid
+        oid = "urn:oid:2"
+        SecureRandom.random_number(12).times do |i|
+          oid = "#{oid}.#{SecureRandom.random_number(500)}"
+        end
+        oid
+      end
+
       def self.minimal_patient(identifier='0',name='Name')
         resource = FHIR::Patient.new
         resource.identifier = [ minimal_identifier(identifier) ]
@@ -217,6 +225,12 @@ module Crucible
         concept = FHIR::CodeableConcept.new
         concept.text = text
         concept
+      end
+
+      def self.textonly_reference(text='Reference')
+        ref = FHIR::Reference.new
+        ref.display = "#{text} #{SecureRandom.base64}"
+        ref
       end
 
       # Common systems:
@@ -339,12 +353,10 @@ module Crucible
           end
         when FHIR::ConceptMap
           if(resource.sourceUri.nil? && resource.sourceReference.nil?)
-            resource.sourceReference = FHIR::Reference.new
-            resource.sourceReference.display = "ValueSet #{SecureRandom.base64}" 
+            resource.sourceReference = textonly_reference('ValueSet') 
           end
           if(resource.targetUri.nil? && resource.targetReference.nil?)
-            resource.targetReference = FHIR::Reference.new
-            resource.targetReference.display = "ValueSet #{SecureRandom.base64}" 
+            resource.targetReference = textonly_reference('ValueSet') 
           end
         when FHIR::Conformance
           resource.fhirVersion = 'DSTU2'
@@ -358,35 +370,29 @@ module Crucible
           resource.messaging.each{|m| m.endpoint = nil} if resource.kind != 'instance'
         when FHIR::Contract
           resource.actor.each do |actor|
-            actor.entity = FHIR::Reference.new
-            actor.entity.display = "Patient #{SecureRandom.base64}" 
+            actor.entity = textonly_reference('Patient')
           end
           resource.term.each do |term|
             term.actor.each do |actor|
-              actor.entity = FHIR::Reference.new
-              actor.entity.display = "Organization #{SecureRandom.base64}" 
+              actor.entity = textonly_reference('Organization')
             end
             term.group.each do |group|
               group.actor.each do |actor|
-                actor.entity = FHIR::Reference.new
-                actor.entity.display = "Organization #{SecureRandom.base64}" 
+                actor.entity = textonly_reference('Organization')
               end
             end
           end
           resource.friendly.each do |f|
             f.contentAttachment = nil
-            f.contentReference = FHIR::Reference.new
-            f.contentReference.display = "DocumentReference #{SecureRandom.base64}" 
+            f.contentReference = textonly_reference('DocumentReference')
           end
           resource.legal.each do |f|
             f.contentAttachment = nil
-            f.contentReference = FHIR::Reference.new
-            f.contentReference.display = "DocumentReference #{SecureRandom.base64}" 
+            f.contentReference = textonly_reference('DocumentReference')
           end
           resource.rule.each do |f|
             f.contentAttachment = nil
-            f.contentReference = FHIR::Reference.new
-            f.contentReference.display = "DocumentReference #{SecureRandom.base64}" 
+            f.contentReference = textonly_reference('DocumentReference')
           end
         when FHIR::DataElement
           resource.mapping.each do |m|
@@ -402,8 +408,7 @@ module Crucible
         when FHIR::DocumentManifest
           resource.content.each do |c|
             c.pAttachment = nil
-            c.pReference = FHIR::Reference.new
-            c.pReference.display = "Reference(Any) #{SecureRandom.base64}"
+            c.pReference = textonly_reference('Any')
           end
         when FHIR::DocumentReference
           resource.docStatus = minimal_codeableconcept('http://hl7.org/fhir/composition-status','preliminary')
@@ -427,14 +432,64 @@ module Crucible
             is_codeable = (['code','Coding','CodeableConcept'].include?(f.code))
           end
           resource.binding = nil unless is_codeable
+        when FHIR::Goal
+          resource.outcome.each do |outcome|
+            outcome.resultCodeableConcept = nil
+            outcome.resultReference = textonly_reference('Observation')
+          end
+        when FHIR::Group
+          resource.member = [] if resource.actual==false
+          resource.characteristic.each do |c|
+            c.valueCodeableConcept = nil
+            c.valueBoolean = true
+            c.valueQuantity = nil
+            c.valueRange = nil
+          end
+        when FHIR::ImagingObjectSelection
+          resource.uid = random_oid
+          index = SecureRandom.random_number(FHIR::ImagingObjectSelection::VALID_CODES[:title].length)
+          code = FHIR::ImagingObjectSelection::VALID_CODES[:title][index]
+          resource.title = minimal_codeableconcept('http://nema.org/dicom/dicm',code)
+          resource.study.each do |study|
+            study.uid = random_oid
+            study.series.each do |series|
+              series.uid = random_oid
+              series.instance.each do |instance|
+                instance.sopClass = random_oid
+                instance.uid = random_oid
+              end
+            end
+          end
+        when FHIR::ImagingStudy
+          resource.uid = random_oid
+          resource.series.each do |series|
+            series.uid=random_oid
+            series.instance.each do |instance|
+              instance.uid = random_oid
+              instance.sopClass = random_oid
+            end
+          end
         when FHIR::Immunization
           if resource.wasNotGiven
-            resource.explanation.reasonNotGiven = textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}")
+            resource.explanation.reasonNotGiven = [ textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}") ]
             resource.explanation.reason = nil
             resource.reaction = nil
           else
             resource.explanation.reasonNotGiven = nil
-            resource.explanation.reason = textonly_codeableconcept("reason #{SecureRandom.base64}")
+            resource.explanation.reason = [ textonly_codeableconcept("reason #{SecureRandom.base64}") ]
+          end
+        when FHIR::ImplementationGuide
+          resource.fhirVersion = "DSTU2"
+          resource.package.each do |package|
+            package.resource.each do |r|
+              r.sourceUri = nil
+              r.sourceReference = textonly_reference('Any')
+            end
+          end
+        when FHIR::List
+          resource.emptyReason = nil
+          resource.entry.each do |entry|
+            resource.mode = 'changes' if !entry.fhirDeleted.nil?
           end
         when FHIR::Media
           if resource.fhirType == 'video'
@@ -463,23 +518,19 @@ module Crucible
           else
             resource.reasonNotGiven = nil
           end
-          resource.medicationReference = FHIR::Reference.new
-          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
         when FHIR::MedicationDispense
-          resource.medicationReference = FHIR::Reference.new
-          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
         when FHIR::MedicationOrder
-          resource.medicationReference = FHIR::Reference.new
-          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
         when FHIR::MedicationStatement
           resource.reasonNotTaken = nil if resource.wasNotTaken != true
-          resource.medicationReference = FHIR::Reference.new
-          resource.medicationReference.display = "Medication #{SecureRandom.base64}" 
+          resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosage.each{|d|d.timing=nil}
         when FHIR::MessageHeader

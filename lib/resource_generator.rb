@@ -535,6 +535,25 @@ module Crucible
           resource.dosage.each{|d|d.timing=nil}
         when FHIR::MessageHeader
           resource.response.identifier.gsub!(/[^0-9A-Za-z]/, '') if resource.try(:response).try(:identifier)
+        when FHIR::NamingSystem
+          resource.replacedBy = nil if resource.status!='retired'
+          if resource.kind == 'root'
+            resource.uniqueId.each do |uid|
+              uid.fhirType='other' if ['uuid','oid'].include?(uid.fhirType)
+            end
+          end
+          resource.uniqueId.each do |uid|
+            uid.preferred = nil
+          end
+        when FHIR::NutritionOrder
+          resource.oralDiet.schedule = nil if resource.oralDiet
+          resource.supplement.each{|s|s.schedule=nil}
+          resource.enteralFormula.administration = nil if resource.enteralFormula
+        when FHIR::OperationDefinition
+          resource.parameter.each do |p|
+            p.binding = nil
+            p.part = nil
+          end
         when FHIR::Order
           resource.when.schedule = nil
         when FHIR::Patient
@@ -544,6 +563,12 @@ module Crucible
           resource.focalDevice.each do |fd|
             fd.action = minimal_codeableconcept('http://hl7.org/fhir/ValueSet/device-action','implanted')
           end
+        when FHIR::Provenance
+          resource.entity.each do |e|
+            e.agent.relatedAgent = nil if e.agent
+          end
+        when FHIR::RelatedPerson
+          resource.relationship = minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','family')
         when FHIR::Questionnaire
           resource.group.required = true
           resource.group.group = nil
@@ -551,6 +576,76 @@ module Crucible
         when FHIR::QuestionnaireResponse
           resource.group.group = nil
           resource.group.question.each {|q|q.answer = nil }
+        when FHIR::Subscription
+          resource.status = 'requested' if resource.xmlId.nil?
+          resource.channel.payload = 'applicaton/json+fhir'
+          resource.end = nil
+        when FHIR::SupplyDelivery
+          resource.fhirType = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
+        when FHIR::SupplyRequest
+          resource.kind = minimal_codeableconcept('http://hl7.org/fhir/supply-kind','central')
+          if resource.when 
+            resource.when.schedule = nil
+            resource.when.code = minimal_codeableconcept('http://snomed.info/sct','20050000') #biweekly
+          end
+        when FHIR::StructureDefinition
+          resource.fhirVersion = 'DSTU2'
+          resource.snapshot.element.first.path = resource.constrainedType if resource.snapshot && resource.snapshot.element
+          resource.mapping.each do |m|
+            m.fhirIdentity.gsub!(/[^0-9A-Za-z]/, '') if m.fhirIdentity
+          end
+        when FHIR::TestScript
+          resource.variable.each do |v|
+            v.sourceId.gsub!(/[^0-9A-Za-z]/, '') if v.sourceId
+            v.path = nil if v.headerField
+          end
+          if resource.setup
+            resource.setup.metadata = nil 
+            resource.setup.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end
+          end
+          resource.test.each do |test|
+            test.metadata = nil
+            test.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end            
+          end
+          if resource.teardown
+            resource.teardown.action.each do |a|
+              apply_invariants!(a.operation) if a.operation
+            end
+          end
+        when FHIR::TestScript::TestScriptSetupActionAssertComponent
+          # an assertion can only contain one of these...
+          keys = ['contentType','headerField','minimumId','navigationLinks','path','resource','responseCode','response','validateProfileId']
+          has_keys = []
+          keys.each do |key|
+            has_keys << key if resource.try(key.to_sym)
+          end
+          # remove all assertions except the first
+          has_keys[1..-1].each do |key|
+            resource.send("#{key}=",nil)
+          end
+          resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
+          resource.validateProfileId.gsub!(/[^0-9A-Za-z]/, '') if resource.validateProfileId
+        when FHIR::TestScript::TestScriptSetupActionOperationComponent
+          resource.responseId.gsub!(/[^0-9A-Za-z]/, '') if resource.responseId
+          resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
+          resource.targetId.gsub!(/[^0-9A-Za-z]/, '') if resource.targetId
+        when FHIR::ValueSet
+          if resource.compose
+            resource.compose.include.each do |inc|
+              inc.filter = nil if inc.concept
+            end
+            resource.compose.exclude.each do |exc|
+              exc.filter = nil if exc.concept
+            end
+          end
         else
           # default
         end

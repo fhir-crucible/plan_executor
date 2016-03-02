@@ -1,10 +1,46 @@
 <TestScript xmlns="http://hl7.org/fhir">
 	<id value="track1-patient-base-server-id-xml"/>
 
-	<url value="http://wildfhir.aegis.net/dstu2/TestScript/track1-patient-base-server-id-xml"/>
+	<url value="http://wildfhir.aegis.net/fhir/TestScript/track1-patient-base-server-id-xml"/>
 	<name value="FHIR Connectathon 11 - Track 1 - Patient - Register a new patient"/>
 	<status value="draft"/>
+	<publisher value="AEGIS.net, Inc."/>
+	<contact>
+		<name value="Touchstone Support"/>
+		<telecom>
+			<system value="email"/>
+			<value value="Touchstone_Support@aegis.net"/>
+			<use value="work"/>
+		</telecom>
+	</contact>
+	<date value="2015-12-30"/>
 	<description value="FHIR Connectathon 11 - Track 1 - Patient - XML Format - Baseline tests to create, update, retrieve history and search a patient, no extensions with server assigned resource id."/>
+	<useContext>
+		<coding>
+			<system value="urn:iso:std:iso:3166"/>
+			<code value="US"/>
+			<display value="United States of America (the)"/>
+		</coding>
+	</useContext>
+	<requirements value="Patient Create, Read, Update, Delete, and History Instance Operations"/>
+	<copyright value="© AEGIS.net, Inc. 2015+"/>
+
+	<metadata>
+		<capability>
+			<required value="true"/>
+			<description value="Patient create, read, update, delete, history-instance and search-type operations"/>
+			<link value="http://hl7.org/fhir/2016Jan/http.html#create"/>
+			<link value="http://hl7.org/fhir/2016Jan/http.html#read"/>
+			<link value="http://hl7.org/fhir/2016Jan/http.html#update"/>
+			<link value="http://hl7.org/fhir/2016Jan/http.html#delete"/>
+			<link value="http://hl7.org/fhir/2016Jan/http.html#history"/>
+			<link value="http://hl7.org/fhir/2016Jan/http.html#search"/>
+			<link value="http://hl7.org/fhir/2016Jan/patient.html"/>
+			<conformance>
+				<reference value="/Connectathon11/Track1-Patient/_reference/conformance/PatientConformance.xml" />
+			</conformance>
+		</capability>
+	</metadata>
 
 	<fixture id="patient-create-PeterChalmers">
 		<resource>
@@ -37,22 +73,22 @@
 
 	<variable>
 		<name value="peterChalmersId"/>
-        <path value="fhir:Bundle/fhir:entry/fhir:resource/fhir:Patient/fhir:id/@value" />
+		<path value="Patient/id" />
 		<sourceId value="create-search-response"/>
 	</variable>
 	<variable>
 		<name value="searchIdentifier"/>
-        <path value="fhir:Patient/fhir:identifier/fhir:value/@value"/>
+		<path value="Patient/identifier/value"/>
 		<sourceId value="patient-create-PeterChalmers"/>
 	</variable>
 	<variable>
 		<name value="searchFamilyName"/>
-        <path value="fhir:Patient/fhir:name/fhir:family/@value"/>
+		<path value="Patient/name/family"/>
 		<sourceId value="patient-create-PeterChalmers"/>
 	</variable>
 	<variable>
 		<name value="searchGivenName"/>
-        <path value="fhir:Patient/fhir:name/fhir:given/@value"/>
+		<path value="Patient/name/given"/>
 		<sourceId value="patient-create-PeterChalmers"/>
 	</variable>
 
@@ -193,7 +229,7 @@
 			<assert>
 				<description value="Confirm that version of resource is greater than 1 after the update. Warning only as the server may not support versioning."/>
 				<operator value="greaterThan"/>
-                <path value="fhir:Patient/fhir:meta/fhir:versionId/@value"/>
+				<path value="Patient/meta/versionId"/>
 				<value value="1"/>
 				<warningOnly value="true"/>
 			</assert>
@@ -201,7 +237,7 @@
 		<action>
 			<assert>
 				<description value="Additional confirmation that birthDate got updated to expected value."/>
-                <path value="fhir:Patient/fhir:birthDate/@value"/>
+				<path value="fhir:Patient/fhir:birthDate"/>
 				<value value="1975-01-02"/>
 			</assert>
 		</action>
@@ -239,7 +275,7 @@
 			<assert>
 				<description value="Confirm that there is more than one record returned."/>
 				<operator value="greaterThan" />
-                <path value="fhir:Bundle/fhir:total/@value"/>
+				<path value="/Bundle/total"/>
 				<value value="1"/>
 				<warningOnly value="true"/>
 			</assert>
@@ -288,7 +324,7 @@
 			<assert>
 				<description value="Confirm that there is at least one record returned. There could be other patient records returned."/>
 				<operator value="greaterThan"/>
-                <path value="fhir:Bundle/fhir:total/@value"/>
+				<path value="/Bundle/total"/>
 				<value value="0"/>
 				<warningOnly value="true"/>
 			</assert>

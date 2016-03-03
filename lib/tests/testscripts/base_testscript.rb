@@ -443,9 +443,8 @@ module Crucible
             resourceType = JSON.parse(file)["resourceType"]
             resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)
           else
-            resourceType = Nokogiri::XML(file).children[0].name
+            resourceType = Nokogiri::XML(file).children.find{|x| x.class == Nokogiri::XML::Element}.name
             fhirType = "FHIR::#{resourceType}".constantize
-
             if fhirType.respond_to? :from_xml
               resource = fhirType.from_xml(file)
             else 

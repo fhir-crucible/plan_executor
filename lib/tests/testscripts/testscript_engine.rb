@@ -51,6 +51,9 @@ module Crucible
         files = File.join(root, 'xml', '**/*.xml')
         Dir.glob(files).each do |f|
           next if f.include? "/_reference/" # to support connectathon11 fixtures; review if there is a better way
+          next if f.include? "Track11-SDC" # uses STU3 models
+          next if f.include? "Track3-CDS-on-FHIR" # uses STU3 models
+          next if f.include? "Track9-Patch" # uses Patch
           @scripts << BaseTestScript.new( FHIR::TestScript.from_xml( File.read(f) ), @client, @client2 )
         end
         @scripts

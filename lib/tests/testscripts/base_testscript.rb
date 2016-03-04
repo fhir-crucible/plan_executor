@@ -439,6 +439,7 @@ module Crucible
           return nil unless File.exist? "lib/tests/testscripts/xml#{reference}"
           file = File.open("lib/tests/testscripts/xml#{reference}", "r:UTF-8", &:read)
           file.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+          file = preprocess(file) if file.include?('${')
           if reference.split('.').last == "json"
             resourceType = JSON.parse(file)["resourceType"]
             resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)
@@ -457,6 +458,25 @@ module Crucible
         resource
       end
 
+      def preprocess(input)
+        output = input;
+        input.scan(/\${(\w+)}/).each do |match| 
+          codeMatches = /^([a-zA-Z]+)(\d+)$/.match(match[0])
+          continue unless codeMatches.size == 3 
+          mockData = generateMockData(codeMatches[1], codeMatches[2].to_i)
+          output.sub!("${#{match[0]}}", mockData)
+        end
+
+        return output
+
+      end
+
+      def generateMockData(type, length)
+        choices = []
+        choices << ('a'..'z') << ('A'..'Z') if type.downcase.include?('c')
+        choices << (0..9) if type.downcase.include?('d')
+        (choices * length).map(&:to_a).flatten.shuffle[0,length].join
+      end
     end
   end
 end

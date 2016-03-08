@@ -302,17 +302,16 @@ module Crucible
 
         when !assertion.path.nil?
           actual_value = nil
-          if is_xpath(assertion.path)
-            resource_xml = nil
-            if assertion.sourceId.nil?
-              resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
-            else
-              resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
-              resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
-            end
 
-            actual_value = extract_xpath_value(resource_xml, assertion.path)
+          resource_xml = nil
+          if assertion.sourceId.nil?
+            resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+          else
+            resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
+            resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
           end
+
+          actual_value = extract_xpath_value(resource_xml, assertion.path)
 
           expected_value = replace_variables(assertion.value)
           unless assertion.compareToSourceId.nil?
@@ -365,20 +364,18 @@ module Crucible
             input.gsub!("${" + var.name + "}", variable_value)
           elsif !var.path.nil?
 
-            if is_xpath(var.path)
-              resource_xml = nil
-              
-              variable_source_response = @response_map[var.sourceId]
-              unless variable_source_response.nil?
-                resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
-              else
-                resource_xml = @fixtures[var.sourceId].to_xml
-              end
-
-              extracted_value = extract_xpath_value(resource_xml, var.path)
-
-              input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+            resource_xml = nil
+            
+            variable_source_response = @response_map[var.sourceId]
+            unless variable_source_response.nil?
+              resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
+            else
+              resource_xml = @fixtures[var.sourceId].to_xml
             end
+
+            extracted_value = extract_xpath_value(resource_xml, var.path)
+
+            input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
 
           end if input.include? "${" + var.name + "}"
         end
@@ -411,12 +408,12 @@ module Crucible
         end
       end
 
-      # Crude method of detecting xpath expressions
-      def is_xpath(value)
-        value.start_with?("fhir:") && value.include?("@")
-      end
-
       def extract_xpath_value(resource_xml, resource_xpath)
+
+        # Massage the xpath if it doesn't have fhir: namespace or if doesn't end in @value
+        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?("fhir:") || s.length == 0 then s else "fhir:#{s}" end}.join("/")
+        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? "/@value"
+
         resource_doc = Nokogiri::XML(resource_xml)
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         resource_element = resource_doc.xpath(resource_xpath)

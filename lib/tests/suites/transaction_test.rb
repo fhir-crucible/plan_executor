@@ -31,6 +31,12 @@ module Crucible
         @client.destroy(FHIR::Condition, @conditionId) if @conditionId
         @client.destroy(FHIR::Patient, @patient0.xmlId) if @patient0 && !@patient0.xmlId.nil?
         @client.destroy(FHIR::Patient, @patient1.xmlId) if @patient1 && !@patient1.xmlId.nil?
+        @client.destroy(FHIR::Patient, @badPatientId) if @badPatientId
+        @transferIds.each do |klass,list|
+          list.each do |id|
+            @client.destroy(klass, id) if(!id.nil? && !id.strip.empty?)
+          end
+        end
         @client.destroy(FHIR::Observation, @batch_obs.xmlId) if @batch_obs && !@batch_obs.xmlId.nil?
         @client.destroy(FHIR::Patient, @batch_patient.xmlId) if @batch_patient && !@batch_patient.xmlId.nil?
         @client.destroy(FHIR::Observation, @batch_obs_2.xmlId) if @batch_obs_2 && !@batch_obs_2.xmlId.nil?
@@ -75,17 +81,32 @@ module Crucible
         # to delete something that wasn't created
         @patient0.xmlId = nil
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
         @created_patient_record = true
 
         # set the IDs to whatever the server created
         @patient0.xmlId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @patient0.xmlId = reply.resource.entry[0].try(:resource).try(:xmlId) if @patient0.xmlId.nil?
+
         @obs0a.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @obs0a.xmlId = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs0a.xmlId.nil?
+
         @obs0b.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
+        @obs0b.xmlId = reply.resource.entry[2].try(:resource).try(:xmlId) if @obs0b.xmlId.nil?
+
         @condition0.xmlId = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
+        @condition0.xmlId = reply.resource.entry[3].try(:resource).try(:xmlId) if @condition0.xmlId.nil?
+
+        # check that the Observations and Condition reference the correct Patient.id
+        assert( (reply.resource.entry[1].resource.subject.reference.ends_with?(@patient0.xmlId) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.xmlId}")
+        assert( (reply.resource.entry[2].resource.subject.reference.ends_with?(@patient0.xmlId) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.xmlId}")
+        assert( (reply.resource.entry[3].resource.patient.reference.ends_with?(@patient0.xmlId) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.xmlId}")
       end
+
+      # TODO create a test that uses fullUrl to link, rather than Resource.id
 
       # Update a Patient Record as a transaction
       # Conditional create patient
@@ -112,13 +133,15 @@ module Crucible
         @client.add_transaction_request('POST',nil,@obs1)
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
 
         # set the IDs to whatever the server created
         # @patient0.xmlId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
         @obs1.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @obs1.xmlId = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs1.xmlId.nil?
       end
 
       # Conditionally Update entire patient record
@@ -153,13 +176,17 @@ module Crucible
         @client.add_transaction_request('PUT',"Condition?code=#{@condition0.code.coding.first.system}|#{@condition0.code.coding.first.code}&patient=Patient/#{@patient0.xmlId}",@condition0)
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
 
         # set the IDs to whatever the server created
-        @obs2.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
-        @conditionId = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
+        @obs2.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[-2].try(:response).try(:location))
+        @obs2.xmlId = reply.resource.entry[-2].try(:resource).try(:xmlId) if @obs2.xmlId.nil?
+
+        @conditionId = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[-1].try(:response).try(:location))
+        @conditionId = reply.resource.entry[-1].try(:resource).try(:xmlId) if @conditionId.nil?
       end
 
       # Create Patients with same identifier, THEN conditionally create patient as part of transaction -- transaction should fail with OperationOutcome
@@ -182,6 +209,12 @@ module Crucible
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient1,"identifier=#{@patient0.identifier.first.system}|#{@patient0.identifier.first.value}")
         reply = @client.end_transaction
+
+        # These IDs should not exist, but if they do, then we should delete this Patient during teardown.
+        if reply.resource.is_a?(FHIR::Bundle)
+          @badPatientId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+          @badPatientId = reply.resource.entry[0].try(:resource).try(:xmlId) if @badPatientId.nil?
+        end
 
         assert((reply.code >= 400 && reply.code < 500), "Failed Transactions should return an HTTP 400 range response, found: #{reply.code}.", reply.body)
         assert_resource_type(reply,FHIR::OperationOutcome)
@@ -217,18 +250,22 @@ module Crucible
         @client.add_transaction_request('DELETE',"Observation/#{@obs2.xmlId}") if @obs2 && !@obs2.xmlId.nil?
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
 
-        count = reply.resource.entry.try(:first).try(:resource).try(:total)
+        count = (reply.resource.entry.first.resource.total rescue 0)
         assert(count==1,"In a transaction, GET should execute last and in this case only return 1 result; found #{count}",reply.body)
-        searchResultId = reply.resource.entry.try(:first).try(:resource).try(:entry).try(:first).try(:resource).try(:xmlId)
+        searchResultId = (reply.resource.entry.first.resource.entry.first.resource.xmlId rescue nil)
         assert(searchResultId==@obs2.xmlId,"The GET search returned the wrong result. Expected Observation/#{@obs2.xmlId} but found Observation/#{searchResultId}.",reply.body)
 
         # set the IDs to whatever the server created
         @obs3.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
+        @obs3.xmlId = reply.resource.entry[2].try(:resource).try(:xmlId) if @obs3.xmlId.nil?
+
         @obs4.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @obs4.xmlId = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs4.xmlId.nil?
       end
 
       # If $everything operation, fetch patient record, and then use that bundle to update the record in a transaction
@@ -249,13 +286,43 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
+        everything = reply.resource
+
         @client.begin_transaction
         @client.transaction_bundle = reply.resource
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
+
+        # get the new IDs
+        @transferPatientId = nil
+        @transferIds = {}
+        reply.resource.entry.each do |entry|
+          klass = entry.resource.class
+          entry_id = FHIR::ResourceAddress.pull_out_id(klass.name.demodulize, entry.try(:response).try(:location))
+          entry_id = entry.resource.xmlId if entry_id.nil?
+          @transferIds[klass] = [] if @transferIds[klass].nil?
+          @transferIds[klass] << entry_id
+          @transferPatientId = entry_id if(entry.resource.class == FHIR::Patient)
+        end
+
+        # check that the IDs and references were rewritten
+        everything.entry.each_with_index do |entry,index|
+          klass_name = entry.resource.class.name.demodulize
+          original_id = entry.resource.xmlId
+          transfer_location = (reply.resource.entry[index].response.location rescue nil)
+          transfer_id = FHIR::ResourceAddress.pull_out_id( klass_name, transfer_location) if !transfer_location.nil?
+          transfer_id = (reply.resource.entry[index].resource.xmlId rescue nil) if transfer_id.nil?
+          assert((original_id != transfer_id), "Resource ID was not rewritten: #{original_id}")
+
+          # if class is Observation check subject
+          assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Observation.subject Patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Observation
+          # if class is Condition check patient
+          assert( (reply.resource.entry[index].resource.patient==@transferPatientId), "Condition.patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Condition
+        end
       end
 
       # delete entire patient record
@@ -285,7 +352,8 @@ module Crucible
         @client.add_transaction_request('DELETE', "Observation/#{@obs0a.xmlId}") if @obs0a && !@obs0a.xmlId.nil?
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
       end
@@ -317,7 +385,8 @@ module Crucible
         @client.add_transaction_request('DELETE', "Patient/#{@patient0.xmlId}") if @patient0 && !@patient0.xmlId.nil?
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
       end
@@ -346,23 +415,25 @@ module Crucible
         @client.add_batch_request('POST',nil,@batch_patient)
         @client.add_batch_request('POST',nil,@batch_obs)
         reply = @client.end_batch
-
+        
         assert_bundle_response(reply)
         assert_equal(2, reply.resource.entry.length, "Expected 2 Bundle entries but found #{reply.resource.entry.length}", reply.body)
 
         patientCode = reply.resource.entry[0].try(:response).try(:status).try(:split).try(:first).try(:to_i)
-        assert((patientCode >= 200 && patientCode < 300), "The batch should have created a Patient.", reply.body)
+        assert((!patientCode.nil? && patientCode >= 200 && patientCode < 300), "The batch should have created a Patient.", reply.body)
         # set the IDs to whatever the server created
         @batch_patient.xmlId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @batch_patient.xmlId = (reply.resource.entry[0].resource.xmlId rescue nil) if @batch_patient.xmlId.nil?
  
         obsCode = reply.resource.entry[1].try(:response).try(:status).try(:split).try(:first).try(:to_i)
-        assert((obsCode >= 400 && obsCode < 500), "The batch should have failed to create the Observation with a dependency on the Patient.", reply.body)
         # set the IDs to whatever the server created
         @batch_obs.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @batch_obs.xmlId = (reply.resource.entry[1].resource.xmlId rescue nil) if @batch_obs.xmlId.nil?
+        assert((!obsCode.nil? && obsCode >= 400 && obsCode < 500), "The batch should have failed to create the Observation with a dependency on the Patient.", reply.body)
       end
 
       # Batch patient record
-      test 'XFER11','Create Patient Record and record and search Observations with Batch' do
+      test 'XFER11','Create Patient Record and then Batch create and search Observations' do
         metadata {
           links "#{REST_SPEC_LINK}#transaction"
           links "#{BASE_SPEC_LINK}/patient.html"
@@ -391,14 +462,19 @@ module Crucible
         @client.add_transaction_request('GET',"Observation?patient=Patient/#{@batch_patient_2.xmlId}")
         reply = @client.end_batch
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
+
+         # set the IDs to whatever the server created
+        @batch_obs_2.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[0].try(:response).try(:location))
+        @batch_obs_2.xmlId = (reply.resource.entry[0].resource.xmlId rescue nil) if @batch_obs_2.xmlId.nil?
+        @batch_obs_3.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @batch_obs_3.xmlId = (reply.resource.entry[1].resource.xmlId rescue nil) if @batch_obs_3.xmlId.nil?
+ 
         assert_equal(3, reply.resource.entry.length, "Expected 3 Bundle entries but found #{reply.resource.entry.length}", reply.body)
         assert_bundle_transactions_okay(reply)
-
-        # set the IDs to whatever the server created
-        @batch_obs_2.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[0].try(:response).try(:location))
-        @batch_obs_3.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        assert_equal(2, reply.resource.entry[-1].resource.entry.length, "Expected 2 search results but found #{reply.resource.entry[-1].resource.entry.length}", reply.body)
       end
 
       # Batch delete patient record
@@ -414,8 +490,9 @@ module Crucible
           validates resource: 'Observation', methods: ['delete']
           validates resource: nil, methods: ['batch-system']
         }
-        skip unless (@batch_patient_2 && @batch_obs_2 && @batch_obs_3 &&
-          !@batch_patient_2.xmlId.nil? && !@batch_obs_2.xmlId.nil? && !@batch_obs_3.xmlId.nil? )
+        skip unless ((@batch_patient_2 && !@batch_patient_2.xmlId.nil?) ||
+                     (@batch_obs_2 && !@batch_obs_2.xmlId.nil?) ||
+                     (@batch_obs_3 && !@batch_obs_3.xmlId.nil? ))
 
         @client.begin_batch
         @client.add_batch_request('DELETE', "Observation/#{@batch_obs_3.xmlId}") if @batch_obs_3 && !@batch_obs_3.xmlId.nil?
@@ -423,7 +500,8 @@ module Crucible
         @client.add_batch_request('DELETE', "Patient/#{@batch_patient_2.xmlId}") if @batch_patient_2 && !@batch_patient_2.xmlId.nil?
         reply = @client.end_batch
 
-        assert_response_ok(reply)
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
       end

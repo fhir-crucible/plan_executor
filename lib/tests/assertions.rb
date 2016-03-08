@@ -141,7 +141,10 @@ module Crucible
 
       def assert_bundle_transactions_okay(response)
         response.resource.entry.each do |entry|
-          status = entry.try(:response).try(:status)
+          unless assertion_negated( !entry.response.nil? )
+            raise AssertionException.new "All Transaction/Batch Bundle.entry elements SHALL have a response." 
+          end
+          status = entry.response.status
           unless assertion_negated( status && status.start_with?('200','201','204') )
             raise AssertionException.new "Expected all Bundle.entry.response.status to be 200, 201, or 204; but found: #{status}"
           end

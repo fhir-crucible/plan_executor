@@ -42,6 +42,10 @@ module Crucible
         @client.destroy(FHIR::Observation, @batch_obs_2.xmlId) if @batch_obs_2 && !@batch_obs_2.xmlId.nil?
         @client.destroy(FHIR::Observation, @batch_obs_3.xmlId) if @batch_obs_3 && !@batch_obs_3.xmlId.nil?
         @client.destroy(FHIR::Patient, @batch_patient_2.xmlId) if @batch_patient_2 && !@batch_patient_2.xmlId.nil?
+        @client.destroy(FHIR::Observation, @obs0a_B.xmlId) if @obs0a_B && !@obs0a_B.xmlId.nil?
+        @client.destroy(FHIR::Observation, @obs0b_B.xmlId) if @obs0b_B && !@obs0b_B.xmlId.nil?
+        @client.destroy(FHIR::Condition, @condition0_B.xmlId) if @condition0_B && !@condition0_B.xmlId.nil?
+        @client.destroy(FHIR::Patient, @patient0_B.xmlId) if @patient0_B && !@patient0_B.xmlId.nil?
       end
 
       # Create a Patient Record as a transaction
@@ -106,7 +110,65 @@ module Crucible
         assert( (reply.resource.entry[3].resource.patient.reference.ends_with?(@patient0.xmlId) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.xmlId}")
       end
 
-      # TODO create a test that uses fullUrl to link, rather than Resource.id
+      #  Create a Patient record that uses Bundle.entry.fullUrl to link/reference, rather than Bundle.entry.resource.id
+      test 'XFER0B','Create a Patient Record as Transaction (with references using fullUrl rather than IDs)' do
+        metadata {
+          links "#{REST_SPEC_LINK}#transaction"
+          links "#{BASE_SPEC_LINK}/patient.html"
+          links "#{BASE_SPEC_LINK}/observation.html"
+          links "#{BASE_SPEC_LINK}/condition.html"
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Observation', methods: ['create']
+          requires resource: 'Condition', methods: ['create']
+          requires resource: nil, methods: ['transaction-system']
+          validates resource: 'Patient', methods: ['create']
+          validates resource: 'Observation', methods: ['create']
+          validates resource: 'Condition', methods: ['create']
+          validates resource: nil, methods: ['transaction-system']
+        }
+
+        @patient0_B = ResourceGenerator.minimal_patient("#{Time.now.to_i}",'Transaction')
+        patient0_B_id = SecureRandom.uuid
+        patient0_B_uri = "urn:uuid:#{patient0_B_id}"
+
+        # height
+        @obs0a_B = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',170,'cm',patient0_B_id)
+        # weight
+        @obs0b_B = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',200,'kg',patient0_B_id)
+        # obesity
+        @condition0_B = ResourceGenerator.minimal_condition('http://snomed.info/sct','414915002',patient0_B_id)
+
+        @client.begin_transaction
+        @client.add_transaction_request('POST',nil,@patient0_B)
+        @client.transaction_bundle.entry.first.fullUrl = patient0_B_id
+        @client.add_transaction_request('POST',nil,@obs0a_B)
+        @client.add_transaction_request('POST',nil,@obs0b_B)
+        @client.add_transaction_request('POST',nil,@condition0_B)
+        reply = @client.end_transaction
+
+        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
+        warning{ assert_response_ok(reply) }
+        assert_bundle_response(reply)
+        assert_bundle_transactions_okay(reply)
+
+        # set the IDs to whatever the server created
+        @patient0_B.xmlId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @patient0_B.xmlId = reply.resource.entry[0].try(:resource).try(:xmlId) if @patient0_B.xmlId.nil?
+
+        @obs0a_B.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @obs0a_B.xmlId = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs0a_B.xmlId.nil?
+
+        @obs0b_B.xmlId = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
+        @obs0b_B.xmlId = reply.resource.entry[2].try(:resource).try(:xmlId) if @obs0b_B.xmlId.nil?
+
+        @condition0_B.xmlId = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
+        @condition0_B.xmlId = reply.resource.entry[3].try(:resource).try(:xmlId) if @condition0_B.xmlId.nil?
+
+        # check that the Observations and Condition reference the correct Patient.id
+        assert( (reply.resource.entry[1].resource.subject.reference.ends_with?(@patient0_B.xmlId) rescue false), "Observation doesn't correctly reference Patient/#{@patient0_B.xmlId}")
+        assert( (reply.resource.entry[2].resource.subject.reference.ends_with?(@patient0_B.xmlId) rescue false), "Observation doesn't correctly reference Patient/#{@patient0_B.xmlId}")
+        assert( (reply.resource.entry[3].resource.patient.reference.ends_with?(@patient0_B.xmlId) rescue false), "Condition doesn't correctly reference Patient/#{@patient0_B.xmlId}")
+      end
 
       # Update a Patient Record as a transaction
       # Conditional create patient

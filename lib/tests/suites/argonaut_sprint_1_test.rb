@@ -71,8 +71,17 @@ module Crucible
         }
 
         begin
-          @patient_id ||= @client.read_feed(@rc).resource.entry.first.resource.xmlId
-        rescue NoMethodError => e
+          options = {
+            :search => {
+              :flag => true,
+              :compartment => nil,
+              :parameters => {
+                _count: 1
+              }
+            }
+          }
+          @patient_id ||= @client.search(@rc, options).resource.entry.first.resource.xmlId
+        rescue NoMethodError
           @patient = nil
         end
 

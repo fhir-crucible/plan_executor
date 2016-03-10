@@ -55,6 +55,7 @@ module Crucible
         @autocreate = []
         @autodelete = []
         @testscript = testscript
+        @preprocessed_vars = {}
         define_tests
         load_fixtures
       end
@@ -223,6 +224,7 @@ module Crucible
           raise "No target specified for update" if target_id.nil?
 
           fixture = @fixtures[operation.sourceId]
+          fixture.xmlId = replace_variables(target_id) if fixture.xmlId.nil?
           @last_response = @client.update fixture, replace_variables(target_id)
         when 'transaction'
           raise 'transaction not implemented'
@@ -456,23 +458,30 @@ module Crucible
       end
 
       def preprocess(input)
+        # ${C4}: generates a 4 character string
+        # ${D5}: generates a 5 digit number
+        # ${CD6}: generates a 6 character string with digits and characters
         output = input;
         input.scan(/\${(\w+)}/).each do |match| 
-          codeMatches = /^([a-zA-Z]+)(\d+)$/.match(match[0])
-          continue unless codeMatches.size == 3 
-          mockData = generateMockData(codeMatches[1], codeMatches[2].to_i)
-          output.sub!("${#{match[0]}}", mockData)
+          if @preprocessed_vars.key?(match[0])
+            output.sub!("${#{match[0]}}", @preprocessed_vars[match[0]])
+          else
+            code_matches = /^([a-zA-Z]+)(\d+)$/.match(match[0])
+            continue unless code_matches.size == 3 
+            mock_data = generate_mock_data(code_matches[1], code_matches[2].to_i)
+            output.sub!("${#{match[0]}}", mock_data)
+            @preprocessed_vars[match[0]] = mock_data
+          end
         end
 
-        return output
-
+        output
       end
 
-      def generateMockData(type, length)
+      def generate_mock_data(type, length)
         choices = []
-        choices << ('a'..'z') << ('A'..'Z') if type.downcase.include?('c')
-        choices << (0..9) if type.downcase.include?('d')
-        (choices * length).map(&:to_a).flatten.shuffle[0,length].join
+        choices << ('a'..'z') << ('A'..'Z') if type.downcase.include?('c') #add uppercase and lowercase characters as a choice
+        choices << (0..9) if type.downcase.include?('d') #add digits as a choice
+        (choices * length).map(&:to_a).flatten.shuffle[0,length].join #generate a random string based on all the choices
       end
     end
   end

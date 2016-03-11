@@ -1,7 +1,7 @@
 <TestScript xmlns="http://hl7.org/fhir">
-	<id value="track1-patient-base-client-id-xml"/>
+	<id value="track1-patient-base-client-id-json"/>
 
-	<url value="http://wildfhir.aegis.net/fhir/TestScript/track1-patient-base-client-id-xml"/>
+	<url value="http://wildfhir.aegis.net/fhir/TestScript/track1-patient-base-client-id-json"/>
 	<name value="FHIR Connectathon 11 - Track 1 - Patient - Register a new patient"/>
 	<status value="draft"/>
 	<publisher value="AEGIS.net, Inc."/>

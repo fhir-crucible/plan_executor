@@ -12,7 +12,7 @@ module Crucible
 
       def initialize(client1, client2=nil)
         super(client1, client2)
-        @category = 'Format'
+        @category = 'Core Functionality'
       end
 
       # Create a patient and store its details for format requests

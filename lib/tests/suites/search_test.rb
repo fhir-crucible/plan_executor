@@ -31,9 +31,12 @@ module Crucible
         "Execute suite of searches for #{resource_class.name.demodulize} resources."
       end
 
+      def category
+        @resource_class.nil? ? "Search" : "Search: #{resource_category(@resource_class.name.demodulize)}"
+      end
+
       def initialize(client1, client2=nil)
         super(client1, client2)
-        @category = 'Search'
       end
 
       # this allows results to have unique ids for resource based tests

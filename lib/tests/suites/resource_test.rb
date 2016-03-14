@@ -38,9 +38,12 @@ module Crucible
         "Basic operations for FHIR #{resource_class.name.demodulize} resource (CREATE, READ, VREAD, UPDATE, DELETE, HISTORY, SEARCH, VALIDATE)"
       end
 
+      def category
+        @resource_class.nil? ? "Resource" : "Resource: #{resource_category(@resource_class.name.demodulize)}"
+      end
+
       def initialize(client1, client2=nil)
         super(client1, client2)
-        @category = 'Resource'
       end
 
       # this allows results to have unique ids for resource based tests

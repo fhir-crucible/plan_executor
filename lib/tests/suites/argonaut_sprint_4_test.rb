@@ -192,10 +192,13 @@ module Crucible
               assert false, "could not get a code to search on"
             end
           when 'identifier'
-            search_string = search_string.first.value if search_string
+            search_string = search_string.first.value unless search_string.blank? 
           end
 
-          assert !search_string.nil? && !match_target.nil?, "could not get a MedicationOrder with a #{field} value to search on"
+          warning {assert !search_string.blank? && !match_target.nil?, "could not get a MedicationOrder with a #{field} value to search on"}
+          if search_string.blank? || match_target.nil?
+            skip
+          end
 
           options = {
             :search => {
@@ -239,10 +242,13 @@ module Crucible
               assert false, "could not get a code to search on"
             end
           when 'identifier'
-            search_string = search_string.first.value if search_string
+            search_string = search_string.first.value unless search_string.blank? 
           end
 
-          assert !search_string.nil? && !match_target.nil?, "could not get a MedicationStatement with a #{field} value to search on"
+          warning {assert !search_string.blank? && !match_target.nil?, "could not get a MedicationStatement with a #{field} value to search on"}
+          if search_string.blank? || match_target.nil?
+            skip
+          end
 
           options = {
             :search => {
@@ -253,7 +259,7 @@ module Crucible
               }
             }
           }
-          reply = @client.search(FHIR::MedicationOrder, options)
+          reply = @client.search(FHIR::MedicationStatement, options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
           assert reply.resource, "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
@@ -296,11 +302,9 @@ module Crucible
 
         reply = @client.search(FHIR::Patient, options)
 
-        assert_response_ok(reply)
-
         return reply.resource.entry if (reply.resource && reply.resource.entry && reply.resource.entry.length > 0)
 
-        nil
+        return []
 
       end
 

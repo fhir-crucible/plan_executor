@@ -150,6 +150,7 @@ module Crucible
           end
         end
         warning { assert valid_observation_count > 0, "No vital signs Observations were found for this patient" }
+        skip unless valid_observation_count > 0
       end
 
       def get_value(observation)

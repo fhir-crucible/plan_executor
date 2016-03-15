@@ -179,6 +179,7 @@ module Crucible
           end
         end
         warning { assert valid_diagnostic_report_count > 0, "No chemistry or hematology Diagnostic Reports were found for this patient" }
+        skip unless valid_diagnostic_report_count > 0
       end
 
       def validate_observation_reply(reply)
@@ -205,6 +206,7 @@ module Crucible
           end
         end
         warning { assert valid_observation_count > 0, "No laboratory Observations were found for this patient" }
+        skip unless valid_observation_count > 0
       end
 
       def get_value(observation)

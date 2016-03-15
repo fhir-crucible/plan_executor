@@ -210,7 +210,7 @@ module Crucible
           fixture = @fixtures[operation.targetId]
           @last_response = @client.resource_instance_history(fixture.class,target_id)
         when 'create'
-          @last_response = @client.create @fixtures[operation.sourceId]
+          @last_response = @client.base_create(@fixtures[operation.sourceId], requestHeaders, format)
           @id_map[operation.sourceId] = @last_response.id
         when 'update'
           target_id = nil
@@ -225,7 +225,7 @@ module Crucible
 
           fixture = @fixtures[operation.sourceId]
           fixture.xmlId = replace_variables(target_id) if fixture.xmlId.nil?
-          @last_response = @client.update fixture, replace_variables(target_id)
+          @last_response = @client.update fixture, replace_variables(target_id), format
         when 'transaction'
           raise 'transaction not implemented'
         when 'conformance'
@@ -435,8 +435,9 @@ module Crucible
           contained_id = reference[1..-1]
           resource = @testscript.contained.select{|r| r.xmlId == contained_id}.first
         else 
-          return nil unless File.exist? "lib/tests/testscripts/xml#{reference}"
-          file = File.open("lib/tests/testscripts/xml#{reference}", "r:UTF-8", &:read)
+          root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
+          return nil unless File.exist? "#{root}/xml#{reference}"
+          file = File.open("#{root}/xml#{reference}", "r:UTF-8", &:read)
           file.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
           file = preprocess(file) if file.include?('${')
           if reference.split('.').last == "json"

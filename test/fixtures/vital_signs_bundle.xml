@@ -1,0 +1,117 @@
+<Bundle xmlns="http://hl7.org/fhir">
+  <id value="urn:uuid:744443410ff447a2a11dc191b4e0ab9b" />
+  <meta>
+      <lastUpdated value="2016-03-14T19:45:15.953+00:00" />
+  </meta>
+  <type value="searchset" />
+  <total value="2" />
+  <entry>
+      <resource>
+          <Observation>
+            <id value="691-bp" />
+            <status value="final" />
+            <category>
+              <coding>
+                <system value="http://hl7.org/fhir/observation-category"/>
+                <code value="vital-signs"/>
+                <display value="Vital Signs"/>
+              </coding>
+              <text value="Vital Signs"
+            </category>
+            <code>
+              <coding>
+                <system value="http://loinc.org"/>
+                <code value="55284-4"/>
+                <display value="Blood pressure systolic and diastolic"/>
+              </coding>
+              <text value="Blood pressure systolic and diastolic"
+            </code>
+            <subject>
+                <reference value="Patient/1186747" />
+            </subject>
+            <encounter>
+                <reference value="Encounter/691" />
+            </encounter>
+            <effectiveDateTime value="1999-07-02"/>
+            <component>
+              <code>
+                <coding>
+                  <system value="http://loinc.org"/>
+                  <code value="8480-6"/>
+                  <display value="Systolic blood pressure"/>
+                </coding>
+                <text value="Systolic blood pressure"
+              </code>
+              <valueQuantity>
+                  <value value="109" />
+                  <unit value="mmHg" />
+                  <system value="http://unitsofmeasure.org" />
+                  <code value="mm[Hg]"/>
+              </valueQuantity>
+            </component>
+            <component>
+              <code>
+                <coding>
+                  <system value="http://loinc.org"/>
+                  <code value="8462-4"/>
+                  <display value="Diastolic blood pressure"/>
+                </coding>
+                <text value="Diastolic blood pressure"
+              </code>
+              <valueQuantity>
+                  <value value="44" />
+                  <unit value="mmHg" />
+                  <system value="http://unitsofmeasure.org" />
+                  <code value="mm[Hg]"/>
+              </valueQuantity>
+            </component>
+
+          </Observation>
+      </resource>
+      <request>
+          <method value="POST" />
+          <url value="Observation/7c9f231034214f4bab08293c6deb1c60/_history/1" />
+      </request>
+  </entry>
+  <entry>
+      <resource>
+          <Observation>
+            <id value="692-bp" />
+            <status value="final" />
+            <category>
+              <coding>
+                <system value="http://hl7.org/fhir/observation-category"/>
+                <code value="vital-signs"/>
+                <display value="Vital Signs"/>
+              </coding>
+              <text value="Vital Signs"
+            </category>
+            <code>
+              <coding>
+                <system value="http://loinc.org"/>
+                <code value="8302-2"/>
+                <display value="body height"/>
+              </coding>
+              <text value="body height"
+            </code>
+            <subject>
+                <reference value="Patient/1186747" />
+            </subject>
+            <encounter>
+                <reference value="Encounter/691" />
+            </encounter>
+            <effectiveDateTime value="1999-07-02"/>
+            <valueQuantity>
+              <value value="109" />
+              <unit value="cm" />
+              <system value="http://unitsofmeasure.org" />
+              <code value="cm"/>
+            </valueQuantity>
+          </Observation>
+      </resource>
+      <request>
+          <method value="POST" />
+          <url value="Observation/7c9f231034214f4bab08293c6deb1c60/_history/1" />
+      </request>
+  </entry>
+</Bundle>

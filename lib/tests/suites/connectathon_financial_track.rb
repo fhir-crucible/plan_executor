@@ -12,7 +12,7 @@ module Crucible
 
       def initialize(client1, client2=nil)
         super(client1, client2)
-        @category = 'Connectathon'
+        @category = {id: 'connectathon', title: 'Connectathon'}
       end
 
       def setup

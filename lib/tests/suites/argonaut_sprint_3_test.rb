@@ -21,7 +21,7 @@ module Crucible
       def initialize(client1, client2 = nil)
         super
         @tags.append('argonaut')
-        @category = 'Argonaut'
+        @category = {id: 'argonaut', title: 'Argonaut'}
       end
 
       # [SprinklerTest("AS3001", "GET patient by ID")]

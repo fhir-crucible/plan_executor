@@ -32,7 +32,8 @@ module Crucible
       end
 
       def category
-        @resource_class.nil? ? "Search" : "Search: #{resource_category(@resource_class.name.demodulize)}"
+        resource = @resource_class.nil? ? "Uncategorized" : resource_category(@resource_class.name.demodulize)
+        {id: "search_#{resource.parameterize}", title: "#{resource} Search"}
       end
 
       def initialize(client1, client2=nil)

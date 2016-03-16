@@ -30,7 +30,7 @@ module Crucible
       def initialize(client1, client2=nil)
         super(client1, client2)
         @tags.append('argonaut')
-        @category = 'Argonaut'
+        @category = {id: 'argonaut', title: 'Argonaut'}
       end
 
       def setup

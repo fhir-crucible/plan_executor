@@ -18,7 +18,7 @@ PATH
     plan_executor (1.0.0)
 
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
     actionmailer (4.0.13)
       actionpack (= 4.0.13)
@@ -183,6 +183,3 @@ DEPENDENCIES
   tilt
   turn
   webmock
-
-BUNDLED WITH
-   1.11.1

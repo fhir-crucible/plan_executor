@@ -1,13 +1,6 @@
 module Crucible
   module Tests
     class BaseTestScript < BaseTest
-
-      # TODO: 0 = done; 1 = one todo; etc.
-      # [0] Read Test
-      # [0] Example Test
-      # [0] History Test
-      # [6] Search Test
-      # [0] Update Test
       
       FORMAT_MAP = {
         'json' => FHIR::Formats::ResourceFormat::RESOURCE_JSON,
@@ -27,10 +20,6 @@ module Crucible
         'gone' => 410,
         'preconditionFailed' => 412,
         'unprocessable' => 422
-      }
-
-      HEADERFIELD_MAP = {
-        'Location' => 'content-location'
       }
 
       OPERATOR_MAP = {
@@ -362,7 +351,7 @@ module Crucible
         @testscript.variable.each do |var|
           if !var.headerField.nil?
             variable_source_response = @response_map[var.sourceId]
-            variable_value = variable_source_response.response[:headers][HEADERFIELD_MAP[var.headerField]]
+            variable_value = variable_source_response.response[:headers][var.headerField]
             input.gsub!("${" + var.name + "}", variable_value)
           elsif !var.path.nil?
 
@@ -413,8 +402,10 @@ module Crucible
       def extract_xpath_value(resource_xml, resource_xpath)
 
         # Massage the xpath if it doesn't have fhir: namespace or if doesn't end in @value
+        # Also make it look in the entire xml document instead of just starting at the root
         resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?("fhir:") || s.length == 0 then s else "fhir:#{s}" end}.join("/")
         resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? "/@value"
+        resource_xpath = "//#{resource_xpath}"
 
         resource_doc = Nokogiri::XML(resource_xml)
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')

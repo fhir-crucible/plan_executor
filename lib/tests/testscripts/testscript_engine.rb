@@ -54,6 +54,12 @@ module Crucible
           next if f.include? "Track11-SDC" # uses STU3 models
           next if f.include? "Track3-CDS-on-FHIR" # uses STU3 models
           next if f.include? "Track9-Patch" # uses Patch
+          next if f.include? "Track6-FHIR-Genomics" # uses STU3 models
+
+          #TODO: these can be finished with DSTU2
+          next if f.include? "Track2-Terminology"
+          next if f.include? "Track7-LabOrderLabReport"
+
           @scripts << BaseTestScript.new( FHIR::TestScript.from_xml( File.read(f) ), @client, @client2 )
         end
         @scripts

@@ -1,13 +1,6 @@
 module Crucible
   module Tests
     class BaseTestScript < BaseTest
-
-      # TODO: 0 = done; 1 = one todo; etc.
-      # [0] Read Test
-      # [0] Example Test
-      # [0] History Test
-      # [6] Search Test
-      # [0] Update Test
       
       FORMAT_MAP = {
         'json' => FHIR::Formats::ResourceFormat::RESOURCE_JSON,
@@ -29,10 +22,6 @@ module Crucible
         'unprocessable' => 422
       }
 
-      HEADERFIELD_MAP = {
-        'Location' => 'content-location'
-      }
-
       OPERATOR_MAP = {
         'equals' => :equals,
         'notEquals' => :notEquals,
@@ -48,13 +37,14 @@ module Crucible
 
       def initialize(testscript, client, client2=nil)
         super(client, client2)
-        @category = 'TestScript'
+        @category = {id: 'testscript', title: 'TestScript'}
         @id_map = {}
         @response_map = {}
         @warnings = []
         @autocreate = []
         @autodelete = []
         @testscript = testscript
+        @preprocessed_vars = {}
         define_tests
         load_fixtures
       end
@@ -209,7 +199,7 @@ module Crucible
           fixture = @fixtures[operation.targetId]
           @last_response = @client.resource_instance_history(fixture.class,target_id)
         when 'create'
-          @last_response = @client.create @fixtures[operation.sourceId]
+          @last_response = @client.base_create(@fixtures[operation.sourceId], requestHeaders, format)
           @id_map[operation.sourceId] = @last_response.id
         when 'update'
           target_id = nil
@@ -223,7 +213,8 @@ module Crucible
           raise "No target specified for update" if target_id.nil?
 
           fixture = @fixtures[operation.sourceId]
-          @last_response = @client.update fixture, replace_variables(target_id)
+          fixture.xmlId = replace_variables(target_id) if fixture.xmlId.nil?
+          @last_response = @client.update fixture, replace_variables(target_id), format
         when 'transaction'
           raise 'transaction not implemented'
         when 'conformance'
@@ -302,17 +293,16 @@ module Crucible
 
         when !assertion.path.nil?
           actual_value = nil
-          if is_xpath(assertion.path)
-            resource_xml = nil
-            if assertion.sourceId.nil?
-              resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
-            else
-              resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
-              resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
-            end
 
-            actual_value = extract_xpath_value(resource_xml, assertion.path)
+          resource_xml = nil
+          if assertion.sourceId.nil?
+            resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+          else
+            resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
+            resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
           end
+
+          actual_value = extract_xpath_value(resource_xml, assertion.path)
 
           expected_value = replace_variables(assertion.value)
           unless assertion.compareToSourceId.nil?
@@ -361,24 +351,22 @@ module Crucible
         @testscript.variable.each do |var|
           if !var.headerField.nil?
             variable_source_response = @response_map[var.sourceId]
-            variable_value = variable_source_response.response[:headers][HEADERFIELD_MAP[var.headerField]]
+            variable_value = variable_source_response.response[:headers][var.headerField]
             input.gsub!("${" + var.name + "}", variable_value)
           elsif !var.path.nil?
 
-            if is_xpath(var.path)
-              resource_xml = nil
-              
-              variable_source_response = @response_map[var.sourceId]
-              unless variable_source_response.nil?
-                resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
-              else
-                resource_xml = @fixtures[var.sourceId].to_xml
-              end
-
-              extracted_value = extract_xpath_value(resource_xml, var.path)
-
-              input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+            resource_xml = nil
+            
+            variable_source_response = @response_map[var.sourceId]
+            unless variable_source_response.nil?
+              resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
+            else
+              resource_xml = @fixtures[var.sourceId].to_xml
             end
+
+            extracted_value = extract_xpath_value(resource_xml, var.path)
+
+            input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
 
           end if input.include? "${" + var.name + "}"
         end
@@ -411,12 +399,14 @@ module Crucible
         end
       end
 
-      # Crude method of detecting xpath expressions
-      def is_xpath(value)
-        value.start_with?("fhir:") && value.include?("@")
-      end
-
       def extract_xpath_value(resource_xml, resource_xpath)
+
+        # Massage the xpath if it doesn't have fhir: namespace or if doesn't end in @value
+        # Also make it look in the entire xml document instead of just starting at the root
+        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?("fhir:") || s.length == 0 then s else "fhir:#{s}" end}.join("/")
+        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? "/@value"
+        resource_xpath = "//#{resource_xpath}"
+
         resource_doc = Nokogiri::XML(resource_xml)
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
         resource_element = resource_doc.xpath(resource_xpath)
@@ -436,16 +426,17 @@ module Crucible
           contained_id = reference[1..-1]
           resource = @testscript.contained.select{|r| r.xmlId == contained_id}.first
         else 
-          return nil unless File.exist? "lib/tests/testscripts/xml#{reference}"
-          file = File.open("lib/tests/testscripts/xml#{reference}", "r:UTF-8", &:read)
+          root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
+          return nil unless File.exist? "#{root}/xml#{reference}"
+          file = File.open("#{root}/xml#{reference}", "r:UTF-8", &:read)
           file.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+          file = preprocess(file) if file.include?('${')
           if reference.split('.').last == "json"
             resourceType = JSON.parse(file)["resourceType"]
             resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)
           else
-            resourceType = Nokogiri::XML(file).children[0].name
+            resourceType = Nokogiri::XML(file).children.find{|x| x.class == Nokogiri::XML::Element}.name
             fhirType = "FHIR::#{resourceType}".constantize
-
             if fhirType.respond_to? :from_xml
               resource = fhirType.from_xml(file)
             else 
@@ -458,6 +449,32 @@ module Crucible
         resource
       end
 
+      def preprocess(input)
+        # ${C4}: generates a 4 character string
+        # ${D5}: generates a 5 digit number
+        # ${CD6}: generates a 6 character string with digits and characters
+        output = input;
+        input.scan(/\${(\w+)}/).each do |match| 
+          if @preprocessed_vars.key?(match[0])
+            output.sub!("${#{match[0]}}", @preprocessed_vars[match[0]])
+          else
+            code_matches = /^([a-zA-Z]+)(\d+)$/.match(match[0])
+            continue unless code_matches.size == 3 
+            mock_data = generate_mock_data(code_matches[1], code_matches[2].to_i)
+            output.sub!("${#{match[0]}}", mock_data)
+            @preprocessed_vars[match[0]] = mock_data
+          end
+        end
+
+        output
+      end
+
+      def generate_mock_data(type, length)
+        choices = []
+        choices << ('a'..'z') << ('A'..'Z') if type.downcase.include?('c') #add uppercase and lowercase characters as a choice
+        choices << (0..9) if type.downcase.include?('d') #add digits as a choice
+        (choices * length).map(&:to_a).flatten.shuffle[0,length].join #generate a random string based on all the choices
+      end
     end
   end
 end

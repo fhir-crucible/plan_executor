@@ -22,7 +22,7 @@ module Crucible
         super
         @tags.append('argonaut')
         @loinc_codes = ['2951-2', '2823-3', '2075-0', '2028-9', '3094-0', '2160-0', '2345-7', '17861-6', '2885-2', '1751-7', '1975-2', '6768-6', '1742-6', '1920-8', '6690-2', '  789-8', ' 718-7', ' 4544-3', '787-2', '785-6', '786-4', '21000-5', '788-0', '777-3', '32207-3', '32623-1']
-        @category = 'Argonaut'
+        @category = {id: 'argonaut', title: 'Argonaut'}
       end
 
       # [SprinklerTest("AS6001", "GET patient by ID")]
@@ -163,22 +163,23 @@ module Crucible
         reply.resource.entry.each do |entry|
           report = entry.resource
           assert report.category, "DiagnosticReport has no category"
-          if report.category.coding.find { |c| c.code.downcase == "chemistry" || c.code.downcase == "hematology" } 
+          if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" } 
             valid_diagnostic_report_count += 1
-            assert report.category.coding.find{ |c| c.system == "http://hl7.org/fhir/v2/0074" }, "Wrong category codeSystem used; expected HL7v2"
+            assert report.category.coding.to_a.find { |c| c.system == "http://hl7.org/fhir/v2/0074" }, "Wrong category codeSystem used; expected HL7v2"
             assert report.status, "No status for DiagnosticReport"
             assert report.code, "DiagnosticReport has no code"
-            coding = report.code.coding
+            coding = report.code.coding.first
             assert coding.system == "http://loinc.org", "The DiagnosticReport is coded using the wrong code system, is #{coding}, should be LOINC"
             assert coding.code == "24323-8" || coding.code == "58410-2", "Wrong code used in DiagnosticReport"
             assert report.subject, "DiagnosticReport has no subject"
-            assert report.effective, "DiagnosticReport has no effective date/time"
+            assert report.effectivePeriod? || report.effectiveDateTime?, "DiagnosticReport has no effective date/time"
             assert report.issued, "DiagnosticReport has no issued"
             assert report.performer, "DiagnosticReport has no performer"
             assert report.result, "DiagnosticReport has no results"
           end
         end
         warning { assert valid_diagnostic_report_count > 0, "No chemistry or hematology Diagnostic Reports were found for this patient" }
+        skip unless valid_diagnostic_report_count > 0
       end
 
       def validate_observation_reply(reply)
@@ -188,19 +189,28 @@ module Crucible
 
         reply.resource.entry.each do |entry|
           observation = entry.resource
-          if observation.category.coding.find { |c| c.code == "laboratory" }
+          if observation.category.nil?
+            warning { assert observation.category, "An observation did not have a category"}
+            next
+          end
+          if observation.category.coding.to_a.find { |c| c.code == "laboratory" }
             valid_observation_count += 1
             assert !observation.status.empty?
             assert observation.category
-            assert observation.category.coding.find { |c| c.system == "http://hl7.org/fhir/observation-category" }, "Wrong category codeSystem used, expected FHIR ObservationCategory"
+            assert observation.category.coding.to_a.find{ |c| c.system == "http://hl7.org/fhir/observation-category" }, "Wrong category codeSystem used, expected FHIR ObservationCategory"
             assert observation.subject
-            assert observation.value || observation.dataAbsentReason
-            coding = observation.code.coding
+            assert get_value(observation) || observation.dataAbsentReason
+            coding = observation.code.coding.first
             assert coding.system == "http://loinc.org", "The observation is coded using the wrong code system, is #{coding.system}, should be LOINC"
             warning { assert @loinc_codes.index(coding.code), "The code included in an Observation doesn't match any in the code lists provided by the Argonaut project" }
           end
         end
         warning { assert valid_observation_count > 0, "No laboratory Observations were found for this patient" }
+        skip unless valid_observation_count > 0
+      end
+
+      def get_value(observation)
+        observation.valueQuantity || observation.valueCodeableConcept || observation.valueString || observation.valueRange || observation.valueRatio || observation.valueSampledData || observation.valueAttachment || observation.valueTime || observation.valueDateTime || observation.valuePeriod
       end
 
     end

@@ -1,0 +1,51 @@
+<Bundle xmlns="http://hl7.org/fhir">
+  <id value="urn:uuid:744443410ff447a2a11dc191b4e0ab9b" />
+  <meta>
+      <lastUpdated value="2016-03-14T19:45:15.953+00:00" />
+  </meta>
+  <type value="searchset" />
+  <total value="2" />
+   <entry>
+      <resource>
+          <DiagnosticReport>
+            <id value="692-luk" />
+            <status value="final" />
+            <category>
+              <coding>
+                <system value="http://hl7.org/fhir/v2/0074"/>
+                <code value="CH"/>
+                <display value="Chemistry"/>
+              </coding>
+              <text value="Chemistry"
+            </category>
+            <code>
+              <coding>
+                <system value="http://loinc.org"/>
+                <code value="24323-8"/>
+                <display value="Comprehensive metabolic 2000 panel - Serum or Plasma"/>
+              </coding>
+              <text value="Comprehensive metabolic 2000 panel - Serum or Plasma"
+            </code>
+            <subject>
+                <reference value="Patient/1186747" />
+            </subject>
+            <encounter>
+                <reference value="Encounter/691" />
+            </encounter>
+            <effectiveDateTime value="1999-07-02"/>
+            <result>
+              <reference value="#r10"/>
+            </result>
+            <issued value="2011-03-04T11:45:33+11:00"/>
+            <performer>
+              <reference value="Organization/1832473e-2fe0-452d-abe9-3cdb9879522f"/>
+              <display value="Acme Laboratory, Inc"/>
+            </performer>
+          </DiagnosticReport>
+      </resource>
+      <request>
+          <method value="POST" />
+          <url value="DiagnosticReport/7c9f231034214f4bab08293c6deb1c60/_history/1" />
+      </request>
+  </entry>
+</Bundle>

@@ -1,0 +1,61 @@
+{
+  "resourceType": "Bundle",
+  "id": "urn:uuid:2cd8aebe31ed452cadb632c456bc403e",
+  "meta": {
+    "lastUpdated": "2016-03-15T14:15:50.981+00:00"
+  },
+  "type": "searchset",
+  "total": 3910,
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://sqlonfhir-dstu2.azurewebsites.net/fhir/Observation?_count=1&_format=application/json+fhir&_snapshot=635936481509815696"
+    },
+    {
+      "relation": "first",
+      "url": "http://sqlonfhir-dstu2.azurewebsites.net/fhir/Observation?_count=1&_format=application/json+fhir&_snapshot=635936481509815696"
+    },
+    {
+      "relation": "next",
+      "url": "http://sqlonfhir-dstu2.azurewebsites.net/fhir/Observation?_count=1&_format=application/json+fhir&_snapshot=635936481509815696&_page=1"
+    },
+    {
+      "relation": "last",
+      "url": "http://sqlonfhir-dstu2.azurewebsites.net/fhir/Observation?_count=1&_format=application/json+fhir&_snapshot=635936481509815696&_page=3910"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "http://sqlonfhir-dstu2.azurewebsites.net/fhir/Observation/7c9f231034214f4bab08293c6deb1c60/_history/1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "7c9f231034214f4bab08293c6deb1c60",
+        "meta": {
+          "versionId": "1",
+          "lastUpdated": "2016-03-08T19:19:27.65+00:00"
+        },
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "3141-9"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/748e719b1095417c9147c9bc33c29681"
+        },
+        "valueQuantity": {
+          "value": 500,
+          "unit": "kg",
+          "system": "http://unitsofmeasure.org"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation/7c9f231034214f4bab08293c6deb1c60/_history/1"
+      }
+    }
+  ]
+}

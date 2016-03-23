@@ -96,6 +96,21 @@ module Crucible
         define_method test_method, wrapped
       end
 
+      def resource_category(resource)
+        unless @resource_category
+          @categories_by_resource = {}
+          fhir_structure = Crucible::FHIRStructure.get
+          categories = fhir_structure['children'].select {|n| n['name'] == 'RESOURCES'}.first['children']
+          pull_children = lambda {|n, chain| n['children'].nil? ? n['name'] : n['children'].map {|child| chain.call(child, chain)}}
+          categories.each do |category|
+            pull_children.call(category, pull_children).flatten.each do |resource_name|
+              @categories_by_resource[resource_name] = category['name']
+            end
+          end
+        end
+        @categories_by_resource[resource.underscore.humanize.downcase] || 'Uncategorized'
+      end
+
     end
   end
 end

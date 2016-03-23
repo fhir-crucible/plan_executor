@@ -14,7 +14,7 @@ module Crucible
 
       def initialize(client1, client2=nil)
         super(client1, client2)
-        @category = 'Search'
+        @category = {id: 'core_functionality', title: 'Core Functionality'}
       end
 
       def setup

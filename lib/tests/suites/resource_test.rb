@@ -524,6 +524,10 @@ module Crucible
           reply = @client.read(@resource_class,@preexisting_id)
           if reply.code==410
             result.update(STATUS[:pass], "Deleted #{resource_class.name.demodulize} was correctly reported as gone.", reply.body)
+          elsif reply.code==404
+            message = "Deleted #{resource_class.name.demodulize} was reported as unknown (404). If the system tracks deleted resources, it should respond with 410."
+            result.update(STATUS[:pass], message , reply.body)
+            result.warnings = [ message ]
           else
             outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)

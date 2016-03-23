@@ -384,6 +384,8 @@
               "name": "Support",
               "children": [
                 {
+                  "name": "account"
+                },{
                   "name": "coverage"
                 },{
                   "name": "eligibility request"

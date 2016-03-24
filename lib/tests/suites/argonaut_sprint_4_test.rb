@@ -219,7 +219,7 @@ module Crucible
 
       end
 
-      ['code', 'identifier', 'status', 'effectivedate'].each do |field|
+      ['code', 'identifier', 'status', 'effectiveDateTime'].each do |field|
 
         test "AS4007_#{field}", "Search for MedicationStatement by #{field}" do
           metadata {

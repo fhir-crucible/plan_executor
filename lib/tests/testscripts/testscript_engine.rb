@@ -46,7 +46,6 @@ module Crucible
       end
 
       def self.load_testscripts
-        puts ">>> Loading Testscripts"
         return if @@scripts
         # get all TestScript's in testscripts/xml
         @@scripts = []

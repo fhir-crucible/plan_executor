@@ -2,7 +2,7 @@ module Crucible
   module Tests
     class TestScriptEngine
 
-      @@scripts = nil
+      @@scripts = []
 
       def initialize(client=nil, client2=nil)
         @client = client
@@ -10,7 +10,7 @@ module Crucible
       end
 
       def tests
-        @@scripts || []
+        @@scripts
       end
 
       def find_test(key)
@@ -46,9 +46,8 @@ module Crucible
       end
 
       def self.load_testscripts
-        return if @@scripts
+        return unless @@scripts.empty?
         # get all TestScript's in testscripts/xml
-        @@scripts = []
         root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
         files = File.join(root, 'xml', '**/*.xml')
         Dir.glob(files).each do |f|

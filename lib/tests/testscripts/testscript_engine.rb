@@ -2,18 +2,19 @@ module Crucible
   module Tests
     class TestScriptEngine
 
+      @@scripts = []
+
       def initialize(client=nil, client2=nil)
         @client = client
         @client2 = client2
-        load_testscripts
       end
 
       def tests
-        @scripts || []
+        @@scripts
       end
 
       def find_test(key)
-        @scripts.find{|s| s.id == key || s.title == key} || []
+        @@scripts.find{|s| s.id == key || s.title == key} || []
       end
 
       def execute_all
@@ -44,9 +45,9 @@ module Crucible
         list
       end
 
-      def load_testscripts
+      def self.load_testscripts
+        return unless @@scripts.empty?
         # get all TestScript's in testscripts/xml
-        @scripts = []
         root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
         files = File.join(root, 'xml', '**/*.xml')
         Dir.glob(files).each do |f|
@@ -60,11 +61,12 @@ module Crucible
           next if f.include? "Track2-Terminology"
           next if f.include? "Track7-LabOrderLabReport"
 
-          @scripts << BaseTestScript.new( FHIR::TestScript.from_xml( File.read(f) ), @client, @client2 )
+          @@scripts << BaseTestScript.new( FHIR::TestScript.from_xml( File.read(f) ), @client, @client2 )
         end
-        @scripts
+        @@scripts
       end
 
     end
   end
 end
+Crucible::Tests::TestScriptEngine.load_testscripts

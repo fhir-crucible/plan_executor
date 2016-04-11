@@ -285,7 +285,7 @@ module Crucible
         result = @client.resource_instance_history(FHIR::Patient,@patient_id)
         assert_response_ok result
         assert_equal 2, result.resource.total, 'The number of returned versions is not correct'
-        warning { assert_equal 'history', result.resource.fhirType, 'The bundle does not have the correct type: history' }
+        warning { assert_equal 'history', result.resource.type, 'The bundle does not have the correct type: history' }
         warning { check_sort_order(result.resource.entry) }
       end
 

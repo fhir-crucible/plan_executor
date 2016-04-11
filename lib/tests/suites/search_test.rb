@@ -63,7 +63,7 @@ module Crucible
         unless @conformance.nil?
           @conformance.rest.each do |rest|
             rest.resource.each do |resource|
-              @searchParams = resource.searchParam if(resource.fhirType.downcase == "#{@resource_class.name.demodulize.downcase}" )
+              @searchParams = resource.searchParam if(resource.type.downcase == "#{@resource_class.name.demodulize.downcase}" )
             end
           end
         end

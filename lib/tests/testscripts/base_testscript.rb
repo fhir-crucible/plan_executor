@@ -123,7 +123,7 @@ module Crucible
           test.metadata.capability.each do |capability|
             conf = get_reference(capability.conformance.reference)
             conf.rest.each do |rest|
-              interactions = rest.resource.map{|resource| { resource: resource.fhirType, methods: resource.interaction.map(&:code)}}
+              interactions = rest.resource.map{|resource| { resource: resource.type, methods: resource.interaction.map(&:code)}}
               result.requires.concat(interactions) if capability.required
               result.validates.concat(interactions) if capability.fhirValidated
             end
@@ -173,7 +173,7 @@ module Crucible
         format = FORMAT_MAP[operation.accept] unless operation.accept.nil?
 
         operationCode = 'empty'
-        operationCode = operation.fhirType.code unless operation.fhirType.nil?
+        operationCode = operation.type.code unless operation.type.nil?
 
         case operationCode
         when 'read'
@@ -265,7 +265,7 @@ module Crucible
           end 
 
         else
-          raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.fhirType}"
+          raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.type}"
         end
         handle_response(operation)
       end
@@ -392,7 +392,7 @@ module Crucible
       end
 
       def handle_response(operation)
-        if !operation.responseId.blank? && operation.fhirType.code != 'delete'
+        if !operation.responseId.blank? && operation.type.code != 'delete'
           log "Overwriting response #{operation.responseId}..." if @response_map.keys.include?(operation.responseId)
           log "Storing response #{operation.responseId}..."
           @response_map[operation.responseId] = @last_response
@@ -436,12 +436,8 @@ module Crucible
             resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)
           else
             resourceType = Nokogiri::XML(file).children.find{|x| x.class == Nokogiri::XML::Element}.name
-            fhirType = "FHIR::#{resourceType}".constantize
-            if fhirType.respond_to? :from_xml
-              resource = fhirType.from_xml(file)
-            else 
-              puts "Unable to load reference: Method from_xml undefined on FHIR::#{resourceType}"
-            end
+            type = "FHIR::#{resourceType}".constantize
+            resource = FHIR::Xml.from_xml(file)
 
           end
         end

@@ -116,12 +116,12 @@ module Crucible
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
         @daf_conformance.rest.first.resource.each do |daf_resource|
-          resource = rest.resource.select{|r|r.fhirType==daf_resource.fhirType}.first
-          assert(!resource.nil?, "Server does not declare support for the #{daf_resource.fhirType} resource.")
+          resource = rest.resource.select{|r|r.type==daf_resource.type}.first
+          assert(!resource.nil?, "Server does not declare support for the #{daf_resource.type} resource.")
 
           # TODO move rest.resource.profile checks into DAF00
           # check profile match
-          warning { assert(resource.profile.reference==daf_resource.profile.reference,"Profile for #{resource.fhirType} does not match #{daf_resource.profile.reference}",resource.profile.reference) }
+          warning { assert(resource.profile.reference==daf_resource.profile.reference,"Profile for #{resource.type} does not match #{daf_resource.profile.reference}",resource.profile.reference) }
 
           # check interaction.code (and interaction.extension.valueCode for SHALL/SHOULD)
           shall_interactions = daf_resource.interaction.select{|x|x.extension.first.value.value=='SHALL'}.map{|x|x.code}
@@ -132,8 +132,8 @@ module Crucible
             shall_interactions.delete(interaction.code)
           end
 
-          warning { assert(should_interactions.empty?,"Server does not declare support for the following SHOULD interactions on #{resource.fhirType}: #{should_interactions}") }
-          assert(shall_interactions.empty?,"Server does not declare support for the following SHALL interactions on #{resource.fhirType}: #{shall_interactions}")
+          warning { assert(should_interactions.empty?,"Server does not declare support for the following SHOULD interactions on #{resource.type}: #{should_interactions}") }
+          assert(shall_interactions.empty?,"Server does not declare support for the following SHALL interactions on #{resource.type}: #{shall_interactions}")
         end
       end      
 
@@ -151,8 +151,8 @@ module Crucible
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
         @daf_conformance.rest.first.resource.each do |daf_resource|
-          resource = rest.resource.select{|r|r.fhirType==daf_resource.fhirType}.first
-          assert(!resource.nil?, "Server does not declare support for the #{daf_resource.fhirType} resource.")
+          resource = rest.resource.select{|r|r.type==daf_resource.type}.first
+          assert(!resource.nil?, "Server does not declare support for the #{daf_resource.type} resource.")
 
           # check searchParam.name
           shall_params = daf_resource.searchParam.select{|x|x.extension.first.value.value=='SHALL'}.map{|x|x.name}
@@ -163,8 +163,8 @@ module Crucible
             shall_params.delete(searchParam.name)
           end
 
-          warning { assert(should_params.empty?,"Server does not declare support for the following SHOULD searchParams on #{resource.fhirType}: #{should_params}") }
-          assert(shall_params.empty?,"Server does not declare support for the following SHALL searchParams on #{resource.fhirType}: #{shall_params}")
+          warning { assert(should_params.empty?,"Server does not declare support for the following SHOULD searchParams on #{resource.type}: #{should_params}") }
+          assert(shall_params.empty?,"Server does not declare support for the following SHALL searchParams on #{resource.type}: #{shall_params}")
 
           # search chains
           shall_chain = daf_resource.searchParam.select{|x|x.extension.first.value.value=='SHALL'}.map{|x|x.chain}.flatten
@@ -175,13 +175,13 @@ module Crucible
             shall_chain -= searchParam.chain
           end
 
-          warning { assert(should_chain.empty?,"Server does not declare support for the following SHOULD searchParam.chain on #{resource.fhirType}: #{should_chain}") }
-          assert(shall_chain.empty?,"Server does not declare support for the following SHALL searchParam.chain on #{resource.fhirType}: #{shall_chain}")
+          warning { assert(should_chain.empty?,"Server does not declare support for the following SHOULD searchParam.chain on #{resource.type}: #{should_chain}") }
+          assert(shall_chain.empty?,"Server does not declare support for the following SHALL searchParam.chain on #{resource.type}: #{shall_chain}")
 
           # search includes
           search_includes = daf_resource.searchInclude.map(&:clone)
           search_includes -= resource.searchInclude
-          assert(search_includes.empty?,"Server does not declare support for the following SHALL searchIncludes on #{resource.fhirType}: #{search_includes}")
+          assert(search_includes.empty?,"Server does not declare support for the following SHALL searchIncludes on #{resource.type}: #{search_includes}")
         end
       end      
 
@@ -263,18 +263,18 @@ module Crucible
       # TRY TO SEARCH FOR DAF PROFILED RESOURCES... AND THEN HAVE OUR CLIENT VALIDATE THEM, IF THEY EXIST.
       resources = Crucible::Generator::Resources.new
       daf_conformance = resources.daf_conformance
-      daf_conformance.rest.first.resource.each do |daf_resource|
+      daf_conformance.rest.resource.each do |daf_resource|
 
-        test "DAFS0_#{daf_resource.fhirType}", "Search #{daf_resource.fhirType} for DAF-#{daf_resource.fhirType} compliant resources" do
+        test "DAFS0_#{daf_resource.type}", "Search #{daf_resource.type} for DAF-#{daf_resource.type} compliant resources" do
           metadata {
             links "#{BASE_SPEC_LINK}/resource.html#profile-tags"
-            links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.fhirType.downcase}.html"
+            links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
             links "#{REST_SPEC_LINK}#search"
-            requires resource: "#{daf_resource.fhirType}", methods: ['search']
-            validates resource: "#{daf_resource.fhirType}", methods: ['search']
+            requires resource: "#{daf_resource.type}", methods: ['search']
+            validates resource: "#{daf_resource.type}", methods: ['search']
           }
 
-          klass = "FHIR::#{daf_resource.fhirType}".constantize
+          klass = "FHIR::#{daf_resource.type}".constantize
           options = {
             :search => {
               :parameters => {
@@ -286,48 +286,48 @@ module Crucible
           reply = @client.search(klass,options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          warning{ assert((1 >= reply.resource.entry.size), "The server did not return any DAF-#{daf_resource.fhirType}s.") }
+          warning{ assert((1 >= reply.resource.entry.size), "The server did not return any DAF-#{daf_resource.type}s.") }
 
           if reply.resource.entry.size > 0
             # store any results to a @server_side_resources
-            @server_side_resources[daf_resource.fhirType] = reply.resource.entry.map{|x|x.resource}
+            @server_side_resources[daf_resource.type] = reply.resource.entry.map{|x|x.resource}
           end
         end
 
-        test "DAFV0_#{daf_resource.fhirType}", "Client-side validation of DAF-#{daf_resource.fhirType} search results" do
+        test "DAFV0_#{daf_resource.type}", "Client-side validation of DAF-#{daf_resource.type} search results" do
           metadata {
             links "#{BASE_SPEC_LINK}/resource-operations.html#validate"
-            links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.fhirType.downcase}.html"
+            links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
           }
-          resource = @server_side_resources[daf_resource.fhirType]
+          resource = @server_side_resources[daf_resource.type]
           skip if resource.nil? || resource.empty?
           
-          profiles = FHIR::StructureDefinition.get_profiles_for_resource(daf_resource.fhirType)
+          profiles = FHIR::StructureDefinition.get_profiles_for_resource(daf_resource.type)
           profile = profiles.select{|x|x.xmlId.start_with?'daf'}.first
           skip if profile.nil?
 
           resource.each do |r|
-            assert(profile.is_valid?(r),"The #{daf_resource.fhirType} with ID #{r.xmlId} is not DAF compliant but claims to be.",r.to_xml)
+            assert(profile.is_valid?(r),"The #{daf_resource.type} with ID #{r.xmlId} is not DAF compliant but claims to be.",r.to_xml)
           end
         end
 
         # if there are any profiled results in the @variable, and the server supports $validate, then $validate them
-        test "DAFV1_#{daf_resource.fhirType}", "Server-side validation of DAF-#{daf_resource.fhirType} search results" do
+        test "DAFV1_#{daf_resource.type}", "Server-side validation of DAF-#{daf_resource.type} search results" do
           metadata {
             links "#{BASE_SPEC_LINK}/resource-operations.html#validate"
-            links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.fhirType.downcase}.html"
-            validates resource: "#{daf_resource.fhirType}", methods: ['$validate']
+            links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
+            validates resource: "#{daf_resource.type}", methods: ['$validate']
             validates profiles: ['validate-profile']
           }
           skip unless @supports_validate
-          resource = @server_side_resources[daf_resource.fhirType]
+          resource = @server_side_resources[daf_resource.type]
           skip if resource.nil? || resource.empty?
 
           resource.each do |r|
             reply = @client.validate(r,{profile_uri: daf_resource.profile.reference})
             assert_response_ok(reply)
             if !reply.id.nil?
-              assert( !reply.id.include?('validate'), "Server created an #{daf_resource.fhirType} with the ID `#{reply.resource.xmlId}` rather than validate the resource.", reply.id)
+              assert( !reply.id.include?('validate'), "Server created an #{daf_resource.type} with the ID `#{reply.resource.xmlId}` rather than validate the resource.", reply.id)
             end
           end
         end

@@ -52,7 +52,7 @@ module Crucible
         assert_response_ok result
         bundle = result.resource
 
-        assert_equal "history", bundle.fhirType, "The bundle type is not correct"
+        assert_equal "history", bundle.type, "The bundle type is not correct"
         assert_equal @version_count, bundle.total, "the number of returned versions is not correct"
         check_sort_order(bundle.entry)
       end

@@ -274,7 +274,7 @@ module Crucible
         case resource.class
         when FHIR::Appointment
           resource.reason = minimal_codeableconcept('http://snomed.info/sct','219006') # drinker of alcohol
-          resource.participant.each{|p| p.fhirType=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
+          resource.participant.each{|p| p.type=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
         when FHIR::AppointmentResponse
           resource.participantType = [ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ]
         when FHIR::AuditEvent
@@ -283,16 +283,16 @@ module Crucible
             o.name = "name #{SecureRandom.base64}" if o.name.nil?
           end
         when FHIR::Bundle
-          resource.total = nil if !['searchset','history'].include?(resource.fhirType)
-          resource.entry.each {|e|e.search=nil} if resource.fhirType!='searchset'
-          resource.entry.each {|e|e.request=nil} if !['batch','transaction','history'].include?(resource.fhirType)
-          resource.entry.each {|e|e.response=nil} if !['batch-response','transaction-response'].include?(resource.fhirType)
+          resource.total = nil if !['searchset','history'].include?(resource.type)
+          resource.entry.each {|e|e.search=nil} if resource.type!='searchset'
+          resource.entry.each {|e|e.request=nil} if !['batch','transaction','history'].include?(resource.type)
+          resource.entry.each {|e|e.response=nil} if !['batch-response','transaction-response'].include?(resource.type)
           head = resource.entry.first
           if !head.nil?
             if head.request.nil? && head.response.nil? && head.resource.nil?
-              if resource.fhirType == 'document'
+              if resource.type == 'document'
                 head.resource = generate(FHIR::Composition,3)
-              elsif resource.fhirType == 'message'
+              elsif resource.type == 'message'
                 head.resource = generate(FHIR::MessageHeader,3)  
               else
                 head.resource = generate(FHIR::Basic,3)                              
@@ -310,11 +310,11 @@ module Crucible
           resource.activity.each {|a| a.reference = nil if a.detail }
         when FHIR::Claim
           resource.item.each do |item|
-            item.fhirType = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+            item.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
             item.detail.each do |detail|
-              detail.fhirType = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+              detail.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
               detail.subDetail.each do |sub|
-                sub.fhirType = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+                sub.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
                 sub.service = minimal_coding('http://hl7.org/fhir/ex-USCLS','1205')
               end
             end
@@ -428,7 +428,7 @@ module Crucible
           resource.max = "#{resource.min+1}"
           # TODO remove bindings for things that can't be code, Coding, CodeableConcept
           is_codeable = false
-          resource.fhirType.each do |f|
+          resource.type.each do |f|
             is_codeable = (['code','Coding','CodeableConcept'].include?(f.code))
           end
           resource.binding = nil unless is_codeable
@@ -492,11 +492,11 @@ module Crucible
             resource.mode = 'changes' if !entry.fhirDeleted.nil?
           end
         when FHIR::Media
-          if resource.fhirType == 'video'
+          if resource.type == 'video'
             resource.frames = nil
-          elsif resource.fhirType == 'photo'
+          elsif resource.type == 'photo'
             resource.duration = nil
-          elsif resource.fhirType == 'audio'
+          elsif resource.type == 'audio'
             resource.height = nil
             resource.width = nil
             resource.frames = nil            
@@ -539,7 +539,7 @@ module Crucible
           resource.replacedBy = nil if resource.status!='retired'
           if resource.kind == 'root'
             resource.uniqueId.each do |uid|
-              uid.fhirType='other' if ['uuid','oid'].include?(uid.fhirType)
+              uid.type='other' if ['uuid','oid'].include?(uid.type)
             end
           end
           resource.uniqueId.each do |uid|
@@ -581,7 +581,7 @@ module Crucible
           resource.channel.payload = 'applicaton/json+fhir'
           resource.end = nil
         when FHIR::SupplyDelivery
-          resource.fhirType = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
+          resource.type = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
         when FHIR::SupplyRequest
           resource.kind = minimal_codeableconcept('http://hl7.org/fhir/supply-kind','central')
           if resource.when 

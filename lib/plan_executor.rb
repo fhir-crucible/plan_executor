@@ -3,7 +3,7 @@ require 'bundler/setup'
 require 'rubygems'
 require 'yaml'
 require 'nokogiri'
-require 'fhir_model'
+require 'fhir_models'
 require 'fhir_client'
 require 'nokogiri/diff'
 

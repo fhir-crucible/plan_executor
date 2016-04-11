@@ -28,7 +28,7 @@ module Crucible
         @version << result.version
 
         @patient.id = @id
-        @patient.telecom << FHIR::ContactPoint.new(system: 'email', value: 'foo@example.com')
+        @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
 
         update_result = @client.update(@patient, @id)
         assert_response_ok(update_result)

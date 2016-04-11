@@ -86,7 +86,7 @@ module Crucible
         
         # @profile_url = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with
         @obs.each do |x|
-          x.meta = FHIR::Resource::ResourceMetaComponent.new
+          x.meta = FHIR::Meta.new
           x.meta.profile = [ @profile_url ]
           reply = @client.validate(x,{profile_uri: @profile_url})
           assert_response_ok(reply)

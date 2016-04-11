@@ -14,7 +14,7 @@ module Crucible
         if(embedded > 0)
           generate_children!(resource,embedded)
         end
-        resource.xmlId=nil if resource.respond_to?(:xmlId=)
+        resource.id=nil if resource.respond_to?(:xmlId=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
         resource.text=nil if [FHIR::Bundle,FHIR::Binary,FHIR::Parameters].include?(klass)
@@ -303,7 +303,7 @@ module Crucible
             else
               rid = SecureRandom.random_number(100) + 1
               head.fullUrl = "http://projectcrucible.org/fhir/#{rid}"
-              head.resource.xmlId = "#{rid}"
+              head.resource.id = "#{rid}"
             end
           end
         when FHIR::CarePlan
@@ -577,7 +577,7 @@ module Crucible
           resource.group.group = nil
           resource.group.question.each {|q|q.answer = nil }
         when FHIR::Subscription
-          resource.status = 'requested' if resource.xmlId.nil?
+          resource.status = 'requested' if resource.id.nil?
           resource.channel.payload = 'applicaton/json+fhir'
           resource.end = nil
         when FHIR::SupplyDelivery

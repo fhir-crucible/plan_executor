@@ -58,7 +58,7 @@ module Crucible
       end
 
       def id
-        @testscript.xmlId
+        @testscript.id
       end
 
       def title
@@ -66,7 +66,7 @@ module Crucible
       end
 
       def tests
-        @testscript.test.map { |test| "#{test.xmlId} #{test.name} test".downcase.tr(' ', '_').to_sym }
+        @testscript.test.map { |test| "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym }
       end
 
       def debug_prefix
@@ -79,7 +79,7 @@ module Crucible
 
       def define_tests
         @testscript.test.each do |test|
-          test_method = "#{test.xmlId} #{test.name} test".downcase.tr(' ', '_').to_sym
+          test_method = "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym
           define_singleton_method test_method, -> { process_test(test) }
         end
       end
@@ -87,10 +87,10 @@ module Crucible
       def load_fixtures
         @fixtures = {}
         @testscript.fixture.each do |fixture|
-          @fixtures[fixture.xmlId] = get_reference(fixture.resource.reference)
-          @fixtures[fixture.xmlId].xmlId = nil unless @fixtures[fixture.xmlId].nil? #fixture resources cannot have an ID
-          @autocreate << fixture.xmlId if fixture.autocreate
-          @autodelete << fixture.xmlId if fixture.autodelete
+          @fixtures[fixture.id] = get_reference(fixture.resource.reference)
+          @fixtures[fixture.id].id = nil unless @fixtures[fixture.id].nil? #fixture resources cannot have an ID
+          @autocreate << fixture.id if fixture.autocreate
+          @autodelete << fixture.id if fixture.autodelete
         end
       end
 
@@ -103,7 +103,7 @@ module Crucible
       end
 
       def process_test(test)
-        result = TestResult.new("TS_#{test.xmlId}", test.name, STATUS[:pass], '','')
+        result = TestResult.new("TS_#{test.id}", test.name, STATUS[:pass], '','')
         @last_response = nil # clear out any responses from previous tests
         @warnings = [] # clear out any previous warnings
         begin
@@ -213,7 +213,7 @@ module Crucible
           raise "No target specified for update" if target_id.nil?
 
           fixture = @fixtures[operation.sourceId]
-          fixture.xmlId = replace_variables(target_id) if fixture.xmlId.nil?
+          fixture.id = replace_variables(target_id) if fixture.id.nil?
           @last_response = @client.update fixture, replace_variables(target_id), format
         when 'transaction'
           raise 'transaction not implemented'
@@ -326,7 +326,7 @@ module Crucible
           call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
 
         when !assertion.validateProfileId.nil?
-          profile_uri = @testscript.profile.first{|p| p.xmlId = assertion.validateProfileId}.reference
+          profile_uri = @testscript.profile.first{|p| p.id = assertion.validateProfileId}.reference
           reply = @client.validate(@last_response.resource,{profile_uri: profile_uri})
           call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
 
@@ -424,7 +424,7 @@ module Crucible
         resource = nil
         if reference.start_with?('#')
           contained_id = reference[1..-1]
-          resource = @testscript.contained.select{|r| r.xmlId == contained_id}.first
+          resource = @testscript.contained.select{|r| r.id == contained_id}.first
         else 
           root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
           return nil unless File.exist? "#{root}/xml#{reference}"
@@ -433,10 +433,9 @@ module Crucible
           file = preprocess(file) if file.include?('${')
           if reference.split('.').last == "json"
             resourceType = JSON.parse(file)["resourceType"]
-            resource = "FHIR::#{resourceType}".constantize.from_fhir_json(file)
+            resource = FHIR::Json.from_json(file)
           else
             resourceType = Nokogiri::XML(file).children.find{|x| x.class == Nokogiri::XML::Element}.name
-            type = "FHIR::#{resourceType}".constantize
             resource = FHIR::Xml.from_xml(file)
 
           end

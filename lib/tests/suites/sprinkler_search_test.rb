@@ -44,7 +44,7 @@ module Crucible
         # create a condition matching the first patient
         @condition = ResourceGenerator.generate(FHIR::Condition,1)
         @condition['patient'] = ResourceGenerator.generate(FHIR::Reference)
-        @condition.patient.xmlId = @entries.try(:[],0).try(:resource).try(:xmlId)
+        @condition.patient.id = @entries.try(:[],0).try(:resource).try(:xmlId)
         options = {
           :id => @entries.try(:[],0).try(:resource).try(:xmlId),
           :resource => @entries.try(:[],0).try(:resource).try(:class)
@@ -234,7 +234,7 @@ module Crucible
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         options = {
-          :id => @entries[0].resource.xmlId,
+          :id => @entries[0].resource.id,
           :resource => @entries[0].resource.class
         }
         temp = @client.use_format_param
@@ -270,7 +270,7 @@ module Crucible
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         options = {
-          :id => @entries[0].resource.xmlId,
+          :id => @entries[0].resource.id,
           :resource => @entries[0].resource.class
         }
         temp = @client.use_format_param
@@ -304,7 +304,7 @@ module Crucible
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient_id = @entries[0].resource.xmlId
+        patient_id = @entries[0].resource.id
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
@@ -333,7 +333,7 @@ module Crucible
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         options = {
-          :id => @entries[0].resource.xmlId,
+          :id => @entries[0].resource.id,
           :resource => @entries[0].resource.class
         }
         temp = @client.use_format_param
@@ -369,7 +369,7 @@ module Crucible
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
-        patient_id = @entries[0].resource.xmlId
+        patient_id = @entries[0].resource.id
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
@@ -397,7 +397,7 @@ module Crucible
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
         # a condition for the first (0-index) patient in the setup method.
-        patient_id = @entries[0].resource.xmlId
+        patient_id = @entries[0].resource.id
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {

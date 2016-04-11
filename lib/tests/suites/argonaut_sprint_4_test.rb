@@ -212,9 +212,9 @@ module Crucible
           reply = @client.search(FHIR::MedicationOrder, options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          assert reply.resource, "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
-          assert (reply.resource.entry && reply.resource.entry.length > 0), "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
-          assert getIdList(reply.resource).select {|id| id == match_target.resource.xmlId}.length > 0, "Search did not find the expected MedicationOrder with ID: #{match_target.resource.xmlId}"
+          assert reply.resource, "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.id}"
+          assert (reply.resource.entry && reply.resource.entry.length > 0), "Search did not return any MedicationOrders for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.id}"
+          assert getIdList(reply.resource).select {|id| id == match_target.resource.id}.length > 0, "Search did not find the expected MedicationOrder with ID: #{match_target.resource.id}"
         end
 
       end
@@ -262,9 +262,9 @@ module Crucible
           reply = @client.search(FHIR::MedicationStatement, options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          assert reply.resource, "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
-          assert (reply.resource.entry && reply.resource.entry.length > 0), "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.xmlId}"
-          assert getIdList(reply.resource).select {|id| id == match_target.resource.xmlId}.length > 0, "Search did not find the expected MedicationStatements with ID: #{match_target.resource.xmlId}"
+          assert reply.resource, "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.id}"
+          assert (reply.resource.entry && reply.resource.entry.length > 0), "Search did not return any MedicationStatements for #{field.downcase} => #{search_string}, should have matched Medication Order id: #{match_target.resource.id}"
+          assert getIdList(reply.resource).select {|id| id == match_target.resource.id}.length > 0, "Search did not find the expected MedicationStatements with ID: #{match_target.resource.id}"
         end
 
       end
@@ -314,7 +314,7 @@ module Crucible
           if (entry.fullUrl)
             FHIR::ResourceAddress.pull_out_id(entry.resourceType, entry.fullUrl)
           elsif entry.resource
-            entry.resource.xmlId
+            entry.resource.id
           else
             nil
           end

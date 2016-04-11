@@ -170,7 +170,7 @@ module Crucible
 		    @patient_us.id = @patient_us_id
         @patient_us.modifierExtension << FHIR::Extension.new
         @patient_us.modifierExtension[0].url='http://projectcrucible.org/modifierExtension/foo'
-        @patient_us.modifierExtension[0].value = FHIR::AnyType.new('Boolean',true)
+        @patient_us.modifierExtension[0].valueBoolean = true
 
         reply = @client.update @patient_us, @patient_us_id
 
@@ -209,7 +209,7 @@ module Crucible
         pe.path='_gender'
         pe['extension'] = [ FHIR::Extension.new ]
         pe['extension'][0].url = 'http://hl7.org/test/gender'
-        pe['extension'][0].value = FHIR::AnyType.new('String','Male')
+        pe['extension'][0].valueString = 'Male'
         @patient_us.primitiveExtension << pe
 
         reply = @client.update @patient_us, @patient_us_id
@@ -251,7 +251,7 @@ module Crucible
         ext.url = 'http://hl7.org/complex/foo'
         ext.extension << FHIR::Extension.new
         ext.extension[0].url='http://complex/foo/bar'
-        ext.extension[0].value=FHIR::AnyType.new('String','foobar')
+        ext.extension[0].valueString = 'foobar'
         @patient.extension << ext
 
         reply = @client.update @patient_us, @patient_us_id

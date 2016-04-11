@@ -27,7 +27,7 @@ module Crucible
       end
 
       def fhir_resources
-        Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
+        FHIR::RESOURCES.map {|r| "FHIR::#{r}".constantize}
       end
 
       def requires(hash)

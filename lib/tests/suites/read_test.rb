@@ -27,7 +27,7 @@ module Crucible
       end
 
       def self.createPatient(family, given)
-        patient = FHIR::Patient.new(name: [FHIR::HumanName.new(family: [family], given: [given])])
+        patient = FHIR::Patient.new.from_hash(name: [FHIR::HumanName.new.from_hash(family: [family], given: [given])])
       end
 
       # [SprinklerTest("R001", "Result headers on normal read")]

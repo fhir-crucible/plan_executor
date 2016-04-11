@@ -233,7 +233,6 @@ module Crucible
             assert(p[attribute]==value,"Output parameters do not contain #{name}=#{value}")
           end
         rescue Exception => e
-          binding.pry
           raise AssertionException.new 'Unable to parse response parameters', e.message
         end
       end

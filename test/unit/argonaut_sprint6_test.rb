@@ -5,7 +5,7 @@ class ArgonautSprint6Test < Test::Unit::TestCase
   def setup
     @fixtures = File.absolute_path(File.join(File.absolute_path(__FILE__),'..','..','fixtures'))
     @labs = FHIR::Xml.from_xml File.read(File.join(@fixtures, 'lab_results_bundle.xml'))
-    @reports = FHIR::Bundle.from_xml File.read(File.join(@fixtures, 'diagnostic_bundle.xml'))
+    @reports = FHIR::Xml.from_xml File.read(File.join(@fixtures, 'diagnostic_bundle.xml'))
     @test = Crucible::Tests::ArgonautSprint6Test.new nil
     @test.instance_variable_set(:@warnings, [])
   end

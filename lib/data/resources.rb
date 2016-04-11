@@ -82,7 +82,7 @@ module Crucible
         observations = []
         files = File.join(fixture_path, 'validation', 'observations', '*.xml')
         Dir.glob(files).each do |f|
-            observations << FHIR::Observation.from_xml( File.read(f) )
+            observations << FHIR::Xml.from_xml( File.read(f) )
         end
         observations
       end

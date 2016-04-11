@@ -20,43 +20,43 @@ module Crucible
 
         # Create a patient
         @patient = @resources.minimal_patient
-        @patient.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @patient.id = nil # clear the identifier, in case the server checks for duplicates
         reply = @client.create(@patient)      
         assert_response_ok(reply)
-        @patient.xmlId = reply.id
+        @patient.id = reply.id
 
         # Create a practitioner
         @practitioner = @resources.scheduling_practitioner
-        @practitioner.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @practitioner.id = nil # clear the identifier, in case the server checks for duplicates
         reply = @client.create(@practitioner)      
         assert_response_ok(reply)
-        @practitioner.xmlId = reply.id
+        @practitioner.id = reply.id
 
         # Create a schedule
         @schedule = @resources.scheduling_schedule
-        @schedule.xmlId = nil # clear the identifier, in case the server checks for duplicates
-        @schedule.actor.reference = "Practitioner/#{@practitioner.xmlId}"
+        @schedule.id = nil # clear the identifier, in case the server checks for duplicates
+        @schedule.actor.reference = "Practitioner/#{@practitioner.id}"
         reply = @client.create(@schedule)      
         assert_response_ok(reply)
-        @schedule.xmlId = reply.id
+        @schedule.id = reply.id
 
         # Create a slot
         @slot = @resources.scheduling_slot
-        @slot.xmlId = nil # clear the identifier, in case the server checks for duplicates
-        @slot.schedule.reference = "Schedule/#{@schedule.xmlId}"
+        @slot.id = nil # clear the identifier, in case the server checks for duplicates
+        @slot.schedule.reference = "Schedule/#{@schedule.id}"
         reply = @client.create(@slot)      
         assert_response_ok(reply)
-        @slot.xmlId = reply.id
+        @slot.id = reply.id
       end
 
       def teardown
-        @client.destroy(FHIR::Patient, @patient.xmlId) if !@patient.xmlId.nil?
-        @client.destroy(FHIR::Practitioner, @practitioner.xmlId) if !@practitioner.xmlId.nil?
-        @client.destroy(FHIR::Schedule, @schedule.xmlId) if !@schedule.xmlId.nil?
-        @client.destroy(FHIR::Slot, @slot.xmlId) if !@slot.xmlId.nil?
-        @client.destroy(FHIR::Appointment, @appointment.xmlId) if @appointment && !@appointment.xmlId.nil?
-        @client.destroy(FHIR::AppointmentResponse, @appointment_response_patient.xmlId) if @appointment_response_patient && !@appointment_response_patient.xmlId.nil?
-        @client.destroy(FHIR::AppointmentResponse, @appointment_response_practitioner.xmlId) if @appointment_response_practitioner && !@appointment_response_practitioner.xmlId.nil?
+        @client.destroy(FHIR::Patient, @patient.id) if !@patient.id.nil?
+        @client.destroy(FHIR::Practitioner, @practitioner.id) if !@practitioner.try(:id).nil?
+        @client.destroy(FHIR::Schedule, @schedule.id) if !@schedule.try(:id).nil?
+        @client.destroy(FHIR::Slot, @slot.id) if !@slot.try(:id).nil?
+        @client.destroy(FHIR::Appointment, @appointment.id) if @appointment && !@appointment.id.nil?
+        @client.destroy(FHIR::AppointmentResponse, @appointment_response_patient.id) if @appointment_response_patient && !@appointment_response_patient.id.nil?
+        @client.destroy(FHIR::AppointmentResponse, @appointment_response_practitioner.id) if @appointment_response_practitioner && !@appointment_response_practitioner.id.nil?
       end
 
       # Find Practitioner's schedule
@@ -74,7 +74,7 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'actor' => "Practitioner/#{@practitioner.xmlId}"
+              'actor' => "Practitioner/#{@practitioner.id}"
             }
           }
         }
@@ -82,7 +82,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Schedule for the test Practitioner currently in the system.', reply.body)
-        assert_equal(@schedule.xmlId, reply.resource.entry[0].try(:resource).try(:xmlId), 'The correct Schedule was not returned.', reply.body)
+        assert_equal(@schedule.id, reply.resource.entry[0].try(:resource).try(:xmlId), 'The correct Schedule was not returned.', reply.body)
       end
 
       # Find Slot in Practitioner's schedule
@@ -100,7 +100,7 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'schedule' => "Schedule/#{@schedule.xmlId}"
+              'schedule' => "Schedule/#{@schedule.id}"
             }
           }
         }
@@ -108,7 +108,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Slot for the test Practitioner\'s Schedule currently in the system.', reply.body)
-        assert_equal(@slot.xmlId, reply.resource.entry[0].try(:resource).try(:xmlId), 'The correct Slot was not returned.', reply.body)
+        assert_equal(@slot.id, reply.resource.entry[0].try(:resource).try(:xmlId), 'The correct Slot was not returned.', reply.body)
       end
 
       # Create appointment in slot (proposed) 
@@ -121,12 +121,12 @@ module Crucible
           validates resource: 'Appointment', methods: ['create']
         }
         @appointment = @resources.scheduling_appointment
-        @appointment.xmlId = nil # clear the identifier
-        @appointment.participant[0].actor.reference = "Patient/#{@patient.xmlId}"
-        @appointment.participant[1].actor.reference = "Practitioner/#{@practitioner.xmlId}"
+        @appointment.id = nil # clear the identifier
+        @appointment.participant[0].actor.reference = "Patient/#{@patient.id}"
+        @appointment.participant[1].actor.reference = "Practitioner/#{@practitioner.id}"
         reply = @client.create(@appointment)      
         assert_response_ok(reply)
-        @appointment.xmlId = reply.id
+        @appointment.id = reply.id
       end 
 
       # Update slot status (busy-tentative)
@@ -139,7 +139,7 @@ module Crucible
           validates resource: 'Slot', methods: ['update']
         }
         @slot.freeBusyType = 'busy-tentative'
-        reply = @client.update(@slot,@slot.xmlId)      
+        reply = @client.update(@slot,@slot.id)      
         assert_response_ok(reply)
       end   
 
@@ -153,11 +153,11 @@ module Crucible
           validates resource: 'AppointmentResponse', methods: ['create']
         }
         @appointment_response_patient = @resources.scheduling_response_patient
-        @appointment_response_patient.xmlId = nil # clear the identifier
-        @appointment_response_patient.appointment.reference = "Appointment/#{@appointment.xmlId}"
+        @appointment_response_patient.id = nil # clear the identifier
+        @appointment_response_patient.appointment.reference = "Appointment/#{@appointment.id}"
         reply = @client.create(@appointment_response_patient)      
         assert_response_ok(reply)
-        @appointment_response_patient.xmlId = reply.id
+        @appointment_response_patient.id = reply.id
       end 
 
       # Update appointment.participant.status for patient (accepted)
@@ -170,7 +170,7 @@ module Crucible
           validates resource: 'Appointment', methods: ['update']
         }
         @appointment.participant[0].status = 'accepted'
-        reply = @client.update(@appointment,@appointment.xmlId)      
+        reply = @client.update(@appointment,@appointment.id)      
         assert_response_ok(reply)
       end
 
@@ -184,11 +184,11 @@ module Crucible
           validates resource: 'AppointmentResponse', methods: ['create']
         }
         @appointment_response_practitioner = @resources.scheduling_response_practitioner
-        @appointment_response_practitioner.xmlId = nil # clear the identifier
-        @appointment_response_practitioner.appointment.reference = "Appointment/#{@appointment.xmlId}"
+        @appointment_response_practitioner.id = nil # clear the identifier
+        @appointment_response_practitioner.appointment.reference = "Appointment/#{@appointment.id}"
         reply = @client.create(@appointment_response_practitioner)      
         assert_response_ok(reply)
-        @appointment_response_practitioner.xmlId = reply.id
+        @appointment_response_practitioner.id = reply.id
       end 
 
       # Update appointment.participant.status for Practitioner (accepted)
@@ -201,7 +201,7 @@ module Crucible
           validates resource: 'Appointment', methods: ['update']
         }
         @appointment.participant[1].status = 'accepted'
-        reply = @client.update(@appointment,@appointment.xmlId)      
+        reply = @client.update(@appointment,@appointment.id)      
         assert_response_ok(reply)
       end
  
@@ -215,7 +215,7 @@ module Crucible
           validates resource: 'Slot', methods: ['update']
         }
         @slot.freeBusyType = 'busy'
-        reply = @client.update(@slot,@slot.xmlId)      
+        reply = @client.update(@slot,@slot.id)      
         assert_response_ok(reply)
       end  
 
@@ -229,7 +229,7 @@ module Crucible
           validates resource: 'Appointment', methods: ['update']
         }
         @appointment.status = 'booked'
-        reply = @client.update(@appointment,@appointment.xmlId)      
+        reply = @client.update(@appointment,@appointment.id)      
         assert_response_ok(reply)
       end 
 
@@ -243,7 +243,7 @@ module Crucible
           validates resource: 'Appointment', methods: ['update']
         }
         @appointment.status = 'cancelled'
-        reply = @client.update(@appointment,@appointment.xmlId)      
+        reply = @client.update(@appointment,@appointment.id)      
         assert_response_ok(reply)
       end 
 
@@ -257,7 +257,7 @@ module Crucible
           validates resource: 'Slot', methods: ['update']
         }
         @slot.freeBusyType = 'free'
-        reply = @client.update(@slot,@slot.xmlId)      
+        reply = @client.update(@slot,@slot.id)      
         assert_response_ok(reply)
       end 
 

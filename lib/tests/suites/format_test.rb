@@ -40,7 +40,7 @@ module Crucible
             bundle_reply = request_bundle(FHIR::Patient, @xml_format)
             assert_response_ok bundle_reply
             bundle_patient = bundle_reply.resource.entry.first.resource
-            @id = bundle_patient.xmlId
+            @id = bundle_patient.id
             @create_failed = false
           rescue Exception
             @create_failed = true            

@@ -48,7 +48,7 @@ module Crucible
           }
           skip if @valueset.nil?
           options = {
-            :id => @valueset.xmlId,
+            :id => @valueset.id,
             :operation => {
               :method => how
             }

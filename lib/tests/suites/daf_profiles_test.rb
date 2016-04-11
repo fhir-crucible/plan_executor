@@ -27,13 +27,13 @@ module Crucible
         # required by DAF. This is a read-only test.
         @daf_patient = Crucible::Tests::DAFResourceGenerator.daf_patient
         reply = @client.create(@daf_patient)
-        @daf_patient.xmlId = reply.id if !reply.id.nil?
+        @daf_patient.id = reply.id if !reply.id.nil?
         # assert_response_created(reply)
       end
 
       def teardown
         # delete resources
-        @client.destroy(FHIR::Patient, @daf_patient.xmlId) if @daf_patient && !@daf_patient.xmlId.nil?
+        @client.destroy(FHIR::Patient, @daf_patient.id) if @daf_patient && !@daf_patient.id.nil?
       end
 
       # Check Conformance for DAF Profiles
@@ -303,11 +303,11 @@ module Crucible
           skip if resource.nil? || resource.empty?
           
           profiles = FHIR::StructureDefinition.get_profiles_for_resource(daf_resource.type)
-          profile = profiles.select{|x|x.xmlId.start_with?'daf'}.first
+          profile = profiles.select{|x|x.id.start_with?'daf'}.first
           skip if profile.nil?
 
           resource.each do |r|
-            assert(profile.is_valid?(r),"The #{daf_resource.type} with ID #{r.xmlId} is not DAF compliant but claims to be.",r.to_xml)
+            assert(profile.is_valid?(r),"The #{daf_resource.type} with ID #{r.id} is not DAF compliant but claims to be.",r.to_xml)
           end
         end
 
@@ -327,7 +327,7 @@ module Crucible
             reply = @client.validate(r,{profile_uri: daf_resource.profile.reference})
             assert_response_ok(reply)
             if !reply.id.nil?
-              assert( !reply.id.include?('validate'), "Server created an #{daf_resource.type} with the ID `#{reply.resource.xmlId}` rather than validate the resource.", reply.id)
+              assert( !reply.id.include?('validate'), "Server created an #{daf_resource.type} with the ID `#{reply.resource.id}` rather than validate the resource.", reply.id)
             end
           end
         end
@@ -388,7 +388,7 @@ module Crucible
         end
         skip if resource.nil? || resource.empty?
 
-        reply = @client.fetch_patient_record(resource.first.xmlId)
+        reply = @client.fetch_patient_record(resource.first.id)
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -418,7 +418,7 @@ module Crucible
         end     
         skip if resource.nil? || resource.empty?
 
-        reply = @client.fetch_encounter_record(resource.first.xmlId)
+        reply = @client.fetch_encounter_record(resource.first.id)
 
         assert_response_ok(reply)
         assert_bundle_response(reply)

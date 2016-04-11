@@ -27,7 +27,7 @@ module Crucible
         @id = result.id
         @version << result.version
 
-        @patient.xmlId = @id
+        @patient.id = @id
         @patient.telecom << FHIR::ContactPoint.new(system: 'email', value: 'foo@example.com')
 
         update_result = @client.update(@patient, @id)
@@ -113,7 +113,7 @@ module Crucible
         bundle = result.resource
 
         active_entries(bundle.entry).each do |entry|
-          pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
+          pulled = @client.vread(FHIR::Patient, entry.resource.id, entry.resource.meta.versionId)
           assert_response_ok pulled
           assert !pulled.nil?, "Cannot find version that was present in history"
         end
@@ -121,7 +121,7 @@ module Crucible
         deleted_entries(bundle.entry).each do |entry|
           # FIXME: Should we parse the request URL or drop this assertion?
           if entry.resource
-            pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
+            pulled = @client.vread(FHIR::Patient, entry.resource.id, entry.resource.meta.versionId)
             assert pulled.resource.nil?, "resource should not be found since it was deleted"
             assert_response_gone pulled
           end

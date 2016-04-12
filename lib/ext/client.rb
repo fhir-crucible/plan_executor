@@ -12,7 +12,6 @@ module FHIR
     def monitor_requests
       return if @decorated
       @decorated = true
-      # TODO: RESPONSES... FIX THIS!!!!
       [:get, :put, :post, :delete, :head].each do |method|
         class_eval %Q{
           alias #{method}_original #{method}

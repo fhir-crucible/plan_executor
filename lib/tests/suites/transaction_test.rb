@@ -36,7 +36,7 @@ module Crucible
           list.each do |id|
             @client.destroy(klass, id) if(!id.nil? && !id.strip.empty?)
           end
-        end
+        end unless @transferIds.nil?
         @client.destroy(FHIR::Observation, @batch_obs.id) if @batch_obs && !@batch_obs.id.nil?
         @client.destroy(FHIR::Patient, @batch_patient.id) if @batch_patient && !@batch_patient.id.nil?
         @client.destroy(FHIR::Observation, @batch_obs_2.id) if @batch_obs_2 && !@batch_obs_2.id.nil?

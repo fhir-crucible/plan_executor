@@ -73,7 +73,7 @@ module Crucible
 
         reply = @client.create @patient_us
         @patient_us_id = reply.id
-		    @patient_us.xmlId = reply.resource.xmlId || reply.id
+        @patient_us.xmlId = reply.resource.xmlId || reply.id
 
         assert_response_ok(reply)
 
@@ -101,7 +101,7 @@ module Crucible
         }
         skip unless @patient_id
 
-		    @patient.xmlId = @patient_id
+        @patient.xmlId = @patient_id
         @patient.telecom[0].value='1-800-TOLL-FREE'
         @patient.telecom[0].system='phone'
         @patient.name[0].given = ['Crocodile','Pants']
@@ -134,7 +134,7 @@ module Crucible
           validates extensions: ['extensions']
         }
         skip unless @patient_us_id
-		
+
         @patient_us.xmlId = @patient_us_id
         @patient_us.extension[0].value.value.coding[0].code = '1569-3'
         @patient_us.extension[1].value.value.coding[0].code = '2186-5'
@@ -167,7 +167,7 @@ module Crucible
         }
         skip unless @patient_us_id
 
-		    @patient_us.xmlId = @patient_us_id
+        @patient_us.xmlId = @patient_us_id
         @patient_us.modifierExtension << FHIR::Extension.new
         @patient_us.modifierExtension[0].url='http://projectcrucible.org/modifierExtension/foo'
         @patient_us.modifierExtension[0].value = FHIR::AnyType.new('Boolean',true)
@@ -333,6 +333,30 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+      end
+
+      #
+      # Delete patient
+      #
+      test 'C8T1_5', 'Delete patient' do
+        metadata {
+          links "#{REST_SPEC_LINK}#delete"
+          links "#{BASE_SPEC_LINK}/patient.html"
+          requires resource: 'Patient', methods: ['delete']
+        }
+
+        skip unless @patient_id
+
+        reply = @client.destroy(FHIR::Patient,@patient_id)
+        assert_response_code(reply,204)
+
+        reply = @client.read(FHIR::Patient, @patient_id)
+
+        assert([404, 410].include?(reply.code), 'The server should have deleted the resource and now return 410.')
+        warning { assert(reply.code == 404, 'Deleted resource was reported as unknown (404).  If the system tracks deleted resources, it should respond with 410.')}
+
+        @patient_id = nil # this patient successfully deleted so does not need to be deleted in teardown
+
       end
 
     end

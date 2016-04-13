@@ -263,7 +263,7 @@ module Crucible
       # TRY TO SEARCH FOR DAF PROFILED RESOURCES... AND THEN HAVE OUR CLIENT VALIDATE THEM, IF THEY EXIST.
       resources = Crucible::Generator::Resources.new
       daf_conformance = resources.daf_conformance
-      daf_conformance.rest.resource.each do |daf_resource|
+      daf_conformance.rest.first.resource.each do |daf_resource|
 
         test "DAFS0_#{daf_resource.type}", "Search #{daf_resource.type} for DAF-#{daf_resource.type} compliant resources" do
           metadata {

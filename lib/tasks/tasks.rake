@@ -102,10 +102,8 @@ namespace :crucible do
       return
     end
     results = nil
-    if !resourceType.nil? && test.respond_to?(:resource_class=)
-      fhir_classes = Mongoid.models.select {|c| c.name.include? 'FHIR'}
-      klass = fhir_classes.find{|x|x.to_s.include?(resourceType)}
-      results = test.execute(klass) if !klass.nil?
+    if !resourceType.nil? && test.respond_to?(:resource_class=) && FHIR::RESOURCES.include?(resourceType)
+      results = test.execute("FHIR::#{resourceType}".constantize)
     end
     results = executor.execute(test) if results.nil?
     output_results results

@@ -167,7 +167,7 @@ module Crucible
 
       def execute_operation(operation)
         return if @client.nil?
-        requestHeaders = Hash[operation.requestHeader.all.map{|u| [u.field, u.value]}] #Client needs upgrade to support
+        requestHeaders = Hash[(operation.requestHeader || []).map{|u| [u.field, u.value]}] #Client needs upgrade to support
         format = FHIR::Formats::ResourceFormat::RESOURCE_XML
         format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
         format = FORMAT_MAP[operation.accept] unless operation.accept.nil?

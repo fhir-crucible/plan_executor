@@ -28,6 +28,7 @@ module Crucible
         @version << result.version
 
         @patient.id = @id
+        @patient.telecom ||= []
         @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
 
         update_result = @client.update(@patient, @id)

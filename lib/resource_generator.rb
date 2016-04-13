@@ -10,14 +10,11 @@ module Crucible
       def self.generate(klass,embedded=0)
         resource = klass.new
         Time.zone = 'UTC'
-        set_fields!(resource)
-        if(embedded > 0)
-          generate_children!(resource,embedded)
-        end
-        resource.id=nil if resource.respond_to?(:xmlId=)
+        set_fields!(resource, embedded)
+        resource.id=nil if resource.respond_to?(:id=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
-        resource.text=nil if [FHIR::Bundle,FHIR::Binary,FHIR::Parameters].include?(klass)
+        #resource.text=nil if [FHIR::Bundle,FHIR::Binary].include?(klass)
         apply_invariants!(resource)
         resource
       end
@@ -25,82 +22,156 @@ module Crucible
       #
       # Set the fields of this resource to have some random values.
       #
-      def self.set_fields!(resource)
+      def self.set_fields!(resource, embedded=0)
         # Organize some of the validators
         validators = {}
-        resource.class.validators.collect{|v| v if v.class==Mongoid::Validatable::FormatValidator}.compact.each do |v|
-          v.attributes.each{|a| validators[a] = v.options[:with]}
-        end
 
-        # For now, we'll skip fields that can have multiple datatypes, such as attribute[x]
+
+        # resource.class.validators.collect{|v| v if v.class==Mongoid::Validatable::FormatValidator}.compact.each do |v|
+        #   v.attributes.each{|a| validators[a] = v.options[:with]}
+        # end
+
+        # # For now, we'll skip fields that can have multiple datatypes, such as attribute[x]
+        # multiples = []
+        # if resource.class.constants.include? :MULTIPLE_TYPES
+        #   multiples = resource.class::MULTIPLE_TYPES.map{|k,v| v}.flatten
+        # end
+
+        # # Get valid codes
+        # valid_codes = {}
+        # if resource.class.constants.include? :VALID_CODES
+        #   valid_codes = resource.class::VALID_CODES
+        # end
+
+        # # Get special codes
+        # special_codes = {}
+        # if resource.class.constants.include? :SPECIAL_CODES
+        #   special_codes = resource.class::SPECIAL_CODES
+        # end
+
         multiples = []
         if resource.class.constants.include? :MULTIPLE_TYPES
-          multiples = resource.class::MULTIPLE_TYPES.map{|k,v| v}.flatten
+          multiples = resource.class::MULTIPLE_TYPES.keys.reduce([]) {|out, key| out.concat resource.class::MULTIPLE_TYPES[key].map {|v| "#{key}#{v.titleize.split.join}"}; out}
         end
+        selected_multiple = (multiples & resource.class::METADATA.keys).sample
 
-        # Get valid codes
-        valid_codes = {}
-        if resource.class.constants.include? :VALID_CODES
-          valid_codes = resource.class::VALID_CODES
-        end
+        resource.class::METADATA.each do |key, value|
+          type = value['type']
+		      next if ['id','version','versionId','implicitRules'].include? key
+          next if multiples.include?(key) && key != selected_multiple
 
-        # Get special codes
-        special_codes = {}
-        if resource.class.constants.include? :SPECIAL_CODES
-          special_codes = resource.class::SPECIAL_CODES
-        end
 
-        fields = resource.fields
-        fields.each do |key,value|
-          type = value.options[:type]
-		      next if ['id','xmlId','version','versionId','implicitRules'].include? key
-          next if multiples.include? key
+          # next if multiples.include? key
           gen = nil
-          if type == String
+
+          next if type == 'Meta'
+
+          if type == 'string' || type == 'markdown'
             gen = SecureRandom.base64
-            if valid_codes[key.to_sym]
-              valid_values = valid_codes[key.to_sym]
-              if !valid_values.nil?
-                gen = valid_values[ SecureRandom.random_number( valid_values.length ) ]
-              end
-            elsif validators[key.to_sym]
-              date = DateTime.now
-              regex = validators[key.to_sym]
-              if date.strftime("%Y-%m-%dT%T.%LZ").match(regex)
-                gen = date.strftime("%Y-%m-%dT%T.%LZ")
-              elsif date.strftime("%Y-%m-%d").match(regex)
-                gen = date.strftime("%Y-%m-%d")
-              elsif date.strftime("%T").match(regex)
-                gen = date.strftime("%T")
-              end
-            elsif special_codes[key.to_sym]
-              if special_codes[key.to_sym]=='MimeType'
-                gen = 'text/plain'
-              elsif special_codes[key.to_sym]=='Language'
-                gen = 'en-US'
+          elsif type == 'oid'
+            gen = random_oid
+          elsif type == 'id'
+            gen = SecureRandom.uuid
+          elsif type == 'code'
+            if key=='language'
+              gen='en-US'
+            else
+              if value['valid_codes']
+                gen = value['valid_codes'].values.first.sample
+              else
+                gen = SecureRandom.base64
               end
             end
-          elsif type == Integer
-            gen = (SecureRandom.random_number(100) + 1) # add one in case this is a "positiveInt" which must be > 0
-          elsif type == Float
+          elsif type == 'xhtml'
+            gen = "<div>#{SecureRandom.base64}</div>"
+          elsif type == 'uri'
+            gen = "http://www.example.com/#{SecureRandom.base64}"
+          elsif type == 'dateTime' || type == 'instant'
+            gen = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+          elsif type == 'date'
+            gen = DateTime.now.strftime("%Y-%m-%d")
+          elsif type == 'time'
+            gem = DateTime.now.strftime("%T")
+          elsif type == 'boolean'
+            gen = (SecureRandom.random_number(100) % 2 == 0)
+          elsif type == 'positiveInt' || type == 'unsignedInt' || type == 'integer'
+             gen = (SecureRandom.random_number(100) + 1) # add one in case this is a "positiveInt" which must be > 0
+          elsif type == 'decimal'
             gen = SecureRandom.random_number
             while gen.to_s.match(/e/) # according to FHIR spec: decimals may not contain exponents
               gen = SecureRandom.random_number
             end
-          elsif type == Mongoid::Boolean
-            gen = (SecureRandom.random_number(100) % 2 == 0)
-          elsif type == BSON::Binary
-            # gen = SecureRandom.random_bytes
+          elsif type == 'base64Binary'
             gen = SecureRandom.base64
-          elsif type == BSON::ObjectId or type == Array or type == Object or type == FHIR::AnyType
-            gen = nil # ignore
-          # else
-          #   puts "Unable to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
+          elsif FHIR::RESOURCES.include?(type) || FHIR::TYPES.include?(type)
+            if embedded > 0
+              gen = generate_child(type, embedded-1)
+            end
+          elsif resource.class.constants.include? type.demodulize.to_sym
+            if embedded > 0
+              # CHILD component
+              gen = generate_child(type, embedded-1)
+            end
+          elsif ancestor_fhir_classes(resource.class).include? type.demodulize.to_sym
+            if embedded > 0
+              gen = generate_child(type, embedded-1)
+            end
+          elsif ("FHIR::#{type}".constantize rescue nil)
+            if embedded > 0
+              gen = generate_child(type, embedded-1)
+            end
+          else
+            puts "Unable to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
           end
-          gen='en-US' if(key=='language' && type==String)
-          resource[key] = gen if !gen.nil?
+          method = value['local_name'] ? value['local_name'] : key
+          gen = [gen] if value['max'] > 1 && !gen.nil?
+          resource.method("#{method}=").call(gen) if !gen.nil?
         end
         resource
+      end
+
+      def self.ancestor_fhir_classes(klass)
+        classes = klass.constants
+        classes.concat ancestor_fhir_classes(klass.parent) if klass.parent != FHIR && klass.parent != Object
+        classes
+      end
+
+      def self.generate_child(type, embedded=0)
+        # TODO: Determine if we can generate references or meta information
+        return if ['Meta'].include? type
+        # next if multiples.include? key
+        
+        child = nil
+        klass = "FHIR::#{type}".constantize
+        case klass
+        when FHIR::Reference
+          child = FHIR::Reference.new
+          child.display = "#{key} #{SecureRandom.base64}"
+        when FHIR::CodeableConcept
+          child = FHIR::CodeableConcept.new
+          child.text = "#{key} #{SecureRandom.base64}"
+        when FHIR::Coding
+          child = FHIR::Coding.new
+          child.display = "#{key} #{SecureRandom.base64}"
+        when FHIR::Quantity
+          child = FHIR::Quantity.new
+          child.value = SecureRandom.random_number
+          while child.value.to_s.match(/e/) # according to FHIR spec: decimals may not contain exponents
+            child.value = SecureRandom.random_number
+          end
+          child.unit = SecureRandom.base64
+        else
+          child = generate(klass, embedded) if(!['Extension','PrimitiveExtension','Signature'].include?(type))
+        end
+
+        case klass
+        when FHIR::Identifier
+          child.system = nil
+        when FHIR::Attachment
+          child.url = nil
+        end
+        return child
+
       end
 
 
@@ -116,38 +187,8 @@ module Crucible
 
         children = resource.embedded_relations
         children.each do |key,value|
-          # TODO: Determine if we can generate references or meta information
-          next if ['meta'].include? key
-          next if multiples.include? key
-          
-          klass = resource.get_fhir_class_from_resource_type(value[:class_name])
-          case klass
-          when FHIR::Reference
-            child = FHIR::Reference.new
-            child.display = "#{key} #{SecureRandom.base64}"
-          when FHIR::CodeableConcept
-            child = FHIR::CodeableConcept.new
-            child.text = "#{key} #{SecureRandom.base64}"
-          when FHIR::Coding
-            child = FHIR::Coding.new
-            child.display = "#{key} #{SecureRandom.base64}"
-          when FHIR::Quantity
-            child = FHIR::Quantity.new
-            child.value = SecureRandom.random_number
-            while child.value.to_s.match(/e/) # according to FHIR spec: decimals may not contain exponents
-              child.value = SecureRandom.random_number
-            end
-            child.unit = SecureRandom.base64
-          else
-            child = generate(klass,(embedded-1)) if(!['FHIR::Extension','FHIR::PrimitiveExtension','FHIR::Signature'].include?(value[:class_name]))
-          end
 
-          case klass
-          when FHIR::Identifier
-            child.system = nil
-          when FHIR::Attachment
-            child.url = nil
-          end
+          # TODO: multiples
 
           if value[:relation] == Mongoid::Relations::Embedded::Many
             child = ([] << child) if child
@@ -620,7 +661,7 @@ module Crucible
               apply_invariants!(a.operation) if a.operation
             end
           end
-        when FHIR::TestScript::TestScriptSetupActionAssertComponent
+        when FHIR::TestScript::Setup::Action::Assert
           # an assertion can only contain one of these...
           keys = ['contentType','headerField','minimumId','navigationLinks','path','resource','responseCode','response','validateProfileId']
           has_keys = []
@@ -633,7 +674,7 @@ module Crucible
           end
           resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
           resource.validateProfileId.gsub!(/[^0-9A-Za-z]/, '') if resource.validateProfileId
-        when FHIR::TestScript::TestScriptSetupActionOperationComponent
+        when FHIR::TestScript::Setup::Action::Operation
           resource.responseId.gsub!(/[^0-9A-Za-z]/, '') if resource.responseId
           resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
           resource.targetId.gsub!(/[^0-9A-Za-z]/, '') if resource.targetId

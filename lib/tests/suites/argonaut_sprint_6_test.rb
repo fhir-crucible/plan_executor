@@ -172,7 +172,7 @@ module Crucible
             assert coding.system == "http://loinc.org", "The DiagnosticReport is coded using the wrong code system, is #{coding}, should be LOINC"
             assert coding.code == "24323-8" || coding.code == "58410-2", "Wrong code used in DiagnosticReport"
             assert report.subject, "DiagnosticReport has no subject"
-            assert report.effectivePeriod? || report.effectiveDateTime?, "DiagnosticReport has no effective date/time"
+            assert !report.effectivePeriod.nil? || !report.effectiveDateTime.nil?, "DiagnosticReport has no effective date/time"
             assert report.issued, "DiagnosticReport has no issued"
             assert report.performer, "DiagnosticReport has no performer"
             assert report.result, "DiagnosticReport has no results"

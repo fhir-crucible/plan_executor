@@ -42,30 +42,10 @@ class FetchPatientRecordTest < Test::Unit::TestCase
             </entry>
           </Bundle>', :headers => {})
 
-    stub_request(:post, "http://example-dstu2-server.com/Patient/$everything").
-      with(:body => "<Parameters xmlns=\"http://hl7.org/fhir\"></Parameters>",
-           :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 
-            'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'53', 
-            'Content-Type'=>'application/xml+fhir;charset=UTF-8', 
-            'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 
-            'User-Agent'=>'Ruby FHIR Client'}).
-      to_return(:status => 200, :body => 
-        '<Bundle xmlns="http://hl7.org/fhir">
-          <id value="example"/>
-          <meta>
-            <versionId value="1"/>
-            <lastUpdated value="2014-08-18T01:43:30Z"/>
-          </meta>
-          <type value="searchset"/>
-          <base value="http://example.com/base"/>
-          <total value="0"/>
-          <link>
-            <relation value="self"/>
-            <url value="https://example.com/base/MedicationPrescription?patient=347"/>
-          </link>
-          <entry>
-          </entry>
-        </Bundle>', :headers => {})
+    stub_request(:post, "#{TESTING_ENDPOINT}/Patient/$everything").
+            with(:body => "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Parameters xmlns=\"http://hl7.org/fhir\"/>\n",
+                 :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'81', 'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Format'=>'application/xml+fhir', 'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 'User-Agent'=>'Ruby FHIR Client'}).
+            to_return(:status => 200, :body => "", :headers => {})
     
     start = (DateTime.now - (6*30)).strftime("%Y-%m-%d")
     stop = DateTime.now.strftime("%Y-%m-%d")

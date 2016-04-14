@@ -136,8 +136,8 @@ module Crucible
         skip unless @patient_us_id
 		
         @patient_us.id = @patient_us_id
-        @patient_us.extension[0].value.value.coding[0].code = '1569-3'
-        @patient_us.extension[1].value.value.coding[0].code = '2186-5'
+        @patient_us.extension[0].valueCodeableConcept.coding[0].code = '1569-3'
+        @patient_us.extension[1].valueCodeableConcept.coding[0].code = '2186-5'
 
         reply = @client.update @patient_us, @patient_us_id
         assert_response_ok(reply)
@@ -168,6 +168,7 @@ module Crucible
         skip unless @patient_us_id
 
 		    @patient_us.id = @patient_us_id
+        @patient_us.modifierExtension ||= []
         @patient_us.modifierExtension << FHIR::Extension.new
         @patient_us.modifierExtension[0].url='http://projectcrucible.org/modifierExtension/foo'
         @patient_us.modifierExtension[0].valueBoolean = true
@@ -210,6 +211,7 @@ module Crucible
         pe['extension'] = [ FHIR::Extension.new ]
         pe['extension'][0].url = 'http://hl7.org/test/gender'
         pe['extension'][0].valueString = 'Male'
+        @patient_us.primitiveExtension ||= []
         @patient_us.primitiveExtension << pe
 
         reply = @client.update @patient_us, @patient_us_id
@@ -249,9 +251,11 @@ module Crucible
         end
         ext = FHIR::Extension.new
         ext.url = 'http://hl7.org/complex/foo'
+        ext.extension ||= []
         ext.extension << FHIR::Extension.new
         ext.extension[0].url='http://complex/foo/bar'
         ext.extension[0].valueString = 'foobar'
+        @patient.extension ||= []
         @patient.extension << ext
 
         reply = @client.update @patient_us, @patient_us_id

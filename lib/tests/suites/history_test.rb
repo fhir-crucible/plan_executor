@@ -69,9 +69,9 @@ module Crucible
         bundle = result.resource
         entries = bundle.entry
 
-        assert_equal 1, entries.select{|entry| entry.request.try(:method) == 'DELETE' }.size, 'Wrong number of DELETE transactions in the history bundle'
-        assert_equal 1, entries.select{|entry| entry.request.try(:method) == 'PUT' }.size, 'Wrong number of PUT transactions in the history bundle'
-        assert_equal 1, entries.select{|entry| entry.request.try(:method) == 'POST' }.size, 'Wrong number of POST transactions in the history bundle'
+        assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'DELETE' }.size, 'Wrong number of DELETE transactions in the history bundle'
+        assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'PUT' }.size, 'Wrong number of PUT transactions in the history bundle'
+        assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'POST' }.size, 'Wrong number of POST transactions in the history bundle'
 
       end
 
@@ -271,7 +271,7 @@ module Crucible
       def deleted_entries(entries)
         entries.select do |entry|
           assert !entry.request.nil?, "history bundle entries do not have request elements, deleted entries cannot be distinguished"
-          entry.request.try(:method) == "DELETE"
+          entry.request.try(:local_method) == "DELETE"
         end
       end
 
@@ -281,7 +281,7 @@ module Crucible
 
 
       def entry_ids_are_present(entries)
-        relevant_entries = entries.select{|x|x.request.try(:method)!='DELETE'}
+        relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
         ids = relevant_entries.map(&:resource).map(&:xmlId).compact rescue assert(false, 'Unable to find IDs for resources returned by the bundle')
 
         # check that we have ids and self links
@@ -293,7 +293,7 @@ module Crucible
       end
 
       def check_sort_order(entries)
-        relevant_entries = entries.select{|x|x.request.try(:method)!='DELETE'}
+        relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
         relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
 
         relevant_entries.each_cons(2) do |left, right|

@@ -101,7 +101,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:identifier, @patient[:identifier].first.try(:value))
+        get_patient_by_param(:identifier, @patient.identifier.first.try(:value))
       end
 
       test 'AS003', 'ID without search keyword' do
@@ -109,7 +109,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:identifier, @patient[:identifier].first.try(:value), false)
+        get_patient_by_param(:identifier, @patient.identifier.first.try(:value), false)
       end
 
       test 'AS004', 'Search by Name' do
@@ -117,7 +117,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        name = @patient[:name].first.try(:family).try(:first)
+        name = @patient.name.first.try(:family).try(:first)
         get_patient_by_param(:name, name)
       end
 
@@ -126,7 +126,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        name = @patient[:name].first.try(:family).try(:first)
+        name = @patient.name.first.try(:family).try(:first)
         get_patient_by_param(:name, name, false)
       end
 
@@ -135,7 +135,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:family, @patient[:name].first.try(:family).try(:first))
+        get_patient_by_param(:family, @patient.name.first.try(:family).try(:first))
       end
 
       test 'AS007', 'Family without search keyword' do
@@ -143,7 +143,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:family, @patient[:name].first.try(:family).try(:first), false)
+        get_patient_by_param(:family, @patient.name.first.try(:family).try(:first), false)
       end
 
       test 'AS008', 'Search by Given' do
@@ -151,7 +151,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:given, @patient[:name].first.try(:given).try(:first))
+        get_patient_by_param(:given, @patient.name.first.try(:given).try(:first))
       end
 
       test 'AS009', 'Given without search keyword' do
@@ -159,7 +159,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:given, @patient[:name].first.try(:given).try(:first), false)
+        get_patient_by_param(:given, @patient.name.first.try(:given).try(:first), false)
       end
 
       test 'AS010', 'Search by Gender' do
@@ -167,7 +167,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('gender', @patient[:gender])
+        get_patient_by_param('gender', @patient.gender)
       end
 
       test 'AS011', 'Gender without search keyword' do
@@ -175,7 +175,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('gender', @patient[:gender], false)
+        get_patient_by_param('gender', @patient.gender, false)
       end
 
       test 'AS012', 'Search by Birthdate' do
@@ -183,7 +183,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('birthdate', @patient[:birthDate])
+        get_patient_by_param('birthdate', @patient.birthDate)
       end
 
       test 'AS013', 'Birthdate without search keyword' do
@@ -191,7 +191,7 @@ module Crucible
           define_metadata('search')
         }
         assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('birthdate', @patient[:birthDate], false)
+        get_patient_by_param('birthdate', @patient.birthDate, false)
       end
 
     end

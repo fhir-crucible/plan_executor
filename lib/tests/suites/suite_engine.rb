@@ -23,24 +23,21 @@ module Crucible
       def self.list_all(metadata=false)
         list = {}
         # FIXME: Organize defaults between instance & class methods
-        @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
         SuiteEngine.new.tests.each do |test|
           test_class = test.class.name.demodulize
           #if t can set class
           if test.respond_to? 'resource_class='
-            @fhir_classes.each do |klass|
-              if !klass.included_modules.find_index(FHIR::Resource).nil?
-                test.resource_class = klass
-                list["#{test_class}#{klass.name.demodulize}"] = {}
-                list["#{test_class}#{klass.name.demodulize}"]['resource_class'] = klass
-                BaseTest::JSON_FIELDS.each {|field| list["#{test_class}#{klass.name.demodulize}"][field] = test.send(field)}
-                if metadata
-                  test_metadata = test.collect_metadata(true)
-                  BaseTest::METADATA_FIELDS.each do |field|
-                    field_hash = {}
-                    test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
-                    list["#{test_class}#{klass.name.demodulize}"][field] = field_hash
-                  end
+            FHIR::RESOURCES.each do |klass|
+              test.resource_class = Module.const_get("FHIR::#{klass}")
+              list["#{test_class}#{klass}"] = {}
+              list["#{test_class}#{klass}"]['resource_class'] = klass
+              BaseTest::JSON_FIELDS.each {|field| list["#{test_class}#{klass}"][field] = test.send(field)}
+              if metadata
+                test_metadata = test.collect_metadata(true)
+                BaseTest::METADATA_FIELDS.each do |field|
+                  field_hash = {}
+                  test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+                  list["#{test_class}#{klass}"][field] = field_hash
                 end
               end
             end
@@ -79,7 +76,6 @@ module Crucible
       end
 
       def self.generate_metadata
-        @fhir_classes ||= Mongoid.models.select {|c| c.name.include? 'FHIR'}
         metadata = {}
         puts "---"
         puts "BUILDING METADATA"
@@ -87,14 +83,12 @@ module Crucible
         SuiteEngine.new.tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
           if test_file.respond_to? 'resource_class='
-            @fhir_classes.each do |klass|
-              if !klass.included_modules.find_index(FHIR::Resource).nil?
-                test_file.resource_class = klass
-                puts "---"
-                puts "BUILDING METADATA - #{test}#{klass.name.demodulize}"
-                puts "---"
-                metadata["#{test}#{klass.name.demodulize}"] = test_file.collect_metadata(true)
-              end
+            FHIR::RESOURCES.each do |klass|
+              test_file.resource_class = Module.const_get("FHIR::#{klass}")
+              puts "---"
+              puts "BUILDING METADATA - #{test}#{klass}"
+              puts "---"
+              metadata["#{test}#{klass}"] = test_file.collect_metadata(true)
             end
           else
             puts "---"

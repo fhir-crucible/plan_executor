@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: bbce6a2b1ff260d656d32eefa56ad9024deab254
+  revision: 896bde4ee889d63a00e614628ea40aae2b7b7220
   branch: stu3
   specs:
     fhir_client (1.0.0)
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: 96fa61b857ef724a88823da7e49a5104b23682e7
+  revision: 49ae847c14cb0dfd67fed9ebaefdf40eb1cbae06
   branch: master
   specs:
     fhir_models (1.0.0)

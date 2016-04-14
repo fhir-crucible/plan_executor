@@ -1,67 +1,81 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Claim xmlns="http://hl7.org/fhir">
+<?xml version="1.0" encoding="UTF-8"?><Claim xmlns="http://hl7.org/fhir">
   <id value="100150"/>
+
+  <text>
+    <status value="generated"/>
+    <div xmlns="http://www.w3.org/1999/xhtml">A human-readable rendering of the Oral Health Claim</div>
+  </text>
+
   <type value="oral"/>
+  
   <identifier>
     <system value="http://happyvalley.com/claim"/>
     <value value="12345"/>
   </identifier>
-  <created value="2015-04-16"/>
-  <target>
-    <reference value="Organization/654123"/>
-  </target>
-  <organization>
-    <reference value="Organization/1535"/>
-  </organization>
+ 
+  <created value="2014-08-16"/>
+
+  <targetReference>
+    <reference value="Organization/2"/>
+  </targetReference>
+
+  <organizationReference>
+    <reference value="Organization/1"/>
+  </organizationReference>
+
   <use value="complete"/>
+
   <priority>
     <code value="normal"/>
   </priority>
+
   <payee>
     <type>
       <code value="provider"/>
     </type>
   </payee>
+ 
   <diagnosis>
     <sequence value="1"/>
     <diagnosis>
       <code value="123456"/>
     </diagnosis>
   </diagnosis>
-  <patient>
+ 
+  <patientReference>
     <reference value="Patient/1"/>
-  </patient>
+  </patientReference>
+ 
   <coverage>
     <sequence value="1"/>
     <focal value="true"/>
-    <coverage>
+    <coverageReference>
       <reference value="Coverage/9876B1"/>
-    </coverage>
-    <relationship>
-      <code value="self"/>
-    </relationship>
+    </coverageReference>
   </coverage>
-  <item>
-    <sequence value="1"/>
-    <type>
-      <code value="service"/>
-    </type>
-    <provider>
-      <reference value="Practitioner/1"/>
-    </provider>
-    <service>
-      <code value="1201"/>
-    </service>
-    <serviceDate value="2015-04-16"/>
-    <unitPrice>
+  
+ <item>
+   <sequence value="1"/>
+   <type>
+     <code value="service"/>
+   </type>
+   <providerReference>
+     <reference value="Practitioner/example"/>
+   </providerReference>
+   <service>
+     <code value="1200"/>
+   </service>
+   <servicedDate value="2014-08-16"/>
+   <unitPrice>
       <value value="135.57"/>
-      <system value="urn:std:iso:4217"/>
-      <code value="USD"/>
-    </unitPrice>
-    <net>
+      <system value="urn:iso:std:iso:4217"/>
+      <code value="USD"/> 
+   </unitPrice> 
+   <net>
       <value value="135.57"/>
-      <system value="urn:std:iso:4217"/>
-      <code value="USD"/>
-    </net>
+      <system value="urn:iso:std:iso:4217"/>
+      <code value="USD"/> 
+   </net> 
   </item>
+
 </Claim>

@@ -2,6 +2,8 @@ module Crucible
   module Tests
     class BaseSuite < BaseTest
 
+      EXCLUDED_RESOURCES = ['DomainResource', 'Parameters', 'GuidanceResponse', 'ModuleDefinition', 'OperationOutcome']
+
       def title
         self.class.name.demodulize
       end
@@ -26,8 +28,8 @@ module Crucible
         messages
       end
 
-      def fhir_resources
-        FHIR::RESOURCES.map {|r| "FHIR::#{r}".constantize}
+      def self.fhir_resources
+        FHIR::RESOURCES.select {|r| !EXCLUDED_RESOURCES.include?(r)}.map {|r| "FHIR::#{r}".constantize}
       end
 
       def requires(hash)

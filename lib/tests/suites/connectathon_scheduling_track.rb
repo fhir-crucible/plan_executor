@@ -138,7 +138,7 @@ module Crucible
           requires resource: 'Slot', methods: ['update']
           validates resource: 'Slot', methods: ['update']
         }
-        @slot.freeBusyType = 'busy-tentative'
+        @slot.status = 'busy-tentative'
         reply = @client.update(@slot,@slot.id)      
         assert_response_ok(reply)
       end   
@@ -214,7 +214,7 @@ module Crucible
           requires resource: 'Slot', methods: ['update']
           validates resource: 'Slot', methods: ['update']
         }
-        @slot.freeBusyType = 'busy'
+        @slot.status = 'busy'
         reply = @client.update(@slot,@slot.id)      
         assert_response_ok(reply)
       end  
@@ -256,7 +256,7 @@ module Crucible
           requires resource: 'Slot', methods: ['update']
           validates resource: 'Slot', methods: ['update']
         }
-        @slot.freeBusyType = 'free'
+        @slot.status = 'free'
         reply = @client.update(@slot,@slot.id)      
         assert_response_ok(reply)
       end 

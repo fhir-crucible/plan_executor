@@ -203,6 +203,8 @@ module Crucible
           count = (reply.resource.total-replyB.resource.total).abs
           assert (count <= 1), 'Searching without criteria did not return all the results.'
         else
+          assert !replyB.resource.nil?, 'Searching without criteria did not return all the results.'
+          assert !replyA.resource.nil?, 'Searching without criteria did not return all the results.'
           assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
         end
       end

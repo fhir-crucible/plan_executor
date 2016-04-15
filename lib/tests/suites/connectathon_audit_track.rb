@@ -149,7 +149,7 @@ module Crucible
         @provenance2.reason = [ FHIR::CodeableConcept.new ]
         @provenance2.reason[0].text = 'New patient'
 
-        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_fhir_json
+        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_json
         reply = @client.create(@patient2)      
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
 
@@ -285,7 +285,7 @@ module Crucible
         @provenance4.reason = [ FHIR::CodeableConcept.new ]
         @provenance4.reason[0].text = 'Update Gender'
 
-        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_fhir_json
+        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_json
         reply = @client.update(@patient2,@patient2.id)      
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
         assert_response_ok(reply)

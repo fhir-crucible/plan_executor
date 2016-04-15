@@ -211,8 +211,8 @@ module Crucible
 
         concepts = vs.expansion.contains.map{|c|c.code}
 
-        expansion_missing = FHIR::ElementDefinition::TypeRefComponent::VALID_CODES[:code] - concepts
-        expansion_added = concepts - FHIR::ElementDefinition::TypeRefComponent::VALID_CODES[:code]
+        expansion_missing = FHIR::ElementDefinition::Type::METADATA['code']['valid_codes'].values.flatten - concepts
+        expansion_added = concepts - FHIR::ElementDefinition::Type::METADATA['code']['valid_codes'].values.flatten
 
         assert(expansion_missing.empty?,"ValueSet expansion is missing the following concepts: #{expansion_missing}")
         assert(expansion_added.empty?,"ValueSet expansion contained some unexpected concepts: #{expansion_added}")        

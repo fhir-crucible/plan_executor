@@ -203,6 +203,7 @@ module Crucible
           validates extensions: ['primitive extensions']
         }
         skip unless @patient_us_id
+        skip # Primitive Extensions are not supported in the STU3 models
 
         @patient_us.id = @patient_us_id
         @patient_us.gender = 'male'

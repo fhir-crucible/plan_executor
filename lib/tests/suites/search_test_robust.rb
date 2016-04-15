@@ -122,7 +122,7 @@ module Crucible
           entry_has_mpi_data = false
           if entry.search
             entry.search.extension.each do |e|
-              if (e.url=='http://hl7.org/fhir/StructureDefinition/patient-mpi-match' && e.value && e.value.type=='code' && ['certain','probable','possible','certainly-not'].include?(e.value.value))
+              if (e.url=='http://hl7.org/fhir/StructureDefinition/patient-mpi-match' && e.value && ['certain','probable','possible','certainly-not'].include?(e.valueCode))
                 entry_has_mpi_data = true
               end
             end

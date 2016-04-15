@@ -27,7 +27,7 @@ module Crucible
           test_class = test.class.name.demodulize
           #if t can set class
           if test.respond_to? 'resource_class='
-            FHIR::RESOURCES.each do |klass|
+            Crucible::Tests::BaseSuite.fhir_resources.each do |klass|
               test.resource_class = Module.const_get("FHIR::#{klass}")
               list["#{test_class}#{klass}"] = {}
               list["#{test_class}#{klass}"]['resource_class'] = klass
@@ -83,7 +83,7 @@ module Crucible
         SuiteEngine.new.tests.each do |test|
           test_file = Crucible::Tests.const_get(test).new(nil)
           if test_file.respond_to? 'resource_class='
-            FHIR::RESOURCES.each do |klass|
+            Crucible::Tests::BaseSuite.fhir_resources.each do |klass|
               test_file.resource_class = Module.const_get("FHIR::#{klass}")
               puts "---"
               puts "BUILDING METADATA - #{test}#{klass}"

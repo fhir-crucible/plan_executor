@@ -110,8 +110,15 @@ namespace :crucible do
   end
 
   def execute_all(client)
-    results = Crucible::Tests::Executor.new(client).execute_all
-    output_results results
+    executor = Crucible::Tests::Executor.new(client)
+    all_results = {}
+    executor.tests.each do |test|
+      next if test.multiserver
+      results = executor.execute(test)
+      all_results.merge! results
+      output_results results
+    end
+    all_results
   end
 
   def execute_multiserver_test(client, client2, key)

@@ -499,7 +499,7 @@ module Crucible
         assert reply.resource.total > 0, 'The server should have Conditions that _include=Condition:patient.'
         has_patient = false
         reply.resource.entry.each do |entry|
-          has_patient = true if (entry.resourceType == 'Patient')
+          has_patient = true if (entry.resource && entry.resource.class == FHIR::Patient)
         end
         assert(has_patient,'The server did not include the Patient referenced in the Condition.', reply.body)
       end

@@ -124,8 +124,8 @@ module Crucible
           warning { assert(resource.profile.reference==daf_resource.profile.reference,"Profile for #{resource.type} does not match #{daf_resource.profile.reference}",resource.profile.reference) }
 
           # check interaction.code (and interaction.extension.valueCode for SHALL/SHOULD)
-          shall_interactions = daf_resource.interaction.select{|x|x.extension.first.value.value=='SHALL'}.map{|x|x.code}
-          should_interactions = daf_resource.interaction.select{|x|x.extension.first.value.value=='SHOULD'}.map{|x|x.code}
+          shall_interactions = daf_resource.interaction.select{|x|x.extension.first.value=='SHALL'}.map{|x|x.code}
+          should_interactions = daf_resource.interaction.select{|x|x.extension.first.value=='SHOULD'}.map{|x|x.code}
 
           resource.interaction.each do |interaction|
             should_interactions.delete(interaction.code)
@@ -155,8 +155,8 @@ module Crucible
           assert(!resource.nil?, "Server does not declare support for the #{daf_resource.type} resource.")
 
           # check searchParam.name
-          shall_params = daf_resource.searchParam.select{|x|x.extension.first.value.value=='SHALL'}.map{|x|x.name}
-          should_params = daf_resource.searchParam.select{|x|x.extension.first.value.value=='SHOULD'}.map{|x|x.name}
+          shall_params = daf_resource.searchParam.select{|x|x.extension.first.value=='SHALL'}.map{|x|x.name}
+          should_params = daf_resource.searchParam.select{|x|x.extension.first.value=='SHOULD'}.map{|x|x.name}
 
           resource.searchParam.each do |searchParam|
             should_params.delete(searchParam.name)
@@ -167,8 +167,8 @@ module Crucible
           assert(shall_params.empty?,"Server does not declare support for the following SHALL searchParams on #{resource.type}: #{shall_params}")
 
           # search chains
-          shall_chain = daf_resource.searchParam.select{|x|x.extension.first.value.value=='SHALL'}.map{|x|x.chain}.flatten
-          should_chain = daf_resource.searchParam.select{|x|x.extension.first.value.value=='SHOULD'}.map{|x|x.chain}.flatten
+          shall_chain = daf_resource.searchParam.select{|x|x.extension.first.value=='SHALL'}.map{|x|x.chain}.flatten
+          should_chain = daf_resource.searchParam.select{|x|x.extension.first.value=='SHOULD'}.map{|x|x.chain}.flatten
 
           resource.searchParam.each do |searchParam|
             should_chain -= searchParam.chain

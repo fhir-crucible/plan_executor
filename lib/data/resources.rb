@@ -125,6 +125,16 @@ module Crucible
         FHIR::Xml.from_xml File.read(File.join(fixture_path, 'daf', 'conformance-daf-query-responder.xml'))
       end
 
+      # ------------------------------ TERMINOLOGY TRACK TESTS ------------------------------
+
+      def codesystem_simple
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'terminology', 'codesystem-simple.xml'))
+      end
+
+      def valueset_simple
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'terminology', 'valueset-example.xml'))
+      end
+
       def load_fixture(path)
         FHIR::Resource.from_contents(File.read(File.join(fixture_path, path)))
       end

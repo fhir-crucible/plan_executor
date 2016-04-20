@@ -46,7 +46,7 @@ class FetchPatientRecordTest < Test::Unit::TestCase
             with(:body => "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Parameters xmlns=\"http://hl7.org/fhir\"/>\n",
                  :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'81', 'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Format'=>'application/xml+fhir', 'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 'User-Agent'=>'Ruby FHIR Client'}).
             to_return(:status => 200, :body => "", :headers => {})
-    
+
     start = (DateTime.now - (6*30)).strftime("%Y-%m-%d")
     stop = DateTime.now.strftime("%Y-%m-%d")
     stub_request(:get, "#{TESTING_ENDPOINT}/Patient/$everything?end=#{stop}&start=#{start}").
@@ -72,15 +72,10 @@ class FetchPatientRecordTest < Test::Unit::TestCase
             </entry>
           </Bundle>', :headers => {})
 
-    stub_request(:post, "http://example-dstu2-server.com/Patient/$everything").
-      with(:body => "<Parameters xmlns=\"http://hl7.org/fhir\"><parameter><name value=\"start\"/><valueDate value=\"#{start}\"></valueDate></parameter><parameter><name value=\"end\"/><valueDate value=\"#{stop}\"></valueDate></parameter></Parameters>",
-            :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 
-              'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'223', 
-              'Content-Type'=>'application/xml+fhir;charset=UTF-8', 
-              'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 
-              'User-Agent'=>'Ruby FHIR Client'}).
-      to_return(:status => 200, :body => 
-          '<Bundle xmlns="http://hl7.org/fhir">
+    stub_request(:post, "#{TESTING_ENDPOINT}/Patient/$everything").
+            with(:body => "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Parameters xmlns=\"http://hl7.org/fhir\">\n  <parameter>\n    <name value=\"start\"/>\n    <valueDate value=\"#{start}\"/>\n  </parameter>\n  <parameter>\n    <name value=\"end\"/>\n    <valueDate value=\"#{stop}\"/>\n  </parameter>\n</Parameters>\n",
+                 :headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'274', 'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Format'=>'application/xml+fhir', 'Operation'=>'fetch_patient_record', 'Resource'=>'FHIR::Patient', 'User-Agent'=>'Ruby FHIR Client'}).
+            to_return(:status => 200, :body => '<Bundle xmlns="http://hl7.org/fhir">
             <id value="example"/>
             <meta>
               <versionId value="1"/>

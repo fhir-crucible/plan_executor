@@ -125,7 +125,7 @@ module Crucible
           # check what this is...
           found = response.resource
           begin
-            found = FHIR::Resource.from_contents(response.body)
+            found = FHIR.from_contents(response.body)
           rescue
             found = nil
           end

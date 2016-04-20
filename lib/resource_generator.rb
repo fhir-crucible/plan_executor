@@ -23,31 +23,6 @@ module Crucible
       # Set the fields of this resource to have some random values.
       #
       def self.set_fields!(resource, embedded=0)
-        # Organize some of the validators
-        validators = {}
-
-
-        # resource.class.validators.collect{|v| v if v.class==Mongoid::Validatable::FormatValidator}.compact.each do |v|
-        #   v.attributes.each{|a| validators[a] = v.options[:with]}
-        # end
-
-        # # For now, we'll skip fields that can have multiple datatypes, such as attribute[x]
-        # multiples = []
-        # if resource.class.constants.include? :MULTIPLE_TYPES
-        #   multiples = resource.class::MULTIPLE_TYPES.map{|k,v| v}.flatten
-        # end
-
-        # # Get valid codes
-        # valid_codes = {}
-        # if resource.class.constants.include? :VALID_CODES
-        #   valid_codes = resource.class::VALID_CODES
-        # end
-
-        # # Get special codes
-        # special_codes = {}
-        # if resource.class.constants.include? :SPECIAL_CODES
-        #   special_codes = resource.class::SPECIAL_CODES
-        # end
 
         multiples = []
         if resource.class.constants.include? :MULTIPLE_TYPES
@@ -55,17 +30,13 @@ module Crucible
         end
         selected_multiple = (multiples & resource.class::METADATA.keys).sample
 
-        resource.class::METADATA.each do |key, value|
-          type = value['type']
-		      next if ['id','version','versionId','implicitRules'].include? key
+        resource.class::METADATA.each do |key, meta|
+          type = meta['type']
+          next if type == 'Meta'
+		      next if ['id','contained','version','versionId','implicitRules'].include? key
           next if multiples.include?(key) && key != selected_multiple
 
-
-          # next if multiples.include? key
           gen = nil
-
-          next if type == 'Meta'
-
           if type == 'string' || type == 'markdown'
             gen = SecureRandom.base64
           elsif type == 'oid'
@@ -73,14 +44,14 @@ module Crucible
           elsif type == 'id'
             gen = SecureRandom.uuid
           elsif type == 'code'
-            if key=='language'
-              gen='en-US'
+            if meta['valid_codes']
+              gen = meta['valid_codes'].values.first.sample
+            elsif meta['binding'] && meta['binding']['uri'] == 'http://tools.ietf.org/html/bcp47'
+              gen = 'en-US'
+            elsif meta['binding'] && meta['binding']['uri'] == 'http://www.rfc-editor.org/bcp/bcp13.txt'
+              gen = MIME::Types.to_a.sample.content_type
             else
-              if value['valid_codes']
-                gen = value['valid_codes'].values.first.sample
-              else
-                gen = SecureRandom.base64
-              end
+              gen = SecureRandom.base64
             end
           elsif type == 'xhtml'
             gen = "<div>#{SecureRandom.base64}</div>"
@@ -103,9 +74,31 @@ module Crucible
             end
           elsif type == 'base64Binary'
             gen = SecureRandom.base64
-          elsif FHIR::RESOURCES.include?(type) || FHIR::TYPES.include?(type)
+          elsif FHIR::RESOURCES.include?(type)
             if embedded > 0
               gen = generate_child(type, embedded-1)
+            end
+          elsif FHIR::TYPES.include?(type)
+            if embedded > 0
+              gen = generate_child(type, embedded-1)
+              # apply bindings
+              if type == 'CodeableConcept' && meta['valid_codes'] && meta['binding']
+                gen.coding.each do |c|
+                  c.system = meta['binding']['uri']
+                  c.code = meta['valid_codes'].values.sample.sample
+                end
+              elsif type == 'Coding' && meta['valid_codes'] && meta['binding']
+                gen.system = meta['binding']['uri']
+                gen.code = meta['valid_codes'].values.sample.sample
+              elsif type == 'Reference'
+                gen.reference = nil
+                gen.display = "#{meta['type_profiles'].map{|x|x.split('/').last}.sample} #{gen.display}" if meta['type_profiles']
+              elsif type == 'Attachment'
+                gen.contentType = MIME::Types.to_a.sample.content_type
+                gen.data = nil
+              elsif type == 'Narrative'
+                gen.status = 'generated'
+              end
             end
           elsif resource.class.constants.include? type.demodulize.to_sym
             if embedded > 0
@@ -123,8 +116,8 @@ module Crucible
           else
             puts "Unable to generate field #{key} for #{resource.class} -- unrecognized type: #{type}"
           end
-          method = value['local_name'] ? value['local_name'] : key
-          gen = [gen] if value['max'] > 1 && !gen.nil?
+          method = meta['local_name'] ? meta['local_name'] : key
+          gen = [gen] if meta['max'] > 1 && !gen.nil?
           resource.method("#{method}=").call(gen) if !gen.nil?
         end
         resource
@@ -137,65 +130,9 @@ module Crucible
       end
 
       def self.generate_child(type, embedded=0)
-        # TODO: Determine if we can generate references or meta information
-        return if ['Meta'].include? type
-        # next if multiples.include? key
-        
-        child = nil
+        return if ['Meta','Extension','PrimitiveExtension','Signature'].include? type
         klass = "FHIR::#{type}".constantize
-        case klass
-        when FHIR::Reference
-          child = FHIR::Reference.new
-          child.display = "#{key} #{SecureRandom.base64}"
-        when FHIR::CodeableConcept
-          child = FHIR::CodeableConcept.new
-          child.text = "#{key} #{SecureRandom.base64}"
-        when FHIR::Coding
-          child = FHIR::Coding.new
-          child.display = "#{key} #{SecureRandom.base64}"
-        when FHIR::Quantity
-          child = FHIR::Quantity.new
-          child.value = SecureRandom.random_number
-          while child.value.to_s.match(/e/) # according to FHIR spec: decimals may not contain exponents
-            child.value = SecureRandom.random_number
-          end
-          child.unit = SecureRandom.base64
-        else
-          child = generate(klass, embedded) if(!['Extension','PrimitiveExtension','Signature'].include?(type))
-        end
-
-        case klass
-        when FHIR::Identifier
-          child.system = nil
-        when FHIR::Attachment
-          child.url = nil
-        end
-        return child
-
-      end
-
-
-      #
-      # Generate children for this resource.
-      #
-      def self.generate_children!(resource,embedded=0)
-        # For now, we'll skip fields that can have multiple datatypes, such as attribute[x]
-        multiples = []
-        if resource.class.constants.include? :MULTIPLE_TYPES
-          multiples = resource.class::MULTIPLE_TYPES.map{|k,v| v}.flatten
-        end
-
-        children = resource.embedded_relations
-        children.each do |key,value|
-
-          # TODO: multiples
-
-          if value[:relation] == Mongoid::Relations::Embedded::Many
-            child = ([] << child) if child
-          end
-          resource[key] = child if child
-        end
-        resource
+        generate(klass, embedded)
       end
 
       def self.random_oid
@@ -312,14 +249,14 @@ module Crucible
       end
 
       def self.apply_invariants!(resource)
-        case resource.class
+        case resource
         when FHIR::Appointment
           resource.reason = minimal_codeableconcept('http://snomed.info/sct','219006') # drinker of alcohol
           resource.participant.each{|p| p.type=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
         when FHIR::AppointmentResponse
           resource.participantType = [ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ]
         when FHIR::AuditEvent
-          resource.object.each do |o|
+          resource.entity.each do |o|
             o.query=nil
             o.name = "name #{SecureRandom.base64}" if o.name.nil?
           end
@@ -365,18 +302,18 @@ module Crucible
           end
         when FHIR::ClaimResponse
           resource.item.each do |item|
-            item.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            item.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
             item.detail.each do |detail|
-              detail.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+              detail.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
               detail.subDetail.each do |sub|
-                sub.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+                sub.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
               end
             end
           end
           resource.addItem.each do |addItem|
-            addItem.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            addItem.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
             addItem.detail.each do |detail|
-              detail.adjudication.each{|a|a.code = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+              detail.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
             end
           end
         when FHIR::Communication
@@ -400,7 +337,7 @@ module Crucible
             resource.targetReference = textonly_reference('ValueSet') 
           end
         when FHIR::Conformance
-          resource.fhirVersion = 'DSTU2'
+          resource.fhirVersion = 'STU3'
           resource.format = ['xml','json']
           if resource.kind == 'capability'
             resource.implementation = nil
@@ -410,16 +347,16 @@ module Crucible
           end
           resource.messaging.each{|m| m.endpoint = nil} if resource.kind != 'instance'
         when FHIR::Contract
-          resource.actor.each do |actor|
-            actor.entity = textonly_reference('Patient')
+          resource.agent.each do |agent|
+            agent.actor = textonly_reference('Patient')
           end
           resource.term.each do |term|
-            term.actor.each do |actor|
-              actor.entity = textonly_reference('Organization')
+            term.agent.each do |agent|
+              agent.actor = textonly_reference('Organization')
             end
             term.group.each do |group|
-              group.actor.each do |actor|
-                actor.entity = textonly_reference('Organization')
+              group.agent.each do |agent|
+                agent.actor = textonly_reference('Organization')
               end
             end
           end
@@ -437,8 +374,13 @@ module Crucible
           end
         when FHIR::DataElement
           resource.mapping.each do |m|
-            m.fhirIdentity = SecureRandom.base64 if m.fhirIdentity.nil?
-            m.fhirIdentity.gsub!(/[^0-9A-Za-z]/, '')
+            m.identity = SecureRandom.base64 if m.identity.nil?
+            m.identity.gsub!(/[^0-9A-Za-z]/, '')
+          end
+        when FHIR::DeviceComponent
+          resource.languageCode.coding.each do |c|
+            c.system = 'http://tools.ietf.org/html/bcp47'
+            c.code = 'en-US'
           end
         when FHIR::DeviceMetric
           resource.measurementPeriod = nil
@@ -463,8 +405,8 @@ module Crucible
           end
           resource.condition = keys
           resource.mapping.each do |m|
-            m.fhirIdentity = SecureRandom.base64 if m.fhirIdentity.nil?
-            m.fhirIdentity.gsub!(/[^0-9A-Za-z]/, '')
+            m.identity = SecureRandom.base64 if m.identity.nil?
+            m.identity.gsub!(/[^0-9A-Za-z]/, '')
           end
           resource.max = "#{resource.min+1}"
           # TODO remove bindings for things that can't be code, Coding, CodeableConcept
@@ -488,9 +430,6 @@ module Crucible
           end
         when FHIR::ImagingObjectSelection
           resource.uid = random_oid
-          index = SecureRandom.random_number(FHIR::ImagingObjectSelection::VALID_CODES[:title].length)
-          code = FHIR::ImagingObjectSelection::VALID_CODES[:title][index]
-          resource.title = minimal_codeableconcept('http://nema.org/dicom/dicm',code)
           resource.study.each do |study|
             study.uid = random_oid
             study.series.each do |series|
@@ -530,7 +469,7 @@ module Crucible
         when FHIR::List
           resource.emptyReason = nil
           resource.entry.each do |entry|
-            resource.mode = 'changes' if !entry.fhirDeleted.nil?
+            resource.mode = 'changes' if !entry.deleted.nil?
           end
         when FHIR::Media
           if resource.type == 'video'
@@ -608,15 +547,35 @@ module Crucible
           resource.entity.each do |e|
             e.agent.relatedAgent = nil if e.agent
           end
+        when FHIR::Practitioner
+          resource.communication.each do |comm|
+            comm.coding.each do |c|
+              c.system = 'http://tools.ietf.org/html/bcp47'
+              c.code = 'en-US'
+            end
+          end
         when FHIR::RelatedPerson
           resource.relationship = minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','family')
         when FHIR::Questionnaire
-          resource.group.required = true
-          resource.group.group = nil
-          resource.group.question.each {|q|q.options = nil }
+          resource.item.each do |i|
+            i.required = true
+            i.item = []
+            i.options = nil
+            i.option = [] if i.type!='choice'
+            if i.type=='display'
+              i.required = nil
+              i.repeats = nil
+            end
+            i.enableWhen.each do |ew|
+              ew.answered = false
+              ew.answered = true if ew.answer
+            end
+          end
         when FHIR::QuestionnaireResponse
-          resource.group.group = nil
-          resource.group.question.each {|q|q.answer = nil }
+          resource.item.each do |i|
+            i.item = nil
+            i.answer.each {|q|q.valueBoolean = true if !q.value }
+          end
         when FHIR::Subscription
           resource.status = 'requested' if resource.id.nil?
           resource.channel.payload = 'applicaton/json+fhir'
@@ -631,9 +590,9 @@ module Crucible
           end
         when FHIR::StructureDefinition
           resource.fhirVersion = 'DSTU2'
-          resource.snapshot.element.first.path = resource.constrainedType if resource.snapshot && resource.snapshot.element
+          resource.snapshot.element.first.path = resource.baseType if resource.snapshot && resource.snapshot.element
           resource.mapping.each do |m|
-            m.fhirIdentity.gsub!(/[^0-9A-Za-z]/, '') if m.fhirIdentity
+            m.identity.gsub!(/[^0-9A-Za-z]/, '') if m.identity
           end
         when FHIR::TestScript
           resource.variable.each do |v|

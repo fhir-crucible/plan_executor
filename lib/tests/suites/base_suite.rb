@@ -12,7 +12,7 @@ module Crucible
         # body should be a String
         outcome = nil
         begin
-          outcome = FHIR::Resource.from_contents(body)
+          outcome = FHIR.from_contents(body)
           outcome = nil if outcome.class!=FHIR::OperationOutcome
         rescue
           outcome = nil

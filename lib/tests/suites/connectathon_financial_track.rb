@@ -59,7 +59,7 @@ module Crucible
           reply.resource.id = temp
         elsif !reply.body.nil?
           begin
-            cr = FHIR::Resource.from_contents(reply.body)
+            cr = FHIR.from_contents(reply.body)
             if cr.class==FHIR::ClaimResponse
               # Response is ClaimResponse
               @simple_response_id = cr.id
@@ -102,7 +102,7 @@ module Crucible
           reply.resource.id = temp
         elsif !reply.body.nil?
           begin
-            cr = FHIR::Resource.from_contents(reply.body)
+            cr = FHIR.from_contents(reply.body)
             if cr.class==FHIR::ClaimResponse
               # Response is ClaimResponse
               @average_response_id = cr.id

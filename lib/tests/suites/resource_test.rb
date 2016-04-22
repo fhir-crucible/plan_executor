@@ -10,6 +10,12 @@ module Crucible
       attr_accessor :temp_id
       attr_accessor :temp_version
 
+      attr_accessor :conditional_create_resource_a
+      attr_accessor :conditional_create_resource_b
+      attr_accessor :conditional_create_resource_c
+      attr_accessor :conditional_update_resource_a
+      attr_accessor :conditional_update_resource_c
+
       attr_accessor :preexisting_id
       attr_accessor :preexisting_version
       attr_accessor :preexisting
@@ -56,6 +62,14 @@ module Crucible
         "#{resource_class.name.demodulize}: #{desc}"
       end
 
+      def teardown
+        @client.destroy(@resource_class, @conditional_create_resource_a.id) if @conditional_create_resource_a && !@conditional_create_resource_a.id.nil?
+        @client.destroy(@resource_class, @conditional_create_resource_b.id) if @conditional_create_resource_b && !@conditional_create_resource_b.id.nil?
+        @client.destroy(@resource_class, @conditional_create_resource_c.id) if @conditional_create_resource_c && !@conditional_create_resource_c.id.nil?
+        @client.destroy(@resource_class, @conditional_update_resource_a.id) if @conditional_update_resource_a && !@conditional_update_resource_a.id.nil?
+        @client.destroy(@resource_class, @conditional_update_resource_c.id) if @conditional_update_resource_c && !@conditional_update_resource_c.id.nil?
+      end
+
       #
       # Get and read all the resources of this type. Result is an XML ATOM bundle.
       #
@@ -82,7 +96,7 @@ module Crucible
         @temp_resource = ResourceGenerator.generate(@resource_class,3)
         reply = @client.create @temp_resource
         @temp_id = reply.id
-        @temp_resource.id = (reply.resource.try(:xmlId) || reply.id)
+        @temp_resource.id = (reply.resource.try(:id) || reply.id)
         @temp_version = reply.version
 
         if reply.code==201
@@ -100,6 +114,82 @@ module Crucible
 
         result
       end
+
+      test 'X012', 'Conditional Create (No Matches)' do
+        metadata {
+          define_metadata('create')
+        }
+
+        result = TestResult.new('X012',"Conditional Create #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
+        @conditional_create_resource_a = ResourceGenerator.generate(@resource_class,3)
+        # chances are good that no resource has this ID
+        ifNoneExist = { '_id' => "#{(SecureRandom.uuid * 2)[0..63]}" }
+        reply = @client.conditional_create(@conditional_create_resource_a,ifNoneExist)
+        @conditional_create_resource_a.id = (reply.resource.try(:id) || reply.id)
+
+        if reply.code==201
+          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
+        else
+          outcome = (self.parse_operation_outcome(reply.body) rescue nil)
+          if outcome.nil?
+            message = "Response code #{reply.code} with no OperationOutcome provided."
+          else
+            message = self.build_messages(outcome)
+          end
+          result.update(STATUS[:fail], message, reply.body)
+          @conditional_create_resource_a = nil
+        end
+
+        result
+      end
+
+
+      test 'X013', 'Conditional Create (One Match)' do
+        metadata {
+          define_metadata('create')
+        }
+
+        result = TestResult.new('X013',"Conditional Create #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
+        @conditional_create_resource_b = ResourceGenerator.generate(@resource_class,3)
+        # this ID should already exist if temp resource was created
+        ifNoneExist = { '_id' => "#{@temp_resource.id}" }
+        reply = @client.conditional_create(@conditional_create_resource_b,ifNoneExist)
+        @conditional_create_resource_b.id = (reply.resource.try(:id) || reply.id)
+        @temp_version = reply.version
+
+        if reply.code==200
+          result.update(STATUS[:pass], "Request was correctly ignored.", reply.body)
+          @conditional_create_resource_b = nil
+        else
+          result.update(STATUS[:fail], "Request should have been ignored with HTTP 200.", reply.body)
+        end
+
+        result
+      end
+
+
+      test 'X014', 'Conditional Create (Multiple Matches)' do
+        metadata {
+          define_metadata('create')
+        }
+
+        result = TestResult.new('X014',"Conditional Create #{resource_class.name.demodulize}", nil, nil, nil)
+        @conditional_create_resource_c = ResourceGenerator.generate(@resource_class,3)
+        # this should match all resources
+        ifNoneExist = { '_lastUpdated' => 'gt1900-01-01' }
+        reply = @client.conditional_create(@conditional_create_resource_c,ifNoneExist)
+        @conditional_create_resource_c.id = (reply.resource.try(:id) || reply.id)
+        @temp_version = reply.version
+
+        if reply.code==412
+          result.update(STATUS[:pass], "Request correctly failed.", reply.body)
+          @conditional_create_resource_c = nil
+        else
+          result.update(STATUS[:fail], "Request should have failed with HTTP 412.", reply.body)
+        end
+
+        result
+      end      
 
       #
       # Test if we can read a preexisting resource
@@ -201,6 +291,120 @@ module Crucible
 
         result
       end
+
+      test 'X032', 'Conditional Update (No Matches)' do
+        metadata {
+          define_metadata('update')
+        }
+
+        result = TestResult.new('X032',"Conditional Update #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
+
+        @conditional_update_resource_a = ResourceGenerator.generate(@resource_class,3)
+        # chances are good that no resource has this ID
+        searchParams = { '_id' => "#{(SecureRandom.uuid * 2)[0..63]}" }
+        reply = @client.conditional_update(@conditional_update_resource_a,nil,searchParams)
+        @conditional_update_resource_a.id = (reply.resource.try(:id) || reply.id)
+
+        if reply.code==201
+          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
+        else
+          outcome = (self.parse_operation_outcome(reply.body) rescue nil)
+          if outcome.nil?
+            message = "Response code #{reply.code} with no OperationOutcome provided."
+          else
+            message = self.build_messages(outcome)
+          end
+          result.update(STATUS[:fail], message, reply.body)
+          @conditional_update_resource_a = nil
+        end
+
+        result
+      end
+
+
+      test 'X033', 'Conditional Update (One Match)' do
+        metadata {
+          define_metadata('update')
+        }
+
+        result = TestResult.new('X033',"Conditional Update #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
+        if !@temp_resource.nil?
+          @preexisting_id = @temp_id
+          @preexisting = @temp_resource
+        elsif !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+          @preexisting_id = @bundle.entry[0].resource.id
+          @preexisting = @bundle.entry[0].resource
+        end
+
+        if !@preexisting.nil?
+          begin
+            @preexisting.to_xml
+          rescue Exception
+            @preexisting = nil
+          end
+        end
+
+        if @preexisting.nil?
+          result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
+        else
+          ResourceGenerator.set_fields!(@preexisting)
+          ResourceGenerator.apply_invariants!(@preexisting)
+          
+          searchParams = { '_id' => @preexisting_id }
+          reply = @client.conditional_update(@preexisting,nil,searchParams)
+
+          if reply.code==200
+            result.update(STATUS[:pass], "Updated existing #{resource_class.name.demodulize}.", reply.body)
+          elsif reply.code==201
+            # check created id -- see if it matches the one we used, or is new
+            resulting_id = reply.id
+
+            if(@preexisting_id != resulting_id)
+              result.update(STATUS[:fail], "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", reply.body)
+            else
+              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", reply.body)
+            end
+
+            resulting_version = reply.version
+            if(@preexisting_version == resulting_version)
+              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server did not update the resource version number.", reply.body)
+            end
+          else
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
+            if outcome.nil?
+              message = "Response code #{reply.code} with no OperationOutcome provided."
+            else
+              message = self.build_messages(outcome)
+            end
+            result.update(STATUS[:fail], message, reply.body)
+          end
+        end
+
+        result
+      end
+
+
+      test 'X034', 'Conditional Update (Multiple Matches)' do
+        metadata {
+          define_metadata('update')
+        }
+
+        result = TestResult.new('X034',"Conditional Update #{resource_class.name.demodulize}", nil, nil, nil)
+        @conditional_update_resource_c = ResourceGenerator.generate(@resource_class,3)
+        # this should match all resources
+        searchParams = { '_lastUpdated' => 'gt1900-01-01' }
+        reply = @client.conditional_update(@conditional_update_resource_c,nil,searchParams)
+        @conditional_update_resource_c.id = (reply.resource.try(:id) || reply.id)
+        @temp_version = reply.version
+
+        if reply.code==412
+          result.update(STATUS[:pass], "Request correctly failed.", reply.body)
+          @conditional_update_resource_c = nil
+        else
+          result.update(STATUS[:fail], "Request should have failed with HTTP 412.", reply.body)
+        end
+        result
+      end   
 
       #
       # Test if we can retrieve the history of a preexisting resource.

@@ -39,15 +39,13 @@ module Crucible
         end
       end
 
-      def get_patient_by_param(param, val, flag=true)
-        assert val, "No #{param} for patient"
+      def get_patient_by_param(params = {}, flag = true)
+        assert !params.empty?, "No params for patient"
         options = {
           :search => {
             :flag => flag,
             :compartment => nil,
-            :parameters => {
-              param => val
-            }
+            :parameters => params
           }
         }
         reply = @client.search(@rc, options)
@@ -85,7 +83,7 @@ module Crucible
           @patient = nil
         end
 
-        assert @patient_id, "No patient ID was supplied, and none could be retrieved via search"
+        skip if !@patient_id
 
         reply = @client.read(FHIR::Patient, @patient_id)
         assert_response_ok(reply)
@@ -96,102 +94,92 @@ module Crucible
         warning { assert_last_modified_present(reply) }
       end
 
-      test 'AS002', 'Search by ID' do
+      test 'AS002', 'Search by identifier' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:identifier, @patient.identifier.first.try(:value))
+        skip if !@patient
+        get_patient_by_param(:identifier => @patient[:identifier].first.try(:value))
       end
 
-      test 'AS003', 'ID without search keyword' do
+      test 'AS003', 'Identifier without search keyword' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:identifier, @patient.identifier.first.try(:value), false)
+        skip if !@patient
+        get_patient_by_param({ :identifier => @patient[:identifier].first.try(:value) }, false)
       end
 
-      test 'AS004', 'Search by Name' do
+      test 'AS004', 'Search by Family & Given' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        name = @patient.name.first.try(:family).try(:first)
-        get_patient_by_param(:name, name)
+        skip if !@patient
+        family = @patient[:name].first.try(:family).try(:first)
+        given = @patient[:name].first.try(:given).try(:first)
+        assert family, "Patient family name not returned"
+        assert given, "Patient given name not returned"
+        get_patient_by_param(family: family, given: given)
       end
 
-      test 'AS005', 'Name without search keyword' do
+      test 'AS005', 'Family & Given without search keyword' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        name = @patient.name.first.try(:family).try(:first)
-        get_patient_by_param(:name, name, false)
+        skip if !@patient
+        family = @patient[:name].first.try(:family).try(:first)
+        given = @patient[:name].first.try(:given).try(:first)
+        assert family, "Patient family name not provided"
+        assert given, "Patient given name not provided"
+        get_patient_by_param({ family: family, given: given }, false)
       end
 
-      test 'AS006', 'Search by Family' do
+      test 'AS006', 'Search by name and gender' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:family, @patient.name.first.try(:family).try(:first))
+        skip if !@patient
+        name = @patient[:name].first.try(:family).try(:first)
+        gender = @patient[:gender]
+        assert name, "Patient name not provided"
+        assert gender, "Patient gender not provided"
+        get_patient_by_param(name: name, gender: gender)
       end
 
-      test 'AS007', 'Family without search keyword' do
+      test 'AS007', 'Name and gender without search keyword' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:family, @patient.name.first.try(:family).try(:first), false)
+        skip if !@patient
+        name = @patient[:name].first.try(:family).try(:first)
+        gender = @patient[:gender]
+        assert name, "Patient name not provided"
+        assert gender, "Patient gender not provided"
+        get_patient_by_param(name: name, gender: gender)
       end
 
-      test 'AS008', 'Search by Given' do
+      test 'AS008', 'Search by Birthdate' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:given, @patient.name.first.try(:given).try(:first))
+        skip if !@patient
+        birthdate = @patient[:birthDate]
+        gender = @patient[:gender]
+        assert birthdate, "Patient birthdate not provided"
+        assert gender, "Patient gender not provided"
+        get_patient_by_param(birthdate: birthdate, gender: gender)
       end
 
-      test 'AS009', 'Given without search keyword' do
+      test 'AS009', 'Birthdate without search keyword' do
         metadata {
           define_metadata('search')
         }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param(:given, @patient.name.first.try(:given).try(:first), false)
-      end
-
-      test 'AS010', 'Search by Gender' do
-        metadata {
-          define_metadata('search')
-        }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('gender', @patient.gender)
-      end
-
-      test 'AS011', 'Gender without search keyword' do
-        metadata {
-          define_metadata('search')
-        }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('gender', @patient.gender, false)
-      end
-
-      test 'AS012', 'Search by Birthdate' do
-        metadata {
-          define_metadata('search')
-        }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('birthdate', @patient.birthDate)
-      end
-
-      test 'AS013', 'Birthdate without search keyword' do
-        metadata {
-          define_metadata('search')
-        }
-        assert @patient, "could not get patient by id: #{@patient_id}"
-        get_patient_by_param('birthdate', @patient.birthDate, false)
+        skip if !@patient
+        birthdate = @patient[:birthDate]
+        gender = @patient[:gender]
+        assert birthdate, "Patient birthdate not provided"
+        assert gender, "Patient gender not provided"
+        get_patient_by_param({ birthdate: birthdate, gender: gender }, false)
       end
 
     end

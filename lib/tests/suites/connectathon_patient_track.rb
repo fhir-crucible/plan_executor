@@ -340,6 +340,30 @@ module Crucible
         assert (reply.resource.total > 0), 'The server did not report any results.'
       end
 
+      #
+      # Delete patient
+      #
+      test 'C8T1_5', 'Delete patient' do
+        metadata {
+          links "#{REST_SPEC_LINK}#delete"
+          links "#{BASE_SPEC_LINK}/patient.html"
+          requires resource: 'Patient', methods: ['delete']
+        }
+
+        skip unless @patient_id
+
+        reply = @client.destroy(FHIR::Patient,@patient_id)
+        assert_response_code(reply,204)
+
+        reply = @client.read(FHIR::Patient, @patient_id)
+
+        assert([404, 410].include?(reply.code), 'The server should have deleted the resource and now return 410.')
+        warning { assert(reply.code == 404, 'Deleted resource was reported as unknown (404).  If the system tracks deleted resources, it should respond with 410.')}
+
+        @patient_id = nil # this patient successfully deleted so does not need to be deleted in teardown
+
+      end
+
     end
   end
 end

@@ -129,7 +129,4 @@
       <start value="2012"/>
     </period>
   </contact>
-  <managingOrganization>
-    <reference value="Organization/1"/>
-  </managingOrganization>
 </Patient>

@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 0b3cd14673be92c4a430f9796f8e7bdfceb5defb
+  revision: 0066989360afdfba66a26073a8ef35b86a80d179
   branch: stu3
   specs:
     fhir_client (1.0.0)
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: 0cc17d8fc99df46dc6a823d8500f62caa17c2d05
+  revision: f5891142b3157bc96a785fd6ab96b476c68d1e99
   branch: master
   specs:
     fhir_models (1.0.0)
@@ -183,3 +183,6 @@ DEPENDENCIES
   tilt
   turn
   webmock
+
+BUNDLED WITH
+   1.11.2

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MedicationOrder xmlns="http://hl7.org/fhir">
+    <language value="en-US"/>
+    <status value="active"/>
+    <medicationCodeableConcept>
+        <text value="medication name"></text>
+    </medicationCodeableConcept>
+</MedicationOrder>

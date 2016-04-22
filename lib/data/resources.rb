@@ -135,6 +135,12 @@ module Crucible
         FHIR::Xml.from_xml File.read(File.join(fixture_path, 'terminology', 'valueset-example.xml'))
       end
 
+      # ------------------------------ PATCH TRACK TESTS ------------------------------
+
+      def medicationorder_simple
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'patch', 'medicationorder-simple.xml'))
+      end
+
       def load_fixture(path)
         FHIR.from_contents(File.read(File.join(fixture_path, path)))
       end

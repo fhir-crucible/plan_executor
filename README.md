@@ -2,9 +2,9 @@
 
 Plan Executor runs test suites against a FHIR server.
 
-# DSTU2
+# STU3
 
-Updated to support the FHIR [DSTU2 branch](http://hl7.org/fhir-develop).
+Updated to support the FHIR [STU3 Candidate branch](http://hl7.org/fhir/2016May/index.html).
 
 # License
 

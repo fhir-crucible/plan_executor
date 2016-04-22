@@ -183,6 +183,3 @@ DEPENDENCIES
   tilt
   turn
   webmock
-
-BUNDLED WITH
-   1.11.2

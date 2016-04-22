@@ -35,14 +35,6 @@
 				<b>note</b>: Annontation: patient is afraid of needles</p>
 		</div>
 	</text>
-	<subject>
-		<reference value="Patient/patient-uslab-example1"/>
-		<display value="Todd Lerr"/>
-	</subject>
-	<orderer>
-		<reference value="Practitioner/pract-uslab-example1"/>
-		<display value="Dr Leonard T Bloodraw Jr"/>
-	</orderer>
 	<identifier>
 		<type>
 			<coding>
@@ -53,6 +45,16 @@
 		<system value="http://goodhealth.org/identifiers"/>
 		<value value="do-200"/>
 	</identifier>
+	<status value="requested"/>
+	<priority value="routine"/>
+	<subject>
+		<reference value="Patient/patient-uslab-example1"/>
+		<display value="Todd Lerr"/>
+	</subject>
+	<orderer>
+		<reference value="Practitioner/pract-uslab-example1"/>
+		<display value="Dr Leonard T Bloodraw Jr"/>
+	</orderer>
 	<reason>
 		<coding>
 			<system value="http://www.icd10data.com/icd10pcs"/>
@@ -76,8 +78,6 @@
 	</specimen>
   -->
 	<!--   EH this is set to 'requested' by the Placer  -->
-	<status value="requested"/>
-	<priority value="routine"/>
 	<event>
 		<!--   EH this is set to 'requested' by the Placer is required element in core resource  -->
 		<status value="requested"/>

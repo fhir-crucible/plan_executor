@@ -81,7 +81,7 @@
       <code value="A"/>
     </coding>
   </interpretation>
-  <comments value="Antibiotic treatment is recommended for patients with severe disease, bloody diarrhea, or compromised immune systems. Resistance to traditional first-line drugs like ampicillin and trimethoprim-sulfamethoxazole is common, and resistance to some other antibiotics is increasing. With this in mind, antibiotic susceptibility testing can help guide appropriate therapy. When an ampicillin- or trimethroprim-sulfamethoxazole-resistant strain is isolated, choices for therapy include fluoroquinolones, ceftriaxone, and azithromycin."/>
+  <comment value="Antibiotic treatment is recommended for patients with severe disease, bloody diarrhea, or compromised immune systems. Resistance to traditional first-line drugs like ampicillin and trimethoprim-sulfamethoxazole is common, and resistance to some other antibiotics is increasing. With this in mind, antibiotic susceptibility testing can help guide appropriate therapy. When an ampicillin- or trimethroprim-sulfamethoxazole-resistant strain is isolated, choices for therapy include fluoroquinolones, ceftriaxone, and azithromycin."/>
   <specimen>
     <reference value="Specimen/spec-uslab-example1"/>
     <display value="Blood sample"/>

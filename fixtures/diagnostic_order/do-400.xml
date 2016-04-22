@@ -33,14 +33,6 @@
         <b>priority</b>: routine</p>
     </div>
   </text>
-  <subject>
-    <reference value="Patient/patient-uslab-example1"/>
-    <display value="Todd G. Lerr"/>
-  </subject>
-  <orderer>
-    <reference value="Practitioner/pract-uslab-example1"/>
-    <display value="Leonard T Bloodraw"/>
-  </orderer>
   <identifier>
     <type>
       <coding>
@@ -51,6 +43,16 @@
     <system value="http://goodhealth.org/identifiers"/>
     <value value="do-400"/>
   </identifier>
+  <status value="requested"/>
+  <priority value="routine"/>
+  <subject>
+    <reference value="Patient/patient-uslab-example1"/>
+    <display value="Todd G. Lerr"/>
+  </subject>
+  <orderer>
+    <reference value="Practitioner/pract-uslab-example1"/>
+    <display value="Leonard T Bloodraw"/>
+  </orderer>
   <reason>
     <coding>
       <system value="http://hl7.org/fhir/sid/icd-10-us"/>
@@ -63,8 +65,6 @@
     <reference value="Specimen/spec-400"/>
     <display value="Stool Specimen"/>
   </specimen>
-  <status value="requested"/>
-  <priority value="routine"/>
   <event>
     <status value="requested"/>
     <description>

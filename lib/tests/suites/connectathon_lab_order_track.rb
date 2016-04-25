@@ -40,7 +40,7 @@ module Crucible
 
       def teardown
         @records.each_value do |value|
-          @client.destroy(value.class, value.xmlId)
+          @client.destroy(value.class, value.id)
         end
       end
 
@@ -148,16 +148,16 @@ module Crucible
       def create_order(fixture_path, order_name)
         order = @resources.load_fixture(fixture_path)
         order.date = DateTime.now.iso8601
-        order.subject.reference = @records[:patient]
-        order.source.reference = @records[:provider]
+        order.subject.reference = @records[:patient].to_reference
+        order.source.reference = @records[:provider].to_reference
 
         create_object(order, order_name)
       end
 
       def create_diagnostic_order(fixture_path, order_name)
         diag_order = @resources.load_fixture(fixture_path)
-        diag_order.subject.reference = @records[:patient]
-        diag_order.orderer.reference = @records[:provider]
+        diag_order.subject.reference = @records[:patient].to_reference
+        diag_order.orderer.reference = @records[:provider].to_reference
 
         create_object(diag_order, order_name)
       end
@@ -165,46 +165,49 @@ module Crucible
       def create_order_response(fixture_path, response_name, reference_order)
         order_response = @resources.load_fixture(fixture_path)
         order_response.date = DateTime.now.iso8601
-        order_response.request.reference = reference_order
-        order_response.who.reference = @records[:organization]
+        order_response.request.reference = reference_order.to_reference
+        order_response.who.reference = @records[:organization].to_reference
 
         create_object(order_response, response_name)
       end
 
       def create_diagnostic_report(specimen_fixture_path, observation_fixture_paths, diagnostic_report_fixture_path, dr_name, diag_order)
         specimen = @resources.load_fixture(specimen_fixture_path)
-        specimen.subject.reference = @records[:patient]
-        create_object(specimen, "#{dr_name}_specimen".to_sym)
+        specimen.subject.reference = @records[:patient].to_reference
+        specimen_name = "#{dr_name}_specimen".to_sym
+        create_object(specimen, specimen_name)
 
         diag_report = @resources.load_fixture(diagnostic_report_fixture_path)
-        diag_report.subject.reference = @records[:patient]
+        diag_report.subject.reference = @records[:patient].to_reference
         diag_report.issued = DateTime.now.iso8601
         diag_report.effectiveDateTime = DateTime.now.iso8601
-        diag_report.performer.reference = @records[:performer]
-        diag_report.request << FHIR::Reference.new(reference: diag_order)
-        diag_report.specimen << FHIR::Reference.new(reference: specimen)
+        diag_report.performer.reference = @records[:performer].to_reference
+        diag_report.request << FHIR::Reference.new(reference: diag_order.to_reference)
+        diag_report.specimen << FHIR::Reference.new(reference: @records[specimen_name].to_reference)
 
         observation_fixture_paths.each_with_index do |obs, index|
           observation = @resources.load_fixture(obs)
-          observation.specimen.reference = specimen
-          observation.subject.reference = @records[:patient]
+          observation.specimen.reference = specimen.to_reference
+          observation.subject.reference = @records[:patient].to_reference
           observation_name = "#{dr_name}_observation_{index}".to_sym
           create_object(observation, observation_name)
-          diag_report.result << FHIR::Reference.new(reference: observation)
+          diag_report.result << FHIR::Reference.new(reference: @records[observation_name].to_reference)
         end
 
         create_object(diag_report, dr_name)
       end
 
       def get_diagnostic_report(dr_name)
-        reply = @client.read FHIR::DiagnosticReport, @records[dr_name].xmlId
+        reply = @client.read FHIR::DiagnosticReport, @records[dr_name].id
         assert_response_ok(reply)
 
-        assert reply.resource.equals?(@records[dr_name], ['_id', 'text', 'meta', 'presentedForm']), "Diagnostic Report #{dr_name.to_s} doesn't match retrieved Diagnostic Report"
+        binding.pry unless reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension'])
+
+        assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), "Diagnostic Report #{dr_name.to_s} doesn't match retrieved Diagnostic Report"
       end
 
       def update_diagnostic_order(order_name)
-        reply = @client.read FHIR::DiagnosticOrder, @records[order_name].xmlId
+        reply = @client.read FHIR::DiagnosticOrder, @records[order_name].id
         assert_response_ok(reply)
 
         assert reply.resource.equals? @records[order_name], ['_id', 'text', 'meta']
@@ -213,10 +216,10 @@ module Crucible
 
         @records[order_name].status = 'completed'
 
-        reply = @client.update @records[order_name], @records[order_name].xmlId
+        reply = @client.update @records[order_name], @records[order_name].id
         assert_response_ok(reply)
 
-        reply = @client.read FHIR::DiagnosticOrder, @records[order_name].xmlId
+        reply = @client.read FHIR::DiagnosticOrder, @records[order_name].id
         assert_response_ok(reply)
 
         assert reply.resource.equals? @records[order_name], ['_id', 'text', 'meta']
@@ -226,9 +229,11 @@ module Crucible
       end
 
       def create_object(obj, obj_sym)
+        obj.id = nil
         reply = @client.create obj
+        binding.pry if reply.response[:code] == "500"
         assert_response_ok(reply)
-        obj.xmlId = reply.id
+        obj.id = reply.id
         @records[obj_sym] = obj
 
         warning { assert_valid_resource_content_type_present(reply) }

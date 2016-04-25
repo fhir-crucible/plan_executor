@@ -54,7 +54,7 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'reference' => "Patient/#{@patient.id}"
+              'entity' => "Patient/#{@patient.id}"
             }
           }
         }
@@ -62,8 +62,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one AuditEvent for the test Patient currently in the system.', reply.body)
-        assert(reply.resource.entry[0].try(:resource).try(:object).try(:reference).include?(@patient.id), 'The correct AuditEvent was not returned.', reply.body)
-        warning { assert_equal('110110', reply.resource.entry[0].try(:resource).try(:event).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+        assert(reply.resource.entry[0].try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'The correct AuditEvent was not returned.', reply.body)
+        warning { assert_equal('110110', reply.resource.entry[0].try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
       end
 
       # Create a Patient with Provenance as a transaction
@@ -195,18 +195,20 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'reference' => "Patient/#{@patient.id}"
+              'entity' => "Patient/#{@patient.id}"
             }
           }
         }
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal(2, reply.resource.entry.size, 'There should be two AuditEvents for the test Patient currently in the system.', reply.body)
+        found_update_type = false
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:object).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
-          warning { assert_equal('110110', entry.try(:resource).try(:event).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
+          warning { assert_equal('110110', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+          found_update_type ||= entry.try(:resource).try(:action) == 'U'
         end
+        assert(found_update_type, 'No update AuditEvent returned', reply.body)
       end
 
       # Update a Patient with Provenance as a transaction
@@ -332,18 +334,20 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'reference' => "Patient/#{@patient.id}"
+              'entity' => "Patient/#{@patient.id}"
             }
           }
         }
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal(3, reply.resource.entry.size, 'There should be three AuditEvents for the test Patient currently in the system.', reply.body)
+        found_read_type = false
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:object).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
-          warning { assert_equal('110110', entry.try(:resource).try(:event).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
+          warning { assert_equal('110110', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+          found_read_type ||= entry.try(:resource).try(:action) == 'R'
         end
+        assert(found_read_type, 'No read AuditEvent returned', reply.body)
       end
 
     end

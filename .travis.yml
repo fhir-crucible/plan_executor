@@ -5,7 +5,9 @@ rvm:
 sudo: false
 services:
   - mongodb
-script: bundle exec rake test
+script: 
+  bundle exec rake -T
+  bundle exec rake test
 notifications:
   email:
     recipients:

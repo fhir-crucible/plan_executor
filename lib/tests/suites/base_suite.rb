@@ -2,7 +2,7 @@ module Crucible
   module Tests
     class BaseSuite < BaseTest
 
-      EXCLUDED_RESOURCES = ['DomainResource', 'Parameters', 'GuidanceResponse', 'ModuleDefinition', 'OperationOutcome']
+      EXCLUDED_RESOURCES = ['DomainResource', 'Resource', 'Parameters', 'OperationOutcome']
 
       def title
         self.class.name.demodulize

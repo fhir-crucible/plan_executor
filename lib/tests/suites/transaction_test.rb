@@ -93,16 +93,16 @@ module Crucible
 
         # set the IDs to whatever the server created
         @patient0.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-        @patient0.id = reply.resource.entry[0].try(:resource).try(:xmlId) if @patient0.id.nil?
+        @patient0.id = reply.resource.entry[0].try(:resource).try(:id) if @patient0.id.nil?
 
         @obs0a.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
-        @obs0a.id = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs0a.id.nil?
+        @obs0a.id = reply.resource.entry[1].try(:resource).try(:id) if @obs0a.id.nil?
 
         @obs0b.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
-        @obs0b.id = reply.resource.entry[2].try(:resource).try(:xmlId) if @obs0b.id.nil?
+        @obs0b.id = reply.resource.entry[2].try(:resource).try(:id) if @obs0b.id.nil?
 
         @condition0.id = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
-        @condition0.id = reply.resource.entry[3].try(:resource).try(:xmlId) if @condition0.id.nil?
+        @condition0.id = reply.resource.entry[3].try(:resource).try(:id) if @condition0.id.nil?
 
         # check that the Observations and Condition reference the correct Patient.id
         assert( (reply.resource.entry[1].resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
@@ -153,16 +153,16 @@ module Crucible
 
         # set the IDs to whatever the server created
         @patient0_B.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-        @patient0_B.id = reply.resource.entry[0].try(:resource).try(:xmlId) if @patient0_B.id.nil?
+        @patient0_B.id = reply.resource.entry[0].try(:resource).try(:id) if @patient0_B.id.nil?
 
         @obs0a_B.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
-        @obs0a_B.id = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs0a_B.id.nil?
+        @obs0a_B.id = reply.resource.entry[1].try(:resource).try(:id) if @obs0a_B.id.nil?
 
         @obs0b_B.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
-        @obs0b_B.id = reply.resource.entry[2].try(:resource).try(:xmlId) if @obs0b_B.id.nil?
+        @obs0b_B.id = reply.resource.entry[2].try(:resource).try(:id) if @obs0b_B.id.nil?
 
         @condition0_B.id = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
-        @condition0_B.id = reply.resource.entry[3].try(:resource).try(:xmlId) if @condition0_B.id.nil?
+        @condition0_B.id = reply.resource.entry[3].try(:resource).try(:id) if @condition0_B.id.nil?
 
         # check that the Observations and Condition reference the correct Patient.id
         assert( (reply.resource.entry[1].resource.subject.reference.ends_with?(@patient0_B.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0_B.id}")
@@ -203,7 +203,7 @@ module Crucible
         # set the IDs to whatever the server created
         # @patient0.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
         @obs1.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
-        @obs1.id = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs1.id.nil?
+        @obs1.id = reply.resource.entry[1].try(:resource).try(:id) if @obs1.id.nil?
       end
 
       # Conditionally Update entire patient record
@@ -245,10 +245,10 @@ module Crucible
 
         # set the IDs to whatever the server created
         @obs2.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[-2].try(:response).try(:location))
-        @obs2.id = reply.resource.entry[-2].try(:resource).try(:xmlId) if @obs2.id.nil?
+        @obs2.id = reply.resource.entry[-2].try(:resource).try(:id) if @obs2.id.nil?
 
         @conditionId = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[-1].try(:response).try(:location))
-        @conditionId = reply.resource.entry[-1].try(:resource).try(:xmlId) if @conditionId.nil?
+        @conditionId = reply.resource.entry[-1].try(:resource).try(:id) if @conditionId.nil?
       end
 
       # Create Patients with same identifier, THEN conditionally create patient as part of transaction -- transaction should fail with OperationOutcome
@@ -266,7 +266,7 @@ module Crucible
         @patient1 = ResourceGenerator.minimal_patient(@patient0.identifier.first.value,@patient0.name.first.given.first)
         reply = @client.create @patient1
         assert_response_ok(reply)
-        @patient1.id = (reply.resource.try(:xmlId) || reply.id)
+        @patient1.id = (reply.resource.try(:id) || reply.id)
 
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient1,"identifier=#{@patient0.identifier.first.system}|#{@patient0.identifier.first.value}")
@@ -275,7 +275,7 @@ module Crucible
         # These IDs should not exist, but if they do, then we should delete this Patient during teardown.
         if reply.resource.is_a?(FHIR::Bundle)
           @badPatientId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-          @badPatientId = reply.resource.entry[0].try(:resource).try(:xmlId) if @badPatientId.nil?
+          @badPatientId = reply.resource.entry[0].try(:resource).try(:id) if @badPatientId.nil?
         end
 
         assert((reply.code >= 400 && reply.code < 500), "Failed Transactions should return an HTTP 400 range response, found: #{reply.code}.", reply.body)
@@ -324,10 +324,10 @@ module Crucible
 
         # set the IDs to whatever the server created
         @obs3.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
-        @obs3.id = reply.resource.entry[2].try(:resource).try(:xmlId) if @obs3.id.nil?
+        @obs3.id = reply.resource.entry[2].try(:resource).try(:id) if @obs3.id.nil?
 
         @obs4.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
-        @obs4.id = reply.resource.entry[1].try(:resource).try(:xmlId) if @obs4.id.nil?
+        @obs4.id = reply.resource.entry[1].try(:resource).try(:id) if @obs4.id.nil?
       end
 
       # If $everything operation, fetch patient record, and then use that bundle to update the record in a transaction
@@ -511,7 +511,7 @@ module Crucible
         @batch_patient_2 = ResourceGenerator.minimal_patient("#{Time.now.to_i}",'Batch')
         reply = @client.create @batch_patient_2
         assert_response_ok(reply)
-        @batch_patient_2.id = (reply.resource.try(:xmlId) || reply.id)
+        @batch_patient_2.id = (reply.resource.try(:id) || reply.id)
 
         # height
         @batch_obs_2 = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',300,'cm',@batch_patient_2.id)

@@ -282,7 +282,7 @@ module Crucible
 
       def entry_ids_are_present(entries)
         relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
-        ids = relevant_entries.map(&:resource).map(&:xmlId).compact rescue assert(false, 'Unable to find IDs for resources returned by the bundle')
+        ids = relevant_entries.map(&:resource).map(&:id).compact rescue assert(false, 'Unable to find IDs for resources returned by the bundle')
 
         # check that we have ids and self links
         assert_equal relevant_entries.length, ids.size, 'All PUT and POST entries must have an ID'

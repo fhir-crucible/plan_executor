@@ -82,7 +82,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Schedule for the test Practitioner currently in the system.', reply.body)
-        assert_equal(@schedule.id, reply.resource.entry[0].try(:resource).try(:xmlId), 'The correct Schedule was not returned.', reply.body)
+        assert_equal(@schedule.id, reply.resource.entry[0].try(:resource).try(:id), 'The correct Schedule was not returned.', reply.body)
       end
 
       # Find Slot in Practitioner's schedule
@@ -108,7 +108,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Slot for the test Practitioner\'s Schedule currently in the system.', reply.body)
-        assert_equal(@slot.id, reply.resource.entry[0].try(:resource).try(:xmlId), 'The correct Slot was not returned.', reply.body)
+        assert_equal(@slot.id, reply.resource.entry[0].try(:resource).try(:id), 'The correct Slot was not returned.', reply.body)
       end
 
       # Create appointment in slot (proposed) 

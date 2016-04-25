@@ -42,9 +42,9 @@ module Crucible
         # create a condition matching the first patient
         @condition = ResourceGenerator.generate(FHIR::Condition,1)
         @condition.patient = ResourceGenerator.generate(FHIR::Reference)
-        @condition.patient.id = @entries.try(:[],0).try(:resource).try(:xmlId)
+        @condition.patient.id = @entries.try(:[],0).try(:resource).try(:id)
         options = {
-          :id => @entries.try(:[],0).try(:resource).try(:xmlId),
+          :id => @entries.try(:[],0).try(:resource).try(:id),
           :resource => @entries.try(:[],0).try(:resource).try(:class)
         }
         @condition.patient.reference = @client.resource_url(options)

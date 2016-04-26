@@ -23,6 +23,7 @@ module Crucible
         @patient = @resources.minimal_patient
         @patient.identifier = [FHIR::Identifier.new]
         @patient.identifier[0].value = SecureRandom.urlsafe_base64
+        @patient.gender = nil
         result = @client.create(@patient)
         @patient_id = result.id
 
@@ -42,23 +43,18 @@ module Crucible
         end
 
         # create a condition matching the first patient
-        @condition = ResourceGenerator.generate(FHIR::Condition,1)
-        @condition.patient = ResourceGenerator.generate(FHIR::Reference)
-        @condition.patient.id = @entries.try(:[],0).try(:resource).try(:id)
-        options = {
-          :id => @entries.try(:[],0).try(:resource).try(:id),
-          :resource => @entries.try(:[],0).try(:resource).try(:class)
-        }
-        @condition.patient.reference = @client.resource_url(options)
+        @condition = ResourceGenerator.generate(FHIR::Condition,3)
+        @condition.patient = @entries.first.try(:resource).try(:to_reference)
         reply = @client.create(@condition)
         @condition_id = reply.id
 
         # create some observations
-        @obs_a = create_observation(4.12345)
-        @obs_b = create_observation(4.12346)
-        @obs_c = create_observation(4.12349)
-        @obs_d = create_observation(5.12)
-        @obs_e = create_observation(6.12)
+        @obs_a = create_observation(2.0)
+        @obs_b = create_observation(1.96)
+        @obs_c = create_observation(2.04)
+        @obs_d = create_observation(1.80)
+        @obs_e = create_observation(5.12)
+        @obs_f = create_observation(6.12)
       end
 
       def create_observation(value)
@@ -91,6 +87,7 @@ module Crucible
         @client.destroy(FHIR::Observation, @obs_c) if @obs_c
         @client.destroy(FHIR::Observation, @obs_d) if @obs_d
         @client.destroy(FHIR::Observation, @obs_e) if @obs_e
+        @client.destroy(FHIR::Observation, @obs_f) if @obs_f
       end
  
     [true,false].each do |flag|  
@@ -232,31 +229,22 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
-        options = {
-          :id => @entries[0].resource.id,
-          :resource => @entries[0].resource.class
-        }
-        temp = @client.use_format_param
-        @client.use_format_param = false
-        patient_url = @client.resource_url(options)
-        patient_url = patient_url[1..-1] if patient_url[0]=='/'
-        @client.use_format_param = temp
-
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
           :search => {
             :flag => flag,
             :compartment => nil,
             :parameters => {
-              'patient' => patient_url
+              'patient' => @entries.first.resource.to_reference.reference
             }
           }
         }
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
       test "SE05.0F#{action[0]}", 'Search condition by patient reference url (full)' do
@@ -268,7 +256,6 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         options = {
           :id => @entries[0].resource.id,
           :resource => @entries[0].resource.class
@@ -291,7 +278,9 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
       test "SE05.1#{action[0]}", 'Search condition by patient reference id' do
@@ -303,7 +292,6 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         patient_id = @entries[0].resource.id
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -319,7 +307,9 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
       test "SE05.2#{action[0]}", 'Search condition by patient:Patient reference url' do
@@ -331,7 +321,6 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         options = {
           :id => @entries[0].resource.id,
           :resource => @entries[0].resource.class
@@ -355,7 +344,9 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
       test "SE05.3#{action[0]}", 'Search condition by patient:Patient reference id' do
@@ -367,7 +358,6 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         patient = @entries[0].resource
         patient_id = @entries[0].resource.id
 
@@ -384,7 +374,9 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
       test "SE05.4#{action[0]}", 'Search condition by patient:_id reference' do
@@ -396,7 +388,6 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         patient_id = @entries[0].resource.id
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -412,10 +403,12 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
-      test "SE05.5#{action[0]}", 'Search condition by patient:name reference' do
+      test "SE05.5#{action[0]}", 'Search condition by patient.name reference' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -424,7 +417,6 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         patient_name = @patient.name[0].family[0]
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -440,10 +432,12 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
-      test "SE05.6#{action[0]}", 'Search condition by patient:identifier reference' do
+      test "SE05.6#{action[0]}", 'Search condition by patient.identifier reference' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/search.html"
@@ -452,7 +446,6 @@ module Crucible
         }
         skip unless @patient_id
         # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
         patient_identifier = @patient.identifier[0].value
 
         # next, we're going execute a series of searches for conditions referencing the patient
@@ -468,7 +461,9 @@ module Crucible
         reply = @client.search(FHIR::Condition, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal 1, reply.resource.total, 'The server did not report the correct number of results.'
+        reply.resource.entry.each do |e|
+          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+        end
       end
 
       test "SE06#{action[0]}", 'Search condition and _include' do
@@ -478,10 +473,7 @@ module Crucible
           links "#{BASE_SPEC_LINK}/condition.html#search"
           validates resource: "Condition", methods: ["search"]
         }
-        skip unless @patient_id
-        # pick some search parameters... we previously created
-        # a condition for the first (0-index) patient in the setup method.
-        patient_identifier = @patient.identifier[0].value
+        skip unless @condition_id
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {
@@ -489,7 +481,8 @@ module Crucible
             :flag => flag,
             :compartment => nil,
             :parameters => {
-              '_include' => 'Condition:patient'
+              '_include' => 'Condition:patient',
+              '_id' => @condition_id
             }
           }
         }
@@ -504,6 +497,37 @@ module Crucible
         assert(has_patient,'The server did not include the Patient referenced in the Condition.', reply.body)
       end
 
+      test "SE07#{action[0]}", 'Search patient and _revinclude' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links "#{BASE_SPEC_LINK}/search.html"
+          links "#{BASE_SPEC_LINK}/patient.html#search"
+          validates resource: "Patient", methods: ["search"]
+        }
+        skip unless @patient_id
+
+        # next, we're going execute a series of searches for conditions referencing the patient
+        options = {
+          :search => {
+            :flag => flag,
+            :compartment => nil,
+            :parameters => {
+              '_revinclude' => 'Condition:patient',
+              '_id' => @patient_id
+            }
+          }
+        }
+        reply = @client.search(FHIR::Patient, options)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        assert reply.resource.total > 0, 'The server should have Patients that are _revinclude=Condition:patient.'
+        has_condition = false
+        reply.resource.entry.each do |entry|
+          has_condition = true if (entry.resource && entry.resource.class == FHIR::Condition)
+        end
+        assert(has_condition,'The server did not include the Condition referencing the Patient.', reply.body)
+      end
+
       test "SE21#{action[0]}", 'Search for quantity (in observation) - precision tests' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
@@ -511,31 +535,33 @@ module Crucible
           links "#{BASE_SPEC_LINK}/observation.html#search"
           validates resource: "Observation", methods: ["search"]
         }
-        skip unless (@obs_a && @obs_b && @obs_c)
+        skip unless (@obs_a && @obs_b && @obs_c && @obs_d)
 
         options = {
           :search => {
             :flag => flag,
             :compartment => nil,
             :parameters => {
-              'value-quantity' => '4.1234||mmol'
+              'value-quantity' => '2.0||mmol'
             }
           }
         }
         reply = @client.search(FHIR::Observation, options)
-        has_obs_a = has_obs_b = has_obs_c = false
+        has_obs_a = has_obs_b = has_obs_c = has_obs_d = false
         while reply != nil
           assert_response_ok(reply)
           assert_bundle_response(reply)
           has_obs_a = true if reply.resource.get_by_id(@obs_a)
           has_obs_b = true if reply.resource.get_by_id(@obs_b)
           has_obs_c = true if reply.resource.get_by_id(@obs_c)
+          has_obs_d = true if reply.resource.get_by_id(@obs_d)          
           reply = @client.next_page(reply)
         end
 
-        assert has_obs_a,  'Search on quantity value 4.1234 should return 4.12345'
-        assert !has_obs_b, 'Search on quantity value 4.1234 should not return 4.12346'
-        assert !has_obs_c, 'Search on quantity value 4.1234 should not return 4.12349'
+        assert has_obs_a,  'Search on quantity value 2.0 should return 2.0'
+        assert has_obs_b, 'Search on quantity value 2.0 should return 1.96'
+        assert has_obs_c, 'Search on quantity value 2.0 should return 2.04'
+        assert !has_obs_d, 'Search on quantity value 2.0 should not return 1.80'
       end
 
       test "SE22#{action[0]}", 'Search for quantity (in observation) - operators' do
@@ -545,7 +571,7 @@ module Crucible
           links "#{BASE_SPEC_LINK}/observation.html#search"
           validates resource: "Observation", methods: ["search"]
         }
-        skip unless (@obs_a && @obs_d && @obs_e)
+        skip unless (@obs_a && @obs_e && @obs_f)
 
         options = {
           :search => {
@@ -557,19 +583,20 @@ module Crucible
           }
         }
         reply = @client.search(FHIR::Observation, options)
-        has_obs_a = has_obs_b = has_obs_c = false
+        has_obs_e = has_obs_f = false
         while reply != nil
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          has_obs_a = true if reply.resource.get_by_id(@obs_a)
-          has_obs_d = true if reply.resource.get_by_id(@obs_d)
+          reply.resource.entry.each do |e|
+            assert((e.resource.value > 5), "Search should not return values less than or equal to 5.")
+          end
           has_obs_e = true if reply.resource.get_by_id(@obs_e)
+          has_obs_f = true if reply.resource.get_by_id(@obs_f)
           reply = @client.next_page(reply)
         end
 
-        assert !has_obs_a,  'Search greater than quantity should not return lesser value.'
-        assert has_obs_d, 'Search greater than quantity should return greater value.'
         assert has_obs_e, 'Search greater than quantity should return greater value.'
+        assert has_obs_f, 'Search greater than quantity should return greater value.'
       end
 
       test "SE23#{action[0]}", 'Search with quantifier :missing, on Patient.gender' do
@@ -599,7 +626,7 @@ module Crucible
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
+        assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
       end
 
       test "SE24#{action[0]}", 'Search with non-existing parameter' do

@@ -55,7 +55,7 @@ module Crucible
         }
 
         reply = @client.read(Crucible::Tests::ReadTest, @id)
-        assert_response_not_found(reply)
+        assert(([400,404].include?(reply.code)), 'An unknown resource type should be 404 or 400. The spec says 404 for an unknown resource, but does not define unknown type.' )
       end
 
       # [SprinklerTest("R003", "Read non-existing resource id")]
@@ -81,7 +81,7 @@ module Crucible
         }
 
         reply = @client.read(FHIR::Patient, 'Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
-        assert_response_bad(reply)
+        assert_response_not_found(reply)
       end
 
       test 'R005', 'Read _summary=text' do

@@ -234,7 +234,7 @@ module Crucible
           warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON (headers) resources do not match created resource or each other' }
         rescue => e
           @client.use_format_param = false
-          raise AssertionException.new("FTO1 - Failed to handle XML & JSON header param response. Error: #{e.message}")
+          raise AssertionException.new("FT01 - Failed to handle XML & JSON header param response. Error: #{e.message}")
         end
       end
 
@@ -255,7 +255,7 @@ module Crucible
           warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON (_format) resources do not match created resource or each other' }
         rescue => e
           @client.use_format_param = false
-          raise AssertionException.new("FTO2 - Failed to handle XML & JSON format param response. Error: #{e.message}")
+          raise AssertionException.new("FT02 - Failed to handle XML & JSON format param response. Error: #{e.message}")
         end
       end
 
@@ -272,7 +272,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format header mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO3 - Failed to handle Bundle XML format header response. Error: #{e.message}")
+          raise AssertionException.new("FT03 - Failed to handle Bundle XML format header response. Error: #{e.message}")
         end
       end
 
@@ -289,7 +289,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO4- Failed to handle Bundle XML format param response. Error: #{e.message}")
+          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
         end
       end
 
@@ -306,7 +306,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO4- Failed to handle Bundle XML format param response. Error: #{e.message}")
+          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
         end
       end
 
@@ -323,7 +323,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO4- Failed to handle Bundle XML format param response. Error: #{e.message}")
+          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
         end
       end
 
@@ -340,7 +340,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO4- Failed to handle Bundle XML format param response. Error: #{e.message}")
+          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
         end
       end
 
@@ -374,7 +374,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO6 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
+          raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
         end
       end
 
@@ -391,7 +391,7 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO6 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
+          raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
         end
       end
 
@@ -408,8 +408,32 @@ module Crucible
 
           assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
         rescue => e
-          raise AssertionException.new("FTO6 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
+          raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
         end
+      end
+
+
+      test 'FT07', 'Request invalid mime-type using headers' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html#wire"
+          requires resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read']
+        }
+        @client.use_format_param = false
+        reply = @client.read_feed(FHIR::Patient,'application/foobar')
+        assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
+      end
+
+      test 'FT08', 'Request invalid mime-type using [_format]' do
+        metadata {
+          links "#{BASE_SPEC_LINK}/formats.html#wire"
+          requires resource: 'Patient', methods: ['read']
+          validates resource: 'Patient', methods: ['read']
+        }
+        @client.use_format_param = true
+        reply = @client.read_feed(FHIR::Patient,'application/foobar')
+        @client.use_format_param = false
+        assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
       end
 
       private

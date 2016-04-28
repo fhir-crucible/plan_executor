@@ -190,7 +190,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'request' => search_string
+              'requestreference' => search_string
             }
           }
         }
@@ -198,6 +198,7 @@ module Crucible
         reply = @client.search(FHIR::ClaimResponse, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
+        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@simple_id), 'The server did not return a request with the proper claim')
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
         @simple_response_id = reply.resource.entry[0].resource.id unless @simple_response_id
@@ -294,7 +295,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'request' => search_string
+              'requestreference' => search_string
             }
           }
         }
@@ -304,6 +305,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
+        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@average_id), 'The server did not return a request with the proper claim')
         @average_response_id = reply.resource.entry[0].resource.id unless @average_response_id
       end
 

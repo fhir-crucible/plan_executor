@@ -118,7 +118,7 @@ module Crucible
           returned_patient = entry.resource if entry.resource.class == FHIR::Patient
         end
 
-        assert patient.equals?(returned_patient), "Returned patient doesn't match original patient."
+        assert patient.equals?(returned_patient, ['meta', 'text']), "Returned patient doesn't match original patient."
       end
 
       #
@@ -149,7 +149,7 @@ module Crucible
           returned_patient = entry.resource if entry.resource.class == FHIR::Patient
         end
 
-        assert patient.equals?(returned_patient), "Returned patient doesn't match original patient."
+        assert patient.equals?(returned_patient, ['meta', 'text']), "Returned patient doesn't match original patient."
 
         # TODO: Determine how start/end scope specific patient records (e.g., birthdate?)
       end
@@ -176,7 +176,6 @@ module Crucible
         @patient.telecom[0].value='1-234-567-8901'
         @patient.telecom[0].use = 'mobile'
         @patient.name[0].given = ['Not', 'Given']
-        @patient['telecom'] = @patient.telecom # some weirdness with attributes
 
         reply = @client.update @patient, @patient_id
         assert_response_ok(reply)
@@ -340,7 +339,7 @@ module Crucible
         assert_response_ok(@org2_reply)
 
         @practitioner.id = nil
-        @practitioner.practitionerRole[0].managingOrganization.reference = "Organization/#{@org1_id}"
+        @practitioner.practitionerRole[0].organization.reference = "Organization/#{@org1_id}"
         @prac_reply = @client.create @practitioner
         @prac_id = @prac_reply.id
         @practitioner.id = @prac_id
@@ -348,6 +347,7 @@ module Crucible
         assert_response_ok(@prac_reply)
 
         @patient.id = nil
+        @patient.careProvider = [ FHIR::Reference.new ] 
         @patient.careProvider[0].reference= "Practitioner/#{@prac_id}"
         @patient.managingOrganization.reference = "Organization/#{@org1_id}"
         @pat_reply = @client.create @patient
@@ -416,7 +416,6 @@ module Crucible
 
         @encounter_2.indication = [ FHIR::Reference.new ] 
         @encounter_2.indication[0].reference = "Procedure/#{@prc_id}"
-        @encounter_2['indication'] = @encounter_2.indication
         @enc2_reply = @client.update @encounter_2, @enc2_id
         assert_response_ok(@enc2_reply)
 

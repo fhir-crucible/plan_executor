@@ -58,6 +58,7 @@ module Crucible
             }
           }
         }
+        sleep 5 # give a few seconds for the Audit Event to be generated
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -88,9 +89,11 @@ module Crucible
         @provenance1 = FHIR::Provenance.new
         @provenance1.target = [ FHIR::Reference.new ]
         @provenance1.target[0].reference = "Patient/#{@patient1.id}"
-        @provenance1.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance1.reason = [ FHIR::CodeableConcept.new ]
-        @provenance1.reason[0].text = 'New patient'
+        @provenance1.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance1.reason = [ FHIR::Coding.new ]
+        @provenance1.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance1.reason[0].display = 'patient administration'
+        @provenance1.reason[0].code = 'PATADMIN'
 
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient1)
@@ -145,9 +148,11 @@ module Crucible
         @provenance2 = FHIR::Provenance.new
         @provenance2.target = [ FHIR::Reference.new ]
         # @provenance2.target[0].reference = "Patient/#{@patient2.id}"
-        @provenance2.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance2.reason = [ FHIR::CodeableConcept.new ]
-        @provenance2.reason[0].text = 'New patient'
+        @provenance2.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance2.reason = [ FHIR::Coding.new ]
+        @provenance2.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance2.reason[0].display = 'patient administration'
+        @provenance2.reason[0].code = 'PATADMIN'
 
         FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_json
         reply = @client.create(@patient2)      
@@ -199,6 +204,7 @@ module Crucible
             }
           }
         }
+        sleep 5 # give a few seconds for the Audit Event to be generated
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -231,9 +237,11 @@ module Crucible
         @provenance3 = FHIR::Provenance.new
         @provenance3.target = [ FHIR::Reference.new ]
         @provenance3.target[0].reference = "Patient/#{@patient1.id}"
-        @provenance3.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance3.reason = [ FHIR::CodeableConcept.new ]
-        @provenance3.reason[0].text = 'Update Gender'
+        @provenance3.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance3.reason = [ FHIR::Coding.new ]
+        @provenance3.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance3.reason[0].display = 'patient administration'
+        @provenance3.reason[0].code = 'PATADMIN'
 
         @client.begin_transaction
         @client.add_transaction_request('PUT',nil,@patient1)
@@ -282,10 +290,12 @@ module Crucible
 
         @provenance4 = FHIR::Provenance.new
         @provenance4.target = [ FHIR::Reference.new ]
-        @provenance4.target[0].reference = "Patient/#{@patient2.id}"
-        @provenance4.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance4.reason = [ FHIR::CodeableConcept.new ]
-        @provenance4.reason[0].text = 'Update Gender'
+        # @provenance4.target[0].reference = "Patient/#{@patient2.id}"
+        @provenance4.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance4.reason = [ FHIR::Coding.new ]
+        @provenance4.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance4.reason[0].display = 'patient administration'
+        @provenance4.reason[0].code = 'PATADMIN'
 
         FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_json
         reply = @client.update(@patient2,@patient2.id)      
@@ -338,6 +348,7 @@ module Crucible
             }
           }
         }
+        sleep 5 # give a few seconds for the Audit Event to be generated
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)

@@ -68,13 +68,13 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format)
           assert compare_response_format(patient, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML (headers) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
           raise AssertionException.new("CTO1 - Failed to handle XML format header response. Error: #{e.message}")
         end
       end
 
-      test 'CT02A', 'Request [xml] using [_format]' do
+      test 'CT02A', 'Request [xml] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -85,14 +85,14 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[0], true)
           assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
         end
       end
 
-      test 'CT02B', 'Request [text/xml] using [_format]' do
+      test 'CT02B', 'Request [text/xml] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -103,14 +103,14 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[1], true)
           assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
         end
       end
 
-      test 'CT02C', 'Request [application/xml] using [_format]' do
+      test 'CT02C', 'Request [application/xml] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -121,14 +121,14 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[2], true)
           assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
         end
       end
 
-      test 'CT02D', 'Request [application/xml+fhir] using [_format]' do
+      test 'CT02D', 'Request [application/xml+fhir] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -139,7 +139,7 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @xml_format_params[3], true)
           assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
@@ -157,13 +157,13 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format)
           assert compare_response_format(patient, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON (headers) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested JSON resource does not match created resource' }
         rescue => e
           raise AssertionException.new("CTO3 - Failed to handle JSON format header response. Error: #{e.message}")
         end
       end
 
-      test 'CT04A', 'Request [json] using [_format]' do
+      test 'CT04A', 'Request [json] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -174,14 +174,14 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[0], true)
           assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
         end
       end
 
-      test 'CT04C', 'Request [application/json] using [_format]' do
+      test 'CT04C', 'Request [application/json] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -192,14 +192,14 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[1], true)
           assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
         end
       end
 
-      test 'CT04D', 'Request [application/json+fhir] using [_format]' do
+      test 'CT04D', 'Request [application/json+fhir] using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -210,7 +210,7 @@ module Crucible
         begin
           patient = request_entry(FHIR::Patient, @id, @json_format_params[2], true)
           assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON (_format) resource does not match created resource' }
+          warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
@@ -231,14 +231,14 @@ module Crucible
 
           assert compare_response_format(patient_xml, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient_xml.response_format}"
           assert compare_response_format(patient_json, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient_json.response_format}"
-          warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON (headers) resources do not match created resource or each other' }
+          warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON resources do not match created resource or each other' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("FT01 - Failed to handle XML & JSON header param response. Error: #{e.message}")
         end
       end
 
-      test 'FT02', 'Request xml and json using [_format]' do
+      test 'FT02', 'Request xml and json using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -252,7 +252,7 @@ module Crucible
 
           assert compare_response_format(patient_xml, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient_xml.response_format}"
           assert compare_response_format(patient_json, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient_json.response_format}"
-          warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON (_format) resources do not match created resource or each other' }
+          warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON responses do not match created resource or each other' }
         rescue => e
           @client.use_format_param = false
           raise AssertionException.new("FT02 - Failed to handle XML & JSON format param response. Error: #{e.message}")
@@ -276,7 +276,7 @@ module Crucible
         end
       end
 
-      test 'FT04A', 'Request [xml] Bundle using [_format]' do
+      test 'FT04A', 'Request [xml] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -293,7 +293,7 @@ module Crucible
         end
       end
 
-      test 'FT04B', 'Request [text/xml] Bundle using [_format]' do
+      test 'FT04B', 'Request [text/xml] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -310,7 +310,7 @@ module Crucible
         end
       end
 
-      test 'FT04C', 'Request [application/xml] Bundle using [_format]' do
+      test 'FT04C', 'Request [application/xml] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -327,7 +327,7 @@ module Crucible
         end
       end
 
-      test 'FT04D', 'Request [application/xml+fhir] Bundle using [_format]' do
+      test 'FT04D', 'Request [application/xml+fhir] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -361,7 +361,7 @@ module Crucible
         end
       end
 
-      test 'FT06A', 'Request [json] Bundle using [_format]' do
+      test 'FT06A', 'Request [json] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -378,7 +378,7 @@ module Crucible
         end
       end
 
-      test 'FT06C', 'Request [application/json] Bundle using [_format]' do
+      test 'FT06C', 'Request [application/json] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -395,7 +395,7 @@ module Crucible
         end
       end
 
-      test 'FT06D', 'Request [application/json+fhir] Bundle using [_format]' do
+      test 'FT06D', 'Request [application/json+fhir] Bundle using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html"
           links "#{REST_SPEC_LINK}#mime-type"
@@ -424,7 +424,7 @@ module Crucible
         assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
       end
 
-      test 'FT08', 'Request invalid mime-type using [_format]' do
+      test 'FT08', 'Request invalid mime-type using _format' do
         metadata {
           links "#{BASE_SPEC_LINK}/formats.html#wire"
           requires resource: 'Patient', methods: ['read']
@@ -440,7 +440,7 @@ module Crucible
 
       # Compare requested resource with created resource
       def compare_response(entry)
-        @create_failed || entry != nil && entry.resource != nil && entry.resource == @resource
+        entry != nil && entry.resource != nil && entry.resource.equals?(@resource,['id'])
       end
 
       # Compare response format with requested format
@@ -450,7 +450,7 @@ module Crucible
 
       # Compare two requested entries
       def compare_entries(entry1, entry2)
-        @create_failed || compare_response(entry1) && compare_response(entry2) && entry1.resource == entry2.resource
+        compare_response(entry1) && compare_response(entry2) && entry1.resource.equals?(entry2.resource,['id'])
       end
 
       # Unify resource requests and format specification
@@ -459,7 +459,7 @@ module Crucible
         entry = @client.read(resource_class, id, format)
         @client.use_format_param = false
         assert_response_ok entry, "Failed to retrieve resource: #{entry.request[:url]}"
-        entry.resource.id = id
+        # entry.resource.id = id if !entry.resource.nil?
         entry
       end
 

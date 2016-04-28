@@ -141,7 +141,7 @@ module Crucible
         }
         skip unless @read_entire_feed
         search_string = @patient.name[0].family[0][0..2]
-        search_regex = Regexp.new(search_string)
+        search_regex = Regexp.new(search_string, Regexp::IGNORECASE)
         # how many patients in the bundle have matching names?
         expected = 0
         @entries.each do |entry|
@@ -173,7 +173,7 @@ module Crucible
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
+        assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
       end
 
       test "SE04#{action[0]}", 'Search patient resource on given name' do
@@ -185,7 +185,7 @@ module Crucible
         }
         skip unless @read_entire_feed
         search_string = @patient.name[0].given[0]
-        search_regex = Regexp.new(search_string)
+        search_regex = Regexp.new(search_string, Regexp::IGNORECASE)
         # how many patients in the bundle have matching names?
         expected = 0
         @entries.each do |entry|
@@ -217,7 +217,7 @@ module Crucible
         reply = @client.search(FHIR::Patient, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the correct number of results.'
+        assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
       end
 
       test "SE05.0#{action[0]}", 'Search condition by patient reference url (partial)' do

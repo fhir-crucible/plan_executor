@@ -201,8 +201,6 @@ module Crucible
         reply = @client.read FHIR::DiagnosticReport, @records[dr_name].id
         assert_response_ok(reply)
 
-        binding.pry unless reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension'])
-
         assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), "Diagnostic Report #{dr_name.to_s} doesn't match retrieved Diagnostic Report"
       end
 
@@ -231,7 +229,6 @@ module Crucible
       def create_object(obj, obj_sym)
         obj.id = nil
         reply = @client.create obj
-        binding.pry if reply.response[:code] == "500"
         assert_response_ok(reply)
         obj.id = reply.id
         @records[obj_sym] = obj

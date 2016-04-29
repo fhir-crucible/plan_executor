@@ -22,7 +22,6 @@ module Crucible
         @profile.id = nil
         @profile.identifier = nil # clear the identifiers, in case the server checks for duplicates
         reply = @client.create @profile
-        binding.pry
         @profile.id = reply.id if !reply.id.nil?
 
         options = {
@@ -33,7 +32,6 @@ module Crucible
         @profile_url = @client.full_resource_url(options)
         @profile_url = reply.self_link if !reply.self_link.nil?
 
-        binding.pry
         @obs = @resources.track3_observations
         @obs.each do |x|
           x.id = nil

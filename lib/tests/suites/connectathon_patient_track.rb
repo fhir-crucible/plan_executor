@@ -193,43 +193,43 @@ module Crucible
 
       #
       # Test if we can update a patient with primitive extensions.
-      #
-      test 'C8T1_2D','Update a patient - BONUS: Primitive Extensions' do
-        metadata {
-          links "#{REST_SPEC_LINK}#update"
-          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
-          requires resource: 'Patient', methods: ['create','update']
-          validates resource: 'Patient', methods: ['update']
-          validates extensions: ['primitive extensions']
-        }
-        skip unless @patient_us_id
-        skip # Primitive Extensions are not supported in the STU3 models
+      # TODO: Currently primitive extensions are not supported
+      # test 'C8T1_2D','Update a patient - BONUS: Primitive Extensions' do
+      #   metadata {
+      #     links "#{REST_SPEC_LINK}#update"
+      #     links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
+      #     requires resource: 'Patient', methods: ['create','update']
+      #     validates resource: 'Patient', methods: ['update']
+      #     validates extensions: ['primitive extensions']
+      #   }
+      #   skip unless @patient_us_id
+      #   skip # Primitive Extensions are not supported in the STU3 models
 
-        @patient_us.id = @patient_us_id
-        @patient_us.gender = 'male'
-        pe = FHIR::PrimitiveExtension.new
-        pe.path='_gender'
-        pe['extension'] = [ FHIR::Extension.new ]
-        pe['extension'][0].url = 'http://hl7.org/test/gender'
-        pe['extension'][0].valueString = 'Male'
-        @patient_us.primitiveExtension ||= []
-        @patient_us.primitiveExtension << pe
+      #   @patient_us.id = @patient_us_id
+      #   @patient_us.gender = 'male'
+      #   pe = FHIR::PrimitiveExtension.new
+      #   pe.path='_gender'
+      #   pe['extension'] = [ FHIR::Extension.new ]
+      #   pe['extension'][0].url = 'http://hl7.org/test/gender'
+      #   pe['extension'][0].valueString = 'Male'
+      #   @patient_us.primitiveExtension ||= []
+      #   @patient_us.primitiveExtension << pe
 
-        reply = @client.update @patient_us, @patient_us_id
+      #   reply = @client.update @patient_us, @patient_us_id
 
-        assert_response_ok(reply)
+      #   assert_response_ok(reply)
 
-        if !reply.resource.nil?
-          temp = reply.resource.id
-          reply.resource.id = nil
-          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.id = temp
-        end
+      #   if !reply.resource.nil?
+      #     temp = reply.resource.id
+      #     reply.resource.id = nil
+      #     warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+      #     reply.resource.id = temp
+      #   end
 
-        warning { assert_valid_resource_content_type_present(reply) }
-        warning { assert_last_modified_present(reply) }
-        warning { assert_valid_content_location_present(reply) }
-      end
+      #   warning { assert_valid_resource_content_type_present(reply) }
+      #   warning { assert_last_modified_present(reply) }
+      #   warning { assert_valid_content_location_present(reply) }
+      # end
 
       #
       # Test if we can update a patient with complex extensions.

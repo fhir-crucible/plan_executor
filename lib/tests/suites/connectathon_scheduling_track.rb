@@ -154,7 +154,8 @@ module Crucible
         }
         @appointment_response_patient = @resources.scheduling_response_patient
         @appointment_response_patient.id = nil # clear the identifier
-        @appointment_response_patient.appointment.reference = "Appointment/#{@appointment.id}"
+        @appointment_response_patient.appointment = @appointment.to_reference
+        @appointment_response_patient.actor = @patient.to_reference
         reply = @client.create(@appointment_response_patient)
         assert_response_ok(reply)
         @appointment_response_patient.id = reply.id
@@ -185,7 +186,8 @@ module Crucible
         }
         @appointment_response_practitioner = @resources.scheduling_response_practitioner
         @appointment_response_practitioner.id = nil # clear the identifier
-        @appointment_response_practitioner.appointment.reference = "Appointment/#{@appointment.id}"
+        @appointment_response_practitioner.appointment = @appointment.to_reference
+        @appointment_response_practitioner.actor = @practitioner.to_reference
         reply = @client.create(@appointment_response_practitioner)
         assert_response_ok(reply)
         @appointment_response_practitioner.id = reply.id

@@ -17,6 +17,8 @@
                 },{
                   "name": "update"
                 },{
+                  "name": "conditional-update"
+                },{
                   "name": "delete"
                 },{
                   "name": "history"
@@ -27,6 +29,8 @@
               "children": [
                 {
                   "name": "create"
+                },{
+                  "name": "conditional-create"
                 },{
                   "name": "search"
                 },{

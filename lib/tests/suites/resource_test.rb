@@ -117,7 +117,7 @@ module Crucible
 
       test 'X012', 'Conditional Create (No Matches)' do
         metadata {
-          define_metadata('create')
+          define_metadata('conditional-create')
         }
 
         result = TestResult.new('X012',"Conditional Create #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
@@ -146,13 +146,21 @@ module Crucible
 
       test 'X013', 'Conditional Create (One Match)' do
         metadata {
-          define_metadata('create')
+          define_metadata('conditional-create')
         }
 
         result = TestResult.new('X013',"Conditional Create #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
         @conditional_create_resource_b = ResourceGenerator.generate(@resource_class,3)
         # this ID should already exist if temp resource was created
-        ifNoneExist = { '_id' => "#{@temp_resource.id}" }
+        if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+          @preexisting_id = @bundle.entry[0].resource.id
+        elsif !@temp_resource.nil?
+          @preexisting_id = @temp_id
+        else
+          raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
+        end
+        ifNoneExist = { '_id' => @preexisting_id }
+
         reply = @client.conditional_create(@conditional_create_resource_b,ifNoneExist)
         @conditional_create_resource_b.id = (reply.resource.try(:id) || reply.id)
         @temp_version = reply.version
@@ -170,7 +178,7 @@ module Crucible
 
       test 'X014', 'Conditional Create (Multiple Matches)' do
         metadata {
-          define_metadata('create')
+          define_metadata('conditional-create')
         }
 
         result = TestResult.new('X014',"Conditional Create #{resource_class.name.demodulize}", nil, nil, nil)
@@ -294,7 +302,7 @@ module Crucible
 
       test 'X032', 'Conditional Update (No Matches)' do
         metadata {
-          define_metadata('update')
+          define_metadata('conditional-update')
         }
 
         result = TestResult.new('X032',"Conditional Update #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
@@ -324,7 +332,7 @@ module Crucible
 
       test 'X033', 'Conditional Update (One Match)' do
         metadata {
-          define_metadata('update')
+          define_metadata('conditional-update')
         }
 
         result = TestResult.new('X033',"Conditional Update #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
@@ -386,7 +394,7 @@ module Crucible
 
       test 'X034', 'Conditional Update (Multiple Matches)' do
         metadata {
-          define_metadata('update')
+          define_metadata('conditional-update')
         }
 
         result = TestResult.new('X034',"Conditional Update #{resource_class.name.demodulize}", nil, nil, nil)

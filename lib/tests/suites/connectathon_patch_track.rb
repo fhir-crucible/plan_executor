@@ -66,8 +66,8 @@ module Crucible
           metadata {
             links "#{REST_SPEC_LINK}#patch"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'
-            requires resource: 'MedicationOrder', methods: ['patch']
-            validates resource: 'MedicationOrder', methods: ['patch']
+            requires resource: 'MedicationOrder', methods: ['read']
+            validates resource: 'MedicationOrder', methods: ['read']
           }
 
           patchset = [{ op: "replace", path: "MedicationOrder/status", value: "completed" }]
@@ -93,8 +93,8 @@ module Crucible
           metadata {
             links "#{REST_SPEC_LINK}#patch"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'
-            requires resource: 'MedicationOrder', methods: ['patch']
-            validates resource: 'MedicationOrder', methods: ['patch']
+            requires resource: 'MedicationOrder', methods: ['read']
+            validates resource: 'MedicationOrder', methods: ['read']
           }
 
           skip if @previous_version_id.nil?

@@ -263,9 +263,11 @@ module Crucible
       # TRY TO SEARCH FOR DAF PROFILED RESOURCES... AND THEN HAVE OUR CLIENT VALIDATE THEM, IF THEY EXIST.
       resources = Crucible::Generator::Resources.new
       daf_conformance = resources.daf_conformance
-      daf_conformance.rest.first.resource.each do |daf_resource|
+      daf_conformance.rest.first.resource.each_with_index do |daf_resource,index|
 
-        test "DAFS0_#{daf_resource.type}", "Search #{daf_resource.type} for DAF-#{daf_resource.type} compliant resources" do
+        key = ((index+1)*10)
+
+        test "DAF#{key+1}_#{daf_resource.type}", "Search #{daf_resource.type} for DAF-#{daf_resource.type} compliant resources" do
           metadata {
             links "#{BASE_SPEC_LINK}/resource.html#profile-tags"
             links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
@@ -294,7 +296,7 @@ module Crucible
           end
         end
 
-        test "DAFV0_#{daf_resource.type}", "Client-side validation of DAF-#{daf_resource.type} search results" do
+        test "DAF#{key+2}_#{daf_resource.type}", "Client-side validation of DAF-#{daf_resource.type} search results" do
           metadata {
             links "#{BASE_SPEC_LINK}/resource-operations.html#validate"
             links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
@@ -312,7 +314,7 @@ module Crucible
         end
 
         # if there are any profiled results in the @variable, and the server supports $validate, then $validate them
-        test "DAFV1_#{daf_resource.type}", "Server-side validation of DAF-#{daf_resource.type} search results" do
+        test "DAF#{key+3}_#{daf_resource.type}", "Server-side validation of DAF-#{daf_resource.type} search results" do
           metadata {
             links "#{BASE_SPEC_LINK}/resource-operations.html#validate"
             links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
@@ -335,7 +337,7 @@ module Crucible
       end
 
       # Validate invalid DAF patient
-      test 'DAFV2', 'Optional: Server should not $validate an invalid DAF-Patient' do
+      test 'DAF07', 'Optional: Server should not $validate an invalid DAF-Patient' do
         metadata {
           links "#{BASE_SPEC_LINK}/patient.html"
           links "#{BASE_SPEC_LINK}/daf/daf-patient.html"
@@ -364,7 +366,7 @@ module Crucible
       # Search for DAF Profile fixtures (including by using DAF extensions)
 
       # Test $everything on Patient and Encounter
-      test 'DAF20','Test $everything on Patient' do
+      test 'DAF08','Test $everything on Patient' do
         metadata {
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
@@ -394,7 +396,7 @@ module Crucible
         assert_bundle_response(reply)
       end
 
-      test 'DAF21','Test $everything on Encounter' do
+      test 'DAF09','Test $everything on Encounter' do
         metadata {
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           links "#{BASE_SPEC_LINK}/encounter-operations.html#everything"

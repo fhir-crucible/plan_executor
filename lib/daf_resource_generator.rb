@@ -15,7 +15,7 @@ module Crucible
         resource.birthDate = DateTime.now.strftime("%Y-%m-%d")
         resource.deceasedBoolean = false
         resource.address = [ daf_address ]
-        resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/marital-status','S')
+        resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
         resource.multipleBirthBoolean = false
         resource.contact = [ daf_patient_contact ]
         resource.communication = [ daf_patient_communication ]

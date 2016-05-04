@@ -24,17 +24,22 @@ module Crucible
       #
       def self.set_fields!(resource, embedded=0)
 
-        multiples = []
+        unselected_multiples = []
         if resource.class.constants.include? :MULTIPLE_TYPES
-          multiples = resource.class::MULTIPLE_TYPES.keys.reduce([]) {|out, key| out.concat resource.class::MULTIPLE_TYPES[key].map {|v| "#{key}#{v.titleize.split.join}"}; out}
+          multiples = resource.class::MULTIPLE_TYPES.keys
+          all_multiples = multiples.map{|k| resource.class::MULTIPLE_TYPES[k].map{|d| "#{k}#{d.titleize.split.join}" }}.flatten
+          selected_multiples = multiples.map{|k| "#{k}#{resource.class::MULTIPLE_TYPES[k].sample.titleize.split.join}" }
+          unselected_multiples = all_multiples - selected_multiples
         end
-        selected_multiple = (multiples & resource.class::METADATA.keys).sample
+        unselected_multiples.each do |key|
+          resource.method("#{key}=").call(nil)
+        end
 
         resource.class::METADATA.each do |key, meta|
           type = meta['type']
           next if type == 'Meta'
 		      next if ['id','contained','version','versionId','implicitRules'].include? key
-          next if multiples.include?(key) && key != selected_multiple
+          next if unselected_multiples.include?(key)
 
           gen = nil
           if type == 'string' || type == 'markdown'
@@ -84,12 +89,12 @@ module Crucible
               # apply bindings
               if type == 'CodeableConcept' && meta['valid_codes'] && meta['binding']
                 gen.coding.each do |c|
-                  c.system = meta['binding']['uri']
-                  c.code = meta['valid_codes'].values.sample.sample
+                  c.system = meta['valid_codes'].keys.sample
+                  c.code = meta['valid_codes'][c.system].sample
                 end
               elsif type == 'Coding' && meta['valid_codes'] && meta['binding']
-                gen.system = meta['binding']['uri']
-                gen.code = meta['valid_codes'].values.sample.sample
+                gen.system = meta['valid_codes'].keys.sample
+                gen.code = meta['valid_codes'][gen.system].sample
               elsif type == 'Reference'
                 gen.reference = nil
                 gen.display = "#{meta['type_profiles'].map{|x|x.split('/').last}.sample} #{gen.display}" if meta['type_profiles']
@@ -415,6 +420,8 @@ module Crucible
             is_codeable = (['code','Coding','CodeableConcept'].include?(f.code))
           end
           resource.binding = nil unless is_codeable
+          resource.contentReference = nil
+          resource.defaultValue = nil if resource.meaningWhenMissing
         when FHIR::Goal
           resource.outcome.each do |outcome|
             outcome.resultCodeableConcept = nil
@@ -589,8 +596,11 @@ module Crucible
             resource.when.code = minimal_codeableconcept('http://snomed.info/sct','20050000') #biweekly
           end
         when FHIR::StructureDefinition
-          resource.fhirVersion = 'DSTU2'
+          resource.derivation = 'constraint'
+          resource.fhirVersion = 'STU3'
+          resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.baseType}"
           resource.snapshot.element.first.path = resource.baseType if resource.snapshot && resource.snapshot.element
+          resource.differential.element.first.path = resource.baseType if resource.differential && resource.differential.element
           resource.mapping.each do |m|
             m.identity.gsub!(/[^0-9A-Za-z]/, '') if m.identity
           end

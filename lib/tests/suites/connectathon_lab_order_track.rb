@@ -25,6 +25,10 @@ module Crucible
         performer = @resources.load_fixture('practitioner/pract-uslab-example3.xml')
         organization = @resources.load_fixture('organization/org-uslab-example3.xml')
 
+        specimen_100 = @resources.load_fixture('specimen/spec-100.xml')
+        specimen_400 = @resources.load_fixture('specimen/spec-400.xml')
+        specimen_uslab = @resources.load_fixture('specimen/spec-400.xml')
+
         # Create our reference patient
         create_object(patient, :patient)
 
@@ -36,6 +40,15 @@ module Crucible
 
         # Create the Organization all of these belong to
         create_object(organization, :organization)
+
+        specimen_100.subject = @records[:patient].to_reference
+        create_object(specimen_100, :spec_100)
+
+        specimen_400.subject = @records[:patient].to_reference
+        create_object(specimen_400, :spec_400)
+
+        specimen_uslab.subject = @records[:patient].to_reference
+        create_object(specimen_uslab, :spec_uslab)
       end
 
       def teardown
@@ -54,9 +67,9 @@ module Crucible
           validates resource: 'DiagnosticOrder', methods: ['create']
         }
         create_diagnostic_order('diagnostic_order/do-100.xml', :diag_order_1)
-        create_diagnostic_order('diagnostic_order/do-200.xml', :diag_order_2)
-        create_diagnostic_order('diagnostic_order/do-300.xml', :diag_order_3)
-        create_diagnostic_order('diagnostic_order/do-400.xml', :diag_order_4)
+        create_diagnostic_order('diagnostic_order/do-200.xml', :diag_order_2, :spec_uslab)
+        create_diagnostic_order('diagnostic_order/do-300.xml', :diag_order_3, :spec_uslab)
+        create_diagnostic_order('diagnostic_order/do-400.xml', :diag_order_4, :spec_400)
 
       end
 
@@ -67,13 +80,13 @@ module Crucible
           requires resource: 'Patient', methods: ['read']
           requires resource: 'Practitioner', methods: ['read']
           requires resource: 'DiagnosticOrder', methods: ['read']
-          requires resource: 'Order', methods: ['create']
-          validates resource: 'Order', methods: ['create']
+          requires resource: 'Order', methods: ['create', 'delete']
+          validates resource: 'Order', methods: ['create', 'delete']
         }
-        create_order('order/order-100.xml', :order_1)
-        create_order('order/order-200.xml', :order_2)
-        create_order('order/order-300.xml', :order_3)
-        create_order('order/order-400.xml', :order_4)
+        create_order('order/order-100.xml', :order_1, :diag_order_1)
+        create_order('order/order-200.xml', :order_2, :diag_order_2)
+        create_order('order/order-300.xml', :order_3, :diag_order_3)
+        create_order('order/order-400.xml', :order_4, :diag_order_4)
       end
 
       test 'C12T11_3', 'Create an OrderResponse referencing the Order' do
@@ -102,16 +115,16 @@ module Crucible
           requires resource: 'DiagnosticOrder', methods: ['read']
           requires resource: 'DiagnosticReport', methods: ['create']
           requires resource: 'Observation', methods: ['create']
-          requires resource: 'Specimen', methods: ['create']
+          requires resource: 'Specimen', methods: ['read']
           validates resource: 'OrderResponse', methods: ['create']
           validates resource: 'Observation', methods: ['create']
           validates resource: 'DiagnosticReport', methods: ['create']
         }
 
-        create_diagnostic_report('specimen/spec-100.xml', ['observation/obs-100.xml', 'observation/obs-101.xml'], 'diagnostic_report/dr-100.xml', :diag_report_1, @records[:diag_order_1])
-        create_diagnostic_report('specimen/spec-uslab-example1.xml', ['observation/obs-200.xml'], 'diagnostic_report/dr-200.xml', :diag_report_2, @records[:diag_order_2])
-        create_diagnostic_report('specimen/spec-uslab-example1.xml', ['observation/obs-300.xml', 'observation/obs-301.xml', 'observation/obs-302.xml', 'observation/obs-303.xml', 'observation/obs-304.xml'], 'diagnostic_report/dr-300.xml', :diag_report_3, @records[:diag_order_3])
-        create_diagnostic_report('specimen/spec-400.xml', ['observation/obs-400.xml', 'observation/obs-401.xml', 'observation/obs-402.xml', 'observation/obs-403.xml', 'observation/obs-404.xml', 'observation/obs-405.xml', 'observation/obs-406.xml', 'observation/obs-407.xml', 'observation/obs-408.xml'], 'diagnostic_report/dr-400.xml', :diag_report_4, @records[:diag_order_4])
+        create_diagnostic_report(:spec_100, ['observation/obs-100.xml', 'observation/obs-101.xml'], 'diagnostic_report/dr-100.xml', :diag_report_1, @records[:diag_order_1])
+        create_diagnostic_report(:spec_uslab, ['observation/obs-200.xml'], 'diagnostic_report/dr-200.xml', :diag_report_2, @records[:diag_order_2])
+        create_diagnostic_report(:spec_uslab, ['observation/obs-300.xml', 'observation/obs-301.xml', 'observation/obs-302.xml', 'observation/obs-303.xml', 'observation/obs-304.xml'], 'diagnostic_report/dr-300.xml', :diag_report_3, @records[:diag_order_3])
+        create_diagnostic_report(:spec_400, ['observation/obs-400.xml', 'observation/obs-401.xml', 'observation/obs-402.xml', 'observation/obs-403.xml', 'observation/obs-404.xml', 'observation/obs-405.xml', 'observation/obs-406.xml', 'observation/obs-407.xml', 'observation/obs-408.xml'], 'diagnostic_report/dr-400.xml', :diag_report_4, @records[:diag_order_4])
 
       end
 
@@ -145,19 +158,22 @@ module Crucible
 
       private
 
-      def create_order(fixture_path, order_name)
+      def create_order(fixture_path, order_name, diag_order_name)
         order = @resources.load_fixture(fixture_path)
         order.date = DateTime.now.iso8601
         order.subject = @records[:patient].to_reference
         order.source = @records[:provider].to_reference
+        order.detail = @records[diag_order_name].to_reference
 
         create_object(order, order_name)
       end
 
-      def create_diagnostic_order(fixture_path, order_name)
+      def create_diagnostic_order(fixture_path, order_name, specimen_name = nil)
         diag_order = @resources.load_fixture(fixture_path)
         diag_order.subject = @records[:patient].to_reference
         diag_order.orderer = @records[:provider].to_reference
+        diag_order.specimen = @records[specimen_name].to_reference if specimen_name
+        diag_order.item[0].specimen = @records[specimen_name].to_reference if specimen_name
 
         create_object(diag_order, order_name)
       end
@@ -171,44 +187,44 @@ module Crucible
         create_object(order_response, response_name)
       end
 
-      def create_diagnostic_report(specimen_fixture_path, observation_fixture_paths, diagnostic_report_fixture_path, dr_name, diag_order)
-        specimen = @resources.load_fixture(specimen_fixture_path)
-        specimen.subject = @records[:patient].to_reference
-        specimen_name = "#{dr_name}_specimen".to_sym
-        create_object(specimen, specimen_name)
-
+      def create_diagnostic_report(specimen_name, observation_fixture_paths, diagnostic_report_fixture_path, dr_name, diag_order)
         diag_report = @resources.load_fixture(diagnostic_report_fixture_path)
         diag_report.subject = @records[:patient].to_reference
         diag_report.issued = DateTime.now.iso8601
         diag_report.effectiveDateTime = DateTime.now.iso8601
         diag_report.performer = @records[:performer].to_reference
-        diag_report.request << diag_order.to_reference
-        diag_report.specimen << @records[specimen_name].to_reference
+        diag_report.request = [diag_order.to_reference]
+        diag_report.specimen = [@records[specimen_name].to_reference]
+        diag_report.result = []
 
         observation_fixture_paths.each_with_index do |obs, index|
           observation = @resources.load_fixture(obs)
-          observation.specimen = specimen.to_reference
+          observation.specimen = @records[specimen_name].to_reference
           observation.subject = @records[:patient].to_reference
+          observation.performer = @records[:performer].to_reference
           observation_name = "#{dr_name}_observation_{index}".to_sym
           create_object(observation, observation_name)
-          diag_report.result << @records[observation_name].to_reference
+          diag_report.result << [@records[observation_name].to_reference]
         end
 
         create_object(diag_report, dr_name)
       end
 
       def get_diagnostic_report(dr_name)
+
+        assert @records[dr_name], "No DiagnosticReport with that name present"
         reply = @client.read FHIR::DiagnosticReport, @records[dr_name].id
         assert_response_ok(reply)
 
-        assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), "Diagnostic Report #{dr_name.to_s} doesn't match retrieved Diagnostic Report"
+        assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), " DiagnosticReport/#{@records[dr_name].id} doesn't match retrieved Diagnostic Report"
       end
 
       def update_diagnostic_order(order_name)
+        assert @records[order_name], "No DiagnosticOrder with that name present"
         reply = @client.read FHIR::DiagnosticOrder, @records[order_name].id
         assert_response_ok(reply)
 
-        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match #{@records[order_name]}"
+        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match DiagnosticOrder/#{@records[order_name].id}"
 
         assert reply.resource.status == 'requested'
 

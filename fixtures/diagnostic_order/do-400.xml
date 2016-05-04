@@ -10,21 +10,21 @@
       <p>
         <b>id</b>: do-400</p>
       <p>
-        <b>subject</b>: 
+        <b>subject</b>:
         <a href="Patient/patient-uslab-example1">Todd G. Lerr</a>
       </p>
       <p>
-        <b>orderer</b>: 
+        <b>orderer</b>:
         <a href="Practitioner/pract-uslab-example1">Leonard T Bloodraw</a>
       </p>
       <p>
         <b>identifier</b>: PLAC = do-400</p>
       <p>
-        <b>reason</b>: DIARRHEA 
+        <b>reason</b>: DIARRHEA
         <span style="background: LightGoldenRodYellow ">(Details : {http://hl7.org/fhir/sid/icd-10-us code "R19.7" := "R19.7", given as "Diarrhea, unspecified"})</span>
       </p>
       <p>
-        <b>specimen</b>: 
+        <b>specimen</b>:
         <a href="Specimen/spec-400">Stool Specimen</a>
       </p>
       <p>

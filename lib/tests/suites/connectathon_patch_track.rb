@@ -36,7 +36,7 @@ module Crucible
         #
         # Get the MedicationOrder that was just created.
         #
-        test "C12PATCH_1_(#{fmt})",'Get Existing MedicationOrder' do
+        test "C12PATCH_1_(#{fmt})","Get Existing MedicationOrder by #{fmt}" do
           metadata {
             links "#{REST_SPEC_LINK}#read"
             links "#{BASE_SPEC_LINK}/medicationorder.html"
@@ -62,7 +62,7 @@ module Crucible
         #
         # Patch the MedicationOrder.
         #
-        test "C12PATCH_2_(#{fmt})",'Patch Existing MedicationOrder' do
+        test "C12PATCH_2_(#{fmt})","#{fmt} Patch Existing MedicationOrder" do
           metadata {
             links "#{REST_SPEC_LINK}#patch"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'
@@ -89,7 +89,7 @@ module Crucible
         #
         # Attempt to PATCH the MedicationOrder with an old Version Id.
         #
-        test "C12PATCH_3_(#{fmt})",'Patching Medication Order with old Version Id should result in error' do
+        test "C12PATCH_3_(#{fmt})","#{fmt} Patching Medication Order with old Version Id should result in error" do
           metadata {
             links "#{REST_SPEC_LINK}#patch"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'

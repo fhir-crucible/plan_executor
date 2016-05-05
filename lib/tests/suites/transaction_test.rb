@@ -42,10 +42,6 @@ module Crucible
         @client.destroy(FHIR::Observation, @batch_obs_2.id) if @batch_obs_2 && !@batch_obs_2.id.nil?
         @client.destroy(FHIR::Observation, @batch_obs_3.id) if @batch_obs_3 && !@batch_obs_3.id.nil?
         @client.destroy(FHIR::Patient, @batch_patient_2.id) if @batch_patient_2 && !@batch_patient_2.id.nil?
-        @client.destroy(FHIR::Observation, @obs0a_B.id) if @obs0a_B && !@obs0a_B.id.nil?
-        @client.destroy(FHIR::Observation, @obs0b_B.id) if @obs0b_B && !@obs0b_B.id.nil?
-        @client.destroy(FHIR::Condition, @condition0_B.id) if @condition0_B && !@condition0_B.id.nil?
-        @client.destroy(FHIR::Patient, @patient0_B.id) if @patient0_B && !@patient0_B.id.nil?
       end
 
       # Create a Patient Record as a transaction
@@ -66,30 +62,30 @@ module Crucible
         }
 
         @patient0 = ResourceGenerator.minimal_patient("#{Time.now.to_i}",'Transaction')
-        @patient0.id = 'foo' # assign an id so related resources can reference the patient
+        patient0_id = SecureRandom.uuid
+        patient0_uri = "urn:uuid:#{patient0_id}"
+
         # height
-        @obs0a = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',170,'cm',@patient0.id)
+        @obs0a = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',170,'cm',patient0_id)
+        @obs0a.subject.reference = patient0_uri
         # weight
-        @obs0b = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',200,'kg',@patient0.id)
+        @obs0b = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',200,'kg',patient0_id)
+        @obs0b.subject.reference = patient0_uri
         # obesity
-        @condition0 = ResourceGenerator.minimal_condition('http://snomed.info/sct','414915002',@patient0.id)
+        @condition0 = ResourceGenerator.minimal_condition('http://snomed.info/sct','414915002',patient0_id)
+        @condition0.patient.reference = patient0_uri
 
         @client.begin_transaction
-        @client.add_transaction_request('POST',nil,@patient0)
-        @client.add_transaction_request('POST',nil,@obs0a)
-        @client.add_transaction_request('POST',nil,@obs0b)
-        @client.add_transaction_request('POST',nil,@condition0)
+        @client.add_transaction_request('POST',nil,@patient0).fullUrl = patient0_uri
+        @client.add_transaction_request('POST',nil,@obs0a).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
+        @client.add_transaction_request('POST',nil,@obs0b).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
+        @client.add_transaction_request('POST',nil,@condition0).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         reply = @client.end_transaction
-
-        # set the patient id as nil, until we know that the transaction was successful, so teardown doesn't try
-        # to delete something that wasn't created
-        @patient0.id = nil
 
         assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
         warning{ assert_response_ok(reply) }
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
-        @created_patient_record = true
 
         # set the IDs to whatever the server created
         @patient0.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
@@ -105,69 +101,14 @@ module Crucible
         @condition0.id = reply.resource.entry[3].try(:resource).try(:id) if @condition0.id.nil?
 
         # check that the Observations and Condition reference the correct Patient.id
-        assert( (reply.resource.entry[1].resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
-        assert( (reply.resource.entry[2].resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
-        assert( (reply.resource.entry[3].resource.patient.reference.ends_with?(@patient0.id) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.id}")
-      end
+        reply = @client.read(FHIR::Observation, @obs0a.id)
+        assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
+        reply = @client.read(FHIR::Observation, @obs0b.id)
+        assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
+        reply = @client.read(FHIR::Condition, @condition0.id)
+        assert( (reply.resource.patient.reference.ends_with?(@patient0.id) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.id}")
 
-      #  Create a Patient record that uses Bundle.entry.fullUrl to link/reference, rather than Bundle.entry.resource.id
-      test 'XFER0B','Create a Patient Record as Transaction (with references using fullUrl rather than IDs)' do
-        metadata {
-          links "#{REST_SPEC_LINK}#transaction"
-          links "#{BASE_SPEC_LINK}/patient.html"
-          links "#{BASE_SPEC_LINK}/observation.html"
-          links "#{BASE_SPEC_LINK}/condition.html"
-          requires resource: 'Patient', methods: ['create']
-          requires resource: 'Observation', methods: ['create']
-          requires resource: 'Condition', methods: ['create']
-          requires resource: nil, methods: ['transaction-system']
-          validates resource: 'Patient', methods: ['create']
-          validates resource: 'Observation', methods: ['create']
-          validates resource: 'Condition', methods: ['create']
-          validates resource: nil, methods: ['transaction-system']
-        }
-
-        @patient0_B = ResourceGenerator.minimal_patient("#{Time.now.to_i}",'Transaction')
-        patient0_B_id = SecureRandom.uuid
-        patient0_B_uri = "urn:uuid:#{patient0_B_id}"
-
-        # height
-        @obs0a_B = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',170,'cm',patient0_B_id)
-        # weight
-        @obs0b_B = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',200,'kg',patient0_B_id)
-        # obesity
-        @condition0_B = ResourceGenerator.minimal_condition('http://snomed.info/sct','414915002',patient0_B_id)
-
-        @client.begin_transaction
-        @client.add_transaction_request('POST',nil,@patient0_B)
-        @client.transaction_bundle.entry.first.fullUrl = patient0_B_id
-        @client.add_transaction_request('POST',nil,@obs0a_B)
-        @client.add_transaction_request('POST',nil,@obs0b_B)
-        @client.add_transaction_request('POST',nil,@condition0_B)
-        reply = @client.end_transaction
-
-        assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
-        warning{ assert_response_ok(reply) }
-        assert_bundle_response(reply)
-        assert_bundle_transactions_okay(reply)
-
-        # set the IDs to whatever the server created
-        @patient0_B.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-        @patient0_B.id = reply.resource.entry[0].try(:resource).try(:id) if @patient0_B.id.nil?
-
-        @obs0a_B.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
-        @obs0a_B.id = reply.resource.entry[1].try(:resource).try(:id) if @obs0a_B.id.nil?
-
-        @obs0b_B.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
-        @obs0b_B.id = reply.resource.entry[2].try(:resource).try(:id) if @obs0b_B.id.nil?
-
-        @condition0_B.id = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
-        @condition0_B.id = reply.resource.entry[3].try(:resource).try(:id) if @condition0_B.id.nil?
-
-        # check that the Observations and Condition reference the correct Patient.id
-        assert( (reply.resource.entry[1].resource.subject.reference.ends_with?(@patient0_B.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0_B.id}")
-        assert( (reply.resource.entry[2].resource.subject.reference.ends_with?(@patient0_B.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0_B.id}")
-        assert( (reply.resource.entry[3].resource.patient.reference.ends_with?(@patient0_B.id) rescue false), "Condition doesn't correctly reference Patient/#{@patient0_B.id}")
+        @created_patient_record = true
       end
 
       # Update a Patient Record as a transaction
@@ -191,8 +132,8 @@ module Crucible
         @obs1 = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',250,'kg',@patient0.id)
 
         @client.begin_transaction
-        @client.add_transaction_request('POST',nil,@patient0,"identifier=#{@patient0.identifier.first.system}|#{@patient0.identifier.first.value}")
-        @client.add_transaction_request('POST',nil,@obs1)
+        @client.add_transaction_request('POST',nil,@patient0,"identifier=#{@patient0.identifier.first.system}|#{@patient0.identifier.first.value}").fullUrl = "urn:uuid:#{SecureRandom.uuid}"
+        @client.add_transaction_request('POST',nil,@obs1).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         reply = @client.end_transaction
 
         assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
@@ -234,8 +175,8 @@ module Crucible
         @client.begin_transaction
         @client.add_transaction_request('DELETE',"Observation/#{@obs0b.id}") if @obs0b && !@obs0b.id.nil? # delete first weight
         @client.add_transaction_request('DELETE',"Observation/#{@obs1.id}") if @obs1 && !@obs1.id.nil? # delete second weight
-        @client.add_transaction_request('POST',nil,@obs2) # create new weight observation
-        @client.add_transaction_request('PUT',"Condition?code=#{@condition0.code.coding.first.system}|#{@condition0.code.coding.first.code}&patient=Patient/#{@patient0.id}",@condition0)
+        @client.add_transaction_request('POST',nil,@obs2).fullUrl = "urn:uuid:#{SecureRandom.uuid}" # create new weight observation
+        @client.add_transaction_request('PUT',"Condition?code=#{@condition0.code.coding.first.system}|#{@condition0.code.coding.first.code}&patient=Patient/#{@patient0.id}",@condition0).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         reply = @client.end_transaction
 
         assert( ((200..299).include?(reply.code)), "Unexpected status code: #{reply.code}" )
@@ -269,7 +210,7 @@ module Crucible
         @patient1.id = (reply.resource.try(:id) || reply.id)
 
         @client.begin_transaction
-        @client.add_transaction_request('POST',nil,@patient1,"identifier=#{@patient0.identifier.first.system}|#{@patient0.identifier.first.value}")
+        @client.add_transaction_request('POST',nil,@patient1,"identifier=#{@patient0.identifier.first.system}|#{@patient0.identifier.first.value}").fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         reply = @client.end_transaction
 
         # These IDs should not exist, but if they do, then we should delete this Patient during teardown.
@@ -305,9 +246,9 @@ module Crucible
         # read the all the Patient's weight observations. This should happen last (fourth) and return 1 result.
         @client.add_transaction_request('GET',"Observation?code=#{@obs0b.code.coding.first.system}|#{@obs0b.code.coding.first.code}&patient=Patient/#{@patient0.id}")
         # update the old height observation to be a weight... this should happen third.
-        @client.add_transaction_request('PUT',"Observation/#{@obs4.id}",@obs4)
+        @client.add_transaction_request('PUT',"Observation/#{@obs4.id}",@obs4).fullUrl = @client.full_resource_url({resource: FHIR::Observation, id: @obs4.id})
         # create a new height observation... this should happen second.
-        @client.add_transaction_request('POST',nil,@obs3)
+        @client.add_transaction_request('POST',nil,@obs3).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         # delete the Patient's existing weight observation... this should happen first.
         @client.add_transaction_request('DELETE',"Observation/#{@obs2.id}") if @obs2 && !@obs2.id.nil?
         reply = @client.end_transaction
@@ -331,7 +272,7 @@ module Crucible
       end
 
       # If $everything operation, fetch patient record, and then use that bundle to update the record in a transaction
-      test 'XFER5','Fetch patient record and then present the record as an update transaction' do
+      test 'XFER5','Fetch patient record and then present the unaltered record as an update transaction' do
         metadata {
           links "#{REST_SPEC_LINK}#transaction"
           links "#{REST_SPEC_LINK}#other-bundles"
@@ -469,13 +410,14 @@ module Crucible
         }
 
         @batch_patient = ResourceGenerator.minimal_patient("#{Time.now.to_i}",'Batch')
-        @batch_patient.id = 'batchfoo' # assign an id so related resources can reference the patient
+        @batch_patient_id = "urn:uuid:#{SecureRandom.uuid}" # assign an id so related resources can reference the patient
         # height
-        @batch_obs = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',900,'cm',@batch_patient.id)
+        @batch_obs = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',900,'cm',@batch_patient_id)
+        @batch_obs.subject.reference = @batch_patient_id
 
         @client.begin_batch
-        @client.add_batch_request('POST',nil,@batch_patient)
-        @client.add_batch_request('POST',nil,@batch_obs)
+        @client.add_batch_request('POST',nil,@batch_patient).fullUrl = @batch_patient_id
+        @client.add_batch_request('POST',nil,@batch_obs).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         reply = @client.end_batch
         
         assert_bundle_response(reply)
@@ -519,8 +461,8 @@ module Crucible
         @batch_obs_3 = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',500,'kg',@batch_patient_2.id)
 
         @client.begin_batch
-        @client.add_batch_request('POST',nil,@batch_obs_2)
-        @client.add_batch_request('POST',nil,@batch_obs_3)
+        @client.add_batch_request('POST',nil,@batch_obs_2).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
+        @client.add_batch_request('POST',nil,@batch_obs_3).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         @client.add_transaction_request('GET',"Observation?patient=Patient/#{@batch_patient_2.id}")
         reply = @client.end_batch
 

@@ -38,6 +38,9 @@
     <value value="do-100"/>
   </identifier>
   <status value="requested"/>
+  <subject>
+    <reference value="Patient/example"/>
+  </subject>
   <reason>
     <coding>
       <system value="http://hl7.org/fhir/sid/icd-10-us"/>

@@ -47,6 +47,9 @@
 	</identifier>
 	<status value="requested"/>
 	<priority value="routine"/>
+	<subject>
+    <reference value="Patient/example"/>
+  </subject>
 	<reason>
 		<coding>
 			<system value="http://www.icd10data.com/icd10pcs"/>

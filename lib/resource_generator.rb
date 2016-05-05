@@ -421,7 +421,11 @@ module Crucible
           end
           resource.binding = nil unless is_codeable
           resource.contentReference = nil
-          resource.defaultValue = nil if resource.meaningWhenMissing
+          if resource.meaningWhenMissing
+            FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+              resource.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+            end
+          end
         when FHIR::Goal
           resource.outcome.each do |outcome|
             outcome.resultCodeableConcept = nil

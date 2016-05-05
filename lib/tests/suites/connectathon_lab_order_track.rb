@@ -204,7 +204,7 @@ module Crucible
           observation.performer = @records[:performer].to_reference
           observation_name = "#{dr_name}_observation_{index}".to_sym
           create_object(observation, observation_name)
-          diag_report.result << [@records[observation_name].to_reference]
+          diag_report.result << @records[observation_name].to_reference
         end
 
         create_object(diag_report, dr_name)

@@ -56,8 +56,4 @@
   <issued value="2014-12-06T15:42:15-08:00"/>
   <!--   no results since is a nested panel    -->
   <!--     eH dataabsent reason  would go here if valueQuantity was empty e.g.:	<dataAbsentReason value="error"/>    -->
-  <specimen>
-    <reference value="Specimen/spec-uslab-example1"/>
-    <display value="Blood sample"/>
-  </specimen>
 </Observation>

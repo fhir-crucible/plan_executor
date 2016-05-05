@@ -172,8 +172,8 @@ module Crucible
         diag_order = @resources.load_fixture(fixture_path)
         diag_order.subject = @records[:patient].to_reference
         diag_order.orderer = @records[:provider].to_reference
-        diag_order.specimen = @records[specimen_name].to_reference if specimen_name
-        diag_order.item[0].specimen = @records[specimen_name].to_reference if specimen_name
+        diag_order.specimen = [@records[specimen_name].to_reference] if specimen_name
+        diag_order.item[0].specimen = [@records[specimen_name].to_reference] if specimen_name
 
         create_object(diag_order, order_name)
       end
@@ -224,7 +224,7 @@ module Crucible
         reply = @client.read FHIR::DiagnosticOrder, @records[order_name].id
         assert_response_ok(reply)
 
-        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match DiagnosticOrder/#{@records[order_name].id}"
+        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match DiagnosticOrder/#{@records[order_name].id}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
 
         assert reply.resource.status == 'requested'
 
@@ -236,7 +236,7 @@ module Crucible
         reply = @client.read FHIR::DiagnosticOrder, @records[order_name].id
         assert_response_ok(reply)
 
-        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match #{@records[order_name]}"
+        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match #{@records[order_name]}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
 
         assert reply.resource.status == 'completed'
 

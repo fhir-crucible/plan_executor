@@ -25,6 +25,38 @@ module Crucible
         @average = @resources.average_claim
         @average.id = nil # clear the identifier, in case the server checks for duplicates
         @average.identifier = nil # clear the identifier, in case the server checks for duplicates
+
+        @patient = @resources.minimal_patient
+        @patient.id = nil
+        @patient.identifier = [FHIR::Identifier.new]
+        @patient.identifier[0].value = SecureRandom.urlsafe_base64
+        result = @client.create(@patient)
+        assert_response_ok(result)
+        @patient_id = result.id
+
+        @simple.patient.reference = "Patient/#{@patient_id}"
+        @average.patient.reference = "Patient/#{@patient_id}"
+
+        @organization_1 = @resources.example_patient_record_organization_201
+        @organization_1.id = nil
+        reply = @client.create @organization_1
+        @organization_1_id = reply.id
+        @organization_1.id = @organization_1_id
+        assert_response_ok(reply)
+
+        @simple.organization.reference = "Organization/#{@organization_1_id}"
+        @average.organization.reference = "Organization/#{@organization_1_id}"
+
+        @organization_2 = @resources.example_patient_record_organization_203
+        @organization_2.id = nil
+        reply = @client.create @organization_2
+        @organization_2_id = reply.id
+        @organization_2.id = @organization_2_id
+        assert_response_ok(reply)
+
+        @simple.target.reference = "Organization/#{@organization_2_id}"
+        @average.target.reference = "Organization/#{@organization_2_id}"
+
       end
 
       def teardown
@@ -32,6 +64,9 @@ module Crucible
         @client.destroy(FHIR::ClaimResponse, @simple_response_id) if !@simple_response_id.nil?
         @client.destroy(FHIR::Claim, @average_id) if !@average_id.nil?
         @client.destroy(FHIR::ClaimResponse, @average_response_id) if !@average_response_id.nil?
+        @client.destroy(FHIR::Patient, @patient_id) if !@patient_id.nil?
+        @client.destroy(FHIR::Patient, @organization_1_id) if !@organization_1_id.nil?
+        @client.destroy(FHIR::Patient, @organization_2_id) if !@organization_2_id.nil?
       end
 
       #
@@ -198,8 +233,8 @@ module Crucible
         reply = @client.search(FHIR::ClaimResponse, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@simple_id), 'The server did not return a request with the proper claim')
         assert (reply.resource.total > 0), 'The server did not report any results.'
+        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@simple_id), 'The server did not return a request with the proper claim')
 
         @simple_response_id = reply.resource.entry[0].resource.id unless @simple_response_id
       end

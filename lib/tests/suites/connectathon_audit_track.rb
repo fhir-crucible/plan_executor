@@ -64,7 +64,8 @@ module Crucible
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one AuditEvent for the test Patient currently in the system.', reply.body)
         assert(reply.resource.entry[0].try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'The correct AuditEvent was not returned.', reply.body)
-        warning { assert_equal('110110', reply.resource.entry[0].try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+        warning { assert_equal('rest', reply.resource.entry[0].try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of rest', reply.body) }
+        warning { assert_equal('http://hl7.org/fhir/audit-event-type', reply.resource.entry[0].try(:resource).try(:type).try(:system), 'Was expecting an AuditEvent.event.type.system of http://hl7.org/fhir/audit-event-type', reply.body) }
       end
 
       # Create a Patient with Provenance as a transaction
@@ -94,6 +95,11 @@ module Crucible
         @provenance1.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
         @provenance1.reason[0].display = 'patient administration'
         @provenance1.reason[0].code = 'PATADMIN'
+        @provenance1.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance1.agent[0].role = FHIR::Coding.new
+        @provenance1.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance1.agent[0].role.display = 'Author'
+        @provenance1.agent[0].role.code = 'author'
 
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient1)
@@ -104,7 +110,7 @@ module Crucible
         # to delete something that wasn't created
         @patient1.id = nil
 
-        assert_response_ok(reply)
+        assert([200,201,202].include?(reply.code), 'Expected response code 200, 201, or 202', reply.body)
         assert_bundle_response(reply)
 
         # set the patient id back from nil to whatever the server created
@@ -153,6 +159,11 @@ module Crucible
         @provenance2.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
         @provenance2.reason[0].display = 'patient administration'
         @provenance2.reason[0].code = 'PATADMIN'
+        @provenance2.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance2.agent[0].role = FHIR::Coding.new
+        @provenance2.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance2.agent[0].role.display = 'Author'
+        @provenance2.agent[0].role.code = 'author'
 
         FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_json
         reply = @client.create(@patient2)      
@@ -211,8 +222,11 @@ module Crucible
         found_update_type = false
         reply.resource.entry.each do |entry|
           assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
-          warning { assert_equal('110110', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
-          found_update_type ||= entry.try(:resource).try(:action) == 'U'
+          if entry.try(:resource).try(:action) == 'U'
+            found_update_type = true
+            warning { assert_equal('rest', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of rest', reply.body) }
+            warning { assert_equal('http://hl7.org/fhir/audit-event-type', entry.try(:resource).try(:type).try(:system), 'Was expecting an AuditEvent.event.type.system of http://hl7.org/fhir/audit-event-type', reply.body) }
+          end
         end
         assert(found_update_type, 'No update AuditEvent returned', reply.body)
       end
@@ -242,13 +256,18 @@ module Crucible
         @provenance3.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
         @provenance3.reason[0].display = 'patient administration'
         @provenance3.reason[0].code = 'PATADMIN'
+        @provenance3.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance3.agent[0].role = FHIR::Coding.new
+        @provenance3.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance3.agent[0].role.display = 'Author'
+        @provenance3.agent[0].role.code = 'author'
 
         @client.begin_transaction
         @client.add_transaction_request('PUT',nil,@patient1)
         @client.add_transaction_request('POST',nil,@provenance3)
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert([200,201,202].include?(reply.code), 'Expected response code 200, 201, or 202', reply.body)
         assert_bundle_response(reply)
 
         @provenance3.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
@@ -296,6 +315,11 @@ module Crucible
         @provenance4.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
         @provenance4.reason[0].display = 'patient administration'
         @provenance4.reason[0].code = 'PATADMIN'
+        @provenance4.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance4.agent[0].role = FHIR::Coding.new
+        @provenance4.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance4.agent[0].role.display = 'Author'
+        @provenance4.agent[0].role.code = 'author'
 
         FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_json
         reply = @client.update(@patient2,@patient2.id)      
@@ -355,8 +379,11 @@ module Crucible
         found_read_type = false
         reply.resource.entry.each do |entry|
           assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
-          warning { assert_equal('110110', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
-          found_read_type ||= entry.try(:resource).try(:action) == 'R'
+          if entry.try(:resource).try(:action) == 'R'
+            found_read_type = true
+            warning { assert_equal('rest', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of rest', reply.body) }
+            warning { assert_equal('http://hl7.org/fhir/audit-event-type', entry.try(:resource).try(:type).try(:system), 'Was expecting an AuditEvent.event.type.system of http://hl7.org/fhir/audit-event-type', reply.body) }
+          end
         end
         assert(found_read_type, 'No read AuditEvent returned', reply.body)
       end

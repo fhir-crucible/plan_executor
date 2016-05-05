@@ -167,6 +167,13 @@ module Crucible
       end # ['GET','POST'].each
 
       test "CT09", "Create a ValueSet that points to a local CodeSystem" do
+        metadata {
+          links "#{REST_SPEC_LINK}#create"
+          links "#{BASE_SPEC_LINK}/codesystem.html"
+          links "#{BASE_SPEC_LINK}/valueset.html#create"
+          validates resource: 'CodeSystem', methods: ['create']
+          validates resource: 'ValueSet', methods: ['create']
+        }
 
         @resources = Crucible::Generator::Resources.new
         @codesystem_simple = @resources.codesystem_simple
@@ -253,6 +260,13 @@ module Crucible
       end
 
       test "CT13", "Delete CodeSystem and ValueSet" do
+        metadata {
+          links "#{REST_SPEC_LINK}#delete"
+          links "#{BASE_SPEC_LINK}/valueset.html"
+          links "#{BASE_SPEC_LINK}/codesystem.html"
+          validates resource: 'CodeSystem', methods: ['delete']
+          validates resource: 'ValueSet', methods: ['delete']
+        }
 
         skip if @codesystem_created_id.nil?
         reply = @client.destroy FHIR::CodeSystem, @codesystem_created_id

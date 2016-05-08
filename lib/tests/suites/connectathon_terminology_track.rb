@@ -190,7 +190,6 @@ module Crucible
         reply = @client.create @valueset_simple
         assert_response_code(reply, 201)
         @valueset_created_id = reply.id
-
       end
 
       ['GET','POST'].each do |how|  
@@ -275,7 +274,60 @@ module Crucible
         skip if @valueset_created_id.nil?
         @client.destroy FHIR::ValueSet, @valueset_created_id
         assert_response_code(reply, 204)
+      end
 
+      test "CT14", "Create ConceptMap" do
+        metadata {
+          links "#{REST_SPEC_LINK}#create"
+          links "#{BASE_SPEC_LINK}/conceptmap.html"
+          validates resource: 'ConceptMap', methods: ['create']
+        }
+
+        @resources = Crucible::Generator::Resources.new
+        @conceptmap_simple = @resources.conceptmap_simple
+        @conceptmap_simple.id = nil
+        @conceptmap_simple.url = @conceptmap_simple.url + rand(10000000).to_s
+
+        reply = @client.create @conceptmap_simple
+        assert_response_code(reply, 201)
+        @conceptmap_created_id = reply.id
+      end
+
+      ['GET','POST'].each do |how|  
+
+        test "CT15#{how[0]}", "$translate a code using a ConceptMap (#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/conceptmap-operations.html#translate"
+            validates resource: 'ConceptMap', methods: ['$translate']
+          }
+          skip if @conceptmap_created_id.nil?
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'code' => { type: 'Code', value: @conceptmap_simple.element.first.code },
+                'system' => { type: 'Uri', value: @conceptmap_simple.element.first.system },
+                'target' => { type: 'Uri', value: @conceptmap_simple.targetReference.reference }
+              }
+            }
+          }
+          reply = @client.concept_map_translate(options)
+          assert_response_ok(reply)
+          check_response_params(reply.body,'result','valueBoolean','true')
+        end
+      end
+
+      test "CT16", "Delete ConceptMap" do
+        metadata {
+          links "#{REST_SPEC_LINK}#delete"
+          links "#{BASE_SPEC_LINK}/conceptmap.html"
+          validates resource: 'ConceptMap', methods: ['delete']
+        }
+
+        skip if @conceptmap_created_id.nil?
+        reply = @client.destroy FHIR::ConceptMap, @conceptmap_created_id
+        assert_response_code(reply, 204)
       end
 
       def check_expansion_for_concepts(vs, ref)

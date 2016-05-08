@@ -135,6 +135,10 @@ module Crucible
         FHIR::Xml.from_xml File.read(File.join(fixture_path, 'terminology', 'valueset-example.xml'))
       end
 
+      def conceptmap_simple
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'terminology', 'conceptmap-example.xml'))
+      end
+
       # ------------------------------ PATCH TRACK TESTS ------------------------------
 
       def medicationorder_simple

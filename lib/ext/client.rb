@@ -12,7 +12,7 @@ module FHIR
     def monitor_requests
       return if @decorated
       @decorated = true
-      [:get, :put, :post, :delete, :head].each do |method|
+      [:get, :put, :post, :delete, :head, :patch].each do |method|
         class_eval %Q{
           alias #{method}_original #{method}
           def #{method}(*args, &block)

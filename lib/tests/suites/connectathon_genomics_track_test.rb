@@ -19,9 +19,11 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
         @records = {}
 
-        patient = @resources.minimal_patient
-        patient.id = nil
+        patient = @resources.load_fixture("patient/patient-register-create.xml")
+        practitioner = @resources.load_fixture("practitioner/practitioner-register-create.xml")
+
         create_object(patient, :patient)
+        create_object(practitioner, :practitioner)
       end
 
       def teardown
@@ -37,11 +39,20 @@ module Crucible
           links "#{BASE_SPEC_LINK}/sequence.html"
           links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_10#Track_6_-_Scheduling'
           requires resource: 'Sequence', methods: ['create']
+          requires resource: 'Specimen', methods: ['create']
           requires resource: 'Observation', methods: ['create']
           validates resource: 'Sequence', methods: ['create']
+          validates resource: 'Specimen', methods: ['create']
           validates resource: 'Observation', methods: ['create']
+
+          sequence = @resources.load_fixture('sequence/sequence-register-create.xml')
+          specimen = @resources.load_fixture('specimen/specimen-register-create.xml')
+          observation = @resources.load_fixture('observation/observation-register-create.xml')
+
+          specimen.subject = @records[:patient].to_reference
+          specimen.subject.collector = @records[:practitioner].to_reference
         }
-        
+
 
       end
 

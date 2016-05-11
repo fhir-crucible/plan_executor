@@ -18,7 +18,7 @@
 	</extension>
 	<identifier>
 		<system value="http://happyvalley.com/observation"/>
-		<value value="${CD10}${D6}"/>
+		<value value="CD10D6"/>
 	</identifier>
 	<status value="final"/>
 	<code>

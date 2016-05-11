@@ -32,12 +32,12 @@ module Crucible
         end
       end
 
-      # Find Practitioner's schedule
+      # register sequence and observation
       test 'CGT01','Register a New Sequence and Observation' do
         metadata {
           links "#{REST_SPEC_LINK}#create"
           links "#{BASE_SPEC_LINK}/sequence.html"
-          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_10#Track_6_-_Scheduling'
+          links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
           requires resource: 'Sequence', methods: ['create']
           requires resource: 'Specimen', methods: ['create']
           requires resource: 'Observation', methods: ['create']
@@ -50,10 +50,81 @@ module Crucible
           observation = @resources.load_fixture('observation/observation-register-create.xml')
 
           specimen.subject = @records[:patient].to_reference
-          specimen.subject.collector = @records[:practitioner].to_reference
+          create_object(specimen, :specimen_register_create)
+
+          sequence.patient = @records[:patient].to_reference
+          sequence.specimen = @records[:specimen_register_create].to_reference
+          create_object(sequence, :sequence_register_create)
+
+          observation.subject = @records[:patient].to_reference
+          observation.specimen = @records[:specimen_register_create].to_reference
+          observation.performer = @records[:practitioner].to_reference
+          create_object(observation, :observation_register_create)
+        }
+      end
+
+      test 'CGT02', 'Retrieve Genomic Source data for given patient' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Sequence', methods: ['read']
+          requires resource: 'Observation', methods: ['read']
+          requires resource: 'Patient', methods: ['read']
         }
 
+        reply = @client.read FHIR::Observation, @records[:observation_register_create].id
+        assert_response_ok(reply)
 
+        ext = reply.resource.extension.find { |exten| exten.url == "http://hl7.org/fhir/StructureDefinition/observation-geneticsGenomicSourceClass"}
+
+        assert ext, "No Genomic Source Class extension found"
+
+        assert_equal ext.valueCodeableConcept.coding[0].code, 'LA6683-2', "Extension CodeableConcept has the wrong code; got #{ext.valueCodeableConcept.coding[0].code}, expected LA6683-2"
+      end
+
+      test 'CGT03', 'Retrieve Family History data for the given patient' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Sequence', methods: ['read']
+          requires resource: 'Observation', methods: ['read']
+          requires resource: 'Patient', methods: ['read']
+        }
+
+        patient = @resources.load_fixture('patient/patient-familyhistory-create.xml')
+        create_object(patient, :family_patient)
+
+        observation = @resources.load_fixture('observation/observation-familyhistory-create.xml')
+        observation.subject = @records[:family_patient].to_reference
+        create_object(observation, :family_observation)
+
+        familymemberhistory = @resources.load_fixture('family_member_history/familymemberhistory-familyhistory-create.xml')
+        familymemberhistory.patient = @records[:family_patient].to_reference
+        familymemberhistory.extension.find { |exten| exten.url == 'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-observation'}.valueReference = @records[:family_observation].to_reference
+        create_object(familymemberhistory, :family_member_history)
+
+        specimen = @resources.load_fixture('specimen/specimen-familyhistory-create.xml')
+        specimen.subject = @records[:family_patient].to_reference
+        create_object(specimen, :family_specimen)
+
+        diag_report = @resources.load_fixture('diagnostic_report/diagnosticreport-familyhistory-create.xml')
+        diag_report.subject = @records[:family_patient].to_reference
+        diag_report.performer = @records[:practitioner].to_reference
+        diag_report.specimen = @records[:family_specimen].to_reference
+        diag_report.result = @records[:family_observation].to_reference
+        create_object(diag_report, :family_report)
+
+        reply = @client.read FHIR::FamilyMemberHistory, @records[:family_member_history].id
+        assert_response_ok(reply)
+
+        ext = reply.resource.extension.find { |exten| exten.url == 'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-observation'}
+
+        assert ext, "No Family History extension found"
+
+        reply = @client.read FHIR::Observation, ext.valueReference.reference.split("/")[1]
+        assert_response_ok(reply)
+
+        assert @records[:family_observation].equals?(reply.resource, ['meta']), "Observation doesn't match the stored Observation; difference is: #{@records[:family_observation].mismatch(reply.resource, ['meta'])}"
       end
 
       private

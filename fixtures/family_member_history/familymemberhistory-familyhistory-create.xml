@@ -11,10 +11,10 @@
 	</extension>
 	<identifier>
 		<system value="http://happyvalley.com/familymemberhistory"/>
-		<value value="${CD6}${D9}"/>
+		<value value="CD6D9"/>
 	</identifier>
 	<patient>
-		<reference value="Patient/${createPatientId}"/>
+		<reference value="Patient/MotherPatient"/>
 	</patient>
 	<status value="completed"/>
 	<relationship>

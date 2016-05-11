@@ -7,8 +7,14 @@
 				<b>Generated Narrative with Details</b>
 			</p>
 			<p>
-				<b>type</b>: Blood sample
-				<span style="background: LightGoldenRodYellow ">(Details)</span>
+				<b>identifier</b>: ${CD11}${D4} (official)</p>
+			<p>
+				<b>type</b>: Blood sample 
+				<span style="background: LightGoldenRodYellow ">(Details : {SNOMED CT code "122555007" := "122555007", given as "Venous blood specimen"}; {http://lis.acmelabs.org/codes code "BLD" := "BLD", given as "Blood"})</span>
+			</p>
+			<p>
+				<b>subject</b>: 
+				<a href="Patient/${createPatientId}">Todd Lerr</a>
 			</p>
 			<p>
 				<b>accessionIdentifier</b>: 21041205000001 (official)
@@ -18,7 +24,7 @@
 	<identifier>
 		<use value="official"/>
 		<system value="http://happyvalley.com/specimen"/>
-		<value value="C6D10"/>
+		<value value="${CD11}${D4}"/>
 	</identifier>
 	<accessionIdentifier>
 		<use value="official"/>
@@ -39,9 +45,8 @@
 		<text value="Blood sample"/>
 	</type>
 	<subject>
-		<reference value="Patient/tlerr"/>
+		<reference value="Patient/${createPatientId}"/>
 		<display value="Todd Lerr"/>
-	</subject>
 	</subject>
 	<collection>
 		<collectedDateTime value="2014-12-05"/>

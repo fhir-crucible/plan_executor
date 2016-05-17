@@ -92,6 +92,11 @@ module Crucible
                   c.system = meta['valid_codes'].keys.sample
                   c.code = meta['valid_codes'][c.system].sample
                 end
+              elsif type == 'CodeableConcept' && meta['binding'] && meta['binding']['uri'] == 'http://hl7.org/fhir/ValueSet/use-context'
+                gen.coding.each do |c|
+                  c.system = 'https://www.usps.com/'
+                  c.code = ['CA','TX','NY','MA','DC'].sample
+                end
               elsif type == 'Coding' && meta['valid_codes'] && meta['binding']
                 gen.system = meta['valid_codes'].keys.sample
                 gen.code = meta['valid_codes'][gen.system].sample
@@ -418,13 +423,17 @@ module Crucible
           is_codeable = false
           resource.type.each do |f|
             is_codeable = (['code','Coding','CodeableConcept'].include?(f.code))
+            f.aggregation = []
           end
           resource.binding = nil unless is_codeable
           resource.contentReference = nil
-          if resource.meaningWhenMissing
-            FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
-              resource.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
-            end
+          FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+            resource.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@fixed#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@pattern#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
           end
         when FHIR::Goal
           resource.outcome.each do |outcome|
@@ -530,7 +539,8 @@ module Crucible
           resource.replacedBy = nil if resource.status!='retired'
           if resource.kind == 'root'
             resource.uniqueId.each do |uid|
-              uid.type='other' if ['uuid','oid'].include?(uid.type)
+              uid.type='uuid'
+              uid.value = SecureRandom.uuid
             end
           end
           resource.uniqueId.each do |uid|
@@ -591,6 +601,7 @@ module Crucible
           resource.status = 'requested' if resource.id.nil?
           resource.channel.payload = 'applicaton/json+fhir'
           resource.end = nil
+          resource.criteria = 'Observation?code=http://loinc.org|1975-2'
         when FHIR::SupplyDelivery
           resource.type = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
         when FHIR::SupplyRequest

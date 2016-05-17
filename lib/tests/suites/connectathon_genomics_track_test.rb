@@ -87,8 +87,11 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
           requires resource: 'Sequence', methods: ['read']
-          requires resource: 'Observation', methods: ['read']
-          requires resource: 'Patient', methods: ['read']
+          requires resource: 'Observation', methods: ['create', 'read']
+          requires resource: 'Patient', methods: ['create', 'read']
+          requires resource: 'Specimen', methods: ['create', 'read']
+          requires resource: 'FamilyMemberHistory', methods: ['create', 'read']
+          requires resource: 'DiagnosticReport', methods: ['create', 'read']
         }
 
         patient = @resources.load_fixture('patient/patient-familyhistory-create.xml')

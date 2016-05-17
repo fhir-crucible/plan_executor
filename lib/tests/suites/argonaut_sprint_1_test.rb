@@ -51,7 +51,7 @@ module Crucible
         reply = @client.search(@rc, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.get_by_id(@patient_id).equals?(@patient, ['_id', "text"]), 'Server returned wrong patient.'
+        assert reply.resource.get_by_id(@patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient.'
       end
 
       def define_metadata(method)

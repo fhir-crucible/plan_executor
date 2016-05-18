@@ -130,6 +130,54 @@ module Crucible
         assert @records[:family_observation].equals?(reply.resource, ['meta']), "Observation doesn't match the stored Observation; difference is: #{@records[:family_observation].mismatch(reply.resource, ['meta'])}"
       end
 
+      test 'CGT04', 'Clinical data warehouse search' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Observation', methods: ['create', 'read']
+        }
+
+        dw_obs = @resources.load_fixture('observation/observation-datawarehouse-create.xml')
+        dw_obs.performer = @records[:practitioner].to_reference
+        dw_obs.subject = @records[:family_patient].to_reference
+        dw_obs.specimen = @records[:family_specimen].to_reference
+        create_object(dw_obs, :dw_obs)
+
+        options = {
+          :search => {
+            :flag => false,
+            :compartment => nil,
+            :parameters => {
+              '_profile' => 'http://hl7.org/fhir/StructureDefinition/observation-geneticsGenomicSourceClass'
+            }
+          }
+        }
+
+        reply = @client.search(FHIR::Observation, options)
+
+      end
+
+      test 'CGT05', 'HLA Typing' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'DiagnosticReport', methods: ['create', 'read']
+        }
+
+        dr_hla = @resources.load_fixture('diagnostic_report/diagnosticreport-hlatyping-create.xml')
+        dr_hla.subject = @records[:family_patient].to_reference
+        dr_hla.performer = @records[:practitioner].to_reference
+        dr_hla.specimen = [@records[:family_specimen].to_reference]
+
+        create_object(dr_hla, :dr_hla)
+
+        reply = @client.read(FHIR::DiagnosticReport, @records[:dr_hla].id)
+        assert_response_ok(reply)
+
+        assert @records[:dr_hla].equals?(reply.resource, ['meta', 'text', 'narrative']), "DiagnosticReport doesn't match the stored DiagnosticReport; difference is: #{@records[:dr_hla].mismatch(reply.resource, ['meta', 'text', 'narrative'])}"
+
+      end
+
       private
 
       def create_object(obj, obj_sym)

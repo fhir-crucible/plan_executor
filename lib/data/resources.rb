@@ -146,7 +146,7 @@ module Crucible
       end
 
       def load_fixture(path)
-        FHIR.from_contents(File.read(File.join(fixture_path, path)))
+        FHIR::Xml.from_xml(File.read(File.join(fixture_path, path)))
       end
 
     end

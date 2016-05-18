@@ -2,13 +2,116 @@
 
 Plan Executor runs test suites against a FHIR server.
 
-# DSTU2
+## DSTU2
 
-Updated to support the FHIR [DSTU2 branch](http://hl7.org/fhir-develop).
+This version of `plan_executor` uses FHIR [DSTU2](http://hl7.org/fhir-develop). Our transition to STU3 is in progress on the `stu3` branch.
+
+## Getting Started
+
+```
+$ bundle install
+$ bundle exec rake -T
+```
+
+## Listing Test Suites
+
+List all the available Test Suites, excluding supported `TestScripts`
+```
+$ bundle exec rake crucible:list_suites
+```
+
+## Executing a Test Suite
+
+Crucible tests can be executed by suite from the command-line by calling the `crucible-execute` rake task with the following parameters:
+
+* `url` the FHIR endpoint
+* `test` the name of the test suite (see `crucible:list_suites`)
+* `resource` (optional) limit the `test` (applicable to "ResourceTest" or "SearchTest" suites) to a given resource (e.g. "Patient")
+
+Run a Suite
+```
+$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu2,TransactionAndBatchTest]
+```
+
+Run a Suite limited by Resource
+```
+$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu2,ResourceTest,Patient]
+```
+
+## Adding a New Test Suite
+
+1. Fork the repo
+2. Write the test suite in Ruby
+3. Issue a pull request
+
+Add a Test Suite by adding a Ruby file to `lib/tests/suites` that extends `Crucible::Tests::BaseTest` -- for example, `FooTest`:
+
+```ruby
+module Crucible
+  module Tests
+    class FooTest < BaseSuite
+
+      def id
+        'FooTest'
+      end
+
+      def description
+        'FooTest is an example of adding a new test suite.'
+      end
+
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @category = {id: 'connectathon', title: 'Connectathon'}
+      end
+
+      def setup
+        # create any fixtures you need here
+        @patient = ResourceGenerator.generate(FHIR::Patient,3)
+        reply = @client.create(@patient)
+        @id = reply.id
+        @body = reply.body
+      end
+
+      def teardown
+        # perform any clean up here
+        @client.destroy(FHIR::Patient, @id)
+      end
+
+      # test 'KEY', 'DESCRIPTION'
+      test 'FOO', 'Foo Test checks headers' do
+        metadata {
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: "Patient", methods: ["create", "read"]
+          validates resource: "Patient", methods: ["read"]
+        }
+
+        assert(@id, 'Setup was unable to create a patient.',@body)
+        reply = @client.read(FHIR::Patient, @id)
+        assert_response_ok(reply)
+        assert_equal @id, reply.id, 'Server returned wrong patient.'
+        warning { assert_valid_resource_content_type_present(reply) }
+        warning { assert_etag_present(reply) }
+        warning { assert_last_modified_present(reply) }
+      end
+    end
+  end
+end
+```
+
+Every Test Suite needs to override the following methods:
+* `id` The unique id of the test, typically matches the class name
+* `description` The description that is displayed within the Crucible web app
+* `initialize` Use the example above. Change the `@category` -- the `id` and `title`
+determine where the test suite is categorized within the Crucible web app
+* `setup` (optional) Use this method to create fixtures and perform any required
+assertions prior to execution of individual `test` blocks.
+* `test` These blocks are the individual tests within the suites. Each block should start with a `metadata` section so Crucible knows how to tie the success or failures to portions of the FHIR specification (displayed in the web app with a starburst). See `lib/FHIR_structure.json` for the values associated with the `name` keys that you can link to.
+* `teardown` (optional) Use this method to perform any clean up, so you don't leave
+a trail of test data behind.
 
 # License
 
-Copyright 2014 The MITRE Corporation
+Copyright 2014-2016 The MITRE Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

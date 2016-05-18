@@ -22,7 +22,7 @@ namespace :crucible do
     'http://wildfhir.aegis.net/fhir2',
     'http://fhir-dev.healthintersections.com.au/open'
   ]
-  
+
   desc 'console'
   task :console, [] do |t, args|
     binding.pry
@@ -62,11 +62,11 @@ namespace :crucible do
   desc 'execute'
   task :execute, [:url, :test, :resource] do |t, args|
     require 'benchmark'
-    b = Benchmark.measure { 
+    b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
       options = client.get_oauth2_metadata_from_conformance
       set_client_secrets(client,options) unless options.empty?
-      execute_test(client, args.test, args.resource) 
+      execute_test(client, args.test, args.resource)
     }
     puts "Execute #{args.test} completed in #{b.real} seconds."
   end
@@ -248,6 +248,21 @@ namespace :crucible do
     puts "List all tests completed in #{b.real} seconds."
   end
 
+  desc 'list names of test suites'
+  task :list_suites do
+    require 'benchmark'
+    b = Benchmark.measure do
+      suites = Crucible::Tests::Executor.list_all
+      suite_names = []
+      suites.each do |key,value|
+        suite_names << value['author'].split('::').last if !key.start_with?('TS')
+      end
+      suite_names.uniq!
+      suite_names.each {|x| puts "  #{x}"}
+    end
+    puts "List all suites completed in #{b.real} seconds."
+  end
+
   desc 'list all test scripts'
   task :list_all_test_scripts do
     require 'benchmark'
@@ -298,14 +313,14 @@ namespace :crucible do
     task :execute, [:url1, :url2, :test] do |t, args|
       require 'turn'
       require 'benchmark'
-      b = Benchmark.measure { 
+      b = Benchmark.measure {
         client1 = FHIR::Client.new(args.url1)
         options = client1.get_oauth2_metadata_from_conformance
         set_client_secrets(client1,options) unless options.empty?
         client2 = FHIR::Client.new(args.url2)
         options = client2.get_oauth2_metadata_from_conformance
         set_client_secrets(client2,options) unless options.empty?
-        execute_multiserver_test(client1, client2, args.test) 
+        execute_multiserver_test(client1, client2, args.test)
       }
       puts "Execute multiserver #{args.test} completed in #{b.real} seconds."
     end

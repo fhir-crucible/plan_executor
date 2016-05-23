@@ -148,7 +148,7 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'patient' => @records[:family_patient].id
+              'subject' => "Patient/#{@records[:family_patient].id}"
             }
           }
         }
@@ -156,7 +156,7 @@ module Crucible
         reply = @client.search(FHIR::Observation, options)
         assert_response_ok(reply)
 
-        assert reply.resource.get_by_id(@records[:family_patient].id), "No Observation found for that patient"
+        assert reply.resource.get_by_id(@records[:dw_obs].id), "No Observation found for that patient"
 
       end
 
@@ -224,7 +224,22 @@ module Crucible
           validates resource: 'Sequence', methods: ['read', 'search', 'delete']
         }
 
-        seq = @records[:sequence_register_create]
+        options = {
+          :search => {
+            :flag => false,
+            :compartment => nil,
+            :parameters => {
+              'patient' => "Patient/#{@records[:patient].id}"
+            }
+          }
+        }
+
+        reply = @client.search(FHIR::Sequence, options)
+        assert_response_ok(reply)
+
+        entries = reply.resource.entry.collect { |e| e.resource if e.resource.quality }
+
+        assert entries.count >= 1, 'No entries with Sequence quality found for Patient'
       end
 
       private

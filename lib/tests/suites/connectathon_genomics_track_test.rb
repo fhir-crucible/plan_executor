@@ -44,23 +44,23 @@ module Crucible
           validates resource: 'Sequence', methods: ['create']
           validates resource: 'Specimen', methods: ['create']
           validates resource: 'Observation', methods: ['create']
-
-          sequence = @resources.load_fixture('sequence/sequence-register-create.xml')
-          specimen = @resources.load_fixture('specimen/specimen-register-create.xml')
-          observation = @resources.load_fixture('observation/observation-register-create.xml')
-
-          specimen.subject = @records[:patient].to_reference
-          create_object(specimen, :specimen_register_create)
-
-          sequence.patient = @records[:patient].to_reference
-          sequence.specimen = @records[:specimen_register_create].to_reference
-          create_object(sequence, :sequence_register_create)
-
-          observation.subject = @records[:patient].to_reference
-          observation.specimen = @records[:specimen_register_create].to_reference
-          observation.performer = @records[:practitioner].to_reference
-          create_object(observation, :observation_register_create)
         }
+
+        sequence = @resources.load_fixture('sequence/sequence-register-create.xml')
+        specimen = @resources.load_fixture('specimen/specimen-register-create.xml')
+        observation = @resources.load_fixture('observation/observation-register-create.xml')
+
+        specimen.subject = @records[:patient].to_reference
+        create_object(specimen, :specimen_register_create)
+
+        sequence.patient = @records[:patient].to_reference
+        sequence.specimen = @records[:specimen_register_create].to_reference
+        create_object(sequence, :sequence_register_create)
+
+        observation.subject = @records[:patient].to_reference
+        observation.specimen = @records[:specimen_register_create].to_reference
+        observation.performer = @records[:practitioner].to_reference
+        create_object(observation, :observation_register_create)
       end
 
       test 'CGT02', 'Retrieve Genomic Source data for given patient' do
@@ -213,7 +213,16 @@ module Crucible
           validates resource: 'DiagnosticReport', methods: ['create', 'read', 'search', 'delete']
         }
 
+        dr = @resources.load_fixture('diagnostic_report/diagnosticreport-pathologyreport-create.xml')
+        dr.subject = @records[:family_patient].to_reference
+        dr.performer = @records[:practitioner].to_reference
+        dr.specimen = [@records[:family_specimen].to_reference]
+        create_object(dr, :dr_pathreport)
 
+        reply = @client.read(FHIR::DiagnosticReport, @records[:dr_pathreport].id)
+        assert_response_ok(reply)
+
+        assert reply.resource.equals?(@records[:dr_pathreport], ['text', 'meta', 'lastUpdated']), "DiagnosticReport returned does not match DiagnosticReport sent, mismatch in #{reply.resource.mismatch(@records[:dr_pathreport], ['text', 'meta', 'lastUpdated'])}"
       end
 
       test 'GCT08', 'Sequence Quality' do

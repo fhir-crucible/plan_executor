@@ -72,14 +72,24 @@ module Crucible
           requires resource: 'Patient', methods: ['read']
         }
 
-        reply = @client.read FHIR::Observation, @records[:observation_register_create].id
+        options = {
+          :search => {
+            :flag => false,
+            :compartment => nil,
+            :parameters => {
+              'subject' => "Patient/#{@records[:patient].id}"
+            }
+          }
+        }
+
+        reply = @client.search(FHIR::Observation, options)
         assert_response_ok(reply)
 
-        ext = reply.resource.extension.find { |exten| exten.url == "http://hl7.org/fhir/StructureDefinition/observation-geneticsGenomicSourceClass"}
+        ext = reply.resource.entry.find {|entry| entry.resource.extension.find { |exten| exten.url == "http://hl7.org/fhir/StructureDefinition/observation-geneticsGenomicSourceClass" } }
 
-        assert ext, "No Genomic Source Class extension found"
+        assert ext, "No Genomic Source Class extension found on returned Observations"
 
-        assert_equal ext.valueCodeableConcept.coding[0].code, 'LA6683-2', "Extension CodeableConcept has the wrong code; got #{ext.valueCodeableConcept.coding[0].code}, expected LA6683-2"
+        assert_equal 'LA6683-2', ext.resource.extension.find { |exten| exten.url == 'http://hl7.org/fhir/StructureDefinition/observation-geneticsGenomicSourceClass'}.valueCodeableConcept.coding[0].code
       end
 
       test 'CGT03', 'Retrieve Family History data for the given patient' do

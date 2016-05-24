@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Specimen xmlns="http://hl7.org/fhir">
+	<text>
+		<status value="generated"/>
+		<div xmlns="http://www.w3.org/1999/xhtml">
+			<p>
+				<b>Generated Narrative with Details</b>
+			</p>
+			<p>
+				<b>type</b>: Blood sample
+				<span style="background: LightGoldenRodYellow ">(Details)</span>
+			</p>
+			<p>
+				<b>accessionIdentifier</b>: 21041205000001 (official)
+			</p>
+		</div>
+	</text>
+	<identifier>
+		<use value="official"/>
+		<system value="http://happyvalley.com/specimen"/>
+		<value value="C6D10"/>
+	</identifier>
+	<accessionIdentifier>
+		<use value="official"/>
+		<system value="http://lis.acmelabs.org/identifiers/accession"/>
+		<value value="21041205000001"/>
+	</accessionIdentifier>
+	<type>
+		<coding>
+			<system value="http://snomed.info/sct"/>
+			<code value="122555007"/>
+			<display value="Venous blood specimen"/>
+		</coding>
+		<coding>
+			<system value="http://lis.acmelabs.org/codes"/>
+			<code value="BLD"/>
+			<display value="Blood"/>
+		</coding>
+		<text value="Blood sample"/>
+	</type>
+	<subject>
+		<reference value="Patient/tlerr"/>
+		<display value="Todd Lerr"/>
+	</subject>
+	</subject>
+	<collection>
+		<collectedDateTime value="2014-12-05"/>
+	</collection>
+</Specimen>

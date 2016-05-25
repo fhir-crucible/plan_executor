@@ -1,16 +1,25 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: bbc606c3a1ee7d38735a352754ab2dcb4daeade4
+  revision: 110d1df427c88a9c5568307ce62f24e17a4f9415
   branch: master
   specs:
     fhir_client (1.0.0)
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_dstu2_models.git
-  revision: d97eb1a7ad805128e200ff12736668355c778741
+  revision: 51c1b4ba96a1b67256f7752d1ebc82d67a72fcf1
   branch: master
   specs:
     fhir_model (1.0.0)
+      bcp47
+      date_time_precision
+      mongoid
+      mongoid-history
+      moped
+      nokogiri
+      pry
+      rails (>= 4.0.0)
+      tilt
 
 PATH
   remote: .
@@ -183,3 +192,6 @@ DEPENDENCIES
   tilt
   turn
   webmock
+
+BUNDLED WITH
+   1.11.2

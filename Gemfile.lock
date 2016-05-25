@@ -1,25 +1,16 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 110d1df427c88a9c5568307ce62f24e17a4f9415
-  branch: master
+  revision: 63b03e0147e765c362b380708800b475761b862f
+  branch: stu3
   specs:
     fhir_client (1.0.0)
 
 GIT
-  remote: https://github.com/fhir-crucible/fhir_dstu2_models.git
-  revision: 51c1b4ba96a1b67256f7752d1ebc82d67a72fcf1
+  remote: https://github.com/fhir-crucible/fhir_models.git
+  revision: 28bb9ac7898690ca628c9e2cce89432df6940664
   branch: master
   specs:
-    fhir_model (1.0.0)
-      bcp47
-      date_time_precision
-      mongoid
-      mongoid-history
-      moped
-      nokogiri
-      pry
-      rails (>= 4.0.0)
-      tilt
+    fhir_models (1.0.0)
 
 PATH
   remote: .
@@ -176,7 +167,7 @@ DEPENDENCIES
   builder
   date_time_precision
   fhir_client!
-  fhir_model!
+  fhir_models!
   minitest (~> 4.0)
   mongoid
   mongoid-history

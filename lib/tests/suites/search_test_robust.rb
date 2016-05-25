@@ -41,10 +41,10 @@ module Crucible
 
         # create a condition matching the first patient
         @condition = ResourceGenerator.generate(FHIR::Condition,1)
-        @condition['patient'] = ResourceGenerator.generate(FHIR::Reference)
-        @condition.patient.xmlId = @entries.try(:[],0).try(:resource).try(:xmlId)
+        @condition.patient = ResourceGenerator.generate(FHIR::Reference)
+        @condition.patient.id = @entries.try(:[],0).try(:resource).try(:id)
         options = {
-          :id => @entries.try(:[],0).try(:resource).try(:xmlId),
+          :id => @entries.try(:[],0).try(:resource).try(:id),
           :resource => @entries.try(:[],0).try(:resource).try(:class)
         }
         @condition.patient.reference = @client.resource_url(options)
@@ -122,7 +122,7 @@ module Crucible
           entry_has_mpi_data = false
           if entry.search
             entry.search.extension.each do |e|
-              if (e.url=='http://hl7.org/fhir/StructureDefinition/patient-mpi-match' && e.value && e.value.type=='code' && ['certain','probable','possible','certainly-not'].include?(e.value.value))
+              if (e.url=='http://hl7.org/fhir/StructureDefinition/patient-mpi-match' && e.value && ['certain','probable','possible','certainly-not'].include?(e.valueCode))
                 entry_has_mpi_data = true
               end
             end

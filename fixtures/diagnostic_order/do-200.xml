@@ -10,21 +10,21 @@
 			<p>
 				<b>id</b>: do-200</p>
 			<p>
-				<b>subject</b>: 
+				<b>subject</b>:
         <a href="Patient/patient-uslab-example1">Todd Lerr</a>
 			</p>
 			<p>
-				<b>orderer</b>: 
+				<b>orderer</b>:
         <a href="Practitioner/pract-uslab-example1">Dr Leonard T Bloodraw Jr</a>
 			</p>
 			<p>
 				<b>identifier</b>: PLAC = do-200</p>
 			<p>
-				<b>reason</b>: Abnormal lead level in blood 
+				<b>reason</b>: Abnormal lead level in blood
         <span style="background: LightGoldenRodYellow ">(Details : {http://www.icd10data.com/icd10pcs code "R78.71" := "R78.71", given as "Abnormal lead level in blood"})</span>
 			</p>
 			<p>
-				<b>supportingInformation</b>: , 
+				<b>supportingInformation</b>: ,
         <a href="Condition/cond-uslab-example1">Lead Exposure</a>
 			</p>
 			<p>
@@ -35,14 +35,6 @@
 				<b>note</b>: Annontation: patient is afraid of needles</p>
 		</div>
 	</text>
-	<subject>
-		<reference value="Patient/patient-uslab-example1"/>
-		<display value="Todd Lerr"/>
-	</subject>
-	<orderer>
-		<reference value="Practitioner/pract-uslab-example1"/>
-		<display value="Dr Leonard T Bloodraw Jr"/>
-	</orderer>
 	<identifier>
 		<type>
 			<coding>
@@ -53,6 +45,11 @@
 		<system value="http://goodhealth.org/identifiers"/>
 		<value value="do-200"/>
 	</identifier>
+	<status value="requested"/>
+	<priority value="routine"/>
+	<subject>
+    <reference value="Patient/example"/>
+  </subject>
 	<reason>
 		<coding>
 			<system value="http://www.icd10data.com/icd10pcs"/>
@@ -61,23 +58,7 @@
 		</coding>
 		<text value="Abnormal lead level in blood"/>
 	</reason>
-	<supportingInformation>
-		<reference value="Observation/obs-uslab-example1"/>
-		<display value="Prior Results Observation"/>
-	</supportingInformation>
-	<supportingInformation>
-		<reference value="Condition/cond-uslab-example1"/>
-		<display value="Lead Exposure"/>
-	</supportingInformation>
-	<!--    EH this specimen is for when lab has existing
-<specimen>
-		<reference value="Specimen/uslab-example1"/>
-		<display value="Whole blood"/>
-	</specimen>
-  -->
 	<!--   EH this is set to 'requested' by the Placer  -->
-	<status value="requested"/>
-	<priority value="routine"/>
 	<event>
 		<!--   EH this is set to 'requested' by the Placer is required element in core resource  -->
 		<status value="requested"/>

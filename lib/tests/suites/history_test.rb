@@ -27,8 +27,9 @@ module Crucible
         @id = result.id
         @version << result.version
 
-        @patient.xmlId = @id
-        @patient.telecom << FHIR::ContactPoint.new(system: 'email', value: 'foo@example.com')
+        @patient.id = @id
+        @patient.telecom ||= []
+        @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
 
         update_result = @client.update(@patient, @id)
         assert_response_ok(update_result)
@@ -52,7 +53,7 @@ module Crucible
         assert_response_ok result
         bundle = result.resource
 
-        assert_equal "history", bundle.fhirType, "The bundle type is not correct"
+        assert_equal "history", bundle.type, "The bundle type is not correct"
         assert_equal @version_count, bundle.total, "the number of returned versions is not correct"
         check_sort_order(bundle.entry)
       end
@@ -68,9 +69,9 @@ module Crucible
         bundle = result.resource
         entries = bundle.entry
 
-        assert_equal 1, entries.select{|entry| entry.request.try(:method) == 'DELETE' }.size, 'Wrong number of DELETE transactions in the history bundle'
-        assert_equal 1, entries.select{|entry| entry.request.try(:method) == 'PUT' }.size, 'Wrong number of PUT transactions in the history bundle'
-        assert_equal 1, entries.select{|entry| entry.request.try(:method) == 'POST' }.size, 'Wrong number of POST transactions in the history bundle'
+        assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'DELETE' }.size, 'Wrong number of DELETE transactions in the history bundle'
+        assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'PUT' }.size, 'Wrong number of PUT transactions in the history bundle'
+        assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'POST' }.size, 'Wrong number of POST transactions in the history bundle'
 
       end
 
@@ -113,7 +114,7 @@ module Crucible
         bundle = result.resource
 
         active_entries(bundle.entry).each do |entry|
-          pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
+          pulled = @client.vread(FHIR::Patient, entry.resource.id, entry.resource.meta.versionId)
           assert_response_ok pulled
           assert !pulled.nil?, "Cannot find version that was present in history"
         end
@@ -121,7 +122,7 @@ module Crucible
         deleted_entries(bundle.entry).each do |entry|
           # FIXME: Should we parse the request URL or drop this assertion?
           if entry.resource
-            pulled = @client.vread(FHIR::Patient, entry.resource.xmlId, entry.resource.meta.versionId)
+            pulled = @client.vread(FHIR::Patient, entry.resource.id, entry.resource.meta.versionId)
             assert pulled.resource.nil?, "resource should not be found since it was deleted"
             assert_response_gone pulled
           end
@@ -270,7 +271,7 @@ module Crucible
       def deleted_entries(entries)
         entries.select do |entry|
           assert !entry.request.nil?, "history bundle entries do not have request elements, deleted entries cannot be distinguished"
-          entry.request.try(:method) == "DELETE"
+          entry.request.try(:local_method) == "DELETE"
         end
       end
 
@@ -280,8 +281,8 @@ module Crucible
 
 
       def entry_ids_are_present(entries)
-        relevant_entries = entries.select{|x|x.request.try(:method)!='DELETE'}
-        ids = relevant_entries.map(&:resource).map(&:xmlId).compact rescue assert(false, 'Unable to find IDs for resources returned by the bundle')
+        relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
+        ids = relevant_entries.map(&:resource).map(&:id).compact rescue assert(false, 'Unable to find IDs for resources returned by the bundle')
 
         # check that we have ids and self links
         assert_equal relevant_entries.length, ids.size, 'All PUT and POST entries must have an ID'
@@ -292,7 +293,7 @@ module Crucible
       end
 
       def check_sort_order(entries)
-        relevant_entries = entries.select{|x|x.request.try(:method)!='DELETE'}
+        relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
         relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
 
         relevant_entries.each_cons(2) do |left, right|

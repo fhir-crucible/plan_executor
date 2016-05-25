@@ -3,9 +3,12 @@ require 'bundler/setup'
 require 'rubygems'
 require 'yaml'
 require 'nokogiri'
-require 'fhir_model'
+require 'logger'
+require 'fhir_models'
 require 'fhir_client'
 require 'nokogiri/diff'
+require 'active_support/inflector'
+require 'active_support/core_ext'
 
 require_relative File.join('.','executor.rb')
 require_relative File.join('.','test_result.rb')

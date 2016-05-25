@@ -114,6 +114,12 @@ module Crucible
         end
       end
 
+      def assert_response_conflict(response)
+        unless assertion_negated( [409, 412].include?(response.code) )
+          raise AssertionException.new "Bad response code: expected 409 or 412, but found #{response.code}", response.body
+        end
+      end
+
       def assert_navigation_links(bundle)
         unless assertion_negated( bundle.first_link && bundle.last_link && bundle.next_link )
           raise AssertionException.new "Expecting first, next and last link to be present"
@@ -125,7 +131,7 @@ module Crucible
           # check what this is...
           found = response.resource
           begin
-            found = FHIR::Resource.from_contents(response.body)
+            found = FHIR.from_contents(response.body)
           rescue
             found = nil
           end

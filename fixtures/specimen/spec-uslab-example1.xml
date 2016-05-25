@@ -12,11 +12,11 @@
       <p>
         <b>identifier</b>: spec-200 (official)</p>
       <p>
-        <b>type</b>: Blood sample 
+        <b>type</b>: Blood sample
         <span style="background: LightGoldenRodYellow ">(Details : {SNOMED CT code "122555007" := "122555007", given as "Venous blood specimen"}; {http://lis.acmelabs.org/codes code "BLD" := "BLD", given as "Blood"})</span>
       </p>
       <p>
-        <b>subject</b>: 
+        <b>subject</b>:
         <a href="Patient/patient-uslab-example1">Todd Lerr</a>
       </p>
       <p>
@@ -36,7 +36,14 @@
 		<value value="SID456"/>
 	</identifier>
   -->
-  <!--  
+  <!--   accession identifier - e.g. assigned by the labaratory when it is received.
+     This is common, unlike specimen identifier   -->
+  <accessionIdentifier>
+    <use value="official"/>
+    <system value="http://lis.acmelabs.org/identifiers/accession"/>
+    <value value="21041205000001"/>
+  </accessionIdentifier>
+  <!--
    Type is a loosely defined field because there is such a lot of variation in how it is used.
    The principal variation is how much information that could be represented elsewhere is also
    represented here. For instance, here's some possible types:
@@ -67,13 +74,6 @@
     <reference value="Patient/patient-uslab-example1"/>
     <display value="Todd Lerr"/>
   </subject>
-  <!--   accession identifier - e.g. assigned by the labaratory when it is received.
-     This is common, unlike specimen identifier   -->
-  <accessionIdentifier>
-    <use value="official"/>
-    <system value="http://lis.acmelabs.org/identifiers/accession"/>
-    <value value="21041205000001"/>
-  </accessionIdentifier>
   <collection>
     <!--   the time of collection is required. Usually a point in time, but can be a period
       (collectedPeriod) if it's a timed collection (e.g. a 24 hour urine)   -->

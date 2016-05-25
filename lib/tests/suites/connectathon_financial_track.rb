@@ -19,12 +19,44 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
 
         @simple = @resources.simple_claim
-        @simple.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @simple.id = nil # clear the identifier, in case the server checks for duplicates
         @simple.identifier = nil # clear the identifier, in case the server checks for duplicates
 
         @average = @resources.average_claim
-        @average.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @average.id = nil # clear the identifier, in case the server checks for duplicates
         @average.identifier = nil # clear the identifier, in case the server checks for duplicates
+
+        @patient = @resources.minimal_patient
+        @patient.id = nil
+        @patient.identifier = [FHIR::Identifier.new]
+        @patient.identifier[0].value = SecureRandom.urlsafe_base64
+        result = @client.create(@patient)
+        assert_response_ok(result)
+        @patient_id = result.id
+
+        @simple.patient.reference = "Patient/#{@patient_id}"
+        @average.patient.reference = "Patient/#{@patient_id}"
+
+        @organization_1 = @resources.example_patient_record_organization_201
+        @organization_1.id = nil
+        reply = @client.create @organization_1
+        @organization_1_id = reply.id
+        @organization_1.id = @organization_1_id
+        assert_response_ok(reply)
+
+        @simple.organization.reference = "Organization/#{@organization_1_id}"
+        @average.organization.reference = "Organization/#{@organization_1_id}"
+
+        @organization_2 = @resources.example_patient_record_organization_203
+        @organization_2.id = nil
+        reply = @client.create @organization_2
+        @organization_2_id = reply.id
+        @organization_2.id = @organization_2_id
+        assert_response_ok(reply)
+
+        @simple.target.reference = "Organization/#{@organization_2_id}"
+        @average.target.reference = "Organization/#{@organization_2_id}"
+
       end
 
       def teardown
@@ -32,6 +64,9 @@ module Crucible
         @client.destroy(FHIR::ClaimResponse, @simple_response_id) if !@simple_response_id.nil?
         @client.destroy(FHIR::Claim, @average_id) if !@average_id.nil?
         @client.destroy(FHIR::ClaimResponse, @average_response_id) if !@average_response_id.nil?
+        @client.destroy(FHIR::Patient, @patient_id) if !@patient_id.nil?
+        @client.destroy(FHIR::Patient, @organization_1_id) if !@organization_1_id.nil?
+        @client.destroy(FHIR::Patient, @organization_2_id) if !@organization_2_id.nil?
       end
 
       #
@@ -53,16 +88,16 @@ module Crucible
 
         if !reply.resource.nil?
           # Response is Claim
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @simple.equals?(reply.resource), 'The server did not correctly preserve the Claim data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         elsif !reply.body.nil?
           begin
-            cr = FHIR::Resource.from_contents(reply.body)
+            cr = FHIR.from_contents(reply.body)
             if cr.class==FHIR::ClaimResponse
               # Response is ClaimResponse
-              @simple_response_id = cr.xmlId
+              @simple_response_id = cr.id
               @simple_id = cr.request.reference if cr.request
             else
               warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
@@ -96,16 +131,16 @@ module Crucible
 
         if !reply.resource.nil?
           # Response is Claim
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @average.equals?(reply.resource), 'The server did not correctly preserve the Claim data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         elsif !reply.body.nil?
           begin
-            cr = FHIR::Resource.from_contents(reply.body)
+            cr = FHIR.from_contents(reply.body)
             if cr.class==FHIR::ClaimResponse
               # Response is ClaimResponse
-              @average_response_id = cr.xmlId
+              @average_response_id = cr.id
               @average_id = cr.request.reference if cr.request
             else
               warning { assert(false,"The Claim request responded with an unexpected resource: #{cr.class}",reply.body) }
@@ -190,7 +225,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'request' => search_string
+              'requestreference' => search_string
             }
           }
         }
@@ -199,8 +234,9 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
+        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@simple_id), 'The server did not return a request with the proper claim')
 
-        @simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
+        @simple_response_id = reply.resource.entry[0].resource.id unless @simple_response_id
       end
 
       #
@@ -234,7 +270,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-        @simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
+        @simple_response_id = reply.resource.entry[0].resource.id unless @simple_response_id
       end
 
       #
@@ -268,7 +304,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-        @simple_response_id = reply.resource.entry[0].resource.xmlId unless @simple_response_id
+        @simple_response_id = reply.resource.entry[0].resource.id unless @simple_response_id
       end
 
       # ------------------------------------------------------------------------------
@@ -294,7 +330,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'request' => search_string
+              'requestreference' => search_string
             }
           }
         }
@@ -304,7 +340,8 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-        @average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
+        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@average_id), 'The server did not return a request with the proper claim')
+        @average_response_id = reply.resource.entry[0].resource.id unless @average_response_id
       end
 
       #
@@ -338,7 +375,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-        @average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
+        @average_response_id = reply.resource.entry[0].resource.id unless @average_response_id
       end
 
       #
@@ -372,7 +409,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-        @average_response_id = reply.resource.entry[0].resource.xmlId unless @average_response_id
+        @average_response_id = reply.resource.entry[0].resource.id unless @average_response_id
       end
 
     end

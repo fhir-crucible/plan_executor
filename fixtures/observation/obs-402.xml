@@ -14,11 +14,11 @@
       <p>
         <b>status</b>: final</p>
       <p>
-        <b>code</b>: Stool Culture 
+        <b>code</b>: Stool Culture
         <span style="background: LightGoldenRodYellow ">(Details : {LOINC code "625-4" := "625-4", given as "Bacteria identified in Stool by Culture"})</span>
       </p>
       <p>
-        <b>subject</b>: 
+        <b>subject</b>:
         <a href="Patient/patient-uslab-example1">Todd Lerr</a>
       </p>
       <p>
@@ -26,17 +26,17 @@
       <p>
         <b>issued</b>: 12/6/2014 3:42:15 PM</p>
       <p>
-        <b>value</b>: Shigella flexneri isolated 
+        <b>value</b>: Shigella flexneri isolated
         <span style="background: LightGoldenRodYellow ">(Details : {SNOMED CT code "85729005" := "85729005", given as "Shigella flexneri"})</span>
       </p>
       <p>
-        <b>interpretation</b>: Abnormal 
+        <b>interpretation</b>: Abnormal
         <span style="background: LightGoldenRodYellow ">(Details : {http://hl7.org/fhir/v2/0078 code "A" := "Abnormal)</span>
       </p>
       <p>
         <b>comments</b>: Antibiotic treatment is recommended for patients with severe disease, bloody diarrhea, or compromised immune systems. Resistance to traditional first-line drugs like ampicillin and trimethoprim-sulfamethoxazole is common, and resistance to some other antibiotics is increasing. With this in mind, antibiotic susceptibility testing can help guide appropriate therapy. When an ampicillin- or trimethroprim-sulfamethoxazole-resistant strain is isolated, choices for therapy include fluoroquinolones, ceftriaxone, and azithromycin.</p>
       <p>
-        <b>specimen</b>: 
+        <b>specimen</b>:
         <a href="Specimen/spec-uslab-example1">Blood sample</a>
       </p>
     </div>
@@ -81,15 +81,5 @@
       <code value="A"/>
     </coding>
   </interpretation>
-  <comments value="Antibiotic treatment is recommended for patients with severe disease, bloody diarrhea, or compromised immune systems. Resistance to traditional first-line drugs like ampicillin and trimethoprim-sulfamethoxazole is common, and resistance to some other antibiotics is increasing. With this in mind, antibiotic susceptibility testing can help guide appropriate therapy. When an ampicillin- or trimethroprim-sulfamethoxazole-resistant strain is isolated, choices for therapy include fluoroquinolones, ceftriaxone, and azithromycin."/>
-  <specimen>
-    <reference value="Specimen/spec-uslab-example1"/>
-    <display value="Blood sample"/>
-  </specimen>
-  <related>
-    <target>
-      <reference value="Observation/obs-407"/>
-      <display value="Bacterial susceptibility panel (MIC)"/>
-    </target>
-  </related>
+  <comment value="Antibiotic treatment is recommended for patients with severe disease, bloody diarrhea, or compromised immune systems. Resistance to traditional first-line drugs like ampicillin and trimethoprim-sulfamethoxazole is common, and resistance to some other antibiotics is increasing. With this in mind, antibiotic susceptibility testing can help guide appropriate therapy. When an ampicillin- or trimethroprim-sulfamethoxazole-resistant strain is isolated, choices for therapy include fluoroquinolones, ceftriaxone, and azithromycin."/>
 </Observation>

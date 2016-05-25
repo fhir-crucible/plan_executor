@@ -78,7 +78,7 @@ module Crucible
               }
             }
           }
-          @patient_id ||= @client.search(@rc, options).resource.entry.first.resource.xmlId
+          @patient_id ||= @client.search(@rc, options).resource.entry.first.resource.id
         rescue NoMethodError
           @patient = nil
         end

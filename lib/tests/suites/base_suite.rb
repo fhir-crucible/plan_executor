@@ -2,6 +2,8 @@ module Crucible
   module Tests
     class BaseSuite < BaseTest
 
+      EXCLUDED_RESOURCES = ['DomainResource', 'Resource', 'Parameters', 'OperationOutcome']
+
       def title
         self.class.name.demodulize
       end
@@ -10,7 +12,7 @@ module Crucible
         # body should be a String
         outcome = nil
         begin
-          outcome = FHIR::Resource.from_contents(body)
+          outcome = FHIR.from_contents(body)
           outcome = nil if outcome.class!=FHIR::OperationOutcome
         rescue
           outcome = nil
@@ -26,8 +28,8 @@ module Crucible
         messages
       end
 
-      def fhir_resources
-        Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
+      def self.fhir_resources
+        FHIR::RESOURCES.select {|r| !EXCLUDED_RESOURCES.include?(r)}.map {|r| "FHIR::#{r}".constantize}
       end
 
       def requires(hash)

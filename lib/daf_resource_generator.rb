@@ -6,7 +6,7 @@ module Crucible
         resource = minimal_patient(identifier,name)
         # resource.identifier = [ minimal_identifier(identifier) ]
         # resource.name = [ minimal_humanname(name) ]
-        resource.meta = FHIR::Resource::ResourceMetaComponent.new
+        resource.meta = FHIR::Meta.new
         resource.meta.profile = ['http://hl7.org/fhir/StructureDefinition/daf-patient']
         # DAF must supports and DAF extensions
         resource.active = true
@@ -15,7 +15,7 @@ module Crucible
         resource.birthDate = DateTime.now.strftime("%Y-%m-%d")
         resource.deceasedBoolean = false
         resource.address = [ daf_address ]
-        resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/marital-status','S')
+        resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
         resource.multipleBirthBoolean = false
         resource.contact = [ daf_patient_contact ]
         resource.communication = [ daf_patient_communication ]
@@ -68,7 +68,7 @@ module Crucible
       end
 
       def self.daf_patient_contact
-        resource = FHIR::Patient::ContactComponent.new
+        resource = FHIR::Patient::Contact.new
         resource.relationship = [ minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','parent'), minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','emergency') ]
         resource.name = minimal_humanname('Mom')
         resource.telecom = [ daf_contact_point ]
@@ -77,7 +77,7 @@ module Crucible
       end
 
       def self.daf_patient_communication
-        resource = FHIR::Patient::PatientCommunicationComponent.new
+        resource = FHIR::Patient::Communication.new
         resource.language = minimal_codeableconcept('http://tools.ietf.org/html/bcp47','en-US')
         resource
       end
@@ -85,7 +85,7 @@ module Crucible
       def self.make_extension(url,type,value)
         extension = FHIR::Extension.new
         extension.url = url
-        extension.value = FHIR::AnyType.new(type,value)
+        extension.method("value#{type}=".to_sym).call(value)
         extension
       end
 

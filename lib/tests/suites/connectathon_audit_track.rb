@@ -20,13 +20,13 @@ module Crucible
       end
 
       def teardown
-        @client.destroy(FHIR::Provenance, @provenance1.xmlId) if @provenance1 && !@provenance1.xmlId.nil?
-        @client.destroy(FHIR::Provenance, @provenance2.xmlId) if @provenance2 && !@provenance2.xmlId.nil?
-        @client.destroy(FHIR::Provenance, @provenance3.xmlId) if @provenance3 && !@provenance3.xmlId.nil?
-        @client.destroy(FHIR::Provenance, @provenance4.xmlId) if @provenance4 && !@provenance4.xmlId.nil?
-        @client.destroy(FHIR::Patient, @patient.xmlId) if @patient && !@patient.xmlId.nil?
-        @client.destroy(FHIR::Patient, @patient1.xmlId) if @patient1 && !@patient1.xmlId.nil?
-        @client.destroy(FHIR::Patient, @patient2.xmlId) if @patient2 && !@patient2.xmlId.nil?
+        @client.destroy(FHIR::Provenance, @provenance1.id) if @provenance1 && !@provenance1.id.nil?
+        @client.destroy(FHIR::Provenance, @provenance2.id) if @provenance2 && !@provenance2.id.nil?
+        @client.destroy(FHIR::Provenance, @provenance3.id) if @provenance3 && !@provenance3.id.nil?
+        @client.destroy(FHIR::Provenance, @provenance4.id) if @provenance4 && !@provenance4.id.nil?
+        @client.destroy(FHIR::Patient, @patient.id) if @patient && !@patient.id.nil?
+        @client.destroy(FHIR::Patient, @patient1.id) if @patient1 && !@patient1.id.nil?
+        @client.destroy(FHIR::Patient, @patient2.id) if @patient2 && !@patient2.id.nil?
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance') # just in case
       end
 
@@ -44,26 +44,28 @@ module Crucible
           validates resource: 'AuditEvent', methods: ['search']
         }
         @patient = @resources.minimal_patient
-        @patient.xmlId = nil # clear the identifier
+        @patient.id = nil # clear the identifier
         reply = @client.create(@patient)      
         assert_response_ok(reply)
-        @patient.xmlId = reply.id
+        @patient.id = reply.id
 
         options = {
           :search => {
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'reference' => "Patient/#{@patient.xmlId}"
+              'entity' => "Patient/#{@patient.id}"
             }
           }
         }
+        sleep 5 # give a few seconds for the Audit Event to be generated
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one AuditEvent for the test Patient currently in the system.', reply.body)
-        assert(reply.resource.entry[0].try(:resource).try(:object).try(:reference).include?(@patient.xmlId), 'The correct AuditEvent was not returned.', reply.body)
-        warning { assert_equal('110110', reply.resource.entry[0].try(:resource).try(:event).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+        assert(reply.resource.entry[0].try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'The correct AuditEvent was not returned.', reply.body)
+        warning { assert_equal('rest', reply.resource.entry[0].try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of rest', reply.body) }
+        warning { assert_equal('http://hl7.org/fhir/audit-event-type', reply.resource.entry[0].try(:resource).try(:type).try(:system), 'Was expecting an AuditEvent.event.type.system of http://hl7.org/fhir/audit-event-type', reply.body) }
       end
 
       # Create a Patient with Provenance as a transaction
@@ -83,14 +85,21 @@ module Crucible
         }
 
         @patient1 = @resources.minimal_patient
-        @patient1.xmlId = 'foo'
+        @patient1.id = 'foo'
 
         @provenance1 = FHIR::Provenance.new
         @provenance1.target = [ FHIR::Reference.new ]
-        @provenance1.target[0].reference = "Patient/#{@patient1.xmlId}"
-        @provenance1.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance1.reason = [ FHIR::CodeableConcept.new ]
-        @provenance1.reason[0].text = 'New patient'
+        @provenance1.target[0].reference = "Patient/#{@patient1.id}"
+        @provenance1.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance1.reason = [ FHIR::Coding.new ]
+        @provenance1.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance1.reason[0].display = 'patient administration'
+        @provenance1.reason[0].code = 'PATADMIN'
+        @provenance1.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance1.agent[0].role = FHIR::Coding.new
+        @provenance1.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance1.agent[0].role.display = 'Author'
+        @provenance1.agent[0].role.code = 'author'
 
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient1)
@@ -99,21 +108,21 @@ module Crucible
 
         # set the patient id as nil, until we know that the transaction was successful, so teardown doesn't try
         # to delete something that wasn't created
-        @patient1.xmlId = nil
+        @patient1.id = nil
 
-        assert_response_ok(reply)
+        assert([200,201,202].include?(reply.code), 'Expected response code 200, 201, or 202', reply.body)
         assert_bundle_response(reply)
 
         # set the patient id back from nil to whatever the server created
-        @patient1.xmlId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-        @provenance1.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
+        @patient1.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @provenance1.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
 
         options = {
           :search => {
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'target' => "Patient/#{@patient1.xmlId}"
+              'target' => "Patient/#{@patient1.id}"
             }
           }
         }
@@ -121,7 +130,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Provenance for the test Patient currently in the system.', reply.body)
-        assert(reply.resource.entry[0].try(:resource).try(:target).try(:first).try(:reference).include?(@patient1.xmlId), 'The correct Provenance was not returned.', reply.body)
+        assert(reply.resource.entry[0].try(:resource).try(:target).try(:first).try(:reference).include?(@patient1.id), 'The correct Provenance was not returned.', reply.body)
       end
 
       # Create a Patient with a Provenance header:
@@ -140,28 +149,35 @@ module Crucible
         }
 
         @patient2 = @resources.minimal_patient
-        @patient2.xmlId = nil # clear the identifier
+        @patient2.id = nil # clear the identifier
 
         @provenance2 = FHIR::Provenance.new
         @provenance2.target = [ FHIR::Reference.new ]
-        # @provenance2.target[0].reference = "Patient/#{@patient2.xmlId}"
-        @provenance2.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance2.reason = [ FHIR::CodeableConcept.new ]
-        @provenance2.reason[0].text = 'New patient'
+        # @provenance2.target[0].reference = "Patient/#{@patient2.id}"
+        @provenance2.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance2.reason = [ FHIR::Coding.new ]
+        @provenance2.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance2.reason[0].display = 'patient administration'
+        @provenance2.reason[0].code = 'PATADMIN'
+        @provenance2.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance2.agent[0].role = FHIR::Coding.new
+        @provenance2.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance2.agent[0].role.display = 'Author'
+        @provenance2.agent[0].role.code = 'author'
 
-        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_fhir_json
+        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_json
         reply = @client.create(@patient2)      
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
 
         assert_response_ok(reply)
-        @patient2.xmlId = reply.id
+        @patient2.id = reply.id
 
         options = {
           :search => {
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'target' => "Patient/#{@patient2.xmlId}"
+              'target' => "Patient/#{@patient2.id}"
             }
           }
         }
@@ -169,8 +185,8 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal(1, reply.resource.entry.size, 'There should only be one Provenance for the test Patient currently in the system.', reply.body)
-        assert(reply.resource.entry[0].try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.xmlId), 'The correct Provenance was not returned.', reply.body)
-        @provenance2.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
+        assert(reply.resource.entry[0].try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.id), 'The correct Provenance was not returned.', reply.body)
+        @provenance2.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
       end
 
       # Update a Patient and check for AuditEvent
@@ -187,7 +203,7 @@ module Crucible
           validates resource: 'AuditEvent', methods: ['search']
         }
         @patient.gender = 'male'
-        reply = @client.update(@patient,@patient.xmlId)      
+        reply = @client.update(@patient,@patient.id)      
         assert_response_ok(reply)
 
         options = {
@@ -195,18 +211,24 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'reference' => "Patient/#{@patient.xmlId}"
+              'entity' => "Patient/#{@patient.id}"
             }
           }
         }
+        sleep 5 # give a few seconds for the Audit Event to be generated
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal(2, reply.resource.entry.size, 'There should be two AuditEvents for the test Patient currently in the system.', reply.body)
+        found_update_type = false
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:object).try(:reference).include?(@patient.xmlId), 'An incorrect AuditEvent was returned.', reply.body)
-          warning { assert_equal('110110', entry.try(:resource).try(:event).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
+          if entry.try(:resource).try(:action) == 'U'
+            found_update_type = true
+            warning { assert_equal('rest', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of rest', reply.body) }
+            warning { assert_equal('http://hl7.org/fhir/audit-event-type', entry.try(:resource).try(:type).try(:system), 'Was expecting an AuditEvent.event.type.system of http://hl7.org/fhir/audit-event-type', reply.body) }
+          end
         end
+        assert(found_update_type, 'No update AuditEvent returned', reply.body)
       end
 
       # Update a Patient with Provenance as a transaction
@@ -228,27 +250,34 @@ module Crucible
 
         @provenance3 = FHIR::Provenance.new
         @provenance3.target = [ FHIR::Reference.new ]
-        @provenance3.target[0].reference = "Patient/#{@patient1.xmlId}"
-        @provenance3.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance3.reason = [ FHIR::CodeableConcept.new ]
-        @provenance3.reason[0].text = 'Update Gender'
+        @provenance3.target[0].reference = "Patient/#{@patient1.id}"
+        @provenance3.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance3.reason = [ FHIR::Coding.new ]
+        @provenance3.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance3.reason[0].display = 'patient administration'
+        @provenance3.reason[0].code = 'PATADMIN'
+        @provenance3.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance3.agent[0].role = FHIR::Coding.new
+        @provenance3.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance3.agent[0].role.display = 'Author'
+        @provenance3.agent[0].role.code = 'author'
 
         @client.begin_transaction
         @client.add_transaction_request('PUT',nil,@patient1)
         @client.add_transaction_request('POST',nil,@provenance3)
         reply = @client.end_transaction
 
-        assert_response_ok(reply)
+        assert([200,201,202].include?(reply.code), 'Expected response code 200, 201, or 202', reply.body)
         assert_bundle_response(reply)
 
-        @provenance3.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
+        @provenance3.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
 
         options = {
           :search => {
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'target' => "Patient/#{@patient1.xmlId}"
+              'target' => "Patient/#{@patient1.id}"
             }
           }
         }
@@ -257,7 +286,7 @@ module Crucible
         assert_bundle_response(reply)
         assert_equal(2, reply.resource.entry.size, 'There should be two Provenance resources for the test Patient currently in the system.', reply.body)
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:target).try(:first).try(:reference).include?(@patient1.xmlId), 'An incorrect Provenance was returned.', reply.body)
+          assert(entry.try(:resource).try(:target).try(:first).try(:reference).include?(@patient1.id), 'An incorrect Provenance was returned.', reply.body)
         end
       end
 
@@ -280,13 +309,20 @@ module Crucible
 
         @provenance4 = FHIR::Provenance.new
         @provenance4.target = [ FHIR::Reference.new ]
-        @provenance4.target[0].reference = "Patient/#{@patient2.xmlId}"
-        @provenance4.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ%z")
-        @provenance4.reason = [ FHIR::CodeableConcept.new ]
-        @provenance4.reason[0].text = 'Update Gender'
+        # @provenance4.target[0].reference = "Patient/#{@patient2.id}"
+        @provenance4.recorded = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
+        @provenance4.reason = [ FHIR::Coding.new ]
+        @provenance4.reason[0].system = 'http://hl7.org/fhir/v3/ActReason'
+        @provenance4.reason[0].display = 'patient administration'
+        @provenance4.reason[0].code = 'PATADMIN'
+        @provenance4.agent = [ FHIR::Provenance::Agent.new ]
+        @provenance4.agent[0].role = FHIR::Coding.new
+        @provenance4.agent[0].role.system = 'http://hl7.org/fhir/provenance-participant-role'
+        @provenance4.agent[0].role.display = 'Author'
+        @provenance4.agent[0].role.code = 'author'
 
-        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_fhir_json
-        reply = @client.update(@patient2,@patient2.xmlId)      
+        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_json
+        reply = @client.update(@patient2,@patient2.id)      
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
         assert_response_ok(reply)
 
@@ -296,7 +332,7 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'target' => "Patient/#{@patient2.xmlId}"
+              'target' => "Patient/#{@patient2.id}"
             }
           }
         }
@@ -305,10 +341,10 @@ module Crucible
         assert_bundle_response(reply)
         assert_equal(2, reply.resource.entry.size, 'There should be two Provenance resources for the test Patient currently in the system.', reply.body)
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.xmlId), 'An incorrect Provenance was returned.', reply.body)
+          assert(entry.try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.id), 'An incorrect Provenance was returned.', reply.body)
         end
-        @provenance3.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
-        @provenance4.xmlId = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
+        @provenance3.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
+        @provenance4.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[1].try(:response).try(:location))
       end
 
       # Read a Patient and check for AuditEvent
@@ -324,7 +360,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read']
           validates resource: 'AuditEvent', methods: ['search']
         }
-        reply = @client.read(FHIR::Patient,@patient.xmlId)      
+        reply = @client.read(FHIR::Patient,@patient.id)      
         assert_response_ok(reply)
 
         options = {
@@ -332,18 +368,24 @@ module Crucible
             :flag => false,
             :compartment => nil,
             :parameters => {
-              'reference' => "Patient/#{@patient.xmlId}"
+              'entity' => "Patient/#{@patient.id}"
             }
           }
         }
+        sleep 5 # give a few seconds for the Audit Event to be generated
         reply = @client.search(FHIR::AuditEvent, options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal(3, reply.resource.entry.size, 'There should be three AuditEvents for the test Patient currently in the system.', reply.body)
+        found_read_type = false
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:object).try(:reference).include?(@patient.xmlId), 'An incorrect AuditEvent was returned.', reply.body)
-          warning { assert_equal('110110', entry.try(:resource).try(:event).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of 110110 (Patient Record).', reply.body) }
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
+          if entry.try(:resource).try(:action) == 'R'
+            found_read_type = true
+            warning { assert_equal('rest', entry.try(:resource).try(:type).try(:code), 'Was expecting an AuditEvent.event.type.code of rest', reply.body) }
+            warning { assert_equal('http://hl7.org/fhir/audit-event-type', entry.try(:resource).try(:type).try(:system), 'Was expecting an AuditEvent.event.type.system of http://hl7.org/fhir/audit-event-type', reply.body) }
+          end
         end
+        assert(found_read_type, 'No read AuditEvent returned', reply.body)
       end
 
     end

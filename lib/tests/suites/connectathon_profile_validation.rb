@@ -19,13 +19,13 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
 
         @profile = @resources.track3_profile
-        @profile.xmlId = nil
+        @profile.id = nil
         @profile.identifier = nil # clear the identifiers, in case the server checks for duplicates
         reply = @client.create @profile
-        @profile.xmlId = reply.id if !reply.id.nil?
+        @profile.id = reply.id if !reply.id.nil?
 
         options = {
-          id: @profile.xmlId,
+          id: @profile.id,
           resource: @profile.class,
           format: nil
         }
@@ -34,16 +34,16 @@ module Crucible
 
         @obs = @resources.track3_observations
         @obs.each do |x|
-          x.xmlId = nil
+          x.id = nil
           x.identifier = nil # clear the identifiers, in case the server checks for duplicates
           x.meta = nil
         end
       end
 
       def teardown
-        @client.destroy(FHIR::StructureDefinition, @profile.xmlId) if !@profile.xmlId.nil?
+        @client.destroy(FHIR::StructureDefinition, @profile.id) if !@profile.id.nil?
         # @obs.each do |x|
-        #   @client.destroy(FHIR::Observation, x.xmlId) if !x.xmlId.nil?
+        #   @client.destroy(FHIR::Observation, x.id) if !x.id.nil?
         # end
       end
 
@@ -83,10 +83,10 @@ module Crucible
           validates resource: 'Observation', methods: ['$validate']
           validates profiles: ['validate-profile']
         }
-        
+        skip if @profile.id.nil?
         # @profile_url = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with
         @obs.each do |x|
-          x.meta = FHIR::Resource::ResourceMetaComponent.new
+          x.meta = FHIR::Meta.new
           x.meta.profile = [ @profile_url ]
           reply = @client.validate(x,{profile_uri: @profile_url})
           assert_response_ok(reply)

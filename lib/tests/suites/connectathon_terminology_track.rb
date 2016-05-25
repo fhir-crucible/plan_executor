@@ -48,7 +48,7 @@ module Crucible
           }
           skip if @valueset.nil?
           options = {
-            :id => @valueset.xmlId,
+            :id => @valueset.id,
             :operation => {
               :method => how
             }
@@ -56,7 +56,8 @@ module Crucible
           reply = @client.value_set_expansion(options)
           assert_response_ok(reply)
           assert_resource_type(reply, FHIR::ValueSet)
-          check_expansion_for_concepts(reply.resource)
+          reference_set = FHIR::ElementDefinition::Type::METADATA['code']['valid_codes'].values.flatten
+          check_expansion_for_concepts(reply.resource, reference_set)
         end
 
         test "CT02#{how[0]}", "Expand a ValueSet by context (#{how})" do
@@ -76,7 +77,8 @@ module Crucible
           reply = @client.value_set_expansion(options)
           assert_response_ok(reply)
           assert_resource_type(reply, FHIR::ValueSet)
-          check_expansion_for_concepts(reply.resource)
+          reference_set = FHIR::ElementDefinition::Type::METADATA['code']['valid_codes'].values.flatten
+          check_expansion_for_concepts(reply.resource, reference_set)
         end
 
         test "CT03#{how[0]}", "Validate a code using identifier (#{how})" do
@@ -89,8 +91,9 @@ module Crucible
             :operation => {
               :method => how,
               :parameters => {
+                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' },
                 'code' => { type: 'Code', value: 'female' },
-                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' }
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/administrative-gender' }
               }
             }
           }
@@ -111,6 +114,7 @@ module Crucible
               :method => how,
               :parameters => {
                 'code' => { type: 'Code', value: 'BRN' },
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/v2/0487' },
                 'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
               }
             }
@@ -118,27 +122,6 @@ module Crucible
           reply = @client.value_set_code_validation(options)
           assert_response_ok(reply)
           check_response_params(reply.body,'result','valueBoolean','true')
-        end
-
-        # lookup a v2 code
-        test "CT05#{how[0]}", "Lookup a v2 code using identifier (#{how})" do
-          metadata {
-            links "#{BASE_SPEC_LINK}/operations.html#executing"
-            links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
-            validates resource: 'ValueSet', methods: ['$lookup']
-          }
-          options = {
-            :operation => {
-              :method => how,
-              :parameters => {
-                'code' => { type: 'Code', value: 'BRN' },
-                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/v2-0487' }
-              }
-            }
-          }
-          reply = @client.value_set_code_lookup(options)
-          assert_response_ok(reply)
-          check_response_params(reply.body,'display','valueString','Burn')
         end
 
         test "CT06#{how[0]}", "Validate a code by system (#{how})" do
@@ -181,38 +164,180 @@ module Crucible
           assert_response_ok(reply)
           check_response_params(reply.body,'result','valueBoolean','true')
         end
+      end # ['GET','POST'].each
 
-        # lookup a v2 code
-        test "CT08#{how[0]}", "Lookup a v2 code by system (#{how})" do
+      test "CT09", "Create a ValueSet that points to a local CodeSystem" do
+        metadata {
+          links "#{REST_SPEC_LINK}#create"
+          links "#{BASE_SPEC_LINK}/codesystem.html"
+          links "#{BASE_SPEC_LINK}/valueset.html#create"
+          validates resource: 'CodeSystem', methods: ['create']
+          validates resource: 'ValueSet', methods: ['create']
+        }
+
+        @resources = Crucible::Generator::Resources.new
+        @codesystem_simple = @resources.codesystem_simple
+        @valueset_simple = @resources.valueset_simple
+
+        # make more unique in case this valueset & codesystem already exists
+        @valueset_simple.url = @valueset_simple.url + rand(10000000).to_s
+        @codesystem_simple.url = @codesystem_simple.url + rand(10000000).to_s
+        @valueset_simple.compose.include.first.system = @codesystem_simple.url
+
+        reply = @client.create @codesystem_simple
+        assert_response_code(reply, 201)
+        @codesystem_created_id = reply.id
+        reply = @client.create @valueset_simple
+        assert_response_code(reply, 201)
+        @valueset_created_id = reply.id
+      end
+
+      ['GET','POST'].each do |how|  
+
+        test "CT10#{how[0]}", "Expand a ValueSet that points to a local CodeSystem(#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/valueset-operations.html#expand"
+            validates resource: 'ValueSet', methods: ['$expand']
+          }
+          skip if @valueset_created_id.nil? || @codesystem_created_id.nil?
+          options = {
+            :id => @valueset_created_id,
+            :operation => {
+              :method => how
+            }
+          }
+          reply = @client.value_set_expansion(options)
+          assert_response_ok(reply)
+          assert_resource_type(reply, FHIR::ValueSet)
+          reference_set = @codesystem_simple.concept.map(&:code)
+          check_expansion_for_concepts(reply.resource, reference_set)
+        end
+
+        test "CT11#{how[0]}", "Validate a code from local CodeSystem using identifier(#{how})" do
           metadata {
             links "#{BASE_SPEC_LINK}/operations.html#executing"
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
-            validates resource: 'ValueSet', methods: ['$lookup']
+            validates resource: 'ValueSet', methods: ['$validate-code']
           }
+          skip if @valueset_created_id.nil? || @codesystem_created_id.nil?
           options = {
             :operation => {
               :method => how,
               :parameters => {
-                'code' => { type: 'Code', value: 'BRN' },
-                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/v2/0487' }
+                'code' => { type: 'Code', value: @codesystem_simple.concept.first.code },
+                'system' => { type: 'Uri', value: @codesystem_simple.url },
+                'identifier' => { type: 'Uri', value: @valueset_simple.url }
               }
             }
           }
-          reply = @client.value_set_code_lookup(options)
+          reply = @client.value_set_code_validation(options)
           assert_response_ok(reply)
-          check_response_params(reply.body,'display','valueString','Burn')
+          check_response_params(reply.body,'result','valueBoolean','true')
         end
 
-      end # ['GET','POST'].each
+        test "CT12#{how[0]}", "Lookup code from local CodeSystem using identifier(#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/codesystem-operations.html#lookup"
+            validates resource: 'ValueSet', methods: ['$lookup']
+          }
+          skip if @codesystem_created_id.nil?
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'code' => { type: 'Code', value: @codesystem_simple.concept.first.code },
+                'system' => { type: 'Uri', value: @codesystem_simple.url }
+              }
+            }
+          }
+          reply = @client.code_system_lookup(options)
+          assert_response_ok(reply)
+          check_response_params(reply.body,'display','valueString',@codesystem_simple.concept.first.display)
+        end
+      end
 
-      def check_expansion_for_concepts(vs)
+      test "CT13", "Delete CodeSystem and ValueSet" do
+        metadata {
+          links "#{REST_SPEC_LINK}#delete"
+          links "#{BASE_SPEC_LINK}/valueset.html"
+          links "#{BASE_SPEC_LINK}/codesystem.html"
+          validates resource: 'CodeSystem', methods: ['delete']
+          validates resource: 'ValueSet', methods: ['delete']
+        }
+
+        skip if @codesystem_created_id.nil?
+        reply = @client.destroy FHIR::CodeSystem, @codesystem_created_id
+        assert_response_code(reply, 204)
+
+        skip if @valueset_created_id.nil?
+        @client.destroy FHIR::ValueSet, @valueset_created_id
+        assert_response_code(reply, 204)
+      end
+
+      test "CT14", "Create ConceptMap" do
+        metadata {
+          links "#{REST_SPEC_LINK}#create"
+          links "#{BASE_SPEC_LINK}/conceptmap.html"
+          validates resource: 'ConceptMap', methods: ['create']
+        }
+
+        @resources = Crucible::Generator::Resources.new
+        @conceptmap_simple = @resources.conceptmap_simple
+        @conceptmap_simple.id = nil
+        @conceptmap_simple.url = @conceptmap_simple.url + rand(10000000).to_s
+
+        reply = @client.create @conceptmap_simple
+        assert_response_code(reply, 201)
+        @conceptmap_created_id = reply.id
+      end
+
+      ['GET','POST'].each do |how|  
+
+        test "CT15#{how[0]}", "$translate a code using a ConceptMap (#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/conceptmap-operations.html#translate"
+            validates resource: 'ConceptMap', methods: ['$translate']
+          }
+          skip if @conceptmap_created_id.nil?
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'code' => { type: 'Code', value: @conceptmap_simple.element.first.code },
+                'system' => { type: 'Uri', value: @conceptmap_simple.element.first.system },
+                'target' => { type: 'Uri', value: @conceptmap_simple.targetReference.reference }
+              }
+            }
+          }
+          reply = @client.concept_map_translate(options)
+          assert_response_ok(reply)
+          check_response_params(reply.body,'result','valueBoolean','true')
+        end
+      end
+
+      test "CT16", "Delete ConceptMap" do
+        metadata {
+          links "#{REST_SPEC_LINK}#delete"
+          links "#{BASE_SPEC_LINK}/conceptmap.html"
+          validates resource: 'ConceptMap', methods: ['delete']
+        }
+
+        skip if @conceptmap_created_id.nil?
+        reply = @client.destroy FHIR::ConceptMap, @conceptmap_created_id
+        assert_response_code(reply, 204)
+      end
+
+      def check_expansion_for_concepts(vs, ref)
         assert(vs.expansion,'ValueSet should contain expansion.')
         assert(vs.expansion.contains,'ValueSet.expansion.contains elements are missing.')
 
         concepts = vs.expansion.contains.map{|c|c.code}
 
-        expansion_missing = FHIR::ElementDefinition::TypeRefComponent::VALID_CODES[:code] - concepts
-        expansion_added = concepts - FHIR::ElementDefinition::TypeRefComponent::VALID_CODES[:code]
+        expansion_missing = ref - concepts
+        expansion_added = concepts - ref
 
         assert(expansion_missing.empty?,"ValueSet expansion is missing the following concepts: #{expansion_missing}")
         assert(expansion_added.empty?,"ValueSet expansion contained some unexpected concepts: #{expansion_added}")        
@@ -233,7 +358,6 @@ module Crucible
             assert(p[attribute]==value,"Output parameters do not contain #{name}=#{value}")
           end
         rescue Exception => e
-          binding.pry
           raise AssertionException.new 'Unable to parse response parameters', e.message
         end
       end

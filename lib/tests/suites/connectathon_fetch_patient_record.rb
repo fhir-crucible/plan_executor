@@ -111,14 +111,14 @@ module Crucible
         assert_bundle_response(record)
 
         patient = @patient
-        patient.xmlId = @patient_id
+        patient.id = @patient_id
 
         returned_patient = nil
         record.resource.entry.each do |entry|
           returned_patient = entry.resource if entry.resource.class == FHIR::Patient
         end
 
-        assert patient.equals?(returned_patient), "Returned patient doesn't match original patient."
+        assert patient.equals?(returned_patient, ['meta', 'text']), "Returned patient doesn't match original patient."
       end
 
       #
@@ -142,14 +142,14 @@ module Crucible
         assert_bundle_response(record)
 
         patient = @patient
-        patient.xmlId = @patient_id
+        patient.id = @patient_id
 
         returned_patient = nil
         record.resource.entry.each do |entry|
           returned_patient = entry.resource if entry.resource.class == FHIR::Patient
         end
 
-        assert patient.equals?(returned_patient), "Returned patient doesn't match original patient."
+        assert patient.equals?(returned_patient, ['meta', 'text']), "Returned patient doesn't match original patient."
 
         # TODO: Determine how start/end scope specific patient records (e.g., birthdate?)
       end
@@ -176,7 +176,6 @@ module Crucible
         @patient.telecom[0].value='1-234-567-8901'
         @patient.telecom[0].use = 'mobile'
         @patient.name[0].given = ['Not', 'Given']
-        @patient['telecom'] = @patient.telecom # some weirdness with attributes
 
         reply = @client.update @patient, @patient_id
         assert_response_ok(reply)
@@ -228,7 +227,7 @@ module Crucible
         record.resource.entry.each do |bundle_entry|
           case bundle_entry.resource.class
           when FHIR::Organization
-            case bundle_entry.resource.xmlId
+            case bundle_entry.resource.id
             when @org1_id
               mismatches << bundle_entry.resource.mismatch(@organization_1, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@organization_1)
             when @org2_id
@@ -239,7 +238,7 @@ module Crucible
           when FHIR::Patient
             mismatches << bundle_entry.resource.mismatch(@patient, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@patient)
           when FHIR::Condition
-            case bundle_entry.resource.xmlId
+            case bundle_entry.resource.id
             when @cond1_id
               mismatches << bundle_entry.resource.mismatch(@condition_1, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@condition_1)
             when @cond2_id
@@ -254,7 +253,7 @@ module Crucible
             t1 = Time.iso8601(bundle_entry.resource.issued)
             mismatches << 'FHIR::DiagnosticReport::issued' unless t0==t1            
           when FHIR::Encounter
-            case bundle_entry.resource.xmlId
+            case bundle_entry.resource.id
             when @enc1_id
               mismatches << bundle_entry.resource.mismatch(@encounter_1, ['_id', 'meta', 'text']) unless bundle_entry.resource.equals?(@encounter_1)
             when @enc2_id
@@ -300,7 +299,7 @@ module Crucible
 
         record.resource.entry.each do |bundle_entry|
           if @ids_count.keys.include?(bundle_entry.resource.class.to_s)
-            @ids_count[bundle_entry.resource.class.to_s].delete bundle_entry.resource.xmlId
+            @ids_count[bundle_entry.resource.class.to_s].delete bundle_entry.resource.id
           else
             warning { assert @ids_count.keys.include?(bundle_entry.resource.class.to_s),
               "Found additional resource(s) in $everything Bundle: #{bundle_entry.resource.class}#{ "-#{bundle_entry.resource.code.text}" if bundle_entry.resource.class == FHIR::List}" }
@@ -325,102 +324,102 @@ module Crucible
           'FHIR::Procedure' => []
         }
 
-        @organization_1.xmlId = nil
+        @organization_1.id = nil
         @org1_reply = @client.create @organization_1
         @org1_id = @org1_reply.id
-        @organization_1.xmlId = @org1_id
+        @organization_1.id = @org1_id
         @ids_count[FHIR::Organization.to_s] << @org1_id
         assert_response_ok(@org1_reply)
 
-        @organization_2.xmlId = nil
+        @organization_2.id = nil
         @org2_reply = @client.create @organization_2
         @org2_id = @org2_reply.id
-        @organization_2.xmlId = @org2_id
+        @organization_2.id = @org2_id
         @ids_count[FHIR::Organization.to_s] << @org2_id
         assert_response_ok(@org2_reply)
 
-        @practitioner.xmlId = nil
-        @practitioner.practitionerRole[0].managingOrganization.reference = "Organization/#{@org1_id}"
+        @practitioner.id = nil
+        @practitioner.practitionerRole[0].organization.reference = "Organization/#{@org1_id}"
         @prac_reply = @client.create @practitioner
         @prac_id = @prac_reply.id
-        @practitioner.xmlId = @prac_id
+        @practitioner.id = @prac_id
         @ids_count[FHIR::Practitioner.to_s] << @prac_id
         assert_response_ok(@prac_reply)
 
-        @patient.xmlId = nil
+        @patient.id = nil
+        @patient.careProvider = [ FHIR::Reference.new ] 
         @patient.careProvider[0].reference= "Practitioner/#{@prac_id}"
         @patient.managingOrganization.reference = "Organization/#{@org1_id}"
         @pat_reply = @client.create @patient
         @patient_id = @pat_reply.id
-        @patient.xmlId = @patient_id
+        @patient.id = @patient_id
         @ids_count[FHIR::Patient.to_s] << @patient_id
         assert_response_ok(@pat_reply)
 
-        @condition_2.xmlId = nil
+        @condition_2.id = nil
         @condition_2.patient.reference = "Patient/#{@patient_id}"
         @condition_2.asserter.reference = "Practitioner/#{@prac_id}"
         @cond2_reply = @client.create @condition_2
         @cond2_id = @cond2_reply.id
-        @condition_2.xmlId = @cond2_id
+        @condition_2.id = @cond2_id
         @ids_count[FHIR::Condition.to_s] << @cond2_id
         assert_response_ok(@cond2_reply)
 
-        @observation.xmlId = nil
+        @observation.id = nil
         @observation.subject.reference = "Patient/#{@patient_id}"
         @observation.performer[0].reference = "Practitioner/#{@prac_id}"
         @obs_reply = @client.create @observation
         @obs_id = @obs_reply.id
-        @observation.xmlId = @obs_id
+        @observation.id = @obs_id
         @ids_count[FHIR::Observation.to_s] << @obs_id
         assert_response_ok(@obs_reply)
 
-        @diagnosticreport.xmlId = nil
+        @diagnosticreport.id = nil
         @diagnosticreport.subject.reference = "Patient/#{@patient_id}"
         @diagnosticreport.performer.reference = "Organization/#{@org2_id}"
         @dr_reply = @client.create @diagnosticreport
         @dr_id = @dr_reply.id
-        @diagnosticreport.xmlId = @dr_id
+        @diagnosticreport.id = @dr_id
         @ids_count[FHIR::DiagnosticReport.to_s] << @dr_id
         assert_response_ok(@dr_reply)
 
-        @encounter_1.xmlId = nil
+        @encounter_1.id = nil
         @encounter_1.patient.reference = "Patient/#{@patient_id}"
         @encounter_1.participant[0].individual.reference = "Practitioner/#{@prac_id}"
         @encounter_1.serviceProvider.reference = "Organization/#{@org1_id}"
         @enc1_reply = @client.create @encounter_1
         @enc1_id = @enc1_reply.id
-        @encounter_1.xmlId = @enc1_id
+        @encounter_1.id = @enc1_id
         @ids_count[FHIR::Encounter.to_s] << @enc1_id
         assert_response_ok(@enc1_reply)
 
-        @encounter_2.xmlId = nil
+        @encounter_2.id = nil
         @encounter_2.patient.reference = "Patient/#{@patient_id}"
         @encounter_2.participant[0].individual.reference = "Practitioner/#{@prac_id}"
         @encounter_2.serviceProvider.reference = "Organization/#{@org1_id}"
         @enc2_reply = @client.create @encounter_2
         @enc2_id = @enc2_reply.id
-        @encounter_2.xmlId = @enc2_id
+        @encounter_2.id = @enc2_id
         @ids_count[FHIR::Encounter.to_s] << @enc2_id
         assert_response_ok(@enc2_reply)
 
-        @procedure.xmlId = nil
+        @procedure.id = nil
         @procedure.subject.reference = "Patient/#{@patient_id}"
         # @procedure.report[0].reference = "DiagnosticReport/#{@dr_id}"
         @procedure.performer[0].actor.reference = "Practitioner/#{@prac_id}"
         @procedure.encounter.reference = "Encounter/#{@enc2_id}"
         @prc_reply = @client.create @procedure
         @prc_id = @prc_reply.id
-        @procedure.xmlId = @prc_id
+        @procedure.id = @prc_id
         @ids_count[FHIR::Procedure.to_s] << @prc_id
         assert_response_ok(@prc_reply)
 
         @encounter_2.indication = [ FHIR::Reference.new ] 
         @encounter_2.indication[0].reference = "Procedure/#{@prc_id}"
-        @encounter_2['indication'] = @encounter_2.indication
         @enc2_reply = @client.update @encounter_2, @enc2_id
         assert_response_ok(@enc2_reply)
 
-        @condition_1.xmlId = nil
+        @condition_1.id = nil
         @condition_1.patient.reference = "Patient/#{@patient_id}"
         @condition_1.encounter.reference = "Encounter/#{@enc1_id}"
         @condition_1.asserter.reference = "Practitioner/#{@prac_id}"
@@ -433,7 +432,7 @@ module Crucible
         @condition_1.evidence[0].detail << ref
         @cond1_reply = @client.create @condition_1
         @cond1_id = @cond1_reply.id
-        @condition_1.xmlId = @cond1_id
+        @condition_1.id = @cond1_id
         @ids_count[FHIR::Condition.to_s] << @cond1_id
         assert_response_ok(@cond1_reply)
       end

@@ -13,7 +13,7 @@ module Crucible
           {"SearchTest_#{@resource_class.name.demodulize}" => execute_test_methods}
         else
           results = {}
-          fhir_resources.each do | klass |
+          Crucible::Tests::BaseSuite.fhir_resources.each do | klass |
             @resource_class = klass
             results.merge!({"SearchTest_#{@resource_class.name.demodulize}" => execute_test_methods})
           end
@@ -63,7 +63,7 @@ module Crucible
         unless @conformance.nil?
           @conformance.rest.each do |rest|
             rest.resource.each do |resource|
-              @searchParams = resource.searchParam if(resource.fhirType.downcase == "#{@resource_class.name.demodulize.downcase}" )
+              @searchParams = resource.searchParam if(resource.type.downcase == "#{@resource_class.name.demodulize.downcase}" )
             end
           end
         end
@@ -203,6 +203,8 @@ module Crucible
           count = (reply.resource.total-replyB.resource.total).abs
           assert (count <= 1), 'Searching without criteria did not return all the results.'
         else
+          assert !replyB.resource.nil?, 'Searching without criteria did not return all the results.'
+          assert !reply.resource.nil?, 'Searching without criteria did not return all the results.'
           assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
         end
       end

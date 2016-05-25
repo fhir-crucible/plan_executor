@@ -19,11 +19,11 @@ module Crucible
         @resources = Crucible::Generator::Resources.new
 
         @patient = @resources.example_patient
-        @patient.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @patient.id = nil # clear the identifier, in case the server checks for duplicates
         @patient.identifier = nil # clear the identifier, in case the server checks for duplicates
 
         @patient_us = @resources.example_patient_us
-        @patient_us.xmlId = nil # clear the identifier, in case the server checks for duplicates
+        @patient_us.id = nil # clear the identifier, in case the server checks for duplicates
         @patient_us.identifier = nil # clear the identifier, in case the server checks for duplicates
       end
 
@@ -48,10 +48,10 @@ module Crucible
         assert_response_ok(reply)
 
         if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         end
 
         warning { assert_valid_resource_content_type_present(reply) }
@@ -73,15 +73,15 @@ module Crucible
 
         reply = @client.create @patient_us
         @patient_us_id = reply.id
-        @patient_us.xmlId = reply.resource.xmlId || reply.id
+		    @patient_us.id = reply.resource.id || reply.id
 
         assert_response_ok(reply)
 
         if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         end
 
         warning { assert_valid_resource_content_type_present(reply) }
@@ -101,7 +101,7 @@ module Crucible
         }
         skip unless @patient_id
 
-        @patient.xmlId = @patient_id
+		    @patient.id = @patient_id
         @patient.telecom[0].value='1-800-TOLL-FREE'
         @patient.telecom[0].system='phone'
         @patient.name[0].given = ['Crocodile','Pants']
@@ -111,10 +111,10 @@ module Crucible
         assert_response_ok(reply)
 
         if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         end
 
         warning { assert_valid_resource_content_type_present(reply) }
@@ -134,19 +134,19 @@ module Crucible
           validates extensions: ['extensions']
         }
         skip unless @patient_us_id
-
-        @patient_us.xmlId = @patient_us_id
-        @patient_us.extension[0].value.value.coding[0].code = '1569-3'
-        @patient_us.extension[1].value.value.coding[0].code = '2186-5'
+		
+        @patient_us.id = @patient_us_id
+        @patient_us.extension[0].valueCodeableConcept.coding[0].code = '1569-3'
+        @patient_us.extension[1].valueCodeableConcept.coding[0].code = '2186-5'
 
         reply = @client.update @patient_us, @patient_us_id
         assert_response_ok(reply)
 
         if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         end
 
         warning { assert_valid_resource_content_type_present(reply) }
@@ -167,10 +167,11 @@ module Crucible
         }
         skip unless @patient_us_id
 
-        @patient_us.xmlId = @patient_us_id
+		    @patient_us.id = @patient_us_id
+        @patient_us.modifierExtension ||= []
         @patient_us.modifierExtension << FHIR::Extension.new
         @patient_us.modifierExtension[0].url='http://projectcrucible.org/modifierExtension/foo'
-        @patient_us.modifierExtension[0].value = FHIR::AnyType.new('Boolean',true)
+        @patient_us.modifierExtension[0].valueBoolean = true
 
         reply = @client.update @patient_us, @patient_us_id
 
@@ -179,10 +180,10 @@ module Crucible
         assert([200,201,422].include?(reply.code), 'The server should except a modifierExtension, or return 422 if it chooses to reject a modifierExtension it does not understand.',"Server response code: #{reply.code}\n#{reply.body}")
 
         if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         end
 
         warning { assert_valid_resource_content_type_present(reply) }
@@ -192,41 +193,43 @@ module Crucible
 
       #
       # Test if we can update a patient with primitive extensions.
-      #
-      test 'C8T1_2D','Update a patient - BONUS: Primitive Extensions' do
-        metadata {
-          links "#{REST_SPEC_LINK}#update"
-          links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
-          requires resource: 'Patient', methods: ['create','update']
-          validates resource: 'Patient', methods: ['update']
-          validates extensions: ['primitive extensions']
-        }
-        skip unless @patient_us_id
+      # TODO: Currently primitive extensions are not supported
+      # test 'C8T1_2D','Update a patient - BONUS: Primitive Extensions' do
+      #   metadata {
+      #     links "#{REST_SPEC_LINK}#update"
+      #     links 'http://wiki.hl7.org/index.php?title=FHIR_Connectathon_8#2._Update_a_patient'
+      #     requires resource: 'Patient', methods: ['create','update']
+      #     validates resource: 'Patient', methods: ['update']
+      #     validates extensions: ['primitive extensions']
+      #   }
+      #   skip unless @patient_us_id
+      #   skip # Primitive Extensions are not supported in the STU3 models
 
-        @patient_us.xmlId = @patient_us_id
-        @patient_us.gender = 'male'
-        pe = FHIR::PrimitiveExtension.new
-        pe.path='_gender'
-        pe['extension'] = [ FHIR::Extension.new ]
-        pe['extension'][0].url = 'http://hl7.org/test/gender'
-        pe['extension'][0].value = FHIR::AnyType.new('String','Male')
-        @patient_us.primitiveExtension << pe
+      #   @patient_us.id = @patient_us_id
+      #   @patient_us.gender = 'male'
+      #   pe = FHIR::PrimitiveExtension.new
+      #   pe.path='_gender'
+      #   pe['extension'] = [ FHIR::Extension.new ]
+      #   pe['extension'][0].url = 'http://hl7.org/test/gender'
+      #   pe['extension'][0].valueString = 'Male'
+      #   @patient_us.primitiveExtension ||= []
+      #   @patient_us.primitiveExtension << pe
 
-        reply = @client.update @patient_us, @patient_us_id
+      #   reply = @client.update @patient_us, @patient_us_id
 
-        assert_response_ok(reply)
+      #   assert_response_ok(reply)
 
-        if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
-          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
-        end
+      #   if !reply.resource.nil?
+      #     temp = reply.resource.id
+      #     reply.resource.id = nil
+      #     warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+      #     reply.resource.id = temp
+      #   end
 
-        warning { assert_valid_resource_content_type_present(reply) }
-        warning { assert_last_modified_present(reply) }
-        warning { assert_valid_content_location_present(reply) }
-      end
+      #   warning { assert_valid_resource_content_type_present(reply) }
+      #   warning { assert_last_modified_present(reply) }
+      #   warning { assert_valid_content_location_present(reply) }
+      # end
 
       #
       # Test if we can update a patient with complex extensions.
@@ -241,7 +244,7 @@ module Crucible
         }
         skip unless @patient_us_id
 
-        @patient_us.xmlId = @patient_us_id
+        @patient_us.id = @patient_us_id
         begin
           @patient_us.primitiveExtension.clear
         rescue Exception => e
@@ -249,9 +252,11 @@ module Crucible
         end
         ext = FHIR::Extension.new
         ext.url = 'http://hl7.org/complex/foo'
+        ext.extension ||= []
         ext.extension << FHIR::Extension.new
         ext.extension[0].url='http://complex/foo/bar'
-        ext.extension[0].value=FHIR::AnyType.new('String','foobar')
+        ext.extension[0].valueString = 'foobar'
+        @patient.extension ||= []
         @patient.extension << ext
 
         reply = @client.update @patient_us, @patient_us_id
@@ -259,10 +264,10 @@ module Crucible
         assert_response_ok(reply)
 
         if !reply.resource.nil?
-          temp = reply.resource.xmlId
-          reply.resource.xmlId = nil
+          temp = reply.resource.id
+          reply.resource.id = nil
           warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
-          reply.resource.xmlId = temp
+          reply.resource.id = temp
         end
 
         warning { assert_valid_resource_content_type_present(reply) }
@@ -285,7 +290,7 @@ module Crucible
         result = @client.resource_instance_history(FHIR::Patient,@patient_id)
         assert_response_ok result
         assert_equal 2, result.resource.total, 'The number of returned versions is not correct'
-        warning { assert_equal 'history', result.resource.fhirType, 'The bundle does not have the correct type: history' }
+        warning { assert_equal 'history', result.resource.type, 'The bundle does not have the correct type: history' }
         warning { check_sort_order(result.resource.entry) }
       end
 

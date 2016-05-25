@@ -17,6 +17,8 @@
                 },{
                   "name": "update"
                 },{
+                  "name": "conditional-update"
+                },{
                   "name": "delete"
                 },{
                   "name": "history"
@@ -27,6 +29,8 @@
               "children": [
                 {
                   "name": "create"
+                },{
+                  "name": "conditional-create"
                 },{
                   "name": "search"
                 },{
@@ -44,6 +48,8 @@
                   "name": "history-system"
                 },{
                   "name": "search-system"
+                },{
+                  "name": "batch-system"
                 }
               ]
             }
@@ -109,8 +115,6 @@
                 },{
                   "name": "clinical impression"
                 },{
-                  "name": "risk assessment"
-                },{
                   "name": "detected issue"
                 }
               ]
@@ -120,13 +124,19 @@
                 {
                   "name": "care plan"
                 },{
+                  "name": "care team"
+                },{
                   "name": "goal"
+                },{
+                  "name": "protocol"
                 },{
                   "name": "referral request"
                 },{
                   "name": "procedure request"
                 },{
                   "name": "nutrition order"
+                },{
+                  "name": "risk assessment"
                 },{
                   "name": "vision prescription"
                 }
@@ -162,9 +172,13 @@
                 },{
                   "name": "imaging study"
                 },{
+                  "name": "imaging excerpt"
+                },{
                   "name": "imaging object selection"
                 },{
                   "name": "specimen"
+                },{
+                  "name": "sequence"
                 },{
                   "name": "body site"
                 }
@@ -172,7 +186,7 @@
             }
           ]
         },{
-          "name": "Administrative",
+          "name": "Identification",
           "children": [
             {
               "name": "Individuals",
@@ -183,6 +197,8 @@
                   "name": "related person"
                 },{
                   "name": "practitioner"
+                },{
+                  "name": "practitioner role"
                 }
               ]
             },{
@@ -235,12 +251,7 @@
                   "name": "flag"
                 },{
                   "name": "communication"
-                }
-              ]
-            },{
-              "name": "Scheduling",
-              "children": [
-                {
+                },{
                   "name": "appointment"
                 },{
                   "name": "appointment response"
@@ -251,10 +262,12 @@
                 }
               ]
             },{
-              "name": "Order Management",
+              "name": "Workflow",
               "children": [
                 {
                   "name": "order"
+                },{
+                  "name": "task"
                 },{
                   "name": "order response"
                 },{
@@ -271,6 +284,27 @@
                   "name": "supply delivery"
                 },{
                   "name": "supply request"
+                }
+              ]
+            },{
+              "name": "Desision Support/Quality Measurement",
+              "children": [
+                {
+                  "name": "decision support service module"
+                },{
+                  "name": "decision support rule"
+                },{
+                  "name": "guidance response"
+                },{
+                  "name": "library"
+                },{
+                  "name": "order set"
+                },{
+                  "name": "measure"
+                },{
+                  "name": "measure report"
+                },{
+                  "name": "module definition"
                 }
               ]
             }
@@ -292,7 +326,7 @@
                 }
               ]
             },{
-              "name": "Documents",
+              "name": "Documents and Lists",
               "children": [
                 {
                   "name": "list"
@@ -305,7 +339,7 @@
                 }
               ]
             },{
-              "name": "Structures",
+              "name": "Structure",
               "children": [
                 {
                   "name": "media"
@@ -315,6 +349,8 @@
                   "name": "bundle"
                 },{
                   "name": "basic"
+                },{
+                  "name": "linkage"
                 }
               ]
             },{
@@ -339,9 +375,13 @@
               "name": "Terminology",
               "children": [
                 {
+                  "name": "code system"
+                },{
                   "name": "value set"
                 },{
                   "name": "concept map"
+                },{
+                  "name": "expansion profile"
                 },{
                   "name": "naming system"
                 }
@@ -352,11 +392,13 @@
                 {
                   "name": "structure definition"
                 },{
+                  "name": "structure map"
+                },{
                   "name": "data element"
                 }
               ]
             },{
-              "name": "Behavior",
+              "name": "Operations Control",
               "children": [
                 {
                   "name": "conformance"
@@ -364,6 +406,8 @@
                   "name": "operation definition"
                 },{
                   "name": "search parameter"
+                },{
+                  "name": "compartment definition"
                 }
               ]
             },{

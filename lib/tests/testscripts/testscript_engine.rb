@@ -70,7 +70,7 @@ module Crucible
           next if f.include? "Track2-Terminology"
           next if f.include? "Track7-LabOrderLabReport"
 
-          @@models << FHIR::TestScript.from_xml( File.read(f) )
+          @@models << FHIR::Xml.from_xml( File.read(f) )
         end
       end
 

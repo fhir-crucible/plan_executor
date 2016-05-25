@@ -87,13 +87,13 @@ module Crucible
                   found_oauth_extension = true
                   case ext.url
                   when authorize_extension
-                    options[:authorize_url] = ext.value.value
+                    options[:authorize_url] = ext.value
                   when "#{oauth_extension}\##{authorize_extension}"
-                    options[:authorize_url] = ext.value.value
+                    options[:authorize_url] = ext.value
                   when token_extension
-                    options[:token_url] = ext.value.value
+                    options[:token_url] = ext.value
                   when "#{oauth_extension}\##{token_extension}"
-                    options[:token_url] = ext.value.value
+                    options[:token_url] = ext.value
                   end
                 end
                 assert found_oauth_extension, "an OAuth extension could not be found"

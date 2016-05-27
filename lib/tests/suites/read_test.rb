@@ -16,14 +16,11 @@ module Crucible
       end
 
       def setup
-        @patient = ReadTest.createPatient('Emerald', 'Caro')
-        reply = @client.create(@patient)
-        @id = reply.id
-        @body = reply.body
+        @patient = FHIR::Patient.create(name: { family: 'Emerald', given: 'Caro' })
       end
 
       def teardown
-        @client.destroy(FHIR::Patient, @id)
+        @patient.destroy
       end
 
       def self.createPatient(family, given)
@@ -38,13 +35,13 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        assert(@id, 'Setup was unable to create a patient.',@body)
-        reply = @client.read(FHIR::Patient, @id)
-        assert_response_ok(reply)
-        assert_equal @id, reply.id, 'Server returned wrong patient.'
-        warning { assert_valid_resource_content_type_present(reply) }
-        warning { assert_etag_present(reply) }
-        warning { assert_last_modified_present(reply) }
+        patient = FHIR::Patient.find(@patient.id)
+
+        assert_response_ok(@client.reply)
+        assert_equal @patient.id, @client.reply.id, 'Server returned wrong patient.'
+        warning { assert_valid_resource_content_type_present(@client.reply) }
+        warning { assert_etag_present(@client.reply) }
+        warning { assert_last_modified_present(@client.reply) }
       end
 
       # [SprinklerTest("R002", "Read unknown resource type")]
@@ -54,8 +51,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#update"
         }
 
-        reply = @client.read(Crucible::Tests::ReadTest, @id)
-        assert(([400,404].include?(reply.code)), 'An unknown resource type should be 404 or 400. The spec says 404 for an unknown resource, but does not define unknown type.' )
+        FHIR::Model.find(@patient.id) #not a valid model
+        assert(([400,404].include?(@client.reply.code)), "An unknown resource type should be 404 or 400. The spec says 404 for an unknown resource, but does not define unknown type. Returned #{@client.reply.code}." )
       end
 
       # [SprinklerTest("R003", "Read non-existing resource id")]
@@ -66,8 +63,8 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        reply = @client.read(FHIR::Patient, 'Supercalifragilisticexpialidocious')
-        assert_response_not_found(reply)
+        FHIR::Patient.find('Supercalifragilisticexpialidocious');
+        assert_response_not_found(@client.reply)
       end
 
       # [SprinklerTest("R004", "Read bad formatted resource id")]
@@ -80,8 +77,8 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        reply = @client.read(FHIR::Patient, 'Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
-        assert_response_not_found(reply)
+        FHIR::Patient.find('Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
+        assert_response_not_found(@client.reply)
       end
 
       test 'R005', 'Read _summary=text' do
@@ -93,10 +90,9 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        assert(@id, 'Setup was unable to create a patient.', @body)
-        reply = @client.read(FHIR::Patient, @id, @client.default_format, 'text')
-        assert_response_ok(reply)
-        assert(reply.try(:resource).try(:text), 'Requested summary narrative was not provided.', reply.body)
+        patient = FHIR::Patient.find(@patient.id, summary: 'text')
+        assert_response_ok(@client.reply)
+        assert(patient.text, 'Requested summary narrative was not provided.', @client.reply.body)
       end      
 
     end

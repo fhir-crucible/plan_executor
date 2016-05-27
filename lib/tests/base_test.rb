@@ -27,6 +27,7 @@ module Crucible
         @client.monitor_requests if @client
         @client2.monitor_requests if @client2
         @tags ||= []
+        FHIR::Model.configure { |c| c.client = client }
       end
 
       def multiserver

@@ -1,4 +1,4 @@
-require_relative "./simplecov"
+require 'simplecov'
 require_relative '../lib/plan_executor'
 
 require 'pry'

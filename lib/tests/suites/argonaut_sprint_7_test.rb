@@ -20,10 +20,10 @@ module Crucible
 
       def initialize(client1, client2 = nil)
         super
-        @tags.append('argonaut')
+        @tags.append('argonautp1')
         @loinc_codes = ['8716-3', '9279-1', '8867-4', '59408-5', '8310-5', '8302-2', '8306-3', '8287-5', '3141-9', '39156-5', '3140-1', '55284-4', '8480-6', '8462-4', '8478-0']
         @loinc_code_units = {'8716-3' => nil, '9279-1' => '/min', '8867-4' => '/min', '59408-5' => '%', '8310-5' => 'Cel', '8302-2' => 'cm', '8306-3' => 'cm', '8287-5' => 'cm', '3141-9' => 'g, kg', '39156-5' => 'kg/m2', '3140-1' => 'm2', '8478-0' => 'mm[Hg]'}
-        @category = {id: 'argonaut', title: 'Argonaut'}
+        @category = {id: 'argonautp1', title: 'Argonaut Phase 1'}
       end
 
 
@@ -100,7 +100,7 @@ module Crucible
         }
 
         reply = @client.search(FHIR::Observation, options)
-        
+
         validate_observation_reply(reply)
       end
 

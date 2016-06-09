@@ -35,7 +35,7 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        patient = FHIR::Patient.find(@patient.id)
+        patient = FHIR::Patient.read(@patient.id)
 
         assert_response_ok(@client.reply)
         assert_equal @patient.id, @client.reply.id, 'Server returned wrong patient.'
@@ -51,7 +51,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#update"
         }
 
-        FHIR::Model.find(@patient.id) #not a valid model
+        FHIR::Model.read(@patient.id) #not a valid model
         assert(([400,404].include?(@client.reply.code)), "An unknown resource type should be 404 or 400. The spec says 404 for an unknown resource, but does not define unknown type. Returned #{@client.reply.code}." )
       end
 
@@ -63,7 +63,7 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        FHIR::Patient.find('Supercalifragilisticexpialidocious');
+        FHIR::Patient.read('Supercalifragilisticexpialidocious')
         assert_response_not_found(@client.reply)
       end
 
@@ -77,7 +77,7 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        FHIR::Patient.find('Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
+        FHIR::Patient.read('Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters')
         assert_response_not_found(@client.reply)
       end
 
@@ -90,7 +90,7 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        patient = FHIR::Patient.find(@patient.id, summary: 'text')
+        patient = FHIR::Patient.read_with_summary(@patient.id, "text")
         assert_response_ok(@client.reply)
         assert(patient.text, 'Requested summary narrative was not provided.', @client.reply.body)
       end      

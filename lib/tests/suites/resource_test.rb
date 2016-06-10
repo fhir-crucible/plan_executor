@@ -78,10 +78,10 @@ module Crucible
           define_metadata('read')
         }
 
-        reply = @client.read_feed(@resource_class)
-        @bundle = reply.resource
-        assert_bundle_response reply
+        @bundle = resource_class.search
+        assert_bundle_response @client.reply
         assert !@bundle.nil?, 'Service did not respond with bundle.'
+        assert @bundle.total == @bundle.count, 'Bundle total did not match entry count'
       end
 
       #
@@ -93,22 +93,21 @@ module Crucible
         }
 
         result = TestResult.new('X010',"Create new #{resource_class.name.demodulize}", nil, nil, nil)
-        @temp_resource = ResourceGenerator.generate(@resource_class,3)
-        reply = @client.create @temp_resource
-        @temp_id = reply.id
-        @temp_resource.id = (reply.resource.try(:id) || reply.id)
-        @temp_version = reply.version
+        @temp_resource = ResourceGenerator.generate(@resource_class,3).create
+        @temp_id = @client.reply.id
+        @temp_resource.id = (@client.reply.resource.try(:id) || @client.reply.id)
+        @temp_version = @client.reply.version
 
-        if reply.code==201
-          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
+        if @client.reply.code==201
+          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", @client.reply.body)
         else
-          outcome = (self.parse_operation_outcome(reply.body) rescue nil)
+          outcome = (self.parse_operation_outcome(@client.reply.body) rescue nil)
           if outcome.nil?
-            message = "Response code #{reply.code} with no OperationOutcome provided."
+            message = "Response code #{@client.reply.code} with no OperationOutcome provided."
           else
             message = self.build_messages(outcome)
           end
-          result.update(STATUS[:fail], message, reply.body)
+          result.update(STATUS[:fail], message, @client.reply.body)
           @temp_resource = nil
         end
 
@@ -121,22 +120,20 @@ module Crucible
         }
 
         result = TestResult.new('X012',"Conditional Create #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
-        @conditional_create_resource_a = ResourceGenerator.generate(@resource_class,3)
         # chances are good that no resource has this ID
         ifNoneExist = { '_id' => "#{(SecureRandom.uuid * 2)[0..63]}" }
-        reply = @client.conditional_create(@conditional_create_resource_a,ifNoneExist)
-        @conditional_create_resource_a.id = (reply.resource.try(:id) || reply.id)
+        @conditional_create_resource_a = ResourceGenerator.generate(@resource_class,3).conditional_create(ifNoneExist)
 
-        if reply.code==201
-          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
+        if @client.reply.code==201
+          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", @client.reply.body)
         else
-          outcome = (self.parse_operation_outcome(reply.body) rescue nil)
+          outcome = (self.parse_operation_outcome(@client.reply.body) rescue nil)
           if outcome.nil?
-            message = "Response code #{reply.code} with no OperationOutcome provided."
+            message = "Response code #{@client.reply.code} with no OperationOutcome provided."
           else
             message = self.build_messages(outcome)
           end
-          result.update(STATUS[:fail], message, reply.body)
+          result.update(STATUS[:fail], message, @client.reply.body)
           @conditional_create_resource_a = nil
         end
 
@@ -150,7 +147,6 @@ module Crucible
         }
 
         result = TestResult.new('X013',"Conditional Create #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
-        @conditional_create_resource_b = ResourceGenerator.generate(@resource_class,3)
         # this ID should already exist if temp resource was created
         if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
@@ -160,16 +156,15 @@ module Crucible
           raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end
         ifNoneExist = { '_id' => @preexisting_id }
+        @conditional_create_resource_b = ResourceGenerator.generate(@resource_class,3).conditional_create(ifNoneExist)
 
-        reply = @client.conditional_create(@conditional_create_resource_b,ifNoneExist)
-        @conditional_create_resource_b.id = (reply.resource.try(:id) || reply.id)
-        @temp_version = reply.version
+        @temp_version = @client.reply.version
 
-        if reply.code==200
-          result.update(STATUS[:pass], "Request was correctly ignored.", reply.body)
+        if @client.reply.code==200
+          result.update(STATUS[:pass], "Request was correctly ignored.", @client.reply.body)
           @conditional_create_resource_b = nil
         else
-          result.update(STATUS[:fail], "Request should have been ignored with HTTP 200.", reply.body)
+          result.update(STATUS[:fail], "Request should have been ignored with HTTP 200.", @client.reply.body)
         end
 
         result
@@ -182,18 +177,16 @@ module Crucible
         }
 
         result = TestResult.new('X014',"Conditional Create #{resource_class.name.demodulize}", nil, nil, nil)
-        @conditional_create_resource_c = ResourceGenerator.generate(@resource_class,3)
         # this should match all resources
         ifNoneExist = { '_lastUpdated' => 'gt1900-01-01' }
-        reply = @client.conditional_create(@conditional_create_resource_c,ifNoneExist)
-        @conditional_create_resource_c.id = (reply.resource.try(:id) || reply.id)
-        @temp_version = reply.version
+        @conditional_create_resource_c = ResourceGenerator.generate(@resource_class,3).conditional_create(ifNoneExist)
+        @temp_version = @client.reply.version
 
-        if reply.code==412
-          result.update(STATUS[:pass], "Request correctly failed.", reply.body)
+        if @client.reply.code==412
+          result.update(STATUS[:pass], "Request correctly failed.", @client.reply.body)
           @conditional_create_resource_c = nil
         else
-          result.update(STATUS[:fail], "Request should have failed with HTTP 412.", reply.body)
+          result.update(STATUS[:fail], "Request should have failed with HTTP 412.", @client.reply.body)
         end
 
         result
@@ -216,23 +209,22 @@ module Crucible
           raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end
 
-        reply = @client.read(@resource_class, @preexisting_id)
-        @preexisting = reply.resource
+        @preexisting = @resource_class.read(@preexisting_id)
 
         if @preexisting.nil?
-          raise AssertionException.new("Failed to read preexisting #{resource_class.name.demodulize}: #{@preexisting_id}", reply.body)
+          raise AssertionException.new("Failed to read preexisting #{resource_class.name.demodulize}: #{@preexisting_id}", @client.reply.body)
         else
           begin
             @preexisting.to_xml
           rescue Exception
             @preexisting = nil
-            raise AssertionException.new("Read preexisting #{resource_class.name.demodulize}, but it appears invalid.", reply.response)
+            raise AssertionException.new("Read preexisting #{resource_class.name.demodulize}, but it appears invalid.", @client.reply.response)
           end
         end
 
-        @preexisting_version = reply.version
+        @preexisting_version = @client.reply.version
 
-        result.update(STATUS[:pass], "Successfully read preexisting #{resource_class.name.demodulize}.", reply.response)
+        result.update(STATUS[:pass], "Successfully read preexisting #{resource_class.name.demodulize}.", @client.reply.response)
         result
       end
 
@@ -268,32 +260,32 @@ module Crucible
           ResourceGenerator.set_fields!(@preexisting)
           ResourceGenerator.apply_invariants!(@preexisting)
 
-          reply = @client.update @preexisting, @preexisting_id
+          @preexisting.update
 
-          if reply.code==200
-            result.update(STATUS[:pass], "Updated existing #{resource_class.name.demodulize}.", reply.body)
-          elsif reply.code==201
+          if @client.reply.code==200
+            result.update(STATUS[:pass], "Updated existing #{resource_class.name.demodulize}.", @client.reply.body)
+          elsif @client.reply.code==201
             # check created id -- see if it matches the one we used, or is new
-            resulting_id = reply.id
+            resulting_id = @client.reply.id
 
             if(@preexisting_id != resulting_id)
-              result.update(STATUS[:fail], "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", reply.body)
+              result.update(STATUS[:fail], "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", @client.reply.body)
             else
-              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", reply.body)
+              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", @client.reply.body)
             end
 
-            resulting_version = reply.version
+            resulting_version = @client.reply.version
             if(@preexisting_version == resulting_version)
-              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server did not update the resource version number.", reply.body)
+              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server did not update the resource version number.", @client.reply.body)
             end
           else
-            outcome = self.parse_operation_outcome(reply.body) rescue nil
+            outcome = self.parse_operation_outcome(@client.reply.body) rescue nil
             if outcome.nil?
-              message = "Response code #{reply.code} with no OperationOutcome provided."
+              message = "Response code #{@client.reply.code} with no OperationOutcome provided."
             else
               message = self.build_messages(outcome)
             end
-            result.update(STATUS[:fail], message, reply.body)
+            result.update(STATUS[:fail], message, @client.reply.body)
           end
         end
 
@@ -307,22 +299,20 @@ module Crucible
 
         result = TestResult.new('X032',"Conditional Update #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
 
-        @conditional_update_resource_a = ResourceGenerator.generate(@resource_class,3)
-        # chances are good that no resource has this ID
         searchParams = { '_id' => "#{(SecureRandom.uuid * 2)[0..63]}" }
-        reply = @client.conditional_update(@conditional_update_resource_a,nil,searchParams)
-        @conditional_update_resource_a.id = (reply.resource.try(:id) || reply.id)
+        @conditional_update_resource_a = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams)
+        # chances are good that no resource has this ID
 
-        if reply.code==201
-          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", reply.body)
+        if @client.reply.code==201
+          result.update(STATUS[:pass], "New #{resource_class.name.demodulize} was created.", @client.reply.body)
         else
-          outcome = (self.parse_operation_outcome(reply.body) rescue nil)
+          outcome = (self.parse_operation_outcome(@client.reply.body) rescue nil)
           if outcome.nil?
-            message = "Response code #{reply.code} with no OperationOutcome provided."
+            message = "Response code #{@client.reply.code} with no OperationOutcome provided."
           else
             message = self.build_messages(outcome)
           end
-          result.update(STATUS[:fail], message, reply.body)
+          result.update(STATUS[:fail], message, @client.reply.body)
           @conditional_update_resource_a = nil
         end
 
@@ -359,32 +349,32 @@ module Crucible
           ResourceGenerator.apply_invariants!(@preexisting)
           
           searchParams = { '_id' => @preexisting_id }
-          reply = @client.conditional_update(@preexisting,nil,searchParams)
+          @preexisting.conditional_update(searchParams)
 
-          if reply.code==200
-            result.update(STATUS[:pass], "Updated existing #{resource_class.name.demodulize}.", reply.body)
-          elsif reply.code==201
+          if @client.reply.code==200
+            result.update(STATUS[:pass], "Updated existing #{resource_class.name.demodulize}.", @client.reply.body)
+          elsif @client.reply.code==201
             # check created id -- see if it matches the one we used, or is new
-            resulting_id = reply.id
+            resulting_id = @client.reply.id
 
             if(@preexisting_id != resulting_id)
-              result.update(STATUS[:fail], "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", reply.body)
+              result.update(STATUS[:fail], "Server created (201) new #{resource_class.name.demodulize} rather than update (200). A new ID (#{resulting_id}) was also created (was #{@preexisting_id}).", @client.reply.body)
             else
-              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", reply.body)
+              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server responded with the wrong code (201, but should have been 200).", @client.reply.body)
             end
 
-            resulting_version = reply.version
+            resulting_version = @client.reply.version
             if(@preexisting_version == resulting_version)
-              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server did not update the resource version number.", reply.body)
+              result.update(STATUS[:fail], "The #{resource_class.name.demodulize} was successfully updated, but the server did not update the resource version number.", @client.reply.body)
             end
           else
-            outcome = self.parse_operation_outcome(reply.body) rescue nil
+            outcome = self.parse_operation_outcome(@client.reply.body) rescue nil
             if outcome.nil?
-              message = "Response code #{reply.code} with no OperationOutcome provided."
+              message = "Response code #{@client.reply.code} with no OperationOutcome provided."
             else
               message = self.build_messages(outcome)
             end
-            result.update(STATUS[:fail], message, reply.body)
+            result.update(STATUS[:fail], message, @client.reply.body)
           end
         end
 
@@ -398,18 +388,16 @@ module Crucible
         }
 
         result = TestResult.new('X034',"Conditional Update #{resource_class.name.demodulize}", nil, nil, nil)
-        @conditional_update_resource_c = ResourceGenerator.generate(@resource_class,3)
-        # this should match all resources
         searchParams = { '_lastUpdated' => 'gt1900-01-01' }
-        reply = @client.conditional_update(@conditional_update_resource_c,nil,searchParams)
-        @conditional_update_resource_c.id = (reply.resource.try(:id) || reply.id)
-        @temp_version = reply.version
+        @conditional_update_resource_c = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams)
+        # this should match all resources
+        @temp_version = @client.reply.version
 
-        if reply.code==412
-          result.update(STATUS[:pass], "Request correctly failed.", reply.body)
+        if @client.reply.code==412
+          result.update(STATUS[:pass], "Request correctly failed.", @client.reply.body)
           @conditional_update_resource_c = nil
         else
-          result.update(STATUS[:fail], "Request should have failed with HTTP 412.", reply.body)
+          result.update(STATUS[:fail], "Request should have failed with HTTP 412.", @client.reply.body)
         end
         result
       end   

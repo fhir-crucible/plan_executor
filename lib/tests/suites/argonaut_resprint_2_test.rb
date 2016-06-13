@@ -28,6 +28,7 @@ module Crucible
         @category = {id: 'argonaut', title: 'Argonaut'}
         @loinc_codes = ['8716-3', '9279-1', '8867-4', '59408-5', '8310-5', '8302-2', '8306-3', '8287-5', '29463-7', '39156-5', '55284-4', '8480-6', '8462-4']
         @loinc_code_units = {'8716-3' => nil, '9279-1' => '/min', '8867-4' => '/min', '59408-5' => '%', '8310-5' => 'Cel', '8302-2' => 'cm', '8306-3' => 'cm', '8287-5' => 'cm', '29463-7' => 'g, kg', '39156-5' => 'kg/m2', '55284-4' => nil, '8480-6' => 'mm[Hg]', '8462-4' => 'mm[Hg]'}
+        @smoking_codes = ['449868002', '428041000124106', '8517006', '266919005', '77176002', '266927001', '428071000124103', '428061000124105']
       end
 
       test 'ARS201', 'Get patient by ID' do
@@ -163,7 +164,53 @@ module Crucible
         validate_diagnostic_report_reply(reply)
       end
 
+      test 'ARS206', 'GET Smoking Status Observation with patient ID' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          requires resource: 'Observation', methods: ['read', 'search']
+          validates resource: 'Observation', methods: ['read', 'search']
+        }
+
+        skip if !@patient_id
+
+        options = {
+          search: {
+            flag: false,
+            compartment: nil,
+            parameters: {
+              patient: @patient_id,
+              code: '72166-2'
+            }
+          }
+        }
+
+        reply = @client.search(FHIR::DiagnosticReport, options)
+
+        validate_smoking_status_reply(reply)
+      end
+
       private
+
+      def validate_smoking_status_reply(reply)
+        assert_response_ok(reply)
+
+        valid_smoking_status_count = 0
+
+        reply.resource.entry.each do |entry|
+          observation = entry.resource
+          if observation.code.coding.to_a.find { |c| c.system == 'http://loinc.org' && c.code == '72166-2' }
+            valid_observation_count += 1
+            assert !observation.status.empty?
+            assert observation.subject
+            assert_equal observation.subject.reference.id, @patient_id
+            assert observation.issued
+            assert observation.valueCodeableConcept
+            assert @smoking_codes.include?(observation.valueCodeableConcept), "Observation valueCodeableConcept #{observation.valueCodeableConcept} isn't part of DAF Smoking Status Value Set"
+          end
+        end
+
+        warning { assert valid_smoking_status_count > 0, "No smoking status Observations were found for this patient" }
+      end
 
       def validate_vitalsign_reply(reply)
         assert_response_ok(reply)

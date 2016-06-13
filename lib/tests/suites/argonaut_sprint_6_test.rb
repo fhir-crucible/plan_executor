@@ -20,9 +20,9 @@ module Crucible
 
       def initialize(client1, client2 = nil)
         super
-        @tags.append('argonaut')
+        @tags.append('argonautp1')
         @loinc_codes = ['2951-2', '2823-3', '2075-0', '2028-9', '3094-0', '2160-0', '2345-7', '17861-6', '2885-2', '1751-7', '1975-2', '6768-6', '1742-6', '1920-8', '6690-2', '  789-8', ' 718-7', ' 4544-3', '787-2', '785-6', '786-4', '21000-5', '788-0', '777-3', '32207-3', '32623-1']
-        @category = {id: 'argonaut', title: 'Argonaut'}
+        @category = {id: 'argonautp1', title: 'Argonaut Phase 1'}
       end
 
       # [SprinklerTest("AS6001", "GET patient by ID")]
@@ -96,7 +96,7 @@ module Crucible
         }
 
         reply = @client.search(FHIR::Observation, options)
-        
+
         validate_observation_reply(reply)
       end
 
@@ -163,7 +163,7 @@ module Crucible
         reply.resource.entry.each do |entry|
           report = entry.resource
           assert report.category, "DiagnosticReport has no category"
-          if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" } 
+          if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" }
             valid_diagnostic_report_count += 1
             assert report.category.coding.to_a.find { |c| c.system == "http://hl7.org/fhir/v2/0074" }, "Wrong category codeSystem used; expected HL7v2"
             assert report.status, "No status for DiagnosticReport"

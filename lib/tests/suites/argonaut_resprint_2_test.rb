@@ -184,12 +184,61 @@ module Crucible
           }
         }
 
-        reply = @client.search(FHIR::DiagnosticReport, options)
+        reply = @client.search(FHIR::Observation, options)
 
         validate_smoking_status_reply(reply)
       end
 
+      test 'ARS207', 'GET CarePlan with patient ID' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          requires resource: 'CarePlan', methods: ['read', 'search']
+          validates resource: 'CarePlan', methods: ['read', 'search']
+        }
+
+        skip if !@patient_id
+
+        options = {
+          search: {
+            flag: false,
+            compartment: nil,
+            parameters: {
+              patient: @patient_id,
+              category: 'careteam',
+              status: 'active'
+            }
+          }
+        }
+
+        reply = @client.search(FHIR::CarePlan, options)
+
+        validate_care_plan_reply(reply)
+      end
+
       private
+
+      def validate_care_plan_reply(reply)
+        assert_response_ok(reply)
+
+        valid_care_plans_count = 0
+
+        reply.resource.entry.each do |entry|
+          careplan = entry.resource
+          if careplan.category.to_a.find { |cat| cat.coding.to_a.find { |c| c.system == "http://argonaut.hl7.org/ValueSet/extension-codes" && c.code == 'careteam' } }
+            valid_care_plans_count += 1
+            assert careplan.subject
+            assert_equal careplan.subject.reference, "Patient/#{@patient_id}", "Expected patient #{@patient_id} did not match CarePlan Subject #{careplan.subject.reference}"
+            careplan.participant.each do |participant|
+              assert participant.role, "Participant '#{participant.id}' does not have a role"
+              assert participant.member.display, "Participant '#{participant.id}' does not have a complete name in Participant.member.display"
+            end
+          end
+        end
+
+        warning { assert valid_care_plans_count > 0, "No care team CarePlans were found for this patient" }
+        skip unless valid_care_plans_count > 0
+
+      end
 
       def validate_smoking_status_reply(reply)
         assert_response_ok(reply)
@@ -199,17 +248,18 @@ module Crucible
         reply.resource.entry.each do |entry|
           observation = entry.resource
           if observation.code.coding.to_a.find { |c| c.system == 'http://loinc.org' && c.code == '72166-2' }
-            valid_observation_count += 1
+            valid_smoking_status_count += 1
             assert !observation.status.empty?
             assert observation.subject
-            assert_equal observation.subject.reference.id, @patient_id
-            assert observation.issued
-            assert observation.valueCodeableConcept
+            assert_equal observation.subject.reference, "Patient/#{@patient_id}"
+            assert observation.issued, "No instant available in observation '#{observation.xmlId}'s' 'issued' field"
+            assert observation.valueCodeableConcept "No codeableConcept specified for Observation '#{observation.xmlId}''"
             assert @smoking_codes.include?(observation.valueCodeableConcept), "Observation valueCodeableConcept #{observation.valueCodeableConcept} isn't part of DAF Smoking Status Value Set"
           end
         end
 
         warning { assert valid_smoking_status_count > 0, "No smoking status Observations were found for this patient" }
+        skip unless valid_smoking_status_count > 0
       end
 
       def validate_vitalsign_reply(reply)
@@ -236,7 +286,7 @@ module Crucible
             if @loinc_code_units[coding.code] && get_value(observation)
               value = get_value(observation)
               if value.respond_to? :unit
-                assert_equal @loinc_code_units[coding.code], value.unit, "The unit of the observation is not correct"
+                assert_equal @loinc_code_units[coding.code], value.unit, "The unit of the observation is not correct."
               end
             end
             # systolic and diastolic in components
@@ -247,9 +297,9 @@ module Crucible
               assert !systolic.blank?, "could not find a systolic blood pressure on a bp grouping vital sign observation"
               assert !diastolic.blank?, "could not find a diastolic blood pressure on a bp grouping vital sign observation"
               assert get_value(systolic), "systolic blood pressure did not have a value"
-              assert_equal 'mmHg', get_value(systolic).unit, "The unit of the systolic blood pressure is not correct"
+              assert_equal 'mmHg', get_value(systolic).unit, "The unit of the systolic blood pressure is not correct."
               assert get_value(diastolic), "systolic blood pressure did not have a value"
-              assert_equal 'mmHg', get_value(diastolic).unit, "The unit of the systolic blood pressure is not correct"
+              assert_equal 'mmHg', get_value(diastolic).unit, "The unit of the systolic blood pressure is not correct."
             end
 
           end

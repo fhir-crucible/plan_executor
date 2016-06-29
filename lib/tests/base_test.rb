@@ -113,6 +113,13 @@ module Crucible
         end
       end
 
+      def ignore_client_exception
+        begin
+          yield
+        rescue ClientException
+        end
+      end
+
     end
   end
 end

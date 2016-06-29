@@ -17,46 +17,27 @@ module Crucible
 
       def setup
         # Create a patient with gender:missing
-        @resources = Crucible::Generator::Resources.new
-        @patient = @resources.minimal_patient
-        @patient.identifier = [FHIR::Identifier.new]
-        @patient.identifier[0].value = SecureRandom.urlsafe_base64
-        result = @client.create(@patient)
-        @patient_id = result.id
+        patient = Crucible::Generator::Resources.new.minimal_patient
+        patient.identifier = [FHIR::Identifier.new]
+        patient.identifier[0].value = SecureRandom.urlsafe_base64
+        @patient = FHIR::Patient.create(patient)
 
         # read all the patients
-        @read_entire_feed=true
-        @client.use_format_param = true
-        reply = @client.read_feed(FHIR::Patient)
-        @read_entire_feed=false if (!reply.nil? && reply.code!=200)
-        @total_count = 0
-        @entries = []
-
-        while reply != nil && !reply.resource.nil?
-          @total_count += reply.resource.entry.size
-          @entries += reply.resource.entry
-          reply = @client.next_page(reply)
-          @read_entire_feed=false if (!reply.nil? && reply.code!=200)
-        end
+        @patients = FHIR::Patient.all()
 
         # create a condition matching the first patient
-        @condition = ResourceGenerator.generate(FHIR::Condition,1)
-        @condition.patient = ResourceGenerator.generate(FHIR::Reference)
-        @condition.patient.id = @entries.try(:[],0).try(:resource).try(:id)
+        condition = ResourceGenerator.generate(FHIR::Condition,1)
+        condition.patient = ResourceGenerator.generate(FHIR::Reference)
+        condition.patient.id = @patients.first.id
         options = {
-          :id => @entries.try(:[],0).try(:resource).try(:id),
-          :resource => @entries.try(:[],0).try(:resource).try(:class)
+          :id => condition.patient.id,
+          :resource => @patients.first.class
         }
-        @condition.patient.reference = @client.resource_url(options)
-        reply = @client.create(@condition)
-        @condition_id = reply.id
+        condition.patient.reference = @client.resource_url(options)
+        @condition = FHIR::Condition.create(condition)
 
         # create some observations
-        @obs_a = create_observation(4.12345)
-        @obs_b = create_observation(4.12346)
-        @obs_c = create_observation(4.12349)
-        @obs_d = create_observation(5.12)
-        @obs_e = create_observation(6.12)
+        @observations = [4.12345, 4.12346, 4.12349, 5.12, 6.12].map {|n| create_observation(n)}
       end
 
       def create_observation(value)
@@ -76,19 +57,13 @@ module Crucible
         body.code = '182756003'
         observation.bodySite = FHIR::CodeableConcept.new
         observation.bodySite.coding = [ body ]
-        reply = @client.create(observation)
-        reply.id
+        FHIR::Observation.create(observation)
       end
 
       def teardown
-        @client.use_format_param = false
-        @client.destroy(FHIR::Patient, @patient_id) if @patient_id
-        @client.destroy(FHIR::Condition, @condition_id) if @condition_id
-        @client.destroy(FHIR::Observation, @obs_a) if @obs_a
-        @client.destroy(FHIR::Observation, @obs_b) if @obs_b
-        @client.destroy(FHIR::Observation, @obs_c) if @obs_c
-        @client.destroy(FHIR::Observation, @obs_d) if @obs_d
-        @client.destroy(FHIR::Observation, @obs_e) if @obs_e
+        @patient.destroy
+        @condition.destroy
+        @observations.each {|o| o.destroy }
       end
 
     [true,false].each do |flag|  

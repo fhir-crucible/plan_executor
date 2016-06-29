@@ -81,6 +81,8 @@ module Crucible
             result.update(STATUS[:fail], e.message, e.data)
           rescue SkipException => e
             result.update(STATUS[:skip], "Skipped: #{test_method}", '')
+          rescue ClientException => e
+            result.update(STATUS[:fail], e.message, '')
           rescue => e
             result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
           end

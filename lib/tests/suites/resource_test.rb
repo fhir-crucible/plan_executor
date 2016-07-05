@@ -440,7 +440,7 @@ module Crucible
           result.update(STATUS[:skip], "Preexisting #{resource_class.name.demodulize} unknown.", nil)
         else
           vread_resource = nil
-          ignore_client_exception { vread_resource = @resource_class.vread(@preexisting_id, @preexisting_version) }
+          ignore_client_exception { vread_resource = @preexisting.vread(@preexisting_version) }
           if vread_resource.nil?
             raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", @client.reply.body)
           elsif @client.reply.code != 200

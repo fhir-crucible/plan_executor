@@ -17,25 +17,20 @@ module Crucible
 
       def setup
         @resources = Crucible::Generator::Resources.new
-        @patient = @resources.minimal_patient
+        @patient = FHIR::Patient.create(@resources.minimal_patient)
 
         @create_date = Time.now.utc
 
         @version = []
-        result = @client.create(@patient)
-        assert_response_ok(result)
-        @id = result.id
-        @version << result.version
+        @version << @client.reply.version
 
-        @patient.id = @id
         @patient.telecom ||= []
         @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
 
-        update_result = @client.update(@patient, @id)
-        assert_response_ok(update_result)
-        @version << update_result.version
-        del_result = @client.destroy(FHIR::Patient, @id)
-        assert_response_code(del_result,204)
+        @patient.update
+        @version << @client.reply.version
+        @patient.destroy
+        assert_response_code(@client.reply,204)
         
         @entry_count = @version.length
         # add one for deletion
@@ -49,9 +44,7 @@ module Crucible
           validates resource: "Patient", methods: ["history"]
         }
 
-        result = @client.resource_instance_history(FHIR::Patient,@id)
-        assert_response_ok result
-        bundle = result.resource
+        bundle = FHIR::Patient.resource_instance_history(@patient.id)
 
         assert_equal "history", bundle.type, "The bundle type is not correct"
         assert_equal @version_count, bundle.total, "the number of returned versions is not correct"
@@ -64,9 +57,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
-        result = @client.resource_instance_history(FHIR::Patient,@id)
-        assert_response_ok result
-        bundle = result.resource
+        bundle = FHIR::Patient.resource_instance_history(@patient.id)
         entries = bundle.entry
 
         assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'DELETE' }.size, 'Wrong number of DELETE transactions in the history bundle'
@@ -85,20 +76,17 @@ module Crucible
         before = @create_date - 1.minute
         after = before + 1.hour
 
-        all_history = @client.resource_instance_history(FHIR::Patient,@id)
+        all_history = FHIR::Patient.resource_instance_history(@patient.id)
 
-        result = @client.resource_instance_history_as_of(FHIR::Patient,@id,before)
-        assert_response_ok result
-        bundle = result.resource
+        bundle = FHIR::Patient.resource_instance_history_as_of(@patient.id,before)
 
         assert_equal @version_count, bundle.total, "the number of returned versions since the creation date is not correct"
 
         entry_ids_are_present(bundle.entry)
         check_sort_order(bundle.entry)
 
-        result = @client.resource_instance_history_as_of(FHIR::Patient,@id,after)
-        assert_response_ok result
-        assert_equal 0, result.resource.total, "there should not be any history one hour after the creation date"
+        bundle = FHIR::Patient.resource_instance_history_as_of(@patient.id,after)
+        assert_equal 0, bundle.total, "there should not be any history one hour after the creation date"
       end
 
       test "HI03", "individual history versions" do
@@ -108,23 +96,20 @@ module Crucible
           validates resource: "Patient", methods: ["vread", "history"]
         }
 
-        result = @client.resource_instance_history(FHIR::Patient,@id)
-        assert_response_ok result
-
-        bundle = result.resource
+        bundle = FHIR::Patient.resource_instance_history(@patient.id)
 
         active_entries(bundle.entry).each do |entry|
-          pulled = @client.vread(FHIR::Patient, entry.resource.id, entry.resource.meta.versionId)
-          assert_response_ok pulled
+          pulled = FHIR::Patient.vread(entry.resource.id, entry.resource.meta.versionId)
           assert !pulled.nil?, "Cannot find version that was present in history"
         end
 
         deleted_entries(bundle.entry).each do |entry|
           # FIXME: Should we parse the request URL or drop this assertion?
           if entry.resource
-            pulled = @client.vread(FHIR::Patient, entry.resource.id, entry.resource.meta.versionId)
-            assert pulled.resource.nil?, "resource should not be found since it was deleted"
-            assert_response_gone pulled
+          
+            ignore_client_exception { pulled = FHIR::Patient.vread(entry.resource.id, entry.resource.meta.versionId) }
+            assert_response_gone @client.reply
+
           end
         end
       end
@@ -136,9 +121,9 @@ module Crucible
           validates resource: "Patient", methods: ["history"]
         }
 
-        result = @client.resource_instance_history(FHIR::Patient,'3141592unlikely')
-        assert_response_not_found result
-        assert result.resource.nil?, 'bad history request should not return a resource'
+        ignore_client_exception { FHIR::Patient.resource_instance_history('3141592unlikely') }
+        assert_response_not_found @client.reply
+        assert @client.reply.resource.nil?, 'bad history request should not return a resource'
       end
 
       test "HI06", "all history for resource with since" do
@@ -151,17 +136,13 @@ module Crucible
         before = @create_date - 1.minute
         after = Time.now.utc + 1.hour
 
-        result = @client.resource_history_as_of(FHIR::Patient,before)
-        assert_response_ok result
-        bundle = result.resource
+        bundle = FHIR::Patient.resource_history_as_of(before)
 
         entry_ids_are_present(bundle.entry)
         check_sort_order(bundle.entry)
 
-
-        result = @client.resource_history_as_of(FHIR::Patient,after)
-        assert_response_ok result
-        assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
+        bundle = FHIR::Patient.resource_history_as_of(after)
+        assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
 
       end
 

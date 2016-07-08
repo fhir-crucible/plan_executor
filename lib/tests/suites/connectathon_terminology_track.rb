@@ -316,9 +316,35 @@ module Crucible
           assert_response_ok(reply)
           check_response_params(reply.body,'result','valueBoolean','true')
         end
+
+        test "CT16#{how[0]}", "$closure table maintenance (#{how})" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/operations.html#executing"
+            links "#{BASE_SPEC_LINK}/conceptmap-operations.html#closure"
+            validates resource: 'ConceptMap', methods: ['$closure']
+          }
+          coding = FHIR::Coding.new({'system'=>'http://snomed.info/sct','code'=>'22298006'})
+          options = {
+            :operation => {
+              :method => how,
+              :parameters => {
+                'name' => { type: 'String', value: 'crucible-test-closure' },
+                'concept' => { type: 'Coding', value: coding }
+              }
+            }
+          }
+          if how=='GET'
+            options[:operation][:parameters]['concept'][:value] = "#{coding.system}|#{coding.code}"
+          end
+          reply = @client.closure_table_maintenance(options)
+          assert_response_ok(reply)
+          assert_resource_type(reply, FHIR::ConceptMap)
+          code = reply.resource.element.find{|x|x.code=='22298006'}
+          assert code, 'Closure Table Operation should return the code that was supplied in the request.'
+        end
       end
 
-      test "CT16", "Delete ConceptMap" do
+      test "CT17", "Delete ConceptMap" do
         metadata {
           links "#{REST_SPEC_LINK}#delete"
           links "#{BASE_SPEC_LINK}/conceptmap.html"

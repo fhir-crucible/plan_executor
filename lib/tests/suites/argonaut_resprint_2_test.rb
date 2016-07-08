@@ -311,28 +311,21 @@ module Crucible
       def validate_diagnostic_report_reply(reply)
         assert_response_ok(reply)
 
-        valid_diagnostic_report_count = 0
-
         reply.resource.entry.each do |entry|
           report = entry.resource
+
           assert report.category, "DiagnosticReport has no category"
-          if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" }
-            valid_diagnostic_report_count += 1
-            assert report.category.coding.to_a.find { |c| c.system == "http://hl7.org/fhir/v2/0074" }, "Wrong category codeSystem used; expected HL7v2"
-            assert report.status, "No status for DiagnosticReport"
-            assert report.code, "DiagnosticReport has no code"
-            coding = report.code.coding.first
-            assert coding.system == "http://loinc.org", "The DiagnosticReport is coded using the wrong code system, is #{coding}, should be LOINC"
-            assert coding.code == "24323-8" || coding.code == "58410-2", "Wrong code used in DiagnosticReport"
-            assert report.subject, "DiagnosticReport has no subject"
-            assert report.effectivePeriod? || report.effectiveDateTime?, "DiagnosticReport has no effective date/time"
-            assert report.issued, "DiagnosticReport has no issued"
-            assert report.performer, "DiagnosticReport has no performer"
-            assert report.result, "DiagnosticReport has no results"
+          assert report.category.coding.each do |c|
+            assert c.code=='LAB',"Category code should be 'LAB'"
           end
+          assert report.status, "No status for DiagnosticReport"
+          assert report.code, "DiagnosticReport has no code"
+          assert report.subject, "DiagnosticReport has no subject"
+          assert report.effectivePeriod? || report.effectiveDateTime?, "DiagnosticReport has no effective date/time"
+          assert report.issued, "DiagnosticReport has no issued"
+          assert report.performer, "DiagnosticReport has no performer"
+          assert report.result, "DiagnosticReport has no results"
         end
-        warning { assert valid_diagnostic_report_count > 0, "No laboratory Diagnostic Reports were found for this patient" }
-        skip unless valid_diagnostic_report_count > 0
       end
 
       def validate_lab_reply(reply)

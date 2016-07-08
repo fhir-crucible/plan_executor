@@ -41,7 +41,7 @@ module Crucible
         reply = @client.read(FHIR::Patient, patient_id)
 
         assert_response_ok(reply)
-        assert_equal patient_id, reply.id, 'Server returned wrong patient.'
+        assert_equal patient_id.to_s, reply.id.to_s, 'Server returned wrong patient.'
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_etag_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -158,13 +158,32 @@ module Crucible
       def validate_diagnostic_report_reply(reply)
         assert_response_ok(reply)
 
-        valid_diagnostic_report_count = 0
+        metabolic_index = -1
+        reply.resource.entry.each_with_index do |e,i|
+          r = e.resource
+          categories = r.category.coding.map{|c|c.code.downcase}
+          codes = r.code.coding.map{|c|c.code}
+          metabolic_index = i if categories.include?('ch') && codes.include?('24323-8')
+        end
+        warning { assert (metabolic_index >= 0), "Metabolic panel with category 'CH' code '24323-8' not found." }
+        metabolic_panel_entry = reply.resource.entry[metabolic_index] if metabolic_index >= 0
+        
+        blood_index = -1
+        reply.resource.entry.each_with_index do |e,i|
+          r = e.resource
+          categories = r.category.coding.map{|c|c.code.downcase}
+          codes = r.code.coding.map{|c|c.code}
+          blood_index = i if categories.include?('hm') && codes.include?('58410-2')
+        end
+        warning { assert (metabolic_index >= 0), "Blood panel with category 'HM' code '58410-2' not found." }
+        blood_count_panel_entry = reply.resource.entry[blood_index] if blood_index >= 0
 
-        reply.resource.entry.each do |entry|
+        skip if metabolic_panel_entry.nil? && blood_count_panel_entry.nil?
+
+        [ metabolic_panel_entry, blood_count_panel_entry ].keep_if{|x|!x.nil?}.each do |entry|
           report = entry.resource
           assert report.category, "DiagnosticReport has no category"
           if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" }
-            valid_diagnostic_report_count += 1
             assert report.category.coding.to_a.find { |c| c.system == "http://hl7.org/fhir/v2/0074" }, "Wrong category codeSystem used; expected HL7v2"
             assert report.status, "No status for DiagnosticReport"
             assert report.code, "DiagnosticReport has no code"
@@ -178,8 +197,6 @@ module Crucible
             assert report.result, "DiagnosticReport has no results"
           end
         end
-        warning { assert valid_diagnostic_report_count > 0, "No chemistry or hematology Diagnostic Reports were found for this patient" }
-        skip unless valid_diagnostic_report_count > 0
       end
 
       def validate_observation_reply(reply)
@@ -202,7 +219,7 @@ module Crucible
             assert get_value(observation) || observation.dataAbsentReason
             coding = observation.code.coding.first
             assert coding.system == "http://loinc.org", "The observation is coded using the wrong code system, is #{coding.system}, should be LOINC"
-            warning { assert @loinc_codes.index(coding.code), "The code included in an Observation doesn't match any in the code lists provided by the Argonaut project" }
+            warning { assert @loinc_codes.index(coding.code), "The Observation code does not match any of the expected codes within Sprint 6." }
           end
         end
         warning { assert valid_observation_count > 0, "No laboratory Observations were found for this patient" }

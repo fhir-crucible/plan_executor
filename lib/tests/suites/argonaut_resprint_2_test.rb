@@ -254,7 +254,7 @@ module Crucible
             assert_equal observation.subject.reference, "Patient/#{@patient_id}"
             assert observation.issued, "No instant available in observation '#{observation.xmlId}'s' 'issued' field"
             assert observation.valueCodeableConcept "No codeableConcept specified for Observation '#{observation.xmlId}''"
-            assert @smoking_codes.include?(observation.valueCodeableConcept), "Observation valueCodeableConcept #{observation.valueCodeableConcept} isn't part of DAF Smoking Status Value Set"
+            assert observation.valueCodeableConcept.coding.to_a.find{|c|@smoking_codes.include?(c.code)}, "Observation valueCodeableConcept #{observation.valueCodeableConcept.to_fhir_json} isn't part of DAF Smoking Status Value Set"
           end
         end
 

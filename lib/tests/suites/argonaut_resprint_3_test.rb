@@ -97,11 +97,11 @@ module Crucible
 
         reply.resource.entry.each do |entry|
           med = entry.resource
-          assert med.dateWritten, "MedicationOrder #{med.id} does not have a dateWritten"
-          assert med.medicationCodeableConcept || med.medicationReference, "MedicationOrder #{med.id} does not have an embedded Medication"
-          assert med.status && !med.status.empty?, "MedicationOrder #{med.id} must have a non-blank status"
-          assert med.patient.reference == "Patient/#{@patient_id}", "MedicationOrder #{med.id} patient doesn't match the specified patient"
-          assert med.prescriber, "MedicationOrder #{med.id} does not have a prescriber"
+          assert med.dateWritten, "MedicationOrder '#{med.xmlId}' does not have a dateWritten"
+          assert med.medicationCodeableConcept || med.medicationReference, "MedicationOrder '#{med.xmlId}' does not have an embedded Medication"
+          assert med.status && !med.status.empty?, "MedicationOrder '#{med.xmlId}' must have a non-blank status"
+          assert med.patient.reference == "Patient/#{@patient_id}", "MedicationOrder '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id}})"
+          assert med.prescriber, "MedicationOrder '#{med.xmlId}' does not have a prescriber"
           valid_entries += 1
         end
 
@@ -137,10 +137,10 @@ module Crucible
         reply.resource.entry.each do |entry|
           # Note: haven't been able to find a server that supports MedicationStatement and has a patient with it.
           med = entry.resource
-          assert med.effectiveDateTime || med.effectivePeriod, "MedicationStatement #{med.id} does not have an effective date or period"
-          assert med.medicationCodeableConcept || med.medicationReference, "MedicationStatement #{med.id} does not have an embedded Medication"
-          assert med.status && !med.status.empty?, "MedicationStatement #{med.id} must have a non-blank status"
-          assert med.patient.reference == "Patient/#{@patient_id}", "MedicationStatement #{med.id} patient doesn't match the specified patient"
+          assert med.effectiveDateTime || med.effectivePeriod, "MedicationStatement '#{med.xmlId} 'does not have an effective date or period"
+          assert med.medicationCodeableConcept || med.medicationReference, "MedicationStatement '#{med.xmlId}' does not have an embedded Medication"
+          assert med.status && !med.status.empty?, "MedicationStatement '#{med.xmlId}' must have a non-blank status"
+          assert med.patient.reference == "Patient/#{@patient_id}", "MedicationStatement '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id}})"
           valid_entries += 1
         end
 
@@ -174,14 +174,13 @@ module Crucible
         valid_entries = 0
 
         reply.resource.entry.each do |entry|
-          med = entry.resource
-          assert med.date, "Immunization #{med.id} does not have an administration date"
-          assert med.medicationCodeableConcept || med.medicationReference, "Immunization #{med.id} does not have an embedded Medication"
-          assert med.status && !med.status.empty?, "Immunization #{med.id} must have a non-blank status"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Immunization #{med.id} patient doesn't match the specified patient"
-          assert med.wasNotGiven != nil, "Immunization #{med.id} does not have a boolean value in 'wasNotGiven'"
-          assert med.reported != nil, "Immunization #{med.id} does not have a boolean value in 'reported'"
-          assert med.vaccineCode, "Immunization #{med.id} does not have a code value in vaccineCode"
+          imm = entry.resource
+          assert imm.date, "Immunization '#{imm.xmlId}' does not have an administration date"
+          assert imm.status && !med.status.empty?, "Immunization '#{imm.xmlId}' must have a non-blank status"
+          assert imm.patient.reference == "Patient/#{@patient_id}", "Immunization '#{imm.xmlId}' patient (#{imm.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
+          assert imm.wasNotGiven != nil, "Immunization '#{imm.xmlId}' does not have a boolean value in 'wasNotGiven'"
+          assert imm.reported != nil, "Immunization '#{imm.xmlId}' does not have a boolean value in 'reported'"
+          assert imm.vaccineCode, "Immunization '#{imm.xmlId}' does not have a code value in vaccineCode"
           #can't check whether vaccineCode is in the DAF CVX valueSet, because that valueSet has no codes in it.
           valid_entries += 1
         end
@@ -241,11 +240,11 @@ module Crucible
 
         reply.resource.entry.each do |entry|
           med = entry.resource
-          assert med.status && !med.status.empty?, "Goal #{med.id} must have a non-blank status"
+          assert med.status && !med.status.empty?, "Goal '#{med.xmlId}' must have a non-blank status"
           # array is composed of GoalStatus ValueSet codes: http://hl7.org/fhir/DSTU2/valueset-Goal-status.html
-          assert %w{proposed planned accepted rejected in-progress achieved sustaining on-hold cancelled}.include?(med.status), "Goal #{med.id} must have a status from the GoalStatus Value set at http://hl7.org/fhir/DSTU2/valueset-Goal-status.html"
-          assert med.description && !med.description.empty?, "Goal #{med.id} must have a non-blank description"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Goal #{med.id} patient doesn't match the specified patient"
+          assert %w{proposed planned accepted rejected in-progress achieved sustaining on-hold cancelled}.include?(med.status), "Goal '#{med.xmlId}' must have a status from the GoalStatus Value set at http://hl7.org/fhir/DSTU2/valueset-Goal-status.html"
+          assert med.description && !med.description.empty?, "Goal '#{med.xmlId}' must have a non-blank description"
+          assert med.patient.reference == "Patient/#{@patient_id}", "Goal '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
           valid_entries += 1
         end
 
@@ -281,11 +280,11 @@ module Crucible
 
         reply.resource.entry.each do |entry|
           med = entry.resource
-          assert med.status && !med.status.empty?, "Goal #{med.id} must have a non-blank status"
+          assert med.status && !med.status.empty?, "Goal '#{med.xmlId}' must have a non-blank status"
           # array is composed of GoalStatus ValueSet codes: http://hl7.org/fhir/DSTU2/valueset-Goal-status.html
-          assert %w{proposed planned accepted rejected in-progress achieved sustaining on-hold cancelled}.include?(med.status), "Goal #{med.id} must have a status from the GoalStatus Value set at http://hl7.org/fhir/DSTU2/valueset-Goal-status.html"
-          assert med.description && !med.description.empty?, "Goal #{med.id} must have a non-blank description"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Goal #{med.id} patient doesn't match the specified patient"
+          assert %w{proposed planned accepted rejected in-progress achieved sustaining on-hold cancelled}.include?(med.status), "Goal '#{med.xmlId}' must have a status from the GoalStatus Value set at http://hl7.org/fhir/DSTU2/valueset-Goal-status.html"
+          assert med.description && !med.description.empty?, "Goal '#{med.xmlId}' must have a non-blank description"
+          assert med.patient.reference == "Patient/#{@patient_id}", "Goal '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
           valid_entries += 1
         end
 
@@ -320,9 +319,9 @@ module Crucible
 
         reply.resource.entry.each do |entry|
           med = entry.resource
-          assert med.type && !med.type.empty?, "Device #{med.id} must have a non-blank status"
-          assert med.udi && !med.udi.empty?, "Device #{med.id} must have a non-blank UDI string"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Device #{med.id} patient doesn't match the specified patient"
+          assert med.type && !med.type.empty?, "Device '#{med.xmlId}' must have a non-blank status"
+          assert med.udi && !med.udi.empty?, "Device '#{med.xmlId}' must have a non-blank UDI string"
+          assert med.patient.reference == "Patient/#{@patient_id}", "Device '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
           valid_entries += 1
         end
 

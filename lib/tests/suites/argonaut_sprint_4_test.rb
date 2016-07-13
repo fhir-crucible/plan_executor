@@ -20,8 +20,8 @@ module Crucible
 
       def initialize(client1, client2 = nil)
         super
-        @tags.append('argonaut')
-        @category = {id: 'argonaut', title: 'Argonaut'}
+        @tags.append('argonautp1')
+        @category = {id: 'argonautp1', title: 'Argonaut Phase 1'}
       end
 
       # [SprinklerTest("AS3001", "GET patient by ID")]
@@ -192,7 +192,7 @@ module Crucible
               assert false, "could not get a code to search on"
             end
           when 'identifier'
-            search_string = search_string.first.value unless search_string.blank? 
+            search_string = search_string.first.value unless search_string.blank?
           end
 
           warning {assert !search_string.blank? && !match_target.nil?, "could not get a MedicationOrder with a #{field} value to search on"}
@@ -242,7 +242,7 @@ module Crucible
               assert false, "could not get a code to search on"
             end
           when 'identifier'
-            search_string = search_string.first.value unless search_string.blank? 
+            search_string = search_string.first.value unless search_string.blank?
           end
 
           warning {assert !search_string.blank? && !match_target.nil?, "could not get a MedicationStatement with a #{field} value to search on"}

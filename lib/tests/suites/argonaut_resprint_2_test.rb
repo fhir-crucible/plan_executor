@@ -31,6 +31,12 @@ module Crucible
         @smoking_codes = ['449868002', '428041000124106', '8517006', '266919005', '77176002', '266927001', '428071000124103', '428061000124105']
       end
 
+      def setup
+        if !@client.client.try(:params).nil? && @client.client.params['patient']
+          @patient_id = @client.client.params['patient']
+        end
+      end
+
       test 'ARS201', 'Get patient by ID' do
         metadata {
           links "#{REST_SPEC_LINK}#read"

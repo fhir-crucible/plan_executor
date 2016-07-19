@@ -31,13 +31,19 @@ module Crucible
         @status_codes = ['active', 'unconfirmed', 'confirmed', 'inactive', 'resolved', 'refuted', 'entered-in-error']
       end
 
+      def setup
+        if !@client.client.try(:params).nil? && @client.client.params['patient']
+          @patient_id = @client.client.params['patient']
+        end
+      end
+
       test 'ARS101', 'Get patient by ID' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
         }
-
+        
         begin
           options = {
             :search => {

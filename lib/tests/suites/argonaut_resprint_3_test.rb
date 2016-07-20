@@ -100,7 +100,7 @@ module Crucible
           assert med.dateWritten, "MedicationOrder '#{med.xmlId}' does not have a dateWritten"
           assert med.medicationCodeableConcept || med.medicationReference, "MedicationOrder '#{med.xmlId}' does not have an embedded Medication"
           assert med.status && !med.status.empty?, "MedicationOrder '#{med.xmlId}' must have a non-blank status"
-          assert med.patient.reference == "Patient/#{@patient_id}", "MedicationOrder '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id}})"
+          assert med.try(:patient).try(:reference) == "Patient/#{@patient_id}", "MedicationOrder '#{med.xmlId}' patient (#{med.try(:patient).try(:reference)}) doesn't match the specified patient (Patient/#{@patient_id}})"
           assert med.prescriber, "MedicationOrder '#{med.xmlId}' does not have a prescriber"
           valid_entries += 1
         end
@@ -140,7 +140,7 @@ module Crucible
           assert med.effectiveDateTime || med.effectivePeriod, "MedicationStatement '#{med.xmlId} 'does not have an effective date or period"
           assert med.medicationCodeableConcept || med.medicationReference, "MedicationStatement '#{med.xmlId}' does not have an embedded Medication"
           assert med.status && !med.status.empty?, "MedicationStatement '#{med.xmlId}' must have a non-blank status"
-          assert med.patient.reference == "Patient/#{@patient_id}", "MedicationStatement '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id}})"
+          assert med.try(:patient).try(:reference) == "Patient/#{@patient_id}", "MedicationStatement '#{med.xmlId}' patient (#{med.try(:patient).try(:reference)}) doesn't match the specified patient (Patient/#{@patient_id}})"
           valid_entries += 1
         end
 
@@ -176,8 +176,8 @@ module Crucible
         reply.resource.entry.each do |entry|
           imm = entry.resource
           assert imm.date, "Immunization '#{imm.xmlId}' does not have an administration date"
-          assert imm.status && !med.status.empty?, "Immunization '#{imm.xmlId}' must have a non-blank status"
-          assert imm.patient.reference == "Patient/#{@patient_id}", "Immunization '#{imm.xmlId}' patient (#{imm.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
+          assert imm.status && !imm.status.empty?, "Immunization '#{imm.xmlId}' must have a non-blank status"
+          assert imm.try(:patient).try(:reference) == "Patient/#{@patient_id}", "Immunization '#{imm.xmlId}' patient (#{imm.try(:patient).try(:reference)}) doesn't match the specified patient (Patient/#{@patient_id})"
           assert imm.wasNotGiven != nil, "Immunization '#{imm.xmlId}' does not have a boolean value in 'wasNotGiven'"
           assert imm.reported != nil, "Immunization '#{imm.xmlId}' does not have a boolean value in 'reported'"
           assert imm.vaccineCode, "Immunization '#{imm.xmlId}' does not have a code value in vaccineCode"
@@ -187,30 +187,6 @@ module Crucible
 
         warning { assert valid_entries > 0, "No Immunizations were found for patient #{@patient_id}" }
         skip unless valid_entries > 0
-      end
-
-      test 'ARS305', 'GET Goals with Patient ID' do
-        metadata {
-          links "#{REST_SPEC_LINK}#search"
-          requires resource: "Immunization", methods: ["read", "search"]
-          validates resource: "Immunization", methods: ["read", "search"]
-        }
-
-        skip if !@patient_id
-
-        options = {
-          search: {
-            flag: false,
-            compartment: nil,
-            parameters: {
-              patient: @patient_id
-            }
-          }
-        }
-
-        reply = @client.search(FHIR::Goal, options)
-
-        validate_goal(reply)
       end
 
       test 'ARS305', 'GET Goals with Patient ID' do
@@ -244,7 +220,7 @@ module Crucible
           # array is composed of GoalStatus ValueSet codes: http://hl7.org/fhir/DSTU2/valueset-Goal-status.html
           assert %w{proposed planned accepted rejected in-progress achieved sustaining on-hold cancelled}.include?(med.status), "Goal '#{med.xmlId}' must have a status from the GoalStatus Value set at http://hl7.org/fhir/DSTU2/valueset-Goal-status.html"
           assert med.description && !med.description.empty?, "Goal '#{med.xmlId}' must have a non-blank description"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Goal '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
+          assert med.try(:subject).try(:reference) == "Patient/#{@patient_id}", "Goal '#{med.xmlId}' patient (#{med.try(:subject).try(:reference)}) doesn't match the specified patient (Patient/#{@patient_id})"
           valid_entries += 1
         end
 
@@ -267,7 +243,7 @@ module Crucible
             compartment: nil,
             parameters: {
               patient: @patient_id,
-              date: 'ge2000-01-01'
+              targetdate: 'ge2000-01-01'
             }
           }
         }
@@ -284,7 +260,7 @@ module Crucible
           # array is composed of GoalStatus ValueSet codes: http://hl7.org/fhir/DSTU2/valueset-Goal-status.html
           assert %w{proposed planned accepted rejected in-progress achieved sustaining on-hold cancelled}.include?(med.status), "Goal '#{med.xmlId}' must have a status from the GoalStatus Value set at http://hl7.org/fhir/DSTU2/valueset-Goal-status.html"
           assert med.description && !med.description.empty?, "Goal '#{med.xmlId}' must have a non-blank description"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Goal '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
+          assert med.try(:subject).try(:reference) == "Patient/#{@patient_id}", "Goal '#{med.xmlId}' patient (#{med.try(:subject).try(:reference)}) doesn't match the specified patient (Patient/#{@patient_id})"
           valid_entries += 1
         end
 
@@ -319,9 +295,11 @@ module Crucible
 
         reply.resource.entry.each do |entry|
           med = entry.resource
-          assert med.type && !med.type.empty?, "Device '#{med.xmlId}' must have a non-blank status"
+          require 'pry'
+          binding.pry
+          assert med.try(:fhirType) && !med.try(:fhirType).empty?, "Device '#{med.xmlId}' must have a non-blank status"
           assert med.udi && !med.udi.empty?, "Device '#{med.xmlId}' must have a non-blank UDI string"
-          assert med.patient.reference == "Patient/#{@patient_id}", "Device '#{med.xmlId}' patient (#{med.patient.reference}) doesn't match the specified patient (Patient/#{@patient_id})"
+          assert med.try(:patient).try(:reference) == "Patient/#{@patient_id}", "Device '#{med.xmlId}' patient (#{med.try(:patient).try(:reference)}) doesn't match the specified patient (Patient/#{@patient_id})"
           valid_entries += 1
         end
 

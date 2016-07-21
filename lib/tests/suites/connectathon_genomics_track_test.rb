@@ -191,30 +191,6 @@ module Crucible
         assert @records[:dr_hla].equals?(reply.resource, ['meta', 'text', 'narrative']), "DiagnosticReport doesn't match the stored DiagnosticReport; difference is: #{@records[:dr_hla].mismatch(reply.resource, ['meta', 'text', 'narrative'])}"
       end
 
-      test 'CGT06', 'Species Identification' do
-        metadata {
-          links "#{REST_SPEC_LINK}#search"
-          links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
-          requires resource: 'Sequence', methods: ['read']
-          validates resource: 'Sequence', methods: ['read']
-        }
-
-        options = {
-          :search => {
-            :flag => false,
-            :compartment => nil,
-            :parameters => {
-              'species' => 'http://snomed.info/sct|337915000'
-            }
-          }
-        }
-
-        reply = @client.search(FHIR::Sequence, options)
-        assert_response_ok(reply)
-
-        assert reply.resource.get_by_id(@records[:sequence_register_create].id), 'No Sequence returned that matches the created Sequence'
-      end
-
       test 'CGT07', 'Comprehensive Pathology Report' do
         metadata {
           links "#{REST_SPEC_LINK}#search"

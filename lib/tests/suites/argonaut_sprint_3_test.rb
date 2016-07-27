@@ -49,8 +49,12 @@ module Crucible
       test 'AS3002', 'GET DocumentReference Patient Compartment for a specific patient' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
-          requires resource: "Patient", methods: ["search"]
-          validates resource: "Patient", methods: ["search"]
+          requires resource: "Patient", methods: ['read', "search"]
+          validates resource: "Patient", methods: ['read', "search"]
+          requires resource: 'DocumentReference', methods: ['read']
+          validates resource: 'DocumentReference', methods: ['read']
+          requires resource: nil, methods: ['DOCUMENTS']
+          validates resource: nil, methods: ['DOCUMENTS']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -85,6 +89,10 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'DocumentReference', methods: ['read']
+          validates resource: 'DocumentReference', methods: ['read']
+          requires resource: nil, methods: ['DOCUMENTS']
+          validates resource: nil, methods: ['DOCUMENTS']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -118,8 +126,12 @@ module Crucible
       test 'AS3004', 'GET DocumentReference by Created Date' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
-          requires resource: "Patient", methods: ["read", "search"]
-          validates resource: "Patient", methods: ["read", "search"]
+          requires resource: "Patient", methods: ["read"]
+          validates resource: "Patient", methods: ["read"]
+          requires resource: 'DocumentReference', methods: ['read', 'search']
+          validates resource: 'DocumentReference', methods: ['read', 'search']
+          requires resource: nil, methods: ['DOCUMENTS']
+          validates resource: nil, methods: ['DOCUMENTS']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -156,6 +168,10 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'DocumentReference', methods: ['read', 'search']
+          validates resource: 'DocumentReference', methods: ['read', 'search']
+          requires resource: nil, methods: ['DOCUMENTS']
+          validates resource: nil, methods: ['DOCUMENTS']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"

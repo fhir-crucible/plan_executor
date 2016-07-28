@@ -51,6 +51,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'Condition', methods: ['read']
+          validates resource: 'Condition', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -83,8 +85,10 @@ module Crucible
       test 'AS5003', 'GET Condition with Patient IDs' do
         metadata {
           links "#{REST_SPEC_LINK}#search"
-          requires resource: "Patient", methods: ["read", "search"]
-          validates resource: "Patient", methods: ["read", "search"]
+          requires resource: "Patient", methods: ["read"]
+          validates resource: "Patient", methods: ["read"]
+          requires resource: 'Condition', methods: ['read', 'search']
+          validates resource: 'Condition', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -120,6 +124,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'AllergyIntolerance', methods: ['read']
+          validates resource: 'AllergyIntolerance', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -154,6 +160,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'AllergyIntolerance', methods: ['read', 'search']
+          validates resource: 'AllergyIntolerance', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"

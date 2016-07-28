@@ -51,6 +51,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'MedicationOrder', methods: ['read']
+          validates resource: 'MedicationOrder', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -81,6 +83,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'MedicationOrder', methods: ['read', 'search']
+          validates resource: 'MedicationOrder', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -112,6 +116,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'MedicationOrder', methods: ['read']
+          validates resource: 'MedicationOrder', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -142,6 +148,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'MedicationOrder', methods: ['read', 'search']
+          validates resource: 'MedicationOrder', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -175,7 +183,8 @@ module Crucible
           metadata {
             links "#{REST_SPEC_LINK}#search"
             links "#{BASE_SPEC_LINK}/MedicationOrder.html"
-            validates resource: "MedicationOrder", methods: ["search"]
+            requires resource: 'MedicationOrder', methods: ['read', 'search']
+            validates resource: "MedicationOrder", methods: ['read', "search"]
           }
 
           resources = getResources(FHIR::MedicationOrder)
@@ -225,7 +234,8 @@ module Crucible
           metadata {
             links "#{REST_SPEC_LINK}#search"
             links "#{BASE_SPEC_LINK}/MedicationStatement.html"
-            validates resource: "MedicationStatement", methods: ["search"]
+            requires resource: 'MedicationStatement', methods: ['read', 'search']
+            validates resource: "MedicationStatement", methods: ['read', "search"]
           }
 
           resources = getResources(FHIR::MedicationStatement)

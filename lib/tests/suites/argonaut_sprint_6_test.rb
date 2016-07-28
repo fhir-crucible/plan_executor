@@ -52,6 +52,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'Observation', methods: ['read']
+          validates resource: 'Observation', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -78,6 +80,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'Observation', methods: ['read', 'search']
+          validates resource: 'Observation', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -105,6 +109,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'DiagnosticReport', methods: ['read']
+          validates resource: 'DiagnosticReport', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -131,6 +137,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'DiagnosticReport', methods: ['read', 'search']
+          validates resource: 'DiagnosticReport', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -167,7 +175,7 @@ module Crucible
         end
         warning { assert (metabolic_index >= 0), "Metabolic panel with category 'CH' code '24323-8' not found." }
         metabolic_panel_entry = reply.resource.entry[metabolic_index] if metabolic_index >= 0
-        
+
         blood_index = -1
         reply.resource.entry.each_with_index do |e,i|
           r = e.resource

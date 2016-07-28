@@ -86,7 +86,7 @@ module Crucible
           requires resource: 'MedicationOrder', methods: ['read', 'search']
           validates resource: 'MedicationOrder', methods: ['read', 'search']
         }
-s
+
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
         assert @client.client.params["patient"], "No patient parameter was passed to the client"
 

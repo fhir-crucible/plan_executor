@@ -62,6 +62,7 @@ module Crucible
       end
 
       def teardown
+        @temp_resource.destroy if @temp_resource
         @conditional_create_resource_a.destroy if @conditional_create_resource_a
         @conditional_create_resource_b.destroy if @conditional_create_resource_b
         @conditional_create_resource_c.destroy if @conditional_create_resource_c
@@ -143,15 +144,13 @@ module Crucible
         # this ID should already exist if temp resource was created
         if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
-        elsif !@temp_resource.nil?
+        elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
         else
           raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
         end
         ifNoneExist = { '_id' => @preexisting_id }
         ignore_client_exception { @conditional_create_resource_b = ResourceGenerator.generate(@resource_class,3).conditional_create(ifNoneExist) }
-
-        @temp_version = @client.reply.version
 
         if @client.reply.code==200
           result.update(STATUS[:pass], "Request was correctly ignored.", @client.reply.body)
@@ -173,7 +172,6 @@ module Crucible
         # this should match all resources
         ifNoneExist = { '_lastUpdated' => 'gt1900-01-01' }
         ignore_client_exception { @conditional_create_resource_c = ResourceGenerator.generate(@resource_class,3).conditional_create(ifNoneExist) }
-        @temp_version = @client.reply.version
 
         if @client.reply.code==412
           result.update(STATUS[:pass], "Request correctly failed.", @client.reply.body)
@@ -195,7 +193,7 @@ module Crucible
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
         if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
-        elsif !@temp_resource.nil?
+        elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
         else
           raise AssertionException.new("Preexisting #{resource_class.name.demodulize} unknown.", nil)
@@ -230,7 +228,7 @@ module Crucible
 
         result = TestResult.new('X030',"Update existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@temp_resource.nil?
+        if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
         elsif !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
@@ -317,7 +315,7 @@ module Crucible
         }
 
         result = TestResult.new('X033',"Conditional Update #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
-        if !@temp_resource.nil?
+        if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
         elsif !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
@@ -381,8 +379,6 @@ module Crucible
         result = TestResult.new('X034',"Conditional Update #{resource_class.name.demodulize}", nil, nil, nil)
         searchParams = { '_lastUpdated' => 'gt1900-01-01' }
         ignore_client_exception { @conditional_update_resource_c = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams) }
-        # this should match all resources
-        @temp_version = @client.reply.version
 
         if @client.reply.code==412
           result.update(STATUS[:pass], "Request correctly failed.", @client.reply.body)
@@ -430,7 +426,7 @@ module Crucible
           @preexisting_id = @preexisting.id
           @preexisting_version = nil
           @preexisting_version = @preexisting.meta.versionId if !@preexisting.meta.nil?
-        elsif !@temp_resource.nil?
+        elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting_version = @temp_version
           @preexisting = @temp_resource
@@ -501,8 +497,8 @@ module Crucible
 
         result = TestResult.new('X060',"Validate #{resource_class.name.demodulize}", nil, nil, nil)
 
-        @temp_resource = ResourceGenerator.generate(@resource_class,3)
-        reply = @client.validate @temp_resource
+        tres = ResourceGenerator.generate(@resource_class,3)
+        reply = @client.validate tres
         if reply.code==200
           result.update(STATUS[:pass], "#{resource_class.name.demodulize} was validated.", reply.body)
         elsif reply.code==201
@@ -536,7 +532,7 @@ module Crucible
         if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
-        elsif !@temp_resource.nil?
+        elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
         end
@@ -621,8 +617,8 @@ module Crucible
 
         result = TestResult.new('X067',"Validate #{resource_class.name.demodulize} against a profile", nil, nil, nil)
 
-        @temp_resource = ResourceGenerator.generate(@resource_class,3)
-        reply = @client.validate(@temp_resource,{profile_uri: profile_uri})
+        tres = ResourceGenerator.generate(@resource_class,3)
+        reply = @client.validate(tres,{profile_uri: profile_uri})
         if reply.code==200
           result.update(STATUS[:pass], "#{resource_class.name.demodulize} was validated.", reply.body)
         elsif reply.code==201
@@ -656,11 +652,10 @@ module Crucible
         @x070_success = false
         result = TestResult.new('X070',"Delete existing #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@temp_resource.nil?
+        if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        end
-        if @preexisting_id.nil? &&!@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif @preexisting_id.nil? &&!@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end
@@ -705,7 +700,7 @@ module Crucible
 
         result = TestResult.new('X075',"Get Deleted #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@temp_resource.nil?
+        if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
         end

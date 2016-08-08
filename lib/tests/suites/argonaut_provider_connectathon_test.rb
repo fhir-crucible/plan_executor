@@ -9,11 +9,14 @@ module Crucible
         'Test suite for the Argonaut Provider Directory Virtual Connectathon'
       end
 
-      def initialize(client1, client2 = nil)
-        super(client1, client2)
+      def details
+        {
+          'Overview' => 'Test suite for the Argonaut Provider Directory Virtual Connectathon'
+        }
       end
 
-      def setup
+      def initialize(client1, client2 = nil)
+        super(client1, client2)
         @tags.append('provider')
         @category = {id: 'argonaut', title: 'Argonaut'}
       end
@@ -57,9 +60,9 @@ module Crucible
 
         assert @practitioner.practitionerRole.select{ |pr| !pr.location.empty? }.size >= 1, "No Locations found for Practitioner #{@practitioner.identifier}"
 
-        assert @practitioner.practitionerRole.select{ |pr| !pr.location.select {|loc| loc.address != nil }.empty? }.size >= 1, "No addresses found for Practitioner #{@practitioner.identifier}"
+        assert @practitioner.practitionerRole.select{ |pr| !pr.location.select {|loc| loc.address != nil }.empty? }.size >= 1, "No addresses found for Practitioner #{@practitioner.identifier.value}"
 
-        assert @practitioner.practitionerRole.select{ |pr| !pr.telecom.empty? }.size >= 1, "No telecoms found for Practitioner #{@practitioner.identifier}"
+        assert @practitioner.practitionerRole.select{ |pr| !pr.telecom.empty? }.size >= 1, "No telecoms found for Practitioner #{@practitioner.identifier.value}"
 
       end
     end

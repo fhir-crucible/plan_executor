@@ -87,7 +87,7 @@ module Crucible
 
            # See if any of the location resources have telecom elements on them
           !loc.telecom.nil? && !loc.telecom.empty?
-        }.size >= 1, "None of the Locations associated with Practitioner #{@practitioner.identifier.first.value}'s Roles contain Telecom information"
+        }.size >= 1 || @practitioner.role.select { |pr| !pr.telecom.empty? }.size >= 1, "None of the roles associated with Practitioner #{@practitioner.identifier.first.value} contain Telecom information"
 
       end
 

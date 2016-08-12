@@ -32,7 +32,7 @@ module Crucible
         # Basically just get a group of 10 Practitioners
         options = {
             :search => {
-              :flag => true,
+              # :flag => true,
               :compartment => nil,
               :parameters => {
                 _count: 100
@@ -41,8 +41,7 @@ module Crucible
           }
           @practitioners = @client.search(FHIR::Practitioner, options).resource.try(:entry)
           assert @practitioners, 'No Practitioners found'
-          @practitioner_id = @practitioners.select{ |p| !p.resource.practitionerRole.empty? }.sample.try(:resource).try(:id)
-          assert @practitioner_id, 'No practitioner found with a PractitionerRole'
+
       end
 
       test 'APCT02', 'Test Ability to locate a Practitioner\'s Telecom/Physical Address' do
@@ -52,18 +51,174 @@ module Crucible
           validates resource: 'Practitioner', methods: ['read']
         }
 
-        skip if !@practitioner_id
+        skip if !@practitioners
 
-        @practitioner = @client.read(FHIR::Practitioner, @practitioner_id).try(:resource)
+        practitioner_id = @practitioners.select{ |p| !p.resource.role.empty? }.sample.try(:resource).try(:id)
+        assert practitioner_id, 'No practitioner found with a role'
 
-        assert @practitioner, "No Practitioner found for ID #{@practitioner_id}"
+        @practitioner = @client.read(FHIR::Practitioner, practitioner_id).try(:resource)
 
-        assert @practitioner.practitionerRole.select{ |pr| !pr.location.empty? }.size >= 1, "No Locations found for Practitioner #{@practitioner.identifier}"
+        assert @practitioner, "No Practitioner found for ID #{practitioner_id}"
 
-        assert @practitioner.practitionerRole.select{ |pr| !pr.location.select {|loc| loc.address != nil }.empty? }.size >= 1, "No addresses found for Practitioner #{@practitioner.identifier.value}"
+        assert @practitioner.role.select { |pr|
+          !pr.location.empty?
+        }.size >= 1, "No Locations found for Practitioner #{@practitioner.identifier.first.value}"
 
-        assert @practitioner.practitionerRole.select{ |pr| !pr.telecom.empty? }.size >= 1, "No telecoms found for Practitioner #{@practitioner.identifier.value}"
+        # Test for address presence
+        assert @practitioner.role.select { |pr|
+          locref = pr.location.first
+          # Try and find the Location in contained/Server resources
+          loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
 
+          # See if any of the location resources have address elements on them
+          !loc.select {|l|
+            !l.address.nil?
+          }.empty?
+        }.size >= 1, "No addresses found for Practitioner #{@practitioner.identifier.first.value}"
+
+        # Test for telecom presence
+        assert @practitioner.role.select { |pr|
+           locref = pr.location.first
+           # Try and find the Location in contained/Server resources
+           loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
+
+           # See if any of the location resources have telecom elements on them
+           !loc.select {|l|
+             !l.telecom.nil? && !l.telecom.empty?
+           }.empty?
+         }.size >= 1, "No telecoms found for Practitioner #{@practitioner.identifier.first.value}"
+
+      end
+
+      test 'APCT03', 'Test ability to located Provider\'s Direct Address' do
+        metadata {
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Practitioner', methods: ['read', 'search']
+          requires resource: 'PractitionerRole', methods: ['read']
+          requires resource: 'Location', methods: ['read']
+          validates resource: 'Practitioner', methods: ['read', 'search']
+          validates resource: 'PractitionerRole', methods: ['read']
+          validates resource: 'Location', methods: ['read']
+        }
+
+        skip if !@practitioners || !@practitioner
+
+        assert @practitioner.role.select { |pr| !pr.endpoint.empty? }.size >= 1, "No Endpoints found for Practitioner #{@practitioner.identifier.first.value}"
+
+        @org = @practitioner.role.select {|pr| !pr.organization.empty? }.first.organization
+
+        assert @practitioner.role.select { |pr|
+          endref = pr.endpoint.first
+
+          endpoint = resolve_reference(@practitioner, FHIR::Endpoint, endref.reference)
+
+          !endpoint.select {|e|
+            !e.address.nil? && !e.address.empty?
+          }
+        }.size >= 1, "No Endpoints found with direct address found for Practitioner #{@practitioner.identifier.first.value}"
+      end
+
+      test 'APCT04', 'Locate an Organization\'s Endpoint' do
+        metadata {
+          links "#{REST_SPEC_LINK}#read"
+          requires resource: 'Organization', methods: ['read', 'search']
+          requires resource: 'Endpoint', methods: ['read']
+          validates resource: 'Organization', methods: ['read', 'search']
+          validates resource: 'Endpoint', methods: ['read']
+        }
+
+        options = {
+            :search => {
+              # :flag => true,
+              :compartment => nil,
+              :parameters => {
+                _count: 100
+              }
+            }
+          }
+
+        result = @client.search(FHIR::Organization, options)
+
+        orgs = result.resource.try(:entry)
+
+        assert orgs, 'No Organizations found'
+
+        assert orgs.select{ |org| !org.endpoint.empty? }.size >= 1, "No Organization found with an Endpoint"
+      end
+
+      test 'APCT05', 'Locate an Location\'s Telecom/physical address' do
+        metadata {
+          requires resource: 'Location', methods: ['read']
+          validates resource: 'Location', methods: ['read']
+          requires resource: 'Address', methods: ['read']
+          validates resource: 'Address', methods: ['read']
+          requires resource: 'ContactPoint', methods: ['read']
+          validates resource: 'ContactPoint', methods: ['read']
+        }
+
+        options = {
+            :search => {
+              # :flag => true,
+              :compartment => nil,
+              :parameters => {
+                _count: 100
+              }
+            }
+          }
+
+        result = @client.search(FHIR::Location, options)
+
+        locs = result.resource.try(:entry)
+
+        assert locs, "No Locations found"
+
+        assert locs.select { |loc| !loc.address.nil? && !loc.address.empty? }.size >= 1, "No Locations found with non-empty Address"
+
+        assert locs.select { |loc| !loc.telecom.nil? && !loc.telecom.empty? }.size >= 1, "No Locations found with non-empty Telecom"
+
+      end
+
+      test 'APCT06', 'Locate a Location\'s Endpoint' do
+        metadata {
+          requires resource: 'Location', methods: ['read']
+          validates resource: 'Location', methods: ['read']
+          requires resource: 'Endpoint', methods: ['read']
+          validates resource: 'Endpoint', methods: ['read']
+        }
+
+        options = {
+            :search => {
+              # :flag => true,
+              :compartment => nil,
+              :parameters => {
+                _count: 100
+              }
+            }
+          }
+
+        result = @client.search(FHIR::Location, options)
+
+        locs = result.resource.try(:entry)
+
+        assert locs, "No Locations found"
+
+        assert locs.select { |loc| !loc.endpoint.nil? && !loc.endpoint.empty? }.size >= 1, "No Locations found with non-empty Endpoint"
+      end
+
+      private
+
+      def resolve_reference(resource, reftype, id)
+        return id if id.class == reftype
+        loc = resource.contained.select { |con|
+          con.id == id.gsub('#', '')
+        }
+        #if that doesn't work, try to read it from the server
+        if loc.nil? || loc.empty?
+          loc = @client.read(reftype, id)
+        end
+        assert !loc.empty?, "Could not find #{reftype.to_s.split("::")[1]} resource #{id}"
+
+        loc
       end
     end
   end

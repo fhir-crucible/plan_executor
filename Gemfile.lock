@@ -13,7 +13,7 @@ GIT
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: c8c98d66d73312e9a81ed34e454d008f2cc0ba7a
+  revision: c92ef44757733ef0c87a105b5a5c7079315ed6e3
   branch: master
   specs:
     fhir_models (0.3.1)
@@ -138,7 +138,7 @@ GEM
       activesupport (= 4.0.13)
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
-    rake (11.1.2)
+    rake (11.2.2)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -198,4 +198,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   1.11.2
+   1.12.5

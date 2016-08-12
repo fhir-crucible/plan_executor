@@ -21,7 +21,7 @@ module Crucible
         @category = {id: 'argonaut', title: 'Argonaut'}
       end
 
-      test 'APCT01', 'GET A set of practitioners to test' do
+      test 'APCT01', 'GET a set of Practitioners to test' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           links "#{REST_SPEC_LINK}#search"
@@ -39,12 +39,18 @@ module Crucible
               }
             }
           }
-          @practitioners = @client.search(FHIR::Practitioner, options).resource.try(:entry)
+
+          result = @client.search(FHIR::Practitioner, options)
+
+          assert_response_ok(result)
+
+          @practitioners = result.resource.try(:entry)
+
           assert @practitioners, 'No Practitioners found'
 
       end
 
-      test 'APCT02', 'Test Ability to locate a Practitioner\'s Telecom/Physical Address' do
+      test 'APCT02', 'Test ability to locate a Practitioner\'s Telecom/Physical Address' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Practitioner', methods: ['read']
@@ -62,7 +68,7 @@ module Crucible
 
         assert @practitioner.role.select { |pr|
           !pr.location.empty?
-        }.size >= 1, "No Locations found for Practitioner #{@practitioner.identifier.first.value}"
+        }.size >= 1, "None of the Roles associated with Practitioner #{@practitioner.identifier.first.value}'s contain Location information"
 
         # Test for address presence
         assert @practitioner.role.select { |pr|
@@ -71,7 +77,7 @@ module Crucible
           loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
 
           !loc.address.nil?
-        }.size >= 1, "No addresses found for Practitioner #{@practitioner.identifier.first.value}"
+        }.size >= 1, "None of the Locations associated with Practitioner #{@practitioner.identifier.first.value}'s Roles contain Address information"
 
         # Test for telecom presence
         assert @practitioner.role.select { |pr|
@@ -81,11 +87,11 @@ module Crucible
 
            # See if any of the location resources have telecom elements on them
           !loc.telecom.nil? && !loc.telecom.empty?
-         }.size >= 1, "No telecoms found for Practitioner #{@practitioner.identifier.first.value}"
+        }.size >= 1, "None of the Locations associated with Practitioner #{@practitioner.identifier.first.value}'s Roles contain Telecom information"
 
       end
 
-      test 'APCT03', 'Test ability to located Provider\'s Direct Address' do
+      test 'APCT03', 'Test ability to locate a Provider\'s Direct Address' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Practitioner', methods: ['read', 'search']
@@ -111,7 +117,7 @@ module Crucible
         }.size >= 1, "No Endpoints found with direct address found for Practitioner #{@practitioner.identifier.first.value}"
       end
 
-      test 'APCT04', 'Locate an Organization\'s Endpoint' do
+      test 'APCT04', 'Test ability to locate an Organization\'s Endpoint' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Organization', methods: ['read', 'search']
@@ -132,6 +138,8 @@ module Crucible
 
         result = @client.search(FHIR::Organization, options)
 
+        assert_response_ok(result)
+
         orgs = result.resource.try(:entry)
 
         assert orgs, 'No Organizations found'
@@ -139,7 +147,7 @@ module Crucible
         assert orgs.select{ |org| !org.resource.endpoint.empty? }.size >= 1, "No Organization found with an Endpoint"
       end
 
-      test 'APCT05', 'Locate an Location\'s Telecom/physical address' do
+      test 'APCT05', 'Test ability to locate a Location\'s Telecom/physical address' do
         metadata {
           requires resource: 'Location', methods: ['read']
           validates resource: 'Location', methods: ['read']
@@ -173,7 +181,7 @@ module Crucible
 
       end
 
-      test 'APCT06', 'Locate a Location\'s Endpoint' do
+      test 'APCT06', 'Test ability to locate a Location\'s Endpoint' do
         metadata {
           requires resource: 'Location', methods: ['read']
           validates resource: 'Location', methods: ['read']
@@ -192,6 +200,8 @@ module Crucible
           }
 
         result = @client.search(FHIR::Location, options)
+
+        assert_response_ok(result)
 
         locs = result.resource.try(:entry)
 

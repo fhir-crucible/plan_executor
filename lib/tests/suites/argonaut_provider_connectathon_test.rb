@@ -70,22 +70,17 @@ module Crucible
           # Try and find the Location in contained/Server resources
           loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
 
-          # See if any of the location resources have address elements on them
-          !loc.select {|l|
-            !l.address.nil?
-          }.empty?
+          !loc.address.nil?
         }.size >= 1, "No addresses found for Practitioner #{@practitioner.identifier.first.value}"
 
         # Test for telecom presence
         assert @practitioner.role.select { |pr|
-           locref = pr.location.first
-           # Try and find the Location in contained/Server resources
-           loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
+          locref = pr.location.first
+          # Try and find the Location in contained/Server resources
+          loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
 
            # See if any of the location resources have telecom elements on them
-           !loc.select {|l|
-             !l.telecom.nil? && !l.telecom.empty?
-           }.empty?
+          !loc.telecom.nil? && !loc.telecom.empty?
          }.size >= 1, "No telecoms found for Practitioner #{@practitioner.identifier.first.value}"
 
       end
@@ -105,16 +100,14 @@ module Crucible
 
         assert @practitioner.role.select { |pr| !pr.endpoint.empty? }.size >= 1, "No Endpoints found for Practitioner #{@practitioner.identifier.first.value}"
 
-        @org = @practitioner.role.select {|pr| !pr.organization.empty? }.first.organization
+        @org = @practitioner.role.select {|pr| !pr.organization.nil? }.first.organization
 
         assert @practitioner.role.select { |pr|
           endref = pr.endpoint.first
 
           endpoint = resolve_reference(@practitioner, FHIR::Endpoint, endref.reference)
 
-          !endpoint.select {|e|
-            !e.address.nil? && !e.address.empty?
-          }
+          !endpoint.address.nil? && !endpoint.address.empty?
         }.size >= 1, "No Endpoints found with direct address found for Practitioner #{@practitioner.identifier.first.value}"
       end
 
@@ -143,7 +136,7 @@ module Crucible
 
         assert orgs, 'No Organizations found'
 
-        assert orgs.select{ |org| !org.endpoint.empty? }.size >= 1, "No Organization found with an Endpoint"
+        assert orgs.select{ |org| !org.resource.endpoint.empty? }.size >= 1, "No Organization found with an Endpoint"
       end
 
       test 'APCT05', 'Locate an Location\'s Telecom/physical address' do
@@ -168,13 +161,15 @@ module Crucible
 
         result = @client.search(FHIR::Location, options)
 
+        assert_response_ok(result)
+
         locs = result.resource.try(:entry)
 
         assert locs, "No Locations found"
 
-        assert locs.select { |loc| !loc.address.nil? && !loc.address.empty? }.size >= 1, "No Locations found with non-empty Address"
+        assert locs.select { |loc| !loc.resource.address.nil? }.size >= 1, "No Locations found with non-empty Address"
 
-        assert locs.select { |loc| !loc.telecom.nil? && !loc.telecom.empty? }.size >= 1, "No Locations found with non-empty Telecom"
+        assert locs.select { |loc| !loc.resource.telecom.nil? && !loc.resource.telecom.empty? }.size >= 1, "No Locations found with non-empty Telecom"
 
       end
 
@@ -202,7 +197,7 @@ module Crucible
 
         assert locs, "No Locations found"
 
-        assert locs.select { |loc| !loc.endpoint.nil? && !loc.endpoint.empty? }.size >= 1, "No Locations found with non-empty Endpoint"
+        assert locs.select { |loc| !loc.resource.endpoint.nil? && !loc.resource.endpoint.empty? }.size >= 1, "No Locations found with non-empty Endpoint"
       end
 
       private
@@ -211,12 +206,22 @@ module Crucible
         return id if id.class == reftype
         loc = resource.contained.select { |con|
           con.id == id.gsub('#', '')
-        }
+        }.first
         #if that doesn't work, try to read it from the server
-        if loc.nil? || loc.empty?
-          loc = @client.read(reftype, id)
+        if loc.nil? || loc.try(:empty?)
+          if id.split("/").count > 1
+            res = @client.read(reftype, id.split("/")[1])
+
+            assert_response_ok(res)
+            loc = res.resource
+          else
+            res = @client.read(reftype, id)
+            assert_response_ok(res)
+
+            loc = res.resource
+          end
         end
-        assert !loc.empty?, "Could not find #{reftype.to_s.split("::")[1]} resource #{id}"
+        assert !loc.nil?, "Could not find #{reftype.to_s.split("::")[1]} resource #{id}"
 
         loc
       end

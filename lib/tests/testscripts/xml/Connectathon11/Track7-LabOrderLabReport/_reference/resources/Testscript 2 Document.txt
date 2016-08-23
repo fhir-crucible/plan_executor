@@ -1,6 +1,6 @@
 Scenario 2 (Blood Lead)
 
-=============DiagnosticOrder Details==========================
+=============DiagnosticRequest Details==========================
 
 Generated Narrative with Details
 
@@ -39,7 +39,7 @@ subject:Todd G. Lerr
 
 source:Leonard T Bloodraw
 
-detail:DiagnosticOrder/do-200
+detail:DiagnosticRequest/do-200
 
 
 

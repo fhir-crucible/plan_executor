@@ -31,7 +31,7 @@
       </p>
       <p>
         <b>request</b>: 
-        <a href="DiagnosticOrder/do-300">DiagnosticOrder/do-300</a>
+        <a href="DiagnosticRequest/do-300">DiagnosticRequest/do-300</a>
       </p>
       <p>
         <b>specimen</b>: 
@@ -102,8 +102,8 @@
     <display value="Acme Labs"/>
   </performer>
   <request>
-    <reference value="DiagnosticOrder/do-300"/>
-    <display value="DiagnosticOrder/do-300"/>
+    <reference value="DiagnosticRequest/do-300"/>
+    <display value="DiagnosticRequest/do-300"/>
   </request>
   <specimen>
     <reference value="Specimen/spec-uslab-example1"/>

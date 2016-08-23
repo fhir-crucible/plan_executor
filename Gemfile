@@ -21,7 +21,6 @@ gem 'bcp47'
 
 group :test do
   gem 'simplecov', :require => false
-  gem 'minitest', "~> 4.0"
-  gem 'turn', :require => false
+  gem 'minitest'
   gem 'awesome_print', :require => 'ap'
 end

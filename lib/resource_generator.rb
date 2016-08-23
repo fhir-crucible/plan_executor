@@ -298,11 +298,11 @@ module Crucible
           resource.activity.each {|a| a.reference = nil if a.detail }
         when FHIR::Claim
           resource.item.each do |item|
-            item.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+            item.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
             item.detail.each do |detail|
-              detail.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+              detail.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
               detail.subDetail.each do |sub|
-                sub.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+                sub.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
                 sub.service = minimal_coding('http://hl7.org/fhir/ex-USCLS','1205')
               end
             end
@@ -448,18 +448,6 @@ module Crucible
             c.valueQuantity = nil
             c.valueRange = nil
           end
-        when FHIR::ImagingObjectSelection
-          resource.uid = random_oid
-          resource.study.each do |study|
-            study.uid = random_oid
-            study.series.each do |series|
-              series.uid = random_oid
-              series.instance.each do |instance|
-                instance.sopClass = random_oid
-                instance.uid = random_oid
-              end
-            end
-          end
         when FHIR::ImagingStudy
           resource.uid = random_oid
           resource.series.each do |series|
@@ -529,7 +517,7 @@ module Crucible
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
         when FHIR::MedicationStatement
-          resource.reasonNotTaken = nil if resource.wasNotTaken != true
+          resource.reasonNotTaken = nil if resource.notTaken != true
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosage.each{|d|d.timing=nil}
@@ -546,7 +534,7 @@ module Crucible
           resource.uniqueId.each do |uid|
             uid.preferred = nil
           end
-        when FHIR::NutritionOrder
+        when FHIR::NutritionRequest
           resource.oralDiet.schedule = nil if resource.oralDiet
           resource.supplement.each{|s|s.schedule=nil}
           resource.enteralFormula.administration = nil if resource.enteralFormula
@@ -555,8 +543,6 @@ module Crucible
             p.binding = nil
             p.part = nil
           end
-        when FHIR::Order
-          resource.when.schedule = nil
         when FHIR::Patient
           resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
         when FHIR::Procedure
@@ -566,7 +552,7 @@ module Crucible
           end
         when FHIR::Provenance
           resource.entity.each do |e|
-            e.agent.relatedAgent = nil if e.agent
+            e.agent.each{|a| a.relatedAgent = nil }
           end
         when FHIR::Practitioner
           resource.communication.each do |comm|
@@ -588,8 +574,8 @@ module Crucible
               i.repeats = nil
             end
             i.enableWhen.each do |ew|
-              ew.answered = false
-              ew.answered = true if ew.answer
+              ew.hasAnswer = false
+              ew.hasAnswer = true if ew.answer
             end
           end
         when FHIR::QuestionnaireResponse
@@ -613,9 +599,9 @@ module Crucible
         when FHIR::StructureDefinition
           resource.derivation = 'constraint'
           resource.fhirVersion = 'STU3'
-          resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.baseType}"
-          resource.snapshot.element.first.path = resource.baseType if resource.snapshot && resource.snapshot.element
-          resource.differential.element.first.path = resource.baseType if resource.differential && resource.differential.element
+          resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.type}"
+          resource.snapshot.element.first.path = resource.type if resource.snapshot && resource.snapshot.element
+          resource.differential.element.first.path = resource.type if resource.differential && resource.differential.element
           resource.mapping.each do |m|
             m.identity.gsub!(/[^0-9A-Za-z]/, '') if m.identity
           end
@@ -625,7 +611,6 @@ module Crucible
             v.path = nil if v.headerField
           end
           if resource.setup
-            resource.setup.metadata = nil 
             resource.setup.action.each do |a|
               a.assert = nil if a.operation
               apply_invariants!(a.operation) if a.operation
@@ -633,7 +618,6 @@ module Crucible
             end
           end
           resource.test.each do |test|
-            test.metadata = nil
             test.action.each do |a|
               a.assert = nil if a.operation
               apply_invariants!(a.operation) if a.operation

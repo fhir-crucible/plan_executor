@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<DiagnosticOrder xmlns="http://hl7.org/fhir">
+<DiagnosticRequest xmlns="http://hl7.org/fhir">
   <id value="do-400-update"/>
   <text>
     <status value="generated"/>
@@ -85,4 +85,4 @@
     </code>
     <status value="requested"/>
   </item>
-</DiagnosticOrder>
+</DiagnosticRequest>

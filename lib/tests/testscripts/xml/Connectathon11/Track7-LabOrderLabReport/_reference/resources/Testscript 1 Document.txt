@@ -1,6 +1,6 @@
 Scenario 1 (PT+ INR)
 
-=============DiagnosticOrder Details==========================
+=============DiagnosticRequest Details==========================
 
 id: do-100
 
@@ -30,7 +30,7 @@ subject:Todd G. Lerr
 
 source:Leonard T Bloodraw
 
-detail:DiagnosticOrder/do-100
+detail:DiagnosticRequest/do-100
 
 
 =============OrderResponse(ActionResponse) Details==========================
@@ -68,7 +68,7 @@ issued: 9/26/2015
 
 performer:Acme Labs()
 
-request:DiagnosticOrder/do-100()
+request:DiagnosticRequest/do-100()
 
 specimen:Specimen/spec-100()
 

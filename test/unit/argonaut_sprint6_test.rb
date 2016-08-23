@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class ArgonautSprint6Test < Test::Unit::TestCase
+class ArgonautSprint6Test < Minitest::Test
 
   def setup
     @fixtures = File.absolute_path(File.join(File.absolute_path(__FILE__),'..','..','fixtures'))

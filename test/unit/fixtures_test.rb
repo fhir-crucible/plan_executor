@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class FixturesTest < Test::Unit::TestCase
+class FixturesTest < Minitest::Test
 
   fixtures = File.join('fixtures','**','*.xml')
 
@@ -22,7 +22,6 @@ class FixturesTest < Test::Unit::TestCase
     
     valid = FHIR::Xml.is_valid?(xml)
     assert(valid,"XML fixture does not conform to schema.")
-
     # TODO Add StructureDefinition validation.
   end
 

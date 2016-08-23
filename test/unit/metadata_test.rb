@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class MetadataTest < Test::Unit::TestCase
+class MetadataTest < Minitest::Test
 
   # Test gathering metadata for all the Suites
   # def test_suite_list

@@ -201,11 +201,11 @@ module Crucible
             warning { assert observation.category, "An observation did not have a category"}
             next
           end
-          if observation.category.coding.to_a.find { |c| c.code == "laboratory" }
+          if observation.category.map{|c|c.coding}.flatten.find{|c|c.code=='laboratory'}
             valid_observation_count += 1
             assert !observation.status.empty?
             assert observation.category
-            assert observation.category.coding.to_a.find{ |c| c.system == "http://hl7.org/fhir/observation-category" }, "Wrong category codeSystem used, expected FHIR ObservationCategory"
+            assert observation.category.map{|c|c.coding}.flatten.find{ |c| c.system == "http://hl7.org/fhir/observation-category" }, "Wrong category codeSystem used, expected FHIR ObservationCategory"
             assert observation.subject
             assert get_value(observation) || observation.dataAbsentReason
             coding = observation.code.coding.first

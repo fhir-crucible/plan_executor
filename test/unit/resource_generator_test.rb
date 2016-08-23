@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class ResourceGeneratorTest < Test::Unit::TestCase
+class ResourceGeneratorTest < Minitest::Test
 
   # Define test methods for each resource type
   FHIR::RESOURCES.each do | resourceType |    

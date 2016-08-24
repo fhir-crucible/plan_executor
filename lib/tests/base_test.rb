@@ -63,7 +63,10 @@ module Crucible
             result << TestResult.new('ERROR', "Error #{prefix} #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
-        teardown if respond_to? :teardown and not @metadata_only
+        begin
+          teardown if respond_to? :teardown and not @metadata_only
+        rescue
+        end
         result
       end
 

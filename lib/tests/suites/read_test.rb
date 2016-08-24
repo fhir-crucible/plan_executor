@@ -16,15 +16,24 @@ module Crucible
       end
 
       def setup
-        @patient = FHIR::Patient.create(name: { family: 'Emerald', given: 'Caro' })
+        # try to find a patient
+        begin
+          response = @client.read_feed(FHIR::Patient)
+          @patient = response.resource.entry.first.resource
+        rescue
+          # try to create a patient
+          begin
+            @patient = FHIR::Patient.create(name: { family: 'Emerald', given: 'Caro' })
+            @patient_created = true
+          rescue
+            @patient = nil
+          end
+        end
+
       end
 
       def teardown
-        @patient.destroy
-      end
-
-      def self.createPatient(family, given)
-        patient = FHIR::Patient.new.from_hash(name: [FHIR::HumanName.new.from_hash(family: [family], given: [given])])
+        @patient.destroy if @patient_created
       end
 
       # [SprinklerTest("R001", "Result headers on normal read")]
@@ -34,7 +43,8 @@ module Crucible
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
-
+        skip if @patient.nil?
+        
         patient = FHIR::Patient.read(@patient.id)
 
         assert_equal @patient.id, @client.reply.id, 'Server returned wrong patient.'

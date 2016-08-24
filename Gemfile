@@ -18,6 +18,7 @@ gem 'webmock'
 gem 'builder'
 gem 'nokogiri-diff'
 gem 'bcp47'
+gem 'ansi'
 
 group :test do
   gem 'simplecov', :require => false

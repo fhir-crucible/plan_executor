@@ -68,6 +68,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     addressable (2.4.0)
+    ansi (1.5.0)
     arel (6.0.3)
     awesome_print (1.7.0)
     bcp47 (0.3.3)
@@ -203,6 +204,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  ansi
   awesome_print
   bcp47
   builder

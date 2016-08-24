@@ -16,25 +16,37 @@ module Crucible
       end
 
       def setup
-        @resources = Crucible::Generator::Resources.new
-        @patient = FHIR::Patient.create(@resources.minimal_patient)
+        begin
+          @resources = Crucible::Generator::Resources.new
+          response = @client.create(@resources.minimal_patient)
+          assert_response_ok(response)
+          @patient = response.resource
+          @patient_created = true
+          @create_date = Time.now.utc
 
-        @create_date = Time.now.utc
+          @version = []
+          @version << @client.reply.version
 
-        @version = []
-        @version << @client.reply.version
+          @patient.telecom ||= []
+          @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
 
-        @patient.telecom ||= []
-        @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
+          @patient.update
+          @version << @client.reply.version
+          @patient.destroy
+          assert_response_code(@client.reply,204)
+          
+          @entry_count = @version.length
+          # add one for deletion
+          @version_count = @entry_count + 1
+          @patient_setup = true
+        rescue Exception => e
+          @patient_setup = false
+          @create_date = Time.now.utc
+        end
+      end
 
-        @patient.update
-        @version << @client.reply.version
-        @patient.destroy
-        assert_response_code(@client.reply,204)
-        
-        @entry_count = @version.length
-        # add one for deletion
-        @version_count = @entry_count + 1
+      def teardown
+        @patient.destroy if @patient_created
       end
 
       test  'HI01','History for specific resource' do
@@ -43,6 +55,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
+        skip unless @patient_setup
 
         bundle = FHIR::Patient.resource_instance_history(@patient.id)
 
@@ -57,6 +70,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
+        skip unless @patient_setup
         bundle = FHIR::Patient.resource_instance_history(@patient.id)
         entries = bundle.entry
 
@@ -72,6 +86,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
+        skip unless @patient_setup
 
         before = @create_date - 1.minute
         after = before + 1.hour
@@ -95,6 +110,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["vread", "history"]
         }
+        skip unless @patient_setup
 
         bundle = FHIR::Patient.resource_instance_history(@patient.id)
 
@@ -191,7 +207,7 @@ module Crucible
           page = @client.next_page(page)
         end
 
-        assert forward_count > 2, "there should be at least 2 history entries"
+        assert(forward_count > 2, "there should be at least 2 history entries") if @patient_setup
       end
 
       test "HI10", "resource history page backwards" do
@@ -237,7 +253,7 @@ module Crucible
 
         history = @client.all_history
         assert !history.resource.nil?, "A bundle was not returned from the history request."
-        assert history.resource.entry.size >= 3, "there should be at least 3 history entries"
+        assert(history.resource.entry.size >= 3, "there should be at least 3 history entries") if @patient_setup
       end
 
       ###

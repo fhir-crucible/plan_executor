@@ -41,6 +41,8 @@ module Crucible
           links "#{BASE_SPEC_LINK}/resource.html#metadata"
           requires resource: "Conformance", methods: ["read"]
           validates resource: "Conformance", methods: ["read"]
+          validates resource: nil, methods: ['OAuth2', 'Authorization/Access Control']
+          requires resource: nil, methods: ['OAuth2', 'Authorization/Access Control']
         }
 
         conformance = @client.conformanceStatement
@@ -56,6 +58,8 @@ module Crucible
           links "#{BASE_SPEC_LINK}/resource.html#metadata"
           requires resource: "Conformance", methods: ["read"]
           validates resource: "Conformance", methods: ["read"]
+          validates resource: nil, methods: ['OAuth2', 'Authorization/Access Control']
+          requires resource: nil, methods: ['OAuth2', 'Authorization/Access Control']
         }
 
         conformance = @client.conformanceStatement

@@ -52,6 +52,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'Observation', methods: ['read']
+          validates resource: 'Observation', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -78,6 +80,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'Observation', methods: ['read', 'search']
+          validates resource: 'Observation', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -96,7 +100,7 @@ module Crucible
         }
 
         reply = @client.search(FHIR::Observation, options)
-        
+
         validate_observation_reply(reply)
       end
 
@@ -105,6 +109,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["search"]
           validates resource: "Patient", methods: ["search"]
+          requires resource: 'DiagnosticReport', methods: ['read']
+          validates resource: 'DiagnosticReport', methods: ['read']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -131,6 +137,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           requires resource: "Patient", methods: ["read", "search"]
           validates resource: "Patient", methods: ["read", "search"]
+          requires resource: 'DiagnosticReport', methods: ['read', 'search']
+          validates resource: 'DiagnosticReport', methods: ['read', 'search']
         }
 
         assert !@client.client.try(:params).nil?, "The client was not authorized for the test"
@@ -163,7 +171,7 @@ module Crucible
         reply.resource.entry.each do |entry|
           report = entry.resource
           assert report.category, "DiagnosticReport has no category"
-          if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" } 
+          if report.category.coding.to_a.find { |c| c.code.downcase == "ch" || c.code.downcase == "hm" }
             valid_diagnostic_report_count += 1
             assert report.category.coding.to_a.find { |c| c.system == "http://hl7.org/fhir/v2/0074" }, "Wrong category codeSystem used; expected HL7v2"
             assert report.status, "No status for DiagnosticReport"

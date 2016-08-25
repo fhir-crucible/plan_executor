@@ -45,7 +45,7 @@ module Crucible
         }
         @patient = @resources.minimal_patient
         @patient.id = nil # clear the identifier
-        reply = @client.create(@patient)      
+        reply = @client.create(@patient)
         assert_response_ok(reply)
         @patient.id = reply.id
 
@@ -81,7 +81,7 @@ module Crucible
           requires resource: 'Provenance', methods: ['search']
           validates resource: 'Patient', methods: ['create']
           validates resource: 'Provenance', methods: ['search']
-          validates resource: nil, methods: ['transaction-system']
+          validates resource: nil, methods: ['transaction-system', 'provenance']
         }
 
         @patient1 = @resources.minimal_patient
@@ -146,6 +146,7 @@ module Crucible
           requires resource: 'Provenance', methods: ['search']
           validates resource: 'Patient', methods: ['create']
           validates resource: 'Provenance', methods: ['search']
+          validates resource: nil, methods: ['provenance']
         }
 
         @patient2 = @resources.minimal_patient
@@ -166,7 +167,7 @@ module Crucible
         @provenance2.agent[0].role.code = 'author'
 
         FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_json
-        reply = @client.create(@patient2)      
+        reply = @client.create(@patient2)
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
 
         assert_response_ok(reply)
@@ -203,7 +204,7 @@ module Crucible
           validates resource: 'AuditEvent', methods: ['search']
         }
         @patient.gender = 'male'
-        reply = @client.update(@patient,@patient.id)      
+        reply = @client.update(@patient,@patient.id)
         assert_response_ok(reply)
 
         options = {
@@ -244,7 +245,7 @@ module Crucible
           requires resource: 'Provenance', methods: ['search']
           validates resource: 'Patient', methods: ['update']
           validates resource: 'Provenance', methods: ['search']
-          validates resource: nil, methods: ['transaction-system']
+          validates resource: nil, methods: ['transaction-system', 'provenance']
         }
         @patient1.gender = 'male'
 
@@ -322,7 +323,7 @@ module Crucible
         @provenance4.agent[0].role.code = 'author'
 
         FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_json
-        reply = @client.update(@patient2,@patient2.id)      
+        reply = @client.update(@patient2,@patient2.id)
         FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
         assert_response_ok(reply)
 
@@ -360,7 +361,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read']
           validates resource: 'AuditEvent', methods: ['search']
         }
-        reply = @client.read(FHIR::Patient,@patient.id)      
+        reply = @client.read(FHIR::Patient,@patient.id)
         assert_response_ok(reply)
 
         options = {

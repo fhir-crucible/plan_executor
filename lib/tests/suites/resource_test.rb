@@ -537,11 +537,18 @@ module Crucible
           @preexisting = @temp_resource
         end
 
+        is_preexisting_valid = false
         if !@preexisting.nil?
           begin
             @preexisting.to_xml
+            is_preexisting_valid = @preexisting.is_valid?
+            profile = FHIR::Definitions.get_resource_definition("#{resource_class.name.demodulize}")
+            if !profile.nil?
+              is_preexisting_valid &&= profile.validates_resource?(@preexisting)
+            end
           rescue Exception
             @preexisting = nil
+            is_preexisting_valid = false
           end
         end
 
@@ -557,7 +564,7 @@ module Crucible
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was validated.", reply.body)
           elsif reply.code==201
             result.update(STATUS[:fail], "Server created a #{resource_class.name.demodulize} with the ID `_validate` rather than validate the resource.", reply.body)
-          elsif reply.code==400
+          elsif (400..499).include?(reply.code)
             outcome = self.parse_operation_outcome(reply.body) rescue nil
 
             if outcome.nil?
@@ -571,10 +578,14 @@ module Crucible
               transient_codes = ['transient','lock-error','no-store','exception','timeout','throttled']
             
               status = :pass
-              outcome.issue.each do |issue|
-                if ['fatal','error'].include?(issue.severity)
-                  status = :fail if security_codes.include?(issue.code) || transient_codes.include?(issue.code)
+              if is_preexisting_valid
+                outcome.issue.each do |issue|
+                  if ['fatal','error'].include?(issue.severity)
+                    status = :fail if security_codes.include?(issue.code) || transient_codes.include?(issue.code)
+                  end
                 end
+              else
+                message = "Server correctly rejected invalid preexisting resource."
               end
               result.update(STATUS[status], message, reply.body)
             end

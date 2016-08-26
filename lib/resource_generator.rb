@@ -61,7 +61,7 @@ module Crucible
           elsif type == 'xhtml'
             gen = "<div>#{SecureRandom.base64}</div>"
           elsif type == 'uri'
-            gen = "http://www.example.com/#{SecureRandom.base64}"
+            gen = "http://projectcrucible.org/#{SecureRandom.base64}"
           elsif type == 'dateTime' || type == 'instant'
             gen = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
           elsif type == 'date'
@@ -286,28 +286,23 @@ module Crucible
             o.name = "name #{SecureRandom.base64}" if o.name.nil?
           end
         when FHIR::Bundle
+          resource.type = ['document','message','collection'].sample
           resource.total = nil if !['searchset','history'].include?(resource.type)
           resource.entry.each {|e|e.search=nil} if resource.type!='searchset'
           resource.entry.each {|e|e.request=nil} if !['batch','transaction','history'].include?(resource.type)
           resource.entry.each {|e|e.response=nil} if !['batch-response','transaction-response'].include?(resource.type)
           head = resource.entry.first
           if !head.nil?
-            if head.request.nil? && head.response.nil? && head.resource.nil?
-              if resource.type == 'document'
-                head.resource = generate(FHIR::Composition,3)
-              elsif resource.type == 'message'
-                head.resource = generate(FHIR::MessageHeader,3)  
-              else
-                head.resource = generate(FHIR::Basic,3)                              
-              end
-            end
-            if head.resource.nil?
-              head.fullUrl = nil
+            if resource.type == 'document'
+              head.resource = generate(FHIR::Composition,3)
+            elsif resource.type == 'message'
+              head.resource = generate(FHIR::MessageHeader,3)  
             else
-              rid = SecureRandom.random_number(100) + 1
-              head.fullUrl = "http://projectcrucible.org/fhir/#{rid}"
-              head.resource.id = "#{rid}"
+              head.resource = generate(FHIR::Basic,3)                              
             end
+            rid = SecureRandom.random_number(100) + 1
+            head.fullUrl = "http://projectcrucible.org/fhir/#{head.resource.resourceType}/#{rid}"
+            head.resource.id = "#{rid}"
           end
         when FHIR::CarePlan
           resource.activity.each {|a| a.reference = nil if a.detail }
@@ -557,6 +552,10 @@ module Crucible
             c.valueQuantity = nil
             c.valueRange = nil
           end
+        when FHIR::GuidanceResponse
+          resource.action.each do |a|
+            a.action = []
+          end
         when FHIR::ImagingStudy
           resource.uid = random_oid
           availability = ['ONLINE', 'OFFLINE', 'NEARLINE', 'UNAVAILABLE']
@@ -569,6 +568,20 @@ module Crucible
             end
           end
           resource.availability = availability.sample
+        when FHIR::ImagingManifest
+          resource.title.coding.each{|c|c.code=['113000', '113002', '113003', '113004', '113005', '113006', '113007', '113008', '113009'].sample}
+          resource.study.each do |study|
+            study.series.each do |series|
+              series.baseLocation.each do |b| 
+                b.type = minimal_coding('http://hl7.org/fhir/dWebType',['WADO-RS', 'WADO-URI', 'IID'].sample)
+                b.url = "http://projectcrucible.org/#{SecureRandom.base64}"
+              end
+              series.instance.each do |i|
+                i.sopClass = random_oid
+                i.uid = random_oid
+              end
+            end
+          end
         when FHIR::Immunization
           if resource.wasNotGiven
             resource.explanation.reasonNotGiven = [ textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}") ]
@@ -658,6 +671,12 @@ module Crucible
           end
         when FHIR::Patient
           resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
+        when FHIR::PlanDefinition
+          resource.actionDefinition.each do |a|
+            a.actionDefinition.each do |b|
+              b.relatedAction = []
+            end
+          end
         when FHIR::Procedure
           resource.reasonNotPerformed = nil if resource.notPerformed != true
           resource.focalDevice.each do |fd|
@@ -682,15 +701,26 @@ module Crucible
             i.required = true
             i.item = []
             i.options = nil
-            i.option = [] if i.type!='choice'
+            i.option = []
+            if ['choice','open-choice'].include?(i.type)
+              choice_a = FHIR::Questionnaire::Item::Option.new({'valueString'=>'true'})
+              choice_b = FHIR::Questionnaire::Item::Option.new({'valueString'=>'false'})
+              i.option = [ choice_a, choice_b ] 
+            end
             if i.type=='display'
               i.required = nil
               i.repeats = nil
+              i.readOnly = nil
+              i.concept = []
+              FHIR::Questionnaire::Item::MULTIPLE_TYPES['initial'].each do |type|
+                i.instance_variable_set("@initial#{type.capitalize}".to_sym, nil)
+              end
             end
             i.enableWhen.each do |ew|
               ew.hasAnswer = false
-              ew.hasAnswer = true if ew.answer
+              ew.hasAnswer = nil if ew.answer
             end
+            i.maxLength = nil if !['boolean', 'decimal', 'integer', 'string', 'text', 'url'].include?(i.type)
           end
         when FHIR::QuestionnaireResponse
           resource.item.each do |i|

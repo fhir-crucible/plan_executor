@@ -128,13 +128,11 @@
                 },{
                   "name": "goal"
                 },{
-                  "name": "protocol"
-                },{
                   "name": "referral request"
                 },{
                   "name": "procedure request"
                 },{
-                  "name": "nutrition order"
+                  "name": "nutrition request"
                 },{
                   "name": "risk assessment"
                 },{
@@ -142,7 +140,7 @@
                 }
               ]
             },{
-              "name": "Medication Management",
+              "name": "Medication & Immunization",
               "children": [
                 {
                   "name": "medication"
@@ -168,13 +166,11 @@
                 },{
                   "name": "diagnostic report"
                 },{
-                  "name": "diagnostic order"
+                  "name": "diagnostic request"
                 },{
                   "name": "imaging study"
                 },{
-                  "name": "imaging excerpt"
-                },{
-                  "name": "imaging object selection"
+                  "name": "imaging manifest"
                 },{
                   "name": "specimen"
                 },{
@@ -186,14 +182,18 @@
             }
           ]
         },{
-          "name": "Identification",
-          "aka": ["Administrative"],
+          "name": "Administration",
+          "aka": ["Administrative", "Identification"],
           "children": [
             {
               "name": "Individuals",
               "children": [
                 {
                   "name": "patient"
+                },{
+                  "name": "group"
+                },{
+                  "name": "person"
                 },{
                   "name": "related person"
                 },{
@@ -203,27 +203,20 @@
                 }
               ]
             },{
-              "name": "Groups",
+              "name": "Entities",
               "children": [
                 {
                   "name": "organization"
                 },{
                   "name": "healthcare service"
                 },{
-                  "name": "group"
-                }
-              ]
-            },{
-              "name": "Entities",
-              "children": [
-                {
                   "name": "location"
                 },{
                   "name": "substance"
                 },{
-                  "name": "person"
+                  "name": "endpoint"
                 },{
-                  "name": "contract"
+                  "name": "linkage"
                 }
               ]
             },{
@@ -237,12 +230,8 @@
                   "name": "device metric"
                 }
               ]
-            }
-          ]
-        },{
-          "name": "Work Flow",
-          "children": [
-            { "name": "Patient Management",
+            },{
+              "name": "Patient Management",
               "children": [
                 {
                   "name": "encounter"
@@ -251,7 +240,35 @@
                 },{
                   "name": "flag"
                 },{
+                  "name": "account"
+                },{
                   "name": "communication"
+                },{
+                  "name": "communication request"
+                }
+              ]
+            },{
+              "name": "Security & Privacy",
+              "children": [
+                {
+                  "name": "provenance"
+                },{
+                  "name": "audit event"
+                },{
+                  "name": "consent"
+                }
+              ]
+            }
+          ]
+        },{
+          "name": "Work Flow",
+          "children": [
+            { "name": "Scheduling",
+              "children": [
+                {
+                  "name": "task"
+                },{
+                  "name": "subscription"
                 },{
                   "name": "appointment"
                 },{
@@ -263,18 +280,10 @@
                 }
               ]
             },{
-              "name": "Workflow",
-              "aka": ["Order Management"],
+              "name": "Events",
+              "aka": ["Workflow", "Order Management"],
               "children": [
                 {
-                  "name": "order"
-                },{
-                  "name": "task"
-                },{
-                  "name": "order response"
-                },{
-                  "name": "communication request"
-                },{
                   "name": "device use request"
                 },{
                   "name": "device use statement"
@@ -289,61 +298,51 @@
                 }
               ]
             },{
-              "name": "Desision Support/Quality Measurement",
+              "name": "Clinical Reasoning",
               "children": [
                 {
                   "name": "decision support service module"
-                },{
-                  "name": "decision support rule"
                 },{
                   "name": "guidance response"
                 },{
                   "name": "library"
                 },{
-                  "name": "order set"
-                },{
                   "name": "measure"
                 },{
                   "name": "measure report"
                 },{
-                  "name": "module definition"
+                  "name": "activity definition"
+                },{
+                  "name": "plan definition"
                 }
               ]
             }
           ]
         },{
-          "name": "Infrastructure",
+          "name": "Foundation",
           "children": [
             {
-              "name": "Information Management",
+              "name": "Documents & Questionnaires",
               "children": [
                 {
                   "name": "questionnaire"
                 },{
                   "name": "questionnaire response"
                 },{
-                  "name": "provenance"
-                },{
-                  "name": "audit event"
-                }
-              ]
-            },{
-              "name": "Documents and Lists",
-              "aka": ["Documents"],
-              "children": [
-                {
-                  "name": "list"
-                },{
                   "name": "composition"
+                },{
+                  "name": "document manifest"
                 },{
                   "name": "document reference"
                 },{
-                  "name": "document manifest"
+                  "name": "list"
+                },{
+                  "name": "basic"
                 }
               ]
             },{
-              "name": "Structure",
-              "aka": ["Structures"],
+              "name": "Exchange",
+              "aka": ["Structure", "Structures"],
               "children": [
                 {
                   "name": "media"
@@ -352,30 +351,35 @@
                 },{
                   "name": "bundle"
                 },{
-                  "name": "basic"
-                },{
-                  "name": "linkage"
-                }
-              ]
-            },{
-              "name": "Exchange",
-              "children": [
-                {
                   "name": "message header"
                 },{
                   "name": "operation outcome"
                 },{
-                  "name": "subscription"
-                },{
                   "name": "parameters"
                 }
               ]
-            }
-          ]
-        },{
-          "name": "Conformance",
-          "children": [
-            {
+            },{
+              "name": "Conformance",
+              "children": [
+                {
+                  "name": "structure definition"
+                },{
+                  "name": "structure map"
+                },{
+                  "name": "data element"
+                },{
+                  "name": "conformance"
+                },{
+                  "name": "operation definition"
+                },{
+                  "name": "search parameter"
+                },{
+                  "name": "compartment definition"
+                },{
+                  "name": "implementation guide"
+                }
+              ]
+            },{
               "name": "Terminology",
               "children": [
                 {
@@ -391,36 +395,9 @@
                 }
               ]
             },{
-              "name": "Content",
+              "name": "Implementation Support",
               "children": [
                 {
-                  "name": "structure definition"
-                },{
-                  "name": "structure map"
-                },{
-                  "name": "data element"
-                }
-              ]
-            },{
-              "name": "Operations Control",
-              "aka": ["Behavior"],
-              "children": [
-                {
-                  "name": "conformance"
-                },{
-                  "name": "operation definition"
-                },{
-                  "name": "search parameter"
-                },{
-                  "name": "compartment definition"
-                }
-              ]
-            },{
-              "name": "Miscellaneous",
-              "children": [
-                {
-                  "name": "implementation guide"
-                },{
                   "name": "test script"
                 }
               ]
@@ -433,8 +410,6 @@
               "name": "Support",
               "children": [
                 {
-                  "name": "account"
-                },{
                   "name": "coverage"
                 },{
                   "name": "eligibility request"
@@ -469,6 +444,8 @@
               "children": [
                 {
                   "name": "explanation of benefit"
+                },{
+                  "name": "contract"
                 }
               ]
             }

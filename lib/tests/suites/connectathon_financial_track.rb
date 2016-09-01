@@ -12,6 +12,7 @@ module Crucible
 
       def initialize(client1, client2=nil)
         super(client1, client2)
+        @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
       end
 

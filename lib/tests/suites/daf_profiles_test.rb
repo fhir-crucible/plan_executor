@@ -13,6 +13,7 @@ module Crucible
       def initialize(client1, client2=nil)
         super(client1, client2)
         @tags.append('argonaut')
+        @tags.append('connectathon')
         @category = {id: 'core_functionality', title: 'Core Functionality'}
       end
 

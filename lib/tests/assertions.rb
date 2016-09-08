@@ -76,7 +76,7 @@ module Crucible
 
       def assert_valid_profile(response, klass)
         unless assertion_negated( response[:code].to_s == "200")
-          
+
           raise AssertionException.new "Server created a #{klass.name.demodulize} with the ID `_validate` rather than validate the resource." if response[:code].to_s == "201"
 
           raise AssertionException.new "Response code #{response[:code]} with no OperationOutcome provided"
@@ -148,7 +148,7 @@ module Crucible
       def assert_bundle_transactions_okay(response)
         response.resource.entry.each do |entry|
           unless assertion_negated( !entry.response.nil? )
-            raise AssertionException.new "All Transaction/Batch Bundle.entry elements SHALL have a response." 
+            raise AssertionException.new "All Transaction/Batch Bundle.entry elements SHALL have a response."
           end
           status = entry.response.status
           unless assertion_negated( status && status.start_with?('200','201','204') )
@@ -162,7 +162,7 @@ module Crucible
         response_content_type = header
         response_content_type = header[0, header.index(';')] if !header.index(';').nil?
 
-        unless assertion_negated( "application/#{content_type}+fhir" == response_content_type )
+        unless assertion_negated( "application/fhir+#{content_type}" == response_content_type )
           raise AssertionException.new "Expected a #{content_type} content-type", response_content_type
         end
 

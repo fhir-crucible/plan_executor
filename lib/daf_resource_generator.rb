@@ -19,8 +19,8 @@ module Crucible
         resource.multipleBirthBoolean = false
         resource.contact = [ daf_patient_contact ]
         resource.communication = [ daf_patient_communication ]
-        resource.careProvider = [ FHIR::Reference.new ] # reference to DAF-Organization or DAF-Pract
-        resource.careProvider.first.display = 'DAF Organization or Practitioner'
+        # resource.careProvider = [ FHIR::Reference.new ] # reference to DAF-Organization or DAF-Pract
+        # resource.careProvider.first.display = 'DAF Organization or Practitioner'
         resource.managingOrganization = FHIR::Reference.new # reference to DAF-Organization
         resource.managingOrganization.display = 'DAF Organization'
         resource.extension = []

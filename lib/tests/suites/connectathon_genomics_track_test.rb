@@ -180,7 +180,7 @@ module Crucible
 
         dr_hla = @resources.load_fixture('diagnostic_report/diagnosticreport-hlatyping-create.xml')
         dr_hla.subject = @records[:family_patient].to_reference
-        dr_hla.performer = @records[:practitioner].to_reference
+        dr_hla.performer = [@records[:practitioner].to_reference]
         dr_hla.specimen = [@records[:family_specimen].to_reference]
 
         create_object(dr_hla, :dr_hla)
@@ -201,7 +201,7 @@ module Crucible
 
         dr = @resources.load_fixture('diagnostic_report/diagnosticreport-pathologyreport-create.xml')
         dr.subject = @records[:family_patient].to_reference
-        dr.performer = @records[:practitioner].to_reference
+        dr.performer = [@records[:practitioner].to_reference]
         dr.specimen = [@records[:family_specimen].to_reference]
         create_object(dr, :dr_pathreport)
 

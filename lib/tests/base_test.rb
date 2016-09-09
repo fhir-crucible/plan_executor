@@ -10,6 +10,7 @@ module Crucible
       attr_accessor :tests_subset
       attr_accessor :tags
       attr_accessor :category
+      attr_accessor :warnings
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category']
@@ -28,6 +29,7 @@ module Crucible
         @client2.monitor_requests if @client2
         @tags ||= []
         FHIR::Model.client = client
+        @warnings = []
       end
 
       def multiserver

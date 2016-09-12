@@ -38,7 +38,7 @@ module Crucible
         # not required
       end
 
-      ['GET','POST'].each do |how|  
+      ['GET','POST'].each do |how|
 
         test "CT01#{how[0]}", "Expand a specific ValueSet (#{how})" do
           metadata {
@@ -192,7 +192,7 @@ module Crucible
         @valueset_created_id = reply.id
       end
 
-      ['GET','POST'].each do |how|  
+      ['GET','POST'].each do |how|
 
         test "CT10#{how[0]}", "Expand a ValueSet that points to a local CodeSystem(#{how})" do
           metadata {
@@ -293,7 +293,7 @@ module Crucible
         @conceptmap_created_id = reply.id
       end
 
-      ['GET','POST'].each do |how|  
+      ['GET','POST'].each do |how|
 
         test "CT15#{how[0]}", "$translate a code using a ConceptMap (#{how})" do
           metadata {
@@ -302,12 +302,13 @@ module Crucible
             validates resource: 'ConceptMap', methods: ['$translate']
           }
           skip if @conceptmap_created_id.nil?
+          assert @conceptmap_simple.group.first.try(:element).try(:first), "ConceptMap #{@conceptmap_simple.id} does not have a code to translate in group"
           options = {
             :operation => {
               :method => how,
               :parameters => {
-                'code' => { type: 'Code', value: @conceptmap_simple.element.first.code },
-                'system' => { type: 'Uri', value: @conceptmap_simple.element.first.system },
+                'code' => { type: 'Code', value: @conceptmap_simple.group.first.element.first.code },
+                'system' => { type: 'Uri', value: @conceptmap_simple.group.first.source },
                 'target' => { type: 'Uri', value: @conceptmap_simple.targetReference.reference }
               }
             }
@@ -366,7 +367,7 @@ module Crucible
         expansion_added = concepts - ref
 
         assert(expansion_missing.empty?,"ValueSet expansion is missing the following concepts: #{expansion_missing}")
-        assert(expansion_added.empty?,"ValueSet expansion contained some unexpected concepts: #{expansion_added}")        
+        assert(expansion_added.empty?,"ValueSet expansion contained some unexpected concepts: #{expansion_added}")
       end
 
       def check_response_params(contents,name,attribute,value)

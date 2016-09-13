@@ -27,6 +27,10 @@ module Crucible
         @average.id = nil # clear the identifier, in case the server checks for duplicates
         @average.identifier = nil # clear the identifier, in case the server checks for duplicates
 
+        @er = @resources.load_fixture('financial/eligibility-request.xml')
+        @er.id = nil
+        @er.identifier = nil
+
         @patient = @resources.minimal_patient
         @patient.id = nil
         @patient.identifier = [FHIR::Identifier.new]
@@ -37,6 +41,7 @@ module Crucible
 
         @simple.patient.reference = "Patient/#{@patient_id}"
         @average.patient.reference = "Patient/#{@patient_id}"
+        @er.patient.reference = "Patient/#{@patient_id}"
 
         @organization_1 = @resources.example_patient_record_organization_201
         @organization_1.id = nil
@@ -47,6 +52,7 @@ module Crucible
 
         @simple.organization.reference = "Organization/#{@organization_1_id}"
         @average.organization.reference = "Organization/#{@organization_1_id}"
+        @er.organization.reference = "Organization/#{@organization_1_id}"
 
         @organization_2 = @resources.example_patient_record_organization_203
         @organization_2.id = nil
@@ -55,8 +61,9 @@ module Crucible
         @organization_2.id = @organization_2_id
         assert_response_ok(reply)
 
-        @simple.target.reference = "Organization/#{@organization_2_id}"
-        @average.target.reference = "Organization/#{@organization_2_id}"
+        @simple.insurer.reference = "Organization/#{@organization_2_id}"
+        @average.insurer.reference = "Organization/#{@organization_2_id}"
+        @er.insurer.reference = "Organization/#{@organization_2_id}"
 
       end
 
@@ -68,6 +75,58 @@ module Crucible
         @client.destroy(FHIR::Patient, @patient_id) if !@patient_id.nil?
         @client.destroy(FHIR::Patient, @organization_1_id) if !@organization_1_id.nil?
         @client.destroy(FHIR::Patient, @organization_2_id) if !@organization_2_id.nil?
+        @client.destroy(FHIR::EligibilityRequest, @er_id) if !@er_id.nil?
+      end
+
+      test 'C13F_1', 'Register an EligibilityRequest' do
+        metadata {
+          links "#{REST_SPEC_LINK}#create"
+          links "#{BASE_SPEC_LINK}/eligibilityrequest.html"
+          links 'http://wiki.hl7.org/index.php?title=201609_Financial_Management#Submit_an_Eligibility.2C_Retrieve.2FReceive_an_EligibilityResponse'
+          requires resource: 'EligibilityRequest', methods: ['create']
+          validates resource: 'EligibilityRequest', methods: ['create']
+        }
+
+        reply = @client.create(@er)
+
+        assert_response_ok(reply)
+        @er_id = reply.id
+
+        warning { assert @er.equals?(reply.resource), 'The server did not correctly preserve the EligibilityRequest data.' }
+
+      end
+
+      test 'C13F_2', 'Search for EligibilityResponse' do
+        metadata {
+          links "#{REST_SPEC_LINK}#search"
+          links "#{BASE_SPEC_LINK}/eligibilityresponse.html"
+          links 'http://wiki.hl7.org/index.php?title=201609_Financial_Management#Submit_an_Eligibility.2C_Retrieve.2FReceive_an_EligibilityResponse'
+        }
+
+        options = {
+          :search => {
+            :flag => true,
+            :compartment => nil,
+            :parameters => {
+              'request-identifier' => @er_id
+            }
+          }
+        }
+
+        sleep(5)
+
+        # @client.use_format_param = true
+        reply = @client.search(FHIR::EligibilityResponse, options)
+
+        assert_response_ok(reply)
+        assert (reply.resource.total > 0), 'The server did not report any EligibilityResponses for the submitted EligibilityResource.'
+      end
+
+      test 'C13F_3', 'Submit a PreAuthorization and an Attachment' do
+        meatdata {
+          links "#{REST_SPEC_LINK}#search"
+          
+        }
       end
 
       #
@@ -169,7 +228,7 @@ module Crucible
           validates resource: 'Claim', methods: ['read']
         }
 
-        reply = @client.read(FHIR::Claim,@simple_id)
+        reply = @client.read(FHIR::Claim, @simple_id)
         assert_response_ok(reply)
         assert_resource_type(reply,FHIR::Claim)
         reply.resource.coverage.each do |coverage|

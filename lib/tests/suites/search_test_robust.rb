@@ -20,21 +20,32 @@ module Crucible
         patient = Crucible::Generator::Resources.new.minimal_patient
         patient.identifier = [FHIR::Identifier.new]
         patient.identifier[0].value = SecureRandom.urlsafe_base64
-        @patient = FHIR::Patient.create(patient)
+
+        begin
+          @patient = FHIR::Patient.create(patient) rescue nil
+        rescue ClientException=>e
+        end
+
+        assert @patient, "Response code #{@client.reply.code} on patient creation."
 
         # read all the patients
         @patients = FHIR::Patient.all()
 
         # create a condition matching the first patient
         condition = ResourceGenerator.generate(FHIR::Condition,1)
-        condition.patient = ResourceGenerator.generate(FHIR::Reference)
-        condition.patient.id = @patients.first.id
+        condition.subject = ResourceGenerator.generate(FHIR::Reference)
+        condition.subject.id = @patients.first.id
         options = {
-          :id => condition.patient.id,
+          :id => condition.subject.id,
           :resource => @patients.first.class
         }
-        condition.patient.reference = @client.resource_url(options)
-        @condition = FHIR::Condition.create(condition)
+        condition.subject.reference = @client.resource_url(options)
+        begin
+          @condition = FHIR::Condition.create(condition)
+        rescue ClientException=>e
+        end
+
+        assert @condition, "Response code #{@client.reply.code} on condition creation."
 
         # create some observations
         @observations = [4.12345, 4.12346, 4.12349, 5.12, 6.12].map {|n| create_observation(n)}
@@ -57,7 +68,12 @@ module Crucible
         body.code = '182756003'
         observation.bodySite = FHIR::CodeableConcept.new
         observation.bodySite.coding = [ body ]
-        FHIR::Observation.create(observation)
+        begin
+          result = FHIR::Observation.create(observation) rescue nil
+        rescue ClientException=>e
+        end
+        assert result, "Response code #{@client.reply.code} on observation creation."
+        result
       end
 
       def teardown

@@ -4,7 +4,7 @@ module Crucible
 
       include Crucible::Tests::Assertions
 
-      BASE_SPEC_LINK = 'http://hl7.org/fhir/2016May'
+      BASE_SPEC_LINK = 'http://hl7.org/fhir/2016Sep'
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
       attr_accessor :tests_subset

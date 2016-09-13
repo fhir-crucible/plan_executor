@@ -44,7 +44,7 @@ module Crucible
 
         # create a condition matching the first patient
         @condition = ResourceGenerator.generate(FHIR::Condition,3)
-        @condition.patient = @entries.first.try(:resource).try(:to_reference)
+        @condition.subject = @entries.first.try(:resource).try(:to_reference)
         reply = @client.create(@condition)
         @condition_id = reply.id
 
@@ -243,7 +243,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -279,7 +279,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -308,7 +308,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -345,7 +345,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -375,7 +375,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -404,7 +404,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -433,7 +433,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -462,7 +462,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
         end
       end
 
@@ -588,7 +588,9 @@ module Crucible
           assert_response_ok(reply)
           assert_bundle_response(reply)
           reply.resource.entry.each do |e|
-            assert((e.resource.value > 5), "Search should not return values less than or equal to 5.")
+            value = e.resource.value.try(:value)
+            assert(value, "Search did not return a value.")
+            assert((value > 5), "Search should not return values less than or equal to 5.")
           end
           has_obs_e = true if reply.resource.get_by_id(@obs_e)
           has_obs_f = true if reply.resource.get_by_id(@obs_f)

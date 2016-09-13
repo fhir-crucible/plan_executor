@@ -357,6 +357,8 @@ module Crucible
 
         reply = @client.validate(patient,{profile_uri: patient.meta.profile.first})
         assert_response_ok(reply)
+        reply_resource = @client.parse_reply(FHIR::OperationOutcome, @client.default_format, reply)
+        reply.resource = reply_resource
         assert_resource_type(reply,FHIR::OperationOutcome)
         failed = reply.resource.issue.any?{|x|['fatal','error'].include?(x.severity) || x.code=='invalid' }
         assert(failed,'The server failed to reject an invalid DAF-Patient.')

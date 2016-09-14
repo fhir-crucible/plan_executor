@@ -1,22 +1,23 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 7bf249f660979903062a741eb1d460e3186395f7
+  revision: befd63b2735614fa46cc117ce3a6fa556d1cf911
   branch: master
   specs:
-    fhir_client (1.6.0)
+    fhir_client (1.6.2)
       activesupport (>= 3)
       addressable (>= 2.3)
-      fhir_models (>= 1.6.0)
+      fhir_models (>= 1.6.1)
       oauth2 (~> 1.1)
+      rack (~> 1.5)
       rest-client (~> 1.8)
       tilt (>= 1.1)
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: be34418f9c5f7f74cad788ed64d608ce764da0c1
+  revision: ac87d31623d3300fea4c4719c9b8e742dcd0ab56
   branch: master
   specs:
-    fhir_models (1.6.0)
+    fhir_models (1.6.2)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 1.16, < 3)
@@ -160,9 +161,6 @@ GEM
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (2.0.5)
-    turn (0.9.7)
-      ansi
-      minitest (~> 4)
     tzinfo (0.3.51)
     unf (0.1.4)
       unf_ext
@@ -175,13 +173,14 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  ansi
   awesome_print
   bcp47
   builder
   date_time_precision
   fhir_client!
   fhir_models!
-  minitest (~> 4.0)
+  minitest
   mongoid
   mongoid-history
   nokogiri
@@ -194,8 +193,4 @@ DEPENDENCIES
   rest-client
   simplecov
   tilt
-  turn
   webmock
-
-BUNDLED WITH
-   1.12.5

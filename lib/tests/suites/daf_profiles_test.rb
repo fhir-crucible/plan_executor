@@ -74,7 +74,7 @@ module Crucible
         smart_security_extensions = ['register','authorize','token']
 
         @rest_index = nil
-        @found_smart_code = false 
+        @found_smart_code = false
         found_smart_base = false
 
         @conformance.rest.each_with_index do |rest,index|
@@ -136,7 +136,7 @@ module Crucible
           warning { assert(should_interactions.empty?,"Server does not declare support for the following SHOULD interactions on #{resource.type}: #{should_interactions}") }
           assert(shall_interactions.empty?,"Server does not declare support for the following SHALL interactions on #{resource.type}: #{shall_interactions}")
         end
-      end      
+      end
 
       # Check that Conformance searchParams
       test 'DAF03','Check Conformance Search Parameters against DAF Conformance' do
@@ -184,7 +184,7 @@ module Crucible
           search_includes -= resource.searchInclude
           assert(search_includes.empty?,"Server does not declare support for the following SHALL searchIncludes on #{resource.type}: #{search_includes}")
         end
-      end      
+      end
 
       # Check Conformance for $everything on Patient and Encounter
       test 'DAF04','Check Conformance for $everything on Patient and Encounter' do
@@ -209,7 +209,7 @@ module Crucible
         assert((supports_patient_everything || supports_encounter_everything || supports_ambiguous_everything), message)
         warning{ assert((supports_patient_everything || supports_encounter_everything), "Ambiguous everything operation: cannot determine applicable resources. #{message}") }
         warning{ assert(supports_patient_everything, "Cannot find Patient $everything operation. #{message}")}
-        warning{ assert(supports_encounter_everything, "Cannot find Encounter $everything operation. #{message}")}        
+        warning{ assert(supports_encounter_everything, "Cannot find Encounter $everything operation. #{message}")}
       end
 
       # Check Conformance for $validate operation support
@@ -248,7 +248,7 @@ module Crucible
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
         has_transaction_interaction = rest.interaction.any?{|x|x.code=='transaction'}
-        has_transaction_mode = (!rest.transactionMode.nil? && rest.transactionMode!='not-supported')
+        has_transaction_mode = (!rest.interaction.try(:first).nil? && rest.interaction.first !=' not-supported')
 
         message = 'Although not required by the DAF Implementation Guide, the server should support transaction (preferred) or batch, to facilitate the transfer of patient records.'
 
@@ -304,8 +304,8 @@ module Crucible
           }
           resource = @server_side_resources[daf_resource.type]
           skip if resource.nil? || resource.empty?
-          
-          profiles = FHIR::StructureDefinition.get_profiles_for_resource(daf_resource.type)
+
+          profiles = FHIR::Definitions.get_profiles_for_resource(daf_resource.type)
           profile = profiles.select{|x|x.id.start_with?'daf'}.first
           skip if profile.nil?
 
@@ -349,7 +349,7 @@ module Crucible
         }
         skip unless @supports_validate
 
-        # Removing the identifier and adding an "animal" to the 
+        # Removing the identifier and adding an "animal" to the
         # Patient violates the DAF-Patient profile.
         patient = Crucible::Tests::DAFResourceGenerator.daf_patient
         patient.identifier = nil
@@ -357,6 +357,8 @@ module Crucible
 
         reply = @client.validate(patient,{profile_uri: patient.meta.profile.first})
         assert_response_ok(reply)
+        reply_resource = @client.parse_reply(FHIR::OperationOutcome, @client.default_format, reply)
+        reply.resource = reply_resource
         assert_resource_type(reply,FHIR::OperationOutcome)
         failed = reply.resource.issue.any?{|x|['fatal','error'].include?(x.severity) || x.code=='invalid' }
         assert(failed,'The server failed to reject an invalid DAF-Patient.')
@@ -418,7 +420,7 @@ module Crucible
           assert_response_ok(reply)
           assert_bundle_response(reply)
           resource = reply.resource.entry.map{|x|x.resource}
-        end     
+        end
         skip if resource.nil? || resource.empty?
 
         reply = @client.fetch_encounter_record(resource.first.id)
@@ -428,7 +430,7 @@ module Crucible
       end
 
       # The DAF Responder SHALL identify the DAF profile(s) supported as part of the FHIR BaseResource.Meta.profile attribute for each instance.
-      
+
     end
   end
 end

@@ -22,7 +22,7 @@
 		</telecom>
 	</contact>
 	<date value="2015-12-17"/>
-	<description value="FHIR Connectathon 11 - Track 7 - Lab Order Lab Report - Test Order Number 200; resource format XML; Baseline DiagnosticOrder, Order, OrderResponse, DiagnosticReport, Observation, Specimen, Patient = Todd Lerr, Practitioner = Leonard BloodDraw, Practitioner = Gregory F House, Organization = Acme Labs to create, update, retrieve history and search with client assigned resource id."/>
+	<description value="FHIR Connectathon 11 - Track 7 - Lab Order Lab Report - Test Order Number 200; resource format XML; Baseline DiagnosticRequest, Order, OrderResponse, DiagnosticReport, Observation, Specimen, Patient = Todd Lerr, Practitioner = Leonard BloodDraw, Practitioner = Gregory F House, Organization = Acme Labs to create, update, retrieve history and search with client assigned resource id."/>
 	<useContext>
 		<coding>
 			<system value="urn:iso:std:iso:3166"/>
@@ -30,7 +30,7 @@
 			<display value="United States of America (the)"/>
 		</coding>
 	</useContext>
-	<requirements value="DiagnosticOrder, Order, OrderResponse, DiagnosticReport, Observation, Specimen and Patient Operations"/>
+	<requirements value="DiagnosticRequest, Order, OrderResponse, DiagnosticReport, Observation, Specimen and Patient Operations"/>
 	<copyright value="© Health eData Inc, © AEGIS.net, Inc. 2015+"/>
 	<metadata>
 		<capability>
@@ -48,13 +48,13 @@
 	</metadata>
 	<fixture id="do-200">
 		<resource>
-			<reference value="/Connectathon11/Track7-LabOrderLabReport/_reference/resources/DiagnosticOrder/do-200.xml"/>
+			<reference value="/Connectathon11/Track7-LabOrderLabReport/_reference/resources/DiagnosticRequest/do-200.xml"/>
 			<display value="Diagnostic Order 200"/>
 		</resource>
 	</fixture>
 	<fixture id="do-200-update">
 		<resource>
-			<reference value="/Connectathon11/Track7-LabOrderLabReport/_reference/resources/DiagnosticOrder/do-200-update.xml"/>
+			<reference value="/Connectathon11/Track7-LabOrderLabReport/_reference/resources/DiagnosticRequest/do-200-update.xml"/>
 			<display value="Diagnostic Order 200 Updated status"/>
 		</resource>
 	</fixture>
@@ -137,22 +137,22 @@
 	-->
 	<variable>
 		<name value="do-200-resourceId"/>
-		<path value="DiagnosticOrder/id"/>
+		<path value="DiagnosticRequest/id"/>
 		<sourceId value="do-200"/>
 	</variable>
 	<variable>
 		<name value="do-200-identifier"/>
-		<path value="DiagnosticOrder/identifier/value"/>
+		<path value="DiagnosticRequest/identifier/value"/>
 		<sourceId value="do-200"/>
 	</variable>
 	<variable>
 		<name value="do-200-update-resourceId"/>
-		<path value="DiagnosticOrder/id"/>
+		<path value="DiagnosticRequest/id"/>
 		<sourceId value="do-200-update"/>
 	</variable>
 	<variable>
 		<name value="do-200-update-identifier"/>
-		<path value="DiagnosticOrder/identifier/value"/>
+		<path value="DiagnosticRequest/identifier/value"/>
 		<sourceId value="do-200-update"/>
 	</variable>
 	<variable>
@@ -201,8 +201,8 @@
 				<type>
 					<code value="delete"/>
 				</type>
-				<resource value="DiagnosticOrder"/>
-				<description value="Use a conditional delete operation to insure the DiagnosticOrder do-200 does not exist on the server."/>
+				<resource value="DiagnosticRequest"/>
+				<description value="Use a conditional delete operation to insure the DiagnosticRequest do-200 does not exist on the server."/>
 				<accept value="xml"/>
 				<contentType value="xml"/>
 				<params value="?identifier=${do-200-identifier}"/>
@@ -225,8 +225,8 @@
 				<type>
 					<code value="delete"/>
 				</type>
-				<resource value="DiagnosticOrder"/>
-				<description value="Use a conditional delete operation to insure the DiagnosticOrder do-200-update does not exist on the server."/>
+				<resource value="DiagnosticRequest"/>
+				<description value="Use a conditional delete operation to insure the DiagnosticRequest do-200-update does not exist on the server."/>
 				<accept value="xml"/>
 				<contentType value="xml"/>
 				<params value="?identifier=${do-200-update-identifier}"/>
@@ -271,14 +271,14 @@
 	</setup>
 	<test id="Step1-OrderNewLabTest">
 		<name value="Step1-OrderNewLabTest"/>
-		<description value="Order Client posts DiagnosticOrder to Order Manager Server, and Order Client posts Order containing a reference to DiagnosticOrder to the OM Server saying 'Do this' (i.e. have a laboratory perform the test"/>
+		<description value="Order Client posts DiagnosticRequest to Order Manager Server, and Order Client posts Order containing a reference to DiagnosticRequest to the OM Server saying 'Do this' (i.e. have a laboratory perform the test"/>
 		<action>
 			<operation>
 				<type>
 					<code value="update"/>
 				</type>
-				<resource value="DiagnosticOrder"/>
-				<description value="Step 1.1 - Create DiagnosticOrder do-200 with client assigned resource id."/>
+				<resource value="DiagnosticRequest"/>
+				<description value="Step 1.1 - Create DiagnosticRequest do-200 with client assigned resource id."/>
 				<accept value="xml"/>
 				<contentType value="xml"/>
 				<params value="/${do-200-resourceId}"/>
@@ -329,7 +329,7 @@
 	</test>
 	<test id="Step2-AcceptNewLabOrder">
 		<name value="Step2-AcceptNewLabOrder"/>
-		<description value="Fulfillment Client monitors OM server for Order resources (and changes to them) assigned to them via poll, Fulfillment Client posts OrderResponse to OM Server referencing Order and agreeing to fulfill DiagnosticOrder , and Order Client monitors OM Server for OrderResponse resources pointing to Orders they own via polling. and gets OrderResponse as part of query response "/>
+		<description value="Fulfillment Client monitors OM server for Order resources (and changes to them) assigned to them via poll, Fulfillment Client posts OrderResponse to OM Server referencing Order and agreeing to fulfill DiagnosticRequest , and Order Client monitors OM Server for OrderResponse resources pointing to Orders they own via polling. and gets OrderResponse as part of query response "/>
 		<action>
 			<operation>
 				<type>
@@ -354,7 +354,7 @@
 					<code value="update"/>
 				</type>
 				<resource value="OrderResponse"/>
-				<description value="Step 2.2 - Fulfillment Client posts OrderResponse ordresp-200 to OM Server referencing Order and agreeing to fulfill DiagnosticOrder do-200."/>
+				<description value="Step 2.2 - Fulfillment Client posts OrderResponse ordresp-200 to OM Server referencing Order and agreeing to fulfill DiagnosticRequest do-200."/>
 				<accept value="xml"/>
 				<contentType value="xml"/>
 				<params value="/${ordresp-200-resourceId}"/>
@@ -428,14 +428,14 @@
 	</test>
 	<test id="Step3-FulfillLabOrder">
 		<name value="Step3-FulfillLabOrder"/>
-		<description value=" Fulfillment Client posts DiagnosticReport to OM Server referencing DiagnosticOrder, Fulfillment Client posts OrderResponse referencing the DiagnosticReport and Order and indicating they believe order is fulfilled to the OM Server. "/>
+		<description value=" Fulfillment Client posts DiagnosticReport to OM Server referencing DiagnosticRequest, Fulfillment Client posts OrderResponse referencing the DiagnosticReport and Order and indicating they believe order is fulfilled to the OM Server. "/>
 		<action>
 			<operation>
 				<type>
 					<code value="update"/>
 				</type>
 				<resource value="DiagnosticReport"/>
-				<description value="Step 3.1 - Fulfillment Client posts DiagnosticReport dr-200 to OM Server referencing DiagnosticOrder do-200."/>
+				<description value="Step 3.1 - Fulfillment Client posts DiagnosticReport dr-200 to OM Server referencing DiagnosticRequest do-200."/>
 				<accept value="xml"/>
 				<contentType value="xml"/>
 				<params value="/${dr-200-resourceId}"/>
@@ -486,7 +486,7 @@
 	</test>
 	<test id="Step4-ReceiveLabResults">
 		<name value="Step4-ReceiveLabResults"/>
-		<description value=" Order Client monitors OM Server for OrderResponse resources pointing to Orders they own via polling. Order Client gets 2nd OrderResponse as part of query. Order Client retrieves DiagnosticReport. Order Client updates DiagnosticOrder to indicate they are completed."/>
+		<description value=" Order Client monitors OM Server for OrderResponse resources pointing to Orders they own via polling. Order Client gets 2nd OrderResponse as part of query. Order Client retrieves DiagnosticReport. Order Client updates DiagnosticRequest to indicate they are completed."/>
 		<action>
 			<operation>
 				<type>
@@ -561,8 +561,8 @@
 				<type>
 					<code value="update"/>
 				</type>
-				<resource value="DiagnosticOrder"/>
-				<description value="Step 4.3 - Order Client updates DiagnosticOrder to indicate they are completed."/>
+				<resource value="DiagnosticRequest"/>
+				<description value="Step 4.3 - Order Client updates DiagnosticRequest to indicate they are completed."/>
 				<accept value="xml"/>
 				<contentType value="xml"/>
 				<params value="/${do-200-resourceId}"/>

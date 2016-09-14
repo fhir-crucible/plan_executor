@@ -131,7 +131,7 @@ namespace :crucible do
   end
 
   def output_results(results, metadata_only=false)
-    require 'turn'
+    require 'ansi'
     results.keys.each do |suite_key|
       puts suite_key
       results[suite_key].each do |test|
@@ -277,7 +277,7 @@ namespace :crucible do
 
   desc 'execute with requirements'
   task :execute_w_requirements, [:url, :test] do |t, args|
-    require 'turn'
+    require 'ansi'
 
     module Crucible
       module Tests
@@ -310,13 +310,26 @@ namespace :crucible do
 
   def write_result(status, test_name, message)
     tab_size = 10
-    "#{' '*(tab_size - status.length)}#{Turn::Colorize.method(status.to_sym).call(status.upcase)} #{test_name}: #{message}"
+    "#{' '*(tab_size - status.length)}#{colorize(status)} #{test_name}: #{message}"
+  end
+
+  def colorize(status)
+    case status.upcase
+    when 'PASS'
+      ANSI.green{ status.upcase }
+    when 'SKIP'
+      ANSI.blue{ status.upcase }
+    when 'FAIL'
+      ANSI.red{ status.upcase }
+    else
+      ANSI.white_on_red{ status.upcase }
+    end
   end
 
   namespace :multiserver do
     desc 'execute'
     task :execute, [:url1, :url2, :test] do |t, args|
-      require 'turn'
+      require 'ansi'
       require 'benchmark'
       b = Benchmark.measure {
         client1 = FHIR::Client.new(args.url1)

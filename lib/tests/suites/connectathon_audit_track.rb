@@ -42,6 +42,7 @@ module Crucible
           requires resource: 'AuditEvent', methods: ['search']
           validates resource: 'Patient', methods: ['create']
           validates resource: 'AuditEvent', methods: ['search']
+          validates resource: nil, methods: ['Audit Logging']
         }
         @patient = @resources.minimal_patient
         @patient.id = nil # clear the identifier
@@ -202,6 +203,7 @@ module Crucible
           requires resource: 'AuditEvent', methods: ['search']
           validates resource: 'Patient', methods: ['update']
           validates resource: 'AuditEvent', methods: ['search']
+          validates resource: nil, methods: ['Audit Logging']
         }
         @patient.gender = 'male'
         reply = @client.update(@patient,@patient.id)
@@ -360,6 +362,7 @@ module Crucible
           requires resource: 'AuditEvent', methods: ['search']
           validates resource: 'Patient', methods: ['read']
           validates resource: 'AuditEvent', methods: ['search']
+          validates resource: nil, methods: ['Audit Logging']
         }
         reply = @client.read(FHIR::Patient,@patient.id)
         assert_response_ok(reply)

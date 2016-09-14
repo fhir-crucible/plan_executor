@@ -51,9 +51,9 @@ module Crucible
           elsif type == 'code'
             if meta['valid_codes']
               gen = meta['valid_codes'].values.first.sample
-            elsif meta['binding'] && meta['binding']['uri'] == 'http://tools.ietf.org/html/bcp47'
+            elsif meta['binding'] && ['http://tools.ietf.org/html/bcp47','http://hl7.org/fhir/ValueSet/languages'].include?(meta['binding']['uri'])
               gen = 'en-US'
-            elsif meta['binding'] && meta['binding']['uri'] == 'http://www.rfc-editor.org/bcp/bcp13.txt'
+            elsif meta['binding'] && ['http://www.rfc-editor.org/bcp/bcp13.txt','http://hl7.org/fhir/ValueSet/content-type'].include?(meta['binding']['uri'])
               gen = MIME::Types.to_a.sample.content_type
             else
               gen = SecureRandom.base64
@@ -61,7 +61,7 @@ module Crucible
           elsif type == 'xhtml'
             gen = "<div>#{SecureRandom.base64}</div>"
           elsif type == 'uri'
-            gen = "http://www.example.com/#{SecureRandom.base64}"
+            gen = "http://projectcrucible.org/#{SecureRandom.base64}"
           elsif type == 'dateTime' || type == 'instant'
             gen = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
           elsif type == 'date'
@@ -140,7 +140,7 @@ module Crucible
       end
 
       def self.generate_child(type, embedded=0)
-        return if ['Meta','Extension','PrimitiveExtension','Signature'].include? type
+        return if ['Meta','Extension','PrimitiveExtension'].include? type
         klass = "FHIR::#{type}".constantize
         generate(klass, embedded)
       end
@@ -260,6 +260,21 @@ module Crucible
 
       def self.apply_invariants!(resource)
         case resource
+        when FHIR::Age 
+          resource.system = 'http://unitsofmeasure.org'
+          resource.code = 'a'
+          resource.unit = nil
+          resource.comparator = nil
+        when FHIR::Duration 
+          resource.system = 'http://unitsofmeasure.org'
+          resource.code = 'mo'
+          resource.unit = nil
+          resource.comparator = nil
+        when FHIR::Money 
+          resource.system = 'urn:iso:std:iso:4217'
+          resource.code = 'USD'
+          resource.unit = nil
+          resource.comparator = nil       
         when FHIR::Appointment
           resource.reason = minimal_codeableconcept('http://snomed.info/sct','219006') # drinker of alcohol
           resource.participant.each{|p| p.type=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
@@ -271,38 +286,55 @@ module Crucible
             o.name = "name #{SecureRandom.base64}" if o.name.nil?
           end
         when FHIR::Bundle
+          resource.type = ['document','message','collection'].sample
           resource.total = nil if !['searchset','history'].include?(resource.type)
           resource.entry.each {|e|e.search=nil} if resource.type!='searchset'
           resource.entry.each {|e|e.request=nil} if !['batch','transaction','history'].include?(resource.type)
           resource.entry.each {|e|e.response=nil} if !['batch-response','transaction-response'].include?(resource.type)
           head = resource.entry.first
           if !head.nil?
-            if head.request.nil? && head.response.nil? && head.resource.nil?
-              if resource.type == 'document'
-                head.resource = generate(FHIR::Composition,3)
-              elsif resource.type == 'message'
-                head.resource = generate(FHIR::MessageHeader,3)  
-              else
-                head.resource = generate(FHIR::Basic,3)                              
-              end
-            end
-            if head.resource.nil?
-              head.fullUrl = nil
+            if resource.type == 'document'
+              head.resource = generate(FHIR::Composition,3)
+            elsif resource.type == 'message'
+              head.resource = generate(FHIR::MessageHeader,3)  
             else
-              rid = SecureRandom.random_number(100) + 1
-              head.fullUrl = "http://projectcrucible.org/fhir/#{rid}"
-              head.resource.id = "#{rid}"
+              head.resource = generate(FHIR::Basic,3)                              
             end
+            rid = SecureRandom.random_number(100) + 1
+            head.fullUrl = "http://projectcrucible.org/fhir/#{head.resource.resourceType}/#{rid}"
+            head.resource.id = "#{rid}"
           end
         when FHIR::CarePlan
           resource.activity.each {|a| a.reference = nil if a.detail }
+        when FHIR::CodeSystem
+          resource.concept.each do |c|
+            c.concept.each do |d|
+              d.property.each do |p|
+                p.valueCode = nil
+                p.valueCoding = nil
+                p.valueString = SecureRandom.base64
+                p.valueInteger = nil
+                p.valueBoolean = nil
+                p.valueDateTime = nil
+              end
+            end
+          end
+        when FHIR::Conformance
+          resource.kind = 'instance'
+          resource.rest.each do |r|
+            r.resource.each do |res|
+              res.interaction.each{|i|i.code = ['read', 'vread', 'update', 'delete', 'history-instance', 'history-type', 'create', 'search-type'].sample}
+              res.searchParam.each{|p|p.chain=nil unless p.type=='reference'}
+            end
+            r.interaction.each{|i|i.code = ['transaction', 'batch', 'search-system', 'history-system'].sample }
+          end
         when FHIR::Claim
           resource.item.each do |item|
-            item.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+            item.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
             item.detail.each do |detail|
-              detail.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+              detail.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
               detail.subDetail.each do |sub|
-                sub.type = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+                sub.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
                 sub.service = minimal_coding('http://hl7.org/fhir/ex-USCLS','1205')
               end
             end
@@ -346,6 +378,19 @@ module Crucible
           if(resource.targetUri.nil? && resource.targetReference.nil?)
             resource.targetReference = textonly_reference('ValueSet') 
           end
+        when FHIR::Condition
+          if resource.onsetAge
+            resource.onsetAge.system = 'http://unitsofmeasure.org'
+            resource.onsetAge.code = 'a'
+            resource.onsetAge.unit = 'yr'
+            resource.onsetAge.comparator = nil
+          end
+          if resource.abatementAge
+            resource.abatementAge.system = 'http://unitsofmeasure.org'
+            resource.abatementAge.code = 'a'
+            resource.abatementAge.unit = 'yr'
+            resource.abatementAge.comparator = nil
+          end
         when FHIR::Conformance
           resource.fhirVersion = 'STU3'
           resource.format = ['xml','json']
@@ -360,6 +405,20 @@ module Crucible
           resource.agent.each do |agent|
             agent.actor = textonly_reference('Patient')
           end
+          resource.valuedItem.each do |item|
+            if item.unitPrice
+              item.unitPrice.system = 'urn:iso:std:iso:4217'
+              item.unitPrice.code = 'USD'
+              item.unitPrice.unit = nil
+              item.unitPrice.comparator = nil
+            end
+            if item.net
+              item.net.system = 'urn:iso:std:iso:4217'
+              item.net.code = 'USD'
+              item.net.unit = nil
+              item.net.comparator = nil
+            end
+          end
           resource.term.each do |term|
             term.agent.each do |agent|
               agent.actor = textonly_reference('Organization')
@@ -367,6 +426,20 @@ module Crucible
             term.group.each do |group|
               group.agent.each do |agent|
                 agent.actor = textonly_reference('Organization')
+              end
+            end
+            term.valuedItem.each do |item|
+              if item.unitPrice
+                item.unitPrice.system = 'urn:iso:std:iso:4217'
+                item.unitPrice.code = 'USD'
+                item.unitPrice.unit = nil
+                item.unitPrice.comparator = nil
+              end
+              if item.net
+                item.net.system = 'urn:iso:std:iso:4217'
+                item.net.code = 'USD'
+                item.net.unit = nil
+                item.net.comparator = nil
               end
             end
           end
@@ -435,10 +508,41 @@ module Crucible
             resource.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
             resource.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
           end
+        when FHIR::ExpansionProfile
+          resource.codeSystem.exclude = nil
+          resource.designation.exclude = nil
+        when FHIR::FamilyMemberHistory
+          if resource.ageAge
+            resource.ageAge.system = 'http://unitsofmeasure.org'
+            resource.ageAge.code = 'a'
+            resource.ageAge.unit = nil
+            resource.ageAge.comparator = nil
+          end
+          if SecureRandom.random_number(1)==0
+            resource.bornPeriod = nil
+            resource.bornDate = nil
+            resource.bornString = nil
+          else
+            resource.ageAge = nil
+            resource.ageRange = nil
+            resource.ageString = nil
+          end
+          if resource.deceasedAge
+            resource.deceasedAge.system = 'http://unitsofmeasure.org'
+            resource.deceasedAge.code = 'a'
+            resource.deceasedAge.unit = nil
+            resource.deceasedAge.comparator = nil
+          end
         when FHIR::Goal
           resource.outcome.each do |outcome|
             outcome.resultCodeableConcept = nil
             outcome.resultReference = textonly_reference('Observation')
+          end
+          if resource.targetDuration
+            resource.targetDuration.system = 'http://unitsofmeasure.org'
+            resource.targetDuration.code = 'a'
+            resource.targetDuration.unit = nil
+            resource.targetDuration.comparator = nil
           end
         when FHIR::Group
           resource.member = [] if resource.actual==false
@@ -448,25 +552,34 @@ module Crucible
             c.valueQuantity = nil
             c.valueRange = nil
           end
-        when FHIR::ImagingObjectSelection
-          resource.uid = random_oid
-          resource.study.each do |study|
-            study.uid = random_oid
-            study.series.each do |series|
-              series.uid = random_oid
-              series.instance.each do |instance|
-                instance.sopClass = random_oid
-                instance.uid = random_oid
-              end
-            end
+        when FHIR::GuidanceResponse
+          resource.action.each do |a|
+            a.action = []
           end
         when FHIR::ImagingStudy
           resource.uid = random_oid
+          availability = ['ONLINE', 'OFFLINE', 'NEARLINE', 'UNAVAILABLE']
           resource.series.each do |series|
             series.uid=random_oid
+            series.availability = availability.sample
             series.instance.each do |instance|
               instance.uid = random_oid
               instance.sopClass = random_oid
+            end
+          end
+          resource.availability = availability.sample
+        when FHIR::ImagingManifest
+          resource.title.coding.each{|c|c.code=['113000', '113002', '113003', '113004', '113005', '113006', '113007', '113008', '113009'].sample}
+          resource.study.each do |study|
+            study.series.each do |series|
+              series.baseLocation.each do |b| 
+                b.type = minimal_coding('http://hl7.org/fhir/dWebType',['WADO-RS', 'WADO-URI', 'IID'].sample)
+                b.url = "http://projectcrucible.org/#{SecureRandom.base64}"
+              end
+              series.instance.each do |i|
+                i.sopClass = random_oid
+                i.uid = random_oid
+              end
             end
           end
         when FHIR::Immunization
@@ -479,7 +592,7 @@ module Crucible
             resource.explanation.reason = [ textonly_codeableconcept("reason #{SecureRandom.base64}") ]
           end
         when FHIR::ImplementationGuide
-          resource.fhirVersion = "DSTU2"
+          resource.fhirVersion = "STU3"
           resource.package.each do |package|
             package.resource.each do |r|
               r.sourceUri = nil
@@ -529,7 +642,7 @@ module Crucible
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
         when FHIR::MedicationStatement
-          resource.reasonNotTaken = nil if resource.wasNotTaken != true
+          resource.reasonNotTaken = nil if resource.notTaken != true
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosage.each{|d|d.timing=nil}
@@ -546,7 +659,7 @@ module Crucible
           resource.uniqueId.each do |uid|
             uid.preferred = nil
           end
-        when FHIR::NutritionOrder
+        when FHIR::NutritionRequest
           resource.oralDiet.schedule = nil if resource.oralDiet
           resource.supplement.each{|s|s.schedule=nil}
           resource.enteralFormula.administration = nil if resource.enteralFormula
@@ -554,19 +667,25 @@ module Crucible
           resource.parameter.each do |p|
             p.binding = nil
             p.part = nil
+            p.searchType = nil unless p.type == 'string'
           end
-        when FHIR::Order
-          resource.when.schedule = nil
         when FHIR::Patient
           resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
+        when FHIR::PlanDefinition
+          resource.actionDefinition.each do |a|
+            a.actionDefinition.each do |b|
+              b.relatedAction = []
+            end
+          end
         when FHIR::Procedure
           resource.reasonNotPerformed = nil if resource.notPerformed != true
           resource.focalDevice.each do |fd|
-            fd.action = minimal_codeableconcept('http://hl7.org/fhir/ValueSet/device-action','implanted')
+            code = ['implanted', 'explanted', 'manipulated'].sample
+            fd.action = minimal_codeableconcept('http://hl7.org/fhir/device-action', code)
           end
         when FHIR::Provenance
           resource.entity.each do |e|
-            e.agent.relatedAgent = nil if e.agent
+            e.agent.each{|a| a.relatedAgent = nil }
           end
         when FHIR::Practitioner
           resource.communication.each do |comm|
@@ -582,21 +701,36 @@ module Crucible
             i.required = true
             i.item = []
             i.options = nil
-            i.option = [] if i.type!='choice'
+            i.option = []
+            if ['choice','open-choice'].include?(i.type)
+              choice_a = FHIR::Questionnaire::Item::Option.new({'valueString'=>'true'})
+              choice_b = FHIR::Questionnaire::Item::Option.new({'valueString'=>'false'})
+              i.option = [ choice_a, choice_b ] 
+            end
             if i.type=='display'
               i.required = nil
               i.repeats = nil
+              i.readOnly = nil
+              i.concept = []
+              FHIR::Questionnaire::Item::MULTIPLE_TYPES['initial'].each do |type|
+                i.instance_variable_set("@initial#{type.capitalize}".to_sym, nil)
+              end
             end
             i.enableWhen.each do |ew|
-              ew.answered = false
-              ew.answered = true if ew.answer
+              ew.hasAnswer = false
+              ew.hasAnswer = nil if ew.answer
             end
+            i.maxLength = nil if !['boolean', 'decimal', 'integer', 'string', 'text', 'url'].include?(i.type)
           end
         when FHIR::QuestionnaireResponse
           resource.item.each do |i|
             i.item = nil
             i.answer.each {|q|q.valueBoolean = true if !q.value }
           end
+        when FHIR::Signature
+          resource.type = [ minimal_coding('urn:iso-astm:E1762-95:2013','1.2.840.10065.1.12.1.18') ]
+          resource.whoUri = 'http://projectcrucible.org'
+          resource.whoReference = nil
         when FHIR::Subscription
           resource.status = 'requested' if resource.id.nil?
           resource.channel.payload = 'applicaton/json+fhir'
@@ -613,11 +747,42 @@ module Crucible
         when FHIR::StructureDefinition
           resource.derivation = 'constraint'
           resource.fhirVersion = 'STU3'
-          resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.baseType}"
-          resource.snapshot.element.first.path = resource.baseType if resource.snapshot && resource.snapshot.element
-          resource.differential.element.first.path = resource.baseType if resource.differential && resource.differential.element
+          resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.type}"
+          is_pattern = (SecureRandom.random_number(1)==0)
+          if resource.snapshot && resource.snapshot.element
+            resource.snapshot.element.first.id = resource.type
+            resource.snapshot.element.first.path = resource.type 
+            resource.snapshot.element.first.label = nil
+            resource.snapshot.element.first.code = nil
+            resource.snapshot.element.first.requirements = nil
+            resource.snapshot.element.first.type = nil
+            if is_pattern
+              FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+                resource.snapshot.element.first.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@fixed#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+              end
+            else
+              FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+                resource.snapshot.element.first.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@pattern#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+              end
+            end
+          end
+          if resource.differential && resource.differential.element
+            resource.differential.element[0] = resource.snapshot.element[0]
+          end
           resource.mapping.each do |m|
             m.identity.gsub!(/[^0-9A-Za-z]/, '') if m.identity
+          end
+        when FHIR::StructureMap
+          resource.group.each do |g|
+            g.rule.each{|r|r.rule = nil}
           end
         when FHIR::TestScript
           resource.variable.each do |v|
@@ -625,7 +790,6 @@ module Crucible
             v.path = nil if v.headerField
           end
           if resource.setup
-            resource.setup.metadata = nil 
             resource.setup.action.each do |a|
               a.assert = nil if a.operation
               apply_invariants!(a.operation) if a.operation
@@ -633,7 +797,6 @@ module Crucible
             end
           end
           resource.test.each do |test|
-            test.metadata = nil
             test.action.each do |a|
               a.assert = nil if a.operation
               apply_invariants!(a.operation) if a.operation

@@ -4,12 +4,13 @@ module Crucible
 
       include Crucible::Tests::Assertions
 
-      BASE_SPEC_LINK = 'http://hl7.org/fhir/2016May'
+      BASE_SPEC_LINK = 'http://hl7.org/fhir/2016Sep'
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"
 
       attr_accessor :tests_subset
       attr_accessor :tags
       attr_accessor :category
+      attr_accessor :warnings
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category']
@@ -28,6 +29,7 @@ module Crucible
         @client2.monitor_requests if @client2
         @tags ||= []
         FHIR::Model.client = client
+        @warnings = []
       end
 
       def multiserver
@@ -63,7 +65,10 @@ module Crucible
             result << TestResult.new('ERROR', "Error #{prefix} #{test_method}", STATUS[:error], "#{test_method} failed, fatal error: #{e.message}", e.backtrace.join("\n")).to_hash.merge!({:test_method => test_method})
           end
         end
-        teardown if respond_to? :teardown and not @metadata_only
+        begin
+          teardown if respond_to? :teardown and not @metadata_only
+        rescue
+        end
         result
       end
 

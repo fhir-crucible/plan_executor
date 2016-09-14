@@ -23,7 +23,7 @@
       </p>
       <p>
         <b>detail</b>: 
-        <a href="DiagnosticOrder/do-300">DiagnosticOrder/do-300</a>
+        <a href="DiagnosticRequest/do-300">DiagnosticRequest/do-300</a>
       </p>
     </div>
   </text>
@@ -56,6 +56,6 @@
     </code>
   </when>
   <detail>
-    <reference value="DiagnosticOrder/do-300"/>
+    <reference value="DiagnosticRequest/do-300"/>
   </detail>
 </Order>

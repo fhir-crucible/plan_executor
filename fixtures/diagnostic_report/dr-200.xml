@@ -31,7 +31,7 @@
       </p>
       <p>
         <b>request</b>: 
-        <a href="DiagnosticOrder/do-200">do-200</a>
+        <a href="DiagnosticRequest/do-200">do-200</a>
       </p>
       <p>
         <b>specimen</b>: 
@@ -91,7 +91,7 @@
     <display value="Gregory F House, PhD"/>
   </performer>
   <request>
-    <reference value="DiagnosticOrder/do-200"/>
+    <reference value="DiagnosticRequest/do-200"/>
     <display value="do-200"/>
   </request>
   <specimen>

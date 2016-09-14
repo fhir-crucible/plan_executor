@@ -13,7 +13,10 @@
       <p>DRAFT (not intended for production usage). Published on Jun 13, 2012 by HL7, Inc (FHIR project team (example): 
         <a href="http://hl7.org/fhir">http://hl7.org/fhir</a>; ). Creative Commons 0
       </p>
-      <p>A mapping between the FHIR and HL7 v3 AddressUse Code systems</p>
+      <div>
+        <p>A mapping between the FHIR and HL7 v3 AddressUse Code systems</p>
+
+      </div>
       <br/>
       <table class="grid">
         <tr>
@@ -32,25 +35,25 @@
         </tr>
         <tr>
           <td>home (Home)</td>
-          <td>equivalent</td>
+          <td></td>
           <td>H (home address)</td>
           <td/>
         </tr>
         <tr>
           <td>home (Home)</td>
-          <td>equivalent</td>
+          <td></td>
           <td>H (home address)</td>
           <td/>
         </tr>
         <tr>
           <td>work (Work)</td>
-          <td>equivalent</td>
+          <td></td>
           <td>WP (work place)</td>
           <td/>
         </tr>
         <tr>
           <td>temp (Temporary)</td>
-          <td>equivalent</td>
+          <td></td>
           <td>TMP (temporary address)</td>
           <td/>
         </tr>
@@ -68,11 +71,7 @@
     <system value="urn:ietf:rfc:3986"/>
     <value value="urn:uuid:53cd62ee-033e-414c-9f58-3ca97b5ffc3b"/>
   </identifier>
-<!--    for version, we are going to simply use the day of publication. This is also 
-    arbitrary - whatever is here is what people use to refer to the version. 
-    Could also be a UUID too    -->
   <version value="20120613"/>
-<!--    set of loinc codes for cholesterol for LONC 2.36    -->
   <name value="FHIR/v3 Address Use Mapping"/>
   <status value="draft"/>
   <experimental value="true"/>
@@ -97,50 +96,40 @@
   <targetReference>
     <reference value="http://hl7.org/fhir/ValueSet/v3-AddressUse"/>
   </targetReference>
-  <element>
-    <system value="http://hl7.org/fhir/address-use"/>
-    <code value="home"/>
-    <target>
-      <system value="http://hl7.org/fhir/v3/AddressUse"/>
-      <code value="H"/>
-      <equivalence value="equivalent"/>
-    </target>
-  </element>
-  <element>
-    <system value="http://hl7.org/fhir/address-use"/>
-    <code value="home"/>
-    <target>
-      <system value="http://hl7.org/fhir/v3/AddressUse"/>
-      <code value="H"/>
-      <equivalence value="equivalent"/>
-    </target>
-  </element>
-  <element>
-    <system value="http://hl7.org/fhir/address-use"/>
-    <code value="work"/>
-    <target>
-      <system value="http://hl7.org/fhir/v3/AddressUse"/>
-      <code value="WP"/>
-      <equivalence value="equivalent"/>
-    </target>
-  </element>
-  <element>
-    <system value="http://hl7.org/fhir/address-use"/>
-    <code value="temp"/>
-    <target>
-      <system value="http://hl7.org/fhir/v3/AddressUse"/>
-      <code value="TMP"/>
-      <equivalence value="equivalent"/>
-    </target>
-  </element>
-  <element>
-    <system value="http://hl7.org/fhir/address-use"/>
-    <code value="old"/>
-    <target>
-      <system value="http://hl7.org/fhir/v3/AddressUse"/>
-      <code value="BAD"/>
-      <equivalence value="disjoint"/>
-      <comments value="In the HL7 v3 AD, old is handled by the usablePeriod element, but you have to provide a time, there&#39;s no simple equivalent of flagging an address as old"/>
-    </target>
-  </element>
+  <group>
+    <source value="http://hl7.org/fhir/address-use"/>
+    <target value="http://hl7.org/fhir/v3/AddressUse"/>
+    <element>
+      <code value="home"/>
+      <target>
+        <code value="H"/>
+      </target>
+    </element>
+    <element>
+      <code value="home"/>
+      <target>
+        <code value="H"/>
+      </target>
+    </element>
+    <element>
+      <code value="work"/>
+      <target>
+        <code value="WP"/>
+      </target>
+    </element>
+    <element>
+      <code value="temp"/>
+      <target>
+        <code value="TMP"/>
+      </target>
+    </element>
+    <element>
+      <code value="old"/>
+      <target>
+        <code value="BAD"/>
+        <equivalence value="disjoint"/>
+        <comments value="In the HL7 v3 AD, old is handled by the usablePeriod element, but you have to provide a time, there&#39;s no simple equivalent of flagging an address as old"/>
+      </target>
+    </element>
+  </group>
 </ConceptMap>

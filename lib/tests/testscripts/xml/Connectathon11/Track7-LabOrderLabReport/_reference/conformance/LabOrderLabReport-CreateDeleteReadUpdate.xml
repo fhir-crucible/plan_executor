@@ -10,7 +10,7 @@
 			<p>
 				<b>mode: </b>server</p>
 			<p>
-				<b>type: </b>DiagnosticOrder CRUD
+				<b>type: </b>DiagnosticRequest CRUD
 			 create read update delete</p>
 			<p>
 				<b>type: </b>DiagnosticReport CRUD
@@ -49,7 +49,7 @@
 	<rest>
 		<mode value="server"/>
 		<resource>
-			<type value="DiagnosticOrder"/>
+			<type value="DiagnosticRequest"/>
 			<interaction>
 				<code value="create"/>
 			</interaction>

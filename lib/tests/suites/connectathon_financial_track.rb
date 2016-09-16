@@ -180,7 +180,7 @@ module Crucible
 
         # get the claim response if we weren't given one back directly
 
-        if @preauth_response.nil? and false
+        if @preauth_response.nil?
           options = {
             :search => {
               :flag => true,
@@ -200,8 +200,6 @@ module Crucible
           @preauth_response = reply.resource.entry[0].resource
           @preauth_response_id = @preauth_response.id
         end
-
-        @preauth_response = ResourceGenerator.generate(FHIR::ClaimResponse, 2)
 
         # check receipt and not adjudication of the claim
         # To do this, we will just make sure that it isn't marked as "complete"

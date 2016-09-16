@@ -73,7 +73,7 @@ module Crucible
         @obs0b.subject.reference = patient0_uri
         # obesity
         @condition0 = ResourceGenerator.minimal_condition('http://snomed.info/sct','414915002',patient0_id)
-        @condition0.patient.reference = patient0_uri
+        @condition0.subject.reference = patient0_uri
 
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient0).fullUrl = patient0_uri
@@ -106,7 +106,7 @@ module Crucible
         reply = @client.read(FHIR::Observation, @obs0b.id)
         assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
         reply = @client.read(FHIR::Condition, @condition0.id)
-        assert( (reply.resource.patient.reference.ends_with?(@patient0.id) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.id}")
+        assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.id}")
 
         @created_patient_record = true
       end
@@ -167,7 +167,7 @@ module Crucible
         # weight
         @obs2 = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',100,'kg',@patient0.id)
         # obesity has been refuted
-        @condition0.patient.reference = "Patient/#{@patient0.id}"
+        @condition0.subject.reference = "Patient/#{@patient0.id}"
         @condition0.clinicalStatus = 'resolved'
         @condition0.verificationStatus = 'refuted'
         @condition0.abatementBoolean = true
@@ -324,7 +324,7 @@ module Crucible
           # if class is Observation check subject
           assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Observation.subject Patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Observation
           # if class is Condition check patient
-          assert( (reply.resource.entry[index].resource.patient==@transferPatientId), "Condition.patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Condition
+          assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Condition.patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Condition
         end
       end
 

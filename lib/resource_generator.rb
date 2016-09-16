@@ -181,11 +181,11 @@ module Crucible
       # Default system/code are for SNOMED "Obese (finding)"
       def self.minimal_condition(system='http://snomed.info/sct',code='414915002',patientId=nil)
         resource = FHIR::Condition.new
-        resource.patient = FHIR::Reference.new
+        resource.subject = FHIR::Reference.new
         if patientId
-          resource.patient.reference = "Patient/#{patientId}"
+          resource.subject.reference = "Patient/#{patientId}"
         else
-          resource.patient.display = 'Patient'
+          resource.subject.display = 'Patient'
         end
         resource.code = minimal_codeableconcept(system,code)
         resource.verificationStatus = 'confirmed'

@@ -183,6 +183,7 @@
           ]
         },{
           "name": "Administration",
+          "aka": ["Administrative", "Identification"],
           "children": [
             {
               "name": "Individuals",
@@ -280,6 +281,7 @@
               ]
             },{
               "name": "Events",
+              "aka": ["Workflow", "Order Management"],
               "children": [
                 {
                   "name": "device use request"
@@ -340,6 +342,7 @@
               ]
             },{
               "name": "Exchange",
+              "aka": ["Structure", "Structures"],
               "children": [
                 {
                   "name": "media"

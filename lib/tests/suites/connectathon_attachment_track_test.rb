@@ -21,10 +21,15 @@ module Crucible
 
       def setup
         @attachments = {}
+        @mime_types = {}
         @records = {}
-        @attachments["pdf"] = 'fixtures/attachment/ccda_pdf.pdf'
-        @attachments["structured"] = 'fixtures/attachment/ccda_structured.xml'
-        @attachments["unstructured"] = 'fixtures/attachment/ccda_unstructured.xml'
+        @attachments["pdf"] = 'ccda_pdf.pdf'
+        @attachments["structured"] = 'ccda_structured.xml'
+        @attachments["unstructured"] = 'ccda_unstructured.xml'
+
+        @mime_types["pdf"] = "application/pdf"
+        @mime_types["structured"] = "application/xml"
+        @mime_types["unstructured"] = "application/xml"
 
         @resources = Crucible::Generator::Resources.new
 
@@ -36,20 +41,67 @@ module Crucible
         create_object(practitioner, :practitioner)
       end
 
-      %w(pdf, structured, unstructured).each do |att_type|
-        test "A13_#{att_type}1", "Submit attachment of #{att_type}" do
+      def teardown
+        @records.each_value do |value|
+          @client.destroy(value.class, value.id)
+        end
+      end
+
+      %w(pdf structured unstructured).each do |att_type|
+        test "A13_#{att_type}1", "Submit unsolicited attachment of #{att_type}" do
           comm = FHIR::Communication.new()
           comm.subject = @records[:patient].to_reference
           comm.recipient = @records[:practitioner].to_reference
-          comm.payload = base64_encoded(att_type)
 
+          comm_att = FHIR::Attachment.new()
+          comm_att.contentType = @mime_types[att_type]
+          comm_att.data = base64_encoded(att_type)
+          comm_att.title = @attachments[att_type]
+
+          payload = FHIR::Communication::Payload.new
+          payload.contentAttachment = [comm_att]
+
+          comm.payload = payload
+          create_object(comm, "comm_#{att_type}")
+        end
+
+        test "A13_#{att_type}2", "Submit solicited attachment of #{att_type}" do
+          # find a suitable CommunicationRequest to respond to
+          options = {
+            :search => {
+              :flag => true,
+              :compartment => nil,
+              :parameters => {
+                _count: 10
+              }
+            }
+          }
+          reply = @client.search(FHIR::CommunicationRequest, options)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          comm_req = reply.resource.entry.sample.resource
+
+          comm = FHIR::Communication.new()
+          comm.subject = comm_req.subject
+          comm.recipient = comm_req.sender
+
+          comm_att = FHIR::Attachment.new()
+          comm_att.contentType = @mime_types[att_type]
+          comm_att.data = base64_encoded(att_type)
+          comm_att.title = @attachments[att_type]
+
+          payload = FHIR::Communication::Payload.new
+          payload.contentAttachment = [comm_att]
+
+          comm.payload = payload
+          create_object(comm, "comm_#{att_type}")
         end
       end
 
       private
 
       def base64_encoded(type)
-        Base64.encode64(File.read(@attachments[type]))
+        Base64.encode64(File.read("fixtures/attachment/#{@attachments[type]}"))
       end
 
       def create_object(obj, obj_sym)
@@ -60,6 +112,8 @@ module Crucible
 
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_valid_content_location_present(reply) }
+
+        warning { assert @records[obj_sym].equals? reply.resource }
       end
 
     end

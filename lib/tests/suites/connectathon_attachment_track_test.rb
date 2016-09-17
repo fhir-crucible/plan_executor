@@ -2,6 +2,7 @@ module Crucible
   module Tests
     class ConnectathonAttachmentTrackTest < BaseSuite
       require "base64"
+      FIXTURE_DIR = File.join(File.expand_path(File.join('..','..','..', '..'),File.absolute_path(__FILE__)), 'fixtures')
 
       attr_accessor :attachments
 
@@ -102,7 +103,7 @@ module Crucible
       private
 
       def base64_encoded(type)
-        Base64.encode64(File.read("fixtures/attachment/#{@attachments[type]}"))
+        Base64.encode64(File.read(File.join(FIXTURE_DIR, "attachment", "#{@attachments[type]}")))
       end
 
       def create_object(obj, obj_sym)

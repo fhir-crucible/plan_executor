@@ -21,10 +21,7 @@ module Crucible
         patient.identifier = [FHIR::Identifier.new]
         patient.identifier[0].value = SecureRandom.urlsafe_base64
 
-        begin
-          @patient = FHIR::Patient.create(patient) rescue nil
-        rescue ClientException=>e
-        end
+        ignore_client_exception { @patient = FHIR::Patient.create(patient) }
 
         assert @patient, "Response code #{@client.reply.code} on patient creation."
 
@@ -33,17 +30,25 @@ module Crucible
 
         # create a condition matching the first patient
         condition = ResourceGenerator.generate(FHIR::Condition,1)
+
+        # remove common constraint issues for conditions
+        # these fields don't affect the test so no need to have them in the resource that we are using
+        # but if they are technically malformed some servers will reject them, and cause us to skip the whole test
+        condition.evidence = nil
+        condition.stage = nil
+        condition.abatementAge = nil
+        condition.onsetAge = nil
+
         condition.subject = ResourceGenerator.generate(FHIR::Reference)
-        condition.subject.id = @patients.first.id
+
+        condition.subject.id = @patients.entry.first.resource.id
         options = {
           :id => condition.subject.id,
-          :resource => @patients.first.class
+          :resource => @patients.entry.first.resource.class
         }
         condition.subject.reference = @client.resource_url(options)
-        begin
-          @condition = FHIR::Condition.create(condition)
-        rescue ClientException=>e
-        end
+
+        ignore_client_exception { @condition = FHIR::Condition.create(condition) }
 
         assert @condition, "Response code #{@client.reply.code} on condition creation."
 

@@ -77,9 +77,9 @@ module Crucible
       end
 
       def teardown
-        @patient.destroy
-        @condition.destroy
-        @observations.each {|o| o.destroy }
+        ignore_client_exception { @patient.destroy }
+        ignore_client_exception { @condition.destroy }
+        @observations.each {|o| ignore_client_exception { o.destroy } }
       end
 
     [true,false].each do |flag|  

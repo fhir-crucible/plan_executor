@@ -62,11 +62,11 @@ module Crucible
       end
 
       def teardown
-        @temp_resource.destroy if @temp_resource
-        @conditional_create_resource_a.destroy if @conditional_create_resource_a
-        @conditional_create_resource_b.destroy if @conditional_create_resource_b
-        @conditional_create_resource_c.destroy if @conditional_create_resource_c
-        @conditional_create_resource_d.destroy if @conditional_create_resource_d
+        ignore_client_exception { @temp_resource.destroy if @temp_resource }
+        ignore_client_exception { @conditional_create_resource_a.destroy if @conditional_create_resource_a }
+        ignore_client_exception { @conditional_create_resource_b.destroy if @conditional_create_resource_b }
+        ignore_client_exception { @conditional_create_resource_c.destroy if @conditional_create_resource_c }
+        ignore_client_exception { @conditional_create_resource_d.destroy if @conditional_create_resource_d }
       end
 
       #

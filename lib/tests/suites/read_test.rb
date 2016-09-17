@@ -33,7 +33,7 @@ module Crucible
       end
 
       def teardown
-        @patient.destroy if @patient_created
+        ignore_client_exception { @patient.destroy if @patient_created }
       end
 
       # [SprinklerTest("R001", "Result headers on normal read")]

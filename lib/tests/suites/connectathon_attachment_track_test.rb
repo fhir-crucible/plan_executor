@@ -102,7 +102,7 @@ module Crucible
       private
 
       def base64_encoded(type)
-        Base64.encode64(File.read("fixtures/attachment/#{@attachments[type]}"))
+        Base64.encode64(File.read(File.join(Crucible::Generator::Resources::FIXTURE_DIR, "attachment", "#{@attachments[type]}")))
       end
 
       def create_object(obj, obj_sym)

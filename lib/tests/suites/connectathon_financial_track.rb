@@ -134,11 +134,11 @@ module Crucible
 
       test 'C13F_3', 'Submit a PreAuthorization and an Attachment' do
 
-        # Action: The FHIR Client will construct a Claim resource indicating Pre-Authorization. The service will respond with a 
-        # ClaimResponse indicating only receipt not adjudication of the Claim (Pre-Authorization). 
-        # To obtain the adjudicated ClaimResponse the client must then submit an Attachment (Communication resource) containing any 
-        # supporting material to which the Server will respond with a ProcessResponse indicating success or failure with errors. 
-        # Then the client may obtain the adjudicated ClaimResponse via the appropriate protocol. The ClaimResponse will contain 
+        # Action: The FHIR Client will construct a Claim resource indicating Pre-Authorization. The service will respond with a
+        # ClaimResponse indicating only receipt not adjudication of the Claim (Pre-Authorization).
+        # To obtain the adjudicated ClaimResponse the client must then submit an Attachment (Communication resource) containing any
+        # supporting material to which the Server will respond with a ProcessResponse indicating success or failure with errors.
+        # Then the client may obtain the adjudicated ClaimResponse via the appropriate protocol. The ClaimResponse will contain
         # an identifier which may be used during claim submission to indicate that the Pre-Authorization has been performed.
         # Precondition: None
         # Success Criteria: Pre-Authorization and Attachment processed correctly by the Server (inspect via browser or available UI)
@@ -216,7 +216,7 @@ module Crucible
         @preauth_communication.topic[0].reference = "Claim/#{@preauth_id}"
 
         attachment = FHIR::Attachment.new
-        attachment.data = File.read('fixtures/attachment/ccda_pdf_base64.txt')
+        attachment.data = File.read(File.join(Crucible::Generator::Resources::FIXTURE_DIR, 'attachment', 'ccda_pdf_base64.txt'))
         # attachment.data = 'SGVsbG8='
         attachment.contentType = 'application/pdf'
 
@@ -230,9 +230,9 @@ module Crucible
         @preauth_communication_id = reply.id
 
 
-        #TODO: The Server will respond with a ProcessResponse indicating success or failure with errors. 
-        #Then the client may obtain the adjudicated ClaimResponse via the appropriate protocol. 
-        #The ClaimResponse will contain an identifier which may be used during claim submission to indicate 
+        #TODO: The Server will respond with a ProcessResponse indicating success or failure with errors.
+        #Then the client may obtain the adjudicated ClaimResponse via the appropriate protocol.
+        #The ClaimResponse will contain an identifier which may be used during claim submission to indicate
         #that the Pre-Authorization has been performed.
 
       end

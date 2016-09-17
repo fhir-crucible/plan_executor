@@ -50,8 +50,8 @@ module Crucible
       %w(pdf structured unstructured).each do |att_type|
         test "A13_#{att_type}1", "Submit unsolicited attachment of #{att_type}" do
           comm = FHIR::Communication.new()
-          comm.subject = @records[:patient].to_reference
-          comm.recipient = @records[:practitioner].to_reference
+          comm.subject = [@records[:patient].to_reference]
+          comm.recipient = [@records[:practitioner].to_reference]
 
           comm_att = FHIR::Attachment.new()
           comm_att.contentType = @mime_types[att_type]
@@ -82,8 +82,9 @@ module Crucible
           comm_req = reply.resource.entry.sample.resource
 
           comm = FHIR::Communication.new()
-          comm.subject = comm_req.subject
-          comm.recipient = comm_req.sender
+          comm.subject = [comm_req.subject]
+          comm.recipient = [comm_req.sender]
+          comm.basedOn = [comm_req.to_reference]
 
           comm_att = FHIR::Attachment.new()
           comm_att.contentType = @mime_types[att_type]

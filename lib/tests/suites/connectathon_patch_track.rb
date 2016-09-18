@@ -100,7 +100,10 @@ module Crucible
 
           patchset = [{ op: "replace", path: "MedicationOrder/status", value: "active" }]
 
-          options = { 'If-Match' => @previous_version_id }
+          # http://hl7.org/fhir/2016Sep/http.html#2.42.0.2
+          # According to the FHIR spec, the If-Match eTag for version id should be weak.
+          options = { 'If-Match' => "W/\"#{@previous_version_id}\"" }
+
           reply = @client.partial_update(FHIR::MedicationOrder, @medication_order_id, patchset, options, resource_format(fmt))
 
           assert_response_conflict(reply)

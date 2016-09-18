@@ -180,6 +180,9 @@ module Crucible
 
         # get the claim response if we weren't given one back directly
 
+        search_string = @preauth_id
+        search_regex = Regexp.new(search_string)
+
         if @preauth_response.nil?
           options = {
             :search => {

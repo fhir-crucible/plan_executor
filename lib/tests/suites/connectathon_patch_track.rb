@@ -25,7 +25,6 @@ module Crucible
 
         assert_response_ok(reply)
         @medication_order_id = reply.id
-
       end
 
       def teardown
@@ -56,7 +55,6 @@ module Crucible
             @previous_version_id = reply.resource.meta.versionId
             assert(!reply.resource.meta.lastUpdated.nil?, 'Last Updated not present.')
           }
-          
         end
 
 
@@ -75,16 +73,16 @@ module Crucible
           reply = @client.partial_update(FHIR::MedicationOrder, @medication_order_id, patchset, {}, resource_format(fmt))
 
           assert_response_ok(reply)
-          assert_resource_type(reply, FHIR::MedicationOrder)
-          assert_resource_content_type(reply, fmt.downcase)
-
+          warning { 
+            assert_resource_type(reply, FHIR::MedicationOrder)
+            assert_resource_content_type(reply, fmt.downcase)
+          }
           reply = @client.read(FHIR::MedicationOrder, @medication_order_id, resource_format(fmt))
           assert_response_ok(reply)
           assert_equal(reply.resource.status, 'completed', 'Status not updated from patch.')
           warning {
             assert(reply.resource.meta.versionId != @previous_version_id, 'VersionId not updated after patch.') unless @previous_version_id.nil?
           }
-
         end
 
         #

@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class MetadataTest < Minitest::Test
+class MetadataTest < Test::Unit::TestCase
 
   # Test gathering metadata for all the Suites
   # def test_suite_list
@@ -26,7 +26,7 @@ class MetadataTest < Minitest::Test
     read_test = executor.find_test('ReadTest')
     assert !read_test.nil?, 'Could not find ReadTest Suite'
     metadata = executor.extract_metadata_from_test('ReadTest')
-    puts JSON.pretty_generate(metadata)
+    FHIR.logger.debug JSON.pretty_generate(metadata)
     assert !metadata.blank?, 'Failed to retrieve ReadTest Suite metadata'
   end
 

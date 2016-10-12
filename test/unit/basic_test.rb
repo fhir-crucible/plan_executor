@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class BasicTest < Minitest::Test
+class BasicTest < Test::Unit::TestCase
 
   def test_suite_list
     tests = Crucible::Tests::Executor.list_all

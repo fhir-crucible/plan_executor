@@ -1,12 +1,13 @@
 require_relative '../test_helper'
 
-class FixturesTest < Minitest::Test
+class FixturesTest < Test::Unit::TestCase
 
   fixtures = File.join('fixtures','**','*.xml')
 
   # Define test methods to validate example JSON
   Dir.glob(fixtures).each do | file |    
     basename = File.basename(file,'.xml')
+    next if basename.start_with?('ccda')
     xml = File.open(file, 'r:bom|UTF-8', &:read)
 
     define_method("test_fixture_validation_#{basename}") do

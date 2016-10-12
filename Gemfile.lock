@@ -1,28 +1,17 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 5b24cb5ca3fb9016513aa53701a74bda6d6366c7
+  revision: 7e6f9edb0c13b9cd5b13de35746e508c64140060
   branch: master
   specs:
-    fhir_client (1.6.2)
+    fhir_client (1.6.7)
       activesupport (>= 3)
       addressable (>= 2.3)
-      fhir_models (>= 1.6.1)
+      fhir_models (>= 1.6.6)
+      nokogiri
       oauth2 (~> 1.1)
-      rack (~> 1.5)
+      rack (>= 1.5)
       rest-client (~> 1.8)
       tilt (>= 1.1)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: ac87d31623d3300fea4c4719c9b8e742dcd0ab56
-  branch: master
-  specs:
-    fhir_models (1.6.2)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 1.16, < 3)
-      nokogiri (>= 1.6)
-      rake (>= 0.8.7)
 
 PATH
   remote: .
@@ -76,11 +65,16 @@ GEM
     erubis (2.7.0)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
-    http-cookie (1.0.2)
+    fhir_models (1.6.7)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.6)
+    http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (0.7.0)
     json (1.8.3)
-    jwt (1.5.5)
+    jwt (1.5.6)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
     method_source (0.8.2)
@@ -104,9 +98,8 @@ GEM
     multi_xml (0.5.5)
     multipart-post (2.0.0)
     netrc (0.11.0)
-    nokogiri (1.6.8)
+    nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
-      pkg-config (~> 1.1.7)
     nokogiri-diff (0.2.0)
       nokogiri (~> 1.5)
       tdiff (~> 0.3, >= 0.3.2)
@@ -118,7 +111,7 @@ GEM
       rack (>= 1.2, < 3)
     optionable (0.2.0)
     origin (2.1.1)
-    pkg-config (1.1.7)
+    power_assert (0.3.1)
     pry (0.10.1)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -139,7 +132,7 @@ GEM
       activesupport (= 4.0.13)
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
-    rake (11.2.2)
+    rake (11.3.0)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -158,6 +151,8 @@ GEM
       activesupport (>= 3.0)
       sprockets (>= 2.8, < 4.0)
     tdiff (0.3.3)
+    test-unit (3.2.1)
+      power_assert
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (2.0.5)
@@ -179,8 +174,6 @@ DEPENDENCIES
   builder
   date_time_precision
   fhir_client!
-  fhir_models!
-  minitest
   mongoid
   mongoid-history
   nokogiri
@@ -192,8 +185,9 @@ DEPENDENCIES
   rake
   rest-client
   simplecov
+  test-unit
   tilt
   webmock
 
 BUNDLED WITH
-   1.12.4
+   1.13.2

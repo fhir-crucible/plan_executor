@@ -58,7 +58,7 @@ module Crucible
         methods = tests & @tests_subset unless @tests_subset.blank?
         methods.each do |test_method|
           @client.requests = [] if @client
-          puts "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
+          FHIR.logger.info "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
           begin
             result << execute_test_method(test_method)
           rescue => e

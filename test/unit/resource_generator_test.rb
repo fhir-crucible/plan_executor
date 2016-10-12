@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class ResourceGeneratorTest < Minitest::Test
+class ResourceGeneratorTest < Test::Unit::TestCase
 
   # Define test methods for each resource type
   FHIR::RESOURCES.each do | resourceType |    
@@ -14,7 +14,6 @@ class ResourceGeneratorTest < Minitest::Test
     r = Crucible::Tests::ResourceGenerator.generate(klass,3)
     assert !r.nil?, "Resource Generator could not generate #{resourceType}"  
     valid = r.is_valid?
-    binding.pry if !valid
     assert valid, "Resource Generator could not generate valid #{resourceType}"
   end
 

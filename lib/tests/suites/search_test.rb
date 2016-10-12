@@ -56,7 +56,7 @@ module Crucible
       # 3. Perform suite of tests against each resource.
       #
       def setup
-        @conformance = @client.conformanceStatement if @conformance.nil?
+        @conformance = @client.conformance_statement if @conformance.nil?
 
         @canSearchById = false
 

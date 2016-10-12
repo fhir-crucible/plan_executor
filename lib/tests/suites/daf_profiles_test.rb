@@ -47,7 +47,7 @@ module Crucible
           validates resource: 'Conformance', methods: ['read']
         }
 
-        @conformance = @client.conformanceStatement
+        @conformance = @client.conformance_statement
 
         # Collect the list of DAF profiles
         daf_profiles = @daf_conformance.profile.map{|x|x.reference}

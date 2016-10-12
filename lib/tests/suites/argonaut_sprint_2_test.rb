@@ -45,7 +45,7 @@ module Crucible
           requires resource: nil, methods: ['OAuth2', 'Authorization/Access Control']
         }
 
-        conformance = @client.conformanceStatement
+        conformance = @client.conformance_statement
         options = get_security_options(conformance)
 
         assert options[:authorize_url], "Authorize Url was not found in the conformance"
@@ -62,7 +62,7 @@ module Crucible
           requires resource: nil, methods: ['OAuth2', 'Authorization/Access Control']
         }
 
-        conformance = @client.conformanceStatement
+        conformance = @client.conformance_statement
         options = get_security_options(conformance)
 
         assert options[:token_url], "Token Url was not found in the conformance"

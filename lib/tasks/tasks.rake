@@ -25,11 +25,13 @@ namespace :crucible do
 
   desc 'console'
   task :console, [] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     binding.pry
   end
 
   desc 'execute all'
   task :execute_all, [:url, :html_summary] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
@@ -45,6 +47,7 @@ namespace :crucible do
 
   desc 'execute all test scripts'
   task :execute_all_testscripts, [:url, :html_summary] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
@@ -61,6 +64,7 @@ namespace :crucible do
 
   desc 'execute'
   task :execute, [:url, :test, :resource] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
@@ -73,6 +77,7 @@ namespace :crucible do
 
   desc 'metadata'
   task :metadata, [:url, :test] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
     b = Benchmark.measure { collect_metadata(FHIR::Client.new(args.url), args.test) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
@@ -192,6 +197,7 @@ namespace :crucible do
 
   desc 'execute custom'
   task :execute_custom, [:test, :resource_type, :html_summary] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
 
     puts "# #{args.test}"
@@ -220,6 +226,7 @@ namespace :crucible do
 
   desc 'execute all custom'
   task :execute_all_custom, [:html_summary] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
 
     puts "# #{args.test}"
@@ -277,6 +284,7 @@ namespace :crucible do
 
   desc 'execute with requirements'
   task :execute_w_requirements, [:url, :test] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'ansi'
 
     module Crucible
@@ -329,6 +337,7 @@ namespace :crucible do
   namespace :multiserver do
     desc 'execute'
     task :execute, [:url1, :url2, :test] do |t, args|
+      FHIR.logger = Logger.new("logs/multiserver.log", 10, 1024000)
       require 'ansi'
       require 'benchmark'
       b = Benchmark.measure {

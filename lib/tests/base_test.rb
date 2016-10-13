@@ -28,7 +28,6 @@ module Crucible
         @client.monitor_requests if @client
         @client2.monitor_requests if @client2
         @tags ||= []
-        FHIR::Model.client = client
         @warnings = []
       end
 

@@ -102,7 +102,7 @@ namespace :crucible do
   def execute_test(client, key, resourceType=nil)
     executor = Crucible::Tests::Executor.new(client)
     test = executor.find_test(key)
-    if test.nil?
+    if test.nil? || (test.is_a?(Array) && test.empty?)
       puts "Unable to find test: #{key}"
       return
     end

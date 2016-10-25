@@ -2,6 +2,12 @@ module Crucible
   module Tests
     class FormatTest < BaseSuite
 
+      @@xml_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+      @@json_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
+      @@xml_format_params = ['xml', 'text/xml', 'application/xml', @@xml_format]
+      @@json_format_params = ['json', 'application/json', @@json_format]
+      @@alpha = ['A', 'B', 'C', 'D']
+
       def id
         'Format001'
       end
@@ -17,10 +23,6 @@ module Crucible
 
       # Create a patient and store its details for format requests
       def setup
-        @xml_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
-        @json_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
-        @xml_format_params = ['xml', 'text/xml', 'application/xml', @xml_format]
-        @json_format_params = ['json', 'application/json', @json_format]
         @resources = Crucible::Generator::Resources.new
         @resource = @resources.minimal_patient
         @create_failed = false
@@ -66,83 +68,31 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
-          patient = request_entry(FHIR::Patient, @id, @xml_format)
-          assert compare_response_format(patient, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient.response_format}"
+          patient = request_entry(FHIR::Patient, @id, @@xml_format)
+          assert compare_response_format(patient, @@xml_format), "XML format header mismatch: requested #{@@xml_format}, received #{patient.response_format}"
           warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
           raise AssertionException.new("CTO1 - Failed to handle XML format header response. Error: #{e.message}")
         end
       end
 
-      test 'CT02A', 'Request [xml] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @xml_format_params[0], true)
-          assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'CT02B', 'Request [text/xml] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @xml_format_params[1], true)
-          assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'CT02C', 'Request [application/xml] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @xml_format_params[2], true)
-          assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'CT02D', 'Request [application/xml+fhir] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @xml_format_params[3], true)
-          assert compare_response_format(patient, @xml_format), "XML format param mismatch: requested #{@xml_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested XML response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
+      @@xml_format_params.each_with_index do |format, index|
+        test "CT02#{@@alpha[index]}", "Request [#{format}] using _format" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/formats.html"
+            links "#{REST_SPEC_LINK}#mime-type"
+            links "#{REST_SPEC_LINK}#read"
+            requires resource: 'Patient', methods: ['create','read']
+            validates resource: 'Patient', methods: ['read'], formats: ['XML']
+          }
+          begin
+            patient = request_entry(FHIR::Patient, @id, format, true)
+            assert compare_response_format(patient, @@xml_format), "XML format param mismatch: requested #{format}, received #{patient.response_format}"
+            warning { assert compare_response(patient), 'requested XML response does not match created resource' }
+          rescue => e
+            @client.use_format_param = false
+            raise AssertionException.new("CTO2 - Failed to handle XML format param response. Error: #{e.message}")
+          end
         end
       end
 
@@ -155,65 +105,31 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
-          patient = request_entry(FHIR::Patient, @id, @json_format)
-          assert compare_response_format(patient, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient.response_format}"
+          patient = request_entry(FHIR::Patient, @id, @@json_format)
+          assert compare_response_format(patient, @@json_format), "JSON format header mismatch: requested #{@@json_format}, received #{patient.response_format}"
           warning { assert compare_response(patient), 'requested JSON resource does not match created resource' }
         rescue => e
           raise AssertionException.new("CTO3 - Failed to handle JSON format header response. Error: #{e.message}")
         end
       end
 
-      test 'CT04A', 'Request [json] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @json_format_params[0], true)
-          assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'CT04C', 'Request [application/json] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @json_format_params[1], true)
-          assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'CT04D', 'Request [application/json+fhir] using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patient = request_entry(FHIR::Patient, @id, @json_format_params[2], true)
-          assert compare_response_format(patient, @json_format), "JSON format param mismatch: requested #{@json_format}, received #{patient.response_format}"
-          warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
-        rescue => e
-          @client.use_format_param = false
-          raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
+      @@json_format_params.each_with_index do |format, index|
+        test "CT04#{@@alpha[index]}", "Request [#{format}] using _format" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/formats.html"
+            links "#{REST_SPEC_LINK}#mime-type"
+            links "#{REST_SPEC_LINK}#read"
+            requires resource: 'Patient', methods: ['create','read']
+            validates resource: 'Patient', methods: ['read'], formats: ['JSON']
+          }
+          begin
+            patient = request_entry(FHIR::Patient, @id, format, true)
+            assert compare_response_format(patient, @@json_format), "JSON format param mismatch: requested #{format}, received #{patient.response_format}"
+            warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
+          rescue => e
+            @client.use_format_param = false
+            raise AssertionException.new("CTO4 - Failed to handle JSON format param response. Error: #{e.message}")
+          end
         end
       end
 
@@ -226,11 +142,11 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
         begin
-          patient_xml = request_entry(FHIR::Patient, @id, @xml_format)
-          patient_json = request_entry(FHIR::Patient, @id, @json_format)
+          patient_xml = request_entry(FHIR::Patient, @id, @@xml_format)
+          patient_json = request_entry(FHIR::Patient, @id, @@json_format)
 
-          assert compare_response_format(patient_xml, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient_xml.response_format}"
-          assert compare_response_format(patient_json, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient_json.response_format}"
+          assert compare_response_format(patient_xml, @@xml_format), "XML format header mismatch: requested #{@@xml_format}, received #{patient_xml.response_format}"
+          assert compare_response_format(patient_json, @@json_format), "JSON format header mismatch: requested #{@@json_format}, received #{patient_json.response_format}"
           warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON resources do not match created resource or each other' }
         rescue => e
           @client.use_format_param = false
@@ -247,11 +163,11 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
         begin
-          patient_xml = request_entry(FHIR::Patient, @id, @xml_format, true)
-          patient_json = request_entry(FHIR::Patient, @id, @json_format, true)
+          patient_xml = request_entry(FHIR::Patient, @id, @@xml_format, true)
+          patient_json = request_entry(FHIR::Patient, @id, @@json_format, true)
 
-          assert compare_response_format(patient_xml, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient_xml.response_format}"
-          assert compare_response_format(patient_json, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient_json.response_format}"
+          assert compare_response_format(patient_xml, @@xml_format), "XML format header mismatch: requested #{@@xml_format}, received #{patient_xml.response_format}"
+          assert compare_response_format(patient_json, @@json_format), "JSON format header mismatch: requested #{@@json_format}, received #{patient_json.response_format}"
           warning { assert compare_entries(patient_xml, patient_json), 'requested XML & JSON responses do not match created resource or each other' }
         rescue => e
           @client.use_format_param = false
@@ -268,79 +184,30 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
-          patients_bundle = request_bundle(FHIR::Patient, @xml_format)
+          patients_bundle = request_bundle(FHIR::Patient, @@xml_format)
 
-          assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format header mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
+          assert compare_response_format(patients_bundle, @@xml_format), "Bundle XML format header mismatch: requested #{@@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
           raise AssertionException.new("FT03 - Failed to handle Bundle XML format header response. Error: #{e.message}")
         end
       end
 
-      test 'FT04A', 'Request [xml] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[0], true)
+      @@xml_format_params.each_with_index do |format, index|
+        test "FT04#{@@alpha[index]}", "Request [#{format}] Bundle using _format" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/formats.html"
+            links "#{REST_SPEC_LINK}#mime-type"
+            links "#{REST_SPEC_LINK}#read"
+            requires resource: 'Patient', methods: ['create','read']
+            validates resource: 'Patient', methods: ['read'], formats: ['XML']
+          }
+          begin
+            patients_bundle = request_bundle(FHIR::Patient, format, true)
 
-          assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'FT04B', 'Request [text/xml] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[1], true)
-
-          assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'FT04C', 'Request [application/xml] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[2], true)
-
-          assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'FT04D', 'Request [application/xml+fhir] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['XML']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @xml_format_params[3], true)
-
-          assert compare_response_format(patients_bundle, @xml_format), "Bundle XML format param mismatch: requested #{@xml_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
+            assert compare_response_format(patients_bundle, @@xml_format), "Bundle XML format param mismatch: requested #{format}, received #{patients_bundle.response_format}"
+          rescue => e
+            raise AssertionException.new("FT04- Failed to handle Bundle XML format param response. Error: #{e.message}")
+          end
         end
       end
 
@@ -353,65 +220,32 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
-          patients_bundle = request_bundle(FHIR::Patient, @json_format)
+          patients_bundle = request_bundle(FHIR::Patient, @@json_format)
 
-          assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format header mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
+          assert compare_response_format(patients_bundle, @@json_format), "Bundle JSON format header mismatch: requested #{@@json_format}, received #{patients_bundle.response_format}"
         rescue => e
           raise AssertionException.new("FT05 - Failed to handle Bundle JSON format header response. Error: #{e.message}")
         end
       end
 
-      test 'FT06A', 'Request [json] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @json_format_params[0], true)
+      @@json_format_params.each_with_index do |format, index|
+        test "FT06#{@@alpha[index]}", "Request [#{format}] Bundle using _format" do
+          metadata {
+            links "#{BASE_SPEC_LINK}/formats.html"
+            links "#{REST_SPEC_LINK}#mime-type"
+            links "#{REST_SPEC_LINK}#read"
+            requires resource: 'Patient', methods: ['create','read']
+            validates resource: 'Patient', methods: ['read'], formats: ['JSON']
+          }
+          begin
+            patients_bundle = request_bundle(FHIR::Patient, format, true)
 
-          assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
+            assert compare_response_format(patients_bundle, @@json_format), "Bundle JSON format param mismatch: requested #{format}, received #{patients_bundle.response_format}"
+          rescue => e
+            raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
+          end
         end
       end
-
-      test 'FT06C', 'Request [application/json] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @json_format_params[1], true)
-
-          assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
-        end
-      end
-
-      test 'FT06D', 'Request [application/json+fhir] Bundle using _format' do
-        metadata {
-          links "#{BASE_SPEC_LINK}/formats.html"
-          links "#{REST_SPEC_LINK}#mime-type"
-          links "#{REST_SPEC_LINK}#read"
-          requires resource: 'Patient', methods: ['create','read']
-          validates resource: 'Patient', methods: ['read'], formats: ['JSON']
-        }
-        begin
-          patients_bundle = request_bundle(FHIR::Patient, @json_format_params[2], true)
-
-          assert compare_response_format(patients_bundle, @json_format), "Bundle JSON format param mismatch: requested #{@json_format}, received #{patients_bundle.response_format}"
-        rescue => e
-          raise AssertionException.new("FT06 - Failed to handle Bundle JSON format param response. Error: #{e.message}")
-        end
-      end
-
 
       test 'FT07', 'Request invalid mime-type using headers' do
         metadata {

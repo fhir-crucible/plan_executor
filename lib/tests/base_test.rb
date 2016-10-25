@@ -24,6 +24,7 @@ module Crucible
 
       def initialize(client, client2=nil)
         @client = client
+        FHIR::Resource.new.client = client
         @client2 = client2
         @client.monitor_requests if @client
         @client2.monitor_requests if @client2

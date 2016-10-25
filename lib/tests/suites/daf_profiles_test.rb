@@ -42,9 +42,13 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
 
         @conformance = @client.conformance_statement
@@ -65,9 +69,13 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
 
         smart_security_base = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
@@ -105,12 +113,16 @@ module Crucible
 
       # Check that Conformance Resource Interactions
       test 'DAF02','Check Conformance Resource Interactions against DAF Conformance' do
-        metadata {
+         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
 
         rest = @conformance.rest.first
@@ -143,9 +155,13 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
 
         rest = @conformance.rest.first
@@ -191,12 +207,15 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           links "#{BASE_SPEC_LINK}/patient-operations.html#everything"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
-
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
@@ -218,12 +237,15 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           links "#{BASE_SPEC_LINK}/resource-operations.html#validate"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
-
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
@@ -238,12 +260,15 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
+          links "#{REST_SPEC_LINK}#capabilitystatement"
+          links "#{BASE_SPEC_LINK}/capabilitystatement.html"
           links "#{BASE_SPEC_LINK}/daf/daf.html"
           links "#{REST_SPEC_LINK}#transaction"
           requires resource: 'Conformance', methods: ['read']
+          requires resource: 'CapabilityStatement', methods: ['read']
           validates resource: 'Conformance', methods: ['read']
+          validates resource: 'CapabilityStatement', methods: ['read']
         }
-
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 

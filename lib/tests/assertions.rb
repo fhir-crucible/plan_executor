@@ -256,6 +256,7 @@ module Crucible
       attr_accessor :data
       def initialize(message, data=nil)
         super(message)
+        FHIR.logger.error "AssertionException: #{message}"
         @data = data
       end
     end

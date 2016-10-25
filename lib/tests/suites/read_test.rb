@@ -29,7 +29,6 @@ module Crucible
             @patient = nil
           end
         end
-
       end
 
       def teardown
@@ -60,7 +59,7 @@ module Crucible
           links "#{REST_SPEC_LINK}#update"
         }
 
-        ignore_client_exception { FHIR::Model.read(@patient.id) } #not a valid model
+        ignore_client_exception { FHIR::Model.read('1') } #not a valid model
         assert(([400,404].include?(@client.reply.code)), "An unknown resource type should be 404 or 400. The spec says 404 for an unknown resource, but does not define unknown type. Returned #{@client.reply.code}." )
       end
 
@@ -98,6 +97,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
+        skip if @patient.nil?
 
         patient = FHIR::Patient.read_with_summary(@patient.id, "text")
         assert(patient.text, 'Requested summary narrative was not provided.', @client.reply.body)

@@ -99,7 +99,7 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        get_patient_by_param(:identifier => @patient[:identifier].first.try(:value))
+        get_patient_by_param(:identifier => @patient.identifier.first.try(:value))
       end
 
       test 'AS003', 'Identifier without search keyword' do
@@ -107,7 +107,7 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        get_patient_by_param({ :identifier => @patient[:identifier].first.try(:value) }, false)
+        get_patient_by_param({ :identifier => @patient.identifier.first.try(:value) }, false)
       end
 
       test 'AS004', 'Search by Family & Given' do
@@ -115,8 +115,8 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        family = @patient[:name].first.try(:family).try(:first)
-        given = @patient[:name].first.try(:given).try(:first)
+        family = @patient.name.first.try(:family).try(:first)
+        given = @patient.name.first.try(:given).try(:first)
         assert family, "Patient family name not returned"
         assert given, "Patient given name not returned"
         get_patient_by_param(family: family, given: given)
@@ -127,8 +127,8 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        family = @patient[:name].first.try(:family).try(:first)
-        given = @patient[:name].first.try(:given).try(:first)
+        family = @patient.name.first.try(:family).try(:first)
+        given = @patient.name.first.try(:given).try(:first)
         assert family, "Patient family name not provided"
         assert given, "Patient given name not provided"
         get_patient_by_param({ family: family, given: given }, false)
@@ -139,8 +139,8 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        name = @patient[:name].first.try(:family).try(:first)
-        gender = @patient[:gender]
+        name = @patient.name.first.try(:family).try(:first)
+        gender = @patient.gender
         assert name, "Patient name not provided"
         assert gender, "Patient gender not provided"
         get_patient_by_param(name: name, gender: gender)
@@ -151,8 +151,8 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        name = @patient[:name].first.try(:family).try(:first)
-        gender = @patient[:gender]
+        name = @patient.name.first.try(:family).try(:first)
+        gender = @patient.gender
         assert name, "Patient name not provided"
         assert gender, "Patient gender not provided"
         get_patient_by_param(name: name, gender: gender)
@@ -163,8 +163,8 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        birthdate = @patient[:birthDate]
-        gender = @patient[:gender]
+        birthdate = @patient.birthDate
+        gender = @patient.gender
         assert birthdate, "Patient birthdate not provided"
         assert gender, "Patient gender not provided"
         get_patient_by_param(birthdate: birthdate, gender: gender)
@@ -175,8 +175,8 @@ module Crucible
           define_metadata('search')
         }
         skip if !@patient
-        birthdate = @patient[:birthDate]
-        gender = @patient[:gender]
+        birthdate = @patient.birthDate
+        gender = @patient.gender
         assert birthdate, "Patient birthdate not provided"
         assert gender, "Patient gender not provided"
         get_patient_by_param({ birthdate: birthdate, gender: gender }, false)

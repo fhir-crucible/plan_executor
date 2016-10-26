@@ -73,21 +73,21 @@ module Crucible
 
         # Test for address presence
         assert @practitioner.role.select { |pr|
-          locref = pr.location.first
-          # Try and find the Location in contained/Server resources
-          loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
-
-          !loc.address.nil?
+          pr.location.select { |locref|
+            # Try and find the Location in contained/Server resources
+            loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
+            loc && !loc.address.nil?
+          }.size >= 1
         }.size >= 1, "None of the Locations associated with Practitioner #{@practitioner.identifier.first.value}'s Roles contain Address information"
 
         # Test for telecom presence
         assert @practitioner.role.select { |pr|
-          locref = pr.location.first
-          # Try and find the Location in contained/Server resources
-          loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
-
-           # See if any of the location resources have telecom elements on them
-          !loc.telecom.nil? && !loc.telecom.empty?
+          pr.location.select { |locref|
+            # Try and find the Location in contained/Server resources
+            loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
+             # See if any of the location resources have telecom elements on them
+            loc && !loc.telecom.nil? && !loc.telecom.empty?
+          }.size >= 1
         }.size >= 1 || @practitioner.role.select { |pr| !pr.telecom.empty? }.size >= 1, "None of the roles associated with Practitioner #{@practitioner.identifier.first.value} contain Telecom information"
 
       end
@@ -102,19 +102,14 @@ module Crucible
           validates resource: 'PractitionerRole', methods: ['read']
           validates resource: 'Location', methods: ['read']
         }
-
         skip if !@practitioners || !@practitioner
 
         assert @practitioner.role.select { |pr| !pr.endpoint.empty? }.size >= 1, "No Endpoints found for Practitioner #{@practitioner.identifier.first.value}"
-
-        @org = @practitioner.role.select {|pr| !pr.organization.nil? }.first.organization
-
         assert @practitioner.role.select { |pr|
-          endref = pr.endpoint.first
-
-          endpoint = resolve_reference(@practitioner, FHIR::Endpoint, endref.reference)
-
-          !endpoint.address.nil? && !endpoint.address.empty?
+          pr.endpoint.select { |endref|
+            endpoint = resolve_reference(@practitioner, FHIR::Endpoint, endref.reference)
+            endpoint && !endpoint.address.nil? && !endpoint.address.empty?
+          }.size >= 1
         }.size >= 1, "No Endpoints found with direct address found for Practitioner #{@practitioner.identifier.first.value}"
       end
 
@@ -214,10 +209,8 @@ module Crucible
       private
 
       def resolve_reference(resource, reftype, id)
-        return id if id.class == reftype
-        loc = resource.contained.select { |con|
-          con.id == id.gsub('#', '')
-        }.first
+        return id if id.class == reftype || id.nil?
+        loc = resource.contained.find { |con| con.id == id.gsub('#', '') }
         #if that doesn't work, try to read it from the server
         if loc.nil? || loc.try(:empty?)
           if id.split("/").count > 1

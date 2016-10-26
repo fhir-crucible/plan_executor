@@ -167,9 +167,8 @@ module Crucible
         @provenance2.agent[0].role.display = 'Author'
         @provenance2.agent[0].role.code = 'author'
 
-        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance2.to_json
-        reply = @client.create(@patient2)
-        FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
+        options = { 'X-Provenance' => @provenance2.to_json }
+        reply = @client.base_create(@patient2, options, @client.default_format)
 
         assert_response_ok(reply)
         @patient2.id = reply.id
@@ -324,9 +323,8 @@ module Crucible
         @provenance4.agent[0].role.display = 'Author'
         @provenance4.agent[0].role.code = 'author'
 
-        FHIR::ResourceAddress::DEFAULTS['X-Provenance'] = @provenance4.to_json
-        reply = @client.update(@patient2,@patient2.id)
-        FHIR::ResourceAddress::DEFAULTS.delete('X-Provenance')
+        options = { 'X-Provenance' => @provenance4.to_json }
+        reply = @client.base_update(@patient2, @patient2.id, options, @client.default_format)
         assert_response_ok(reply)
 
 

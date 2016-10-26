@@ -53,8 +53,11 @@ module Crucible
       end
 
       def teardown
-        @records.each_value do |value|
-          @client.destroy(value.class, value.id)
+        resourceType = ['DiagnosticReport','DiagnosticRequest','Observation','Specimen','Practitioner','Patient','Organization']
+        resourceType.each do |type|
+          @records.each_value do |value|
+            @client.destroy(value.class, value.id) if value.resourceType==type
+          end
         end
       end
 
@@ -71,7 +74,6 @@ module Crucible
         create_diagnostic_request('diagnostic_request/do-200.xml', :diag_order_2, :spec_uslab)
         create_diagnostic_request('diagnostic_request/do-300.xml', :diag_order_3, :spec_uslab)
         create_diagnostic_request('diagnostic_request/do-400.xml', :diag_order_4, :spec_400)
-
       end
 
       # The `Order` resource disappeared in STU3
@@ -128,7 +130,6 @@ module Crucible
         create_diagnostic_report(:spec_uslab, ['observation/obs-200.xml'], 'diagnostic_report/dr-200.xml', :diag_report_2, @records[:diag_order_2])
         create_diagnostic_report(:spec_uslab, ['observation/obs-300.xml', 'observation/obs-301.xml', 'observation/obs-302.xml', 'observation/obs-303.xml', 'observation/obs-304.xml'], 'diagnostic_report/dr-300.xml', :diag_report_3, @records[:diag_order_3])
         create_diagnostic_report(:spec_400, ['observation/obs-400.xml', 'observation/obs-401.xml', 'observation/obs-402.xml', 'observation/obs-403.xml', 'observation/obs-404.xml', 'observation/obs-405.xml', 'observation/obs-406.xml', 'observation/obs-407.xml', 'observation/obs-408.xml'], 'diagnostic_report/dr-400.xml', :diag_report_4, @records[:diag_order_4])
-
       end
 
       test 'C12T11_5', 'Retrieve DiagnosticReport' do
@@ -175,9 +176,8 @@ module Crucible
       def create_diagnostic_request(fixture_path, order_name, specimen_name = nil)
         diag_order = @resources.load_fixture(fixture_path)
         diag_order.subject = @records[:patient].to_reference
-        diag_order.orderer = @records[:provider].to_reference
-        diag_order.specimen = [@records[specimen_name].to_reference] if specimen_name
-        diag_order.item[0].specimen = [@records[specimen_name].to_reference] if specimen_name
+        diag_order.requester = @records[:provider].to_reference
+        diag_order.supportingInformation = [@records[specimen_name].to_reference] if specimen_name
 
         create_object(diag_order, order_name)
       end
@@ -207,7 +207,7 @@ module Crucible
           observation.specimen = @records[specimen_name].to_reference
           observation.subject = @records[:patient].to_reference
           observation.performer = @records[:performer].to_reference
-          observation_name = "#{dr_name}_observation_{index}".to_sym
+          observation_name = "#{dr_name}_observation_#{index}".to_sym
           create_object(observation, observation_name)
           diag_report.result << @records[observation_name].to_reference
         end
@@ -221,30 +221,28 @@ module Crucible
         reply = @client.read FHIR::DiagnosticReport, @records[dr_name].id
         assert_response_ok(reply)
 
-        assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), " DiagnosticReport/#{@records[dr_name].id} doesn't match retrieved Diagnostic Report"
+        assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), "DiagnosticReport/#{@records[dr_name].id} doesn't match retrieved DiagnosticReport. Mismatched fields: #{reply.resource.mismatch(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension'])}"
       end
 
       def update_diagnostic_request(order_name)
         assert @records[order_name], "No DiagnosticRequest with that name present"
+        
         reply = @client.read FHIR::DiagnosticRequest, @records[order_name].id
+        
         assert_response_ok(reply)
-
         assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match DiagnosticRequest/#{@records[order_name].id}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
-
-        assert reply.resource.status == 'requested'
+        assert reply.resource.status == 'active', 'DiagnosticRequest status should be active.'
 
         @records[order_name].status = 'completed'
-
         reply = @client.update @records[order_name], @records[order_name].id
+        
         assert_response_ok(reply)
 
         reply = @client.read FHIR::DiagnosticRequest, @records[order_name].id
+        
         assert_response_ok(reply)
-
         assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match #{@records[order_name]}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
-
-        assert reply.resource.status == 'completed'
-
+        assert reply.resource.status == 'completed', 'DiagnosticRequest status should have updated to completed.'
       end
 
       def create_object(obj, obj_sym)

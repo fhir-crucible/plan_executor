@@ -1,3 +1,5 @@
+# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+
 # Top level include file that brings in all the necessary code
 require 'bundler/setup'
 require 'rubygems'

@@ -17,6 +17,12 @@ PATH
   remote: .
   specs:
     plan_executor (1.0.0)
+      ansi
+      fhir_client
+      fhir_models
+      method_source
+      nokogiri
+      nokogiri-diff
 
 GEM
   remote: https://rubygems.org/
@@ -168,7 +174,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  ansi
   awesome_print
   bcp47
   builder
@@ -176,8 +181,6 @@ DEPENDENCIES
   fhir_client!
   mongoid
   mongoid-history
-  nokogiri
-  nokogiri-diff
   oauth2
   plan_executor!
   pry

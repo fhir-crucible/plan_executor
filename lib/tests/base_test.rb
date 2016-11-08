@@ -3,6 +3,7 @@ module Crucible
     class BaseTest
 
       include Crucible::Tests::Assertions
+      require 'method_source'
 
       BASE_SPEC_LINK = 'http://hl7.org/fhir/2016Sep'
       REST_SPEC_LINK = "#{BASE_SPEC_LINK}/http.html"

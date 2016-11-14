@@ -187,8 +187,6 @@ module Crucible
           end
         end
 
-        warning { assert_navigation_links(bundle) }
-
         result = @client.resource_history_as_of(FHIR::Patient,after)
         assert_response_ok result
         assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"

@@ -34,7 +34,7 @@ module Crucible
           @version << @client.reply.version
           @patient.destroy
           assert_response_code(@client.reply,204)
-          
+
           @entry_count = @version.length
           # add one for deletion
           @version_count = @entry_count + 1
@@ -122,7 +122,7 @@ module Crucible
         deleted_entries(bundle.entry).each do |entry|
           # FIXME: Should we parse the request URL or drop this assertion?
           if entry.resource
-          
+
             ignore_client_exception { pulled = FHIR::Patient.vread(entry.resource.id, entry.resource.meta.versionId) }
             assert_response_gone @client.reply
 
@@ -176,14 +176,22 @@ module Crucible
         assert_response_ok result
         bundle = result.resource
         entry_ids_are_present(bundle.entry)
-        check_sort_order(bundle.entry)
+
+        relevant_entries = bundle.entry.select{|x|x.request.try(:local_method)!='DELETE'}
+        relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
+        relevant_entries.each_cons(2) do |left, right|
+          if !left.lastUpdated.nil? && !right.lastUpdated.nil?
+            assert (left.lastUpdated >= right.lastUpdated), 'Result contains entries in the wrong order.'
+          else
+            raise AssertionException.new 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
+          end
+        end
 
         warning { assert_navigation_links(bundle) }
 
         result = @client.resource_history_as_of(FHIR::Patient,after)
         assert_response_ok result
         assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
-
       end
 
 

@@ -185,8 +185,12 @@ module Crucible
 
         case operationCode
         when 'read'
-          if !operation.targetId.nil?
+          if operation.targetId
             @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
+          elsif operation.url
+            @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
+            @last_response.resource = FHIR.from_contents(@last_response.body)
+            @last_response.resource_class = @last_response.resource.class
           else
             resource_type = replace_variables(operation.resource)
             resource_id = replace_variables(operation.params)
@@ -345,6 +349,7 @@ module Crucible
       end
 
       def call_assertion(method, warned, *params)
+        FHIR.logger.debug "Assertion: #{method}"
         if warned
           warning { self.method(method).call(*params) }
         else
@@ -362,7 +367,10 @@ module Crucible
 
             if !var.headerField.nil?
               variable_source_response = @response_map[var.sourceId]
-              variable_value = variable_source_response.response[:headers][var.headerField]
+              headers = variable_source_response.response[:headers]
+              headers.each do |key,value|
+                variable_value = value if key.downcase == var.headerField.downcase
+              end
             elsif !var.path.nil?
               resource_xml = nil
 

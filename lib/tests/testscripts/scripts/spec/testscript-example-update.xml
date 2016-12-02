@@ -92,7 +92,7 @@
 				<description value="Confirm that the returned HTTP status is 200(OK) or 204(No Content)."/>
 				<direction value="response"/>
 				<operator value="in"/>
-				<responseCode value="200,204"/>
+				<responseCode value="200,204,400,404"/>
 			</assert>
 		</action>
 
@@ -100,7 +100,7 @@
 			<operation>
 				<type>
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
-					<code value="update"/>
+					<code value="create"/>
 				</type>
 				<resource value="Patient"/>
 				<label value="SetupCreatePatient"/>
@@ -115,7 +115,8 @@
 			<assert>
 				<description value="Confirm that the returned HTTP status is 201(Created)."/>
 				<direction value="response"/>
-				<responseCode value="201"/>
+				<operator value="in"/>
+				<responseCode value="200,201"/>
 			</assert>
 		</action>
 	</setup>

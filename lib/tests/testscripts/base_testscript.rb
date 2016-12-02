@@ -69,6 +69,23 @@ module Crucible
         @testscript.origin.length >= 2 || @testscript.destination.length >= 2
       end
 
+      def containsRuleAssertions?
+        has_declared_rule = !@testscript.rule.empty? || !@testscript.ruleset.empty?
+        return true if has_declared_rule
+
+        if @testscript.setup
+          has_setup_rule = @testscript.setup.action.find{ |action| action.assert && (action.assert.rule || action.assert.ruleset) }
+          return true if has_setup_rule
+        end
+
+        has_test_rule = @testscript.test.find do |test|
+          test.action.find{ |action| action.assert && (action.assert.rule || action.assert.ruleset) }
+        end
+        return true if has_test_rule
+
+        false
+      end
+
       def tests
         @testscript.test.map { |test| "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym }
       end
@@ -322,8 +339,7 @@ module Crucible
           call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
 
         else
-          raise "Unknown Assertion"
-
+          raise "Unhandled Assertion: #{assertion.to_json}"
         end
 
       end
@@ -341,26 +357,35 @@ module Crucible
         return input unless input.include?('${')
 
         @testscript.variable.each do |var|
-          if !var.headerField.nil?
-            variable_source_response = @response_map[var.sourceId]
-            variable_value = variable_source_response.response[:headers][var.headerField]
-            input.gsub!("${#{var.name}}", variable_value)
-          elsif !var.path.nil?
+          if input.include? "${#{var.name}}"
+            variable_value = nil
 
-            resource_xml = nil
-            
-            variable_source_response = @response_map[var.sourceId]
-            unless variable_source_response.nil?
-              resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
-            else
-              resource_xml = @fixtures[var.sourceId].to_xml
+            if !var.headerField.nil?
+              variable_source_response = @response_map[var.sourceId]
+              variable_value = variable_source_response.response[:headers][var.headerField]
+            elsif !var.path.nil?
+              resource_xml = nil
+
+              variable_source_response = @response_map[var.sourceId]
+              unless variable_source_response.nil?
+                resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
+              else
+                resource_xml = @fixtures[var.sourceId].to_xml
+              end
+
+              variable_value = extract_xpath_value(resource_xml, var.path)
             end
 
-            extracted_value = extract_xpath_value(resource_xml, var.path)
+            unless variable_value
+              if var.defaultValue
+                variable_value = var.defaultValue
+              else
+                variable_value = ''
+              end
+            end
 
-            input.gsub!("${#{var.name}}", extracted_value) unless extracted_value.nil?
-
-          end if input.include? "${#{var.name}}"
+            input.gsub!("${#{var.name}}", variable_value)
+          end
         end
 
         if input.include? '${'
@@ -397,8 +422,8 @@ module Crucible
 
         # Massage the xpath if it doesn't have fhir: namespace or if doesn't end in @value
         # Also make it look in the entire xml document instead of just starting at the root
-        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?("fhir:") || s.length == 0 then s else "fhir:#{s}" end}.join("/")
-        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? "/@value"
+        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?('fhir:') || s.length == 0 || s.starts_with?('@') then s else "fhir:#{s}" end}.join('/')
+        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? '@value'
         resource_xpath = "//#{resource_xpath}"
 
         resource_doc = Nokogiri::XML(resource_xml)

@@ -23,8 +23,11 @@ module Crucible
         results = {}
         self.tests.each do |test|
           if test.multiserver
-            puts "Skipping Multiserver Test: #{test.id}"
-            FHIR.logger.info "Skipping Multiserver Test: #{test.id}"
+            puts "Skipping Multiserver TestScript: #{test.id}"
+            FHIR.logger.info "Skipping Multiserver TestScript: #{test.id}"
+          elsif test.containsRuleAssertions?
+            puts "Skipping TestScript with permanently-unsupported Rule/RuleSet Assertions: #{test.id}"
+            FHIR.logger.info "Skipping TestScript with permanently-unsupported Rule/RuleSet Assertions: #{test.id}"            
           else
             puts "Executing: #{test.id}"
             FHIR.logger.info "Executing: #{test.id}"

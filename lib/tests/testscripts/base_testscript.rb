@@ -65,6 +65,10 @@ module Crucible
         "TS-#{id}"
       end
 
+      def multiserver
+        @testscript.origin.length >= 2 || @testscript.destination.length >= 2
+      end
+
       def tests
         @testscript.test.map { |test| "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym }
       end
@@ -117,19 +121,6 @@ module Crucible
         end
         result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
         result.warnings = @warnings unless @warnings.empty?
-        result.requires = []
-        result.validates = []
-        unless test.metadata.nil?
-          test.metadata.capability.each do |capability|
-            conf = get_reference(capability.conformance.reference)
-            conf.rest.each do |rest|
-              interactions = rest.resource.map{|resource| { resource: resource.type, methods: resource.interaction.map(&:code)}}
-              result.requires.concat(interactions) if capability.required
-              result.validates.concat(interactions) if capability.fhirValidated
-            end
-          end
-          result.links = test.metadata.capability.map(&:link).flatten.uniq
-        end
         result
       end
 
@@ -347,12 +338,13 @@ module Crucible
 
       def replace_variables(input)
         return nil if input.nil?
+        return input unless input.include?('${')
 
         @testscript.variable.each do |var|
           if !var.headerField.nil?
             variable_source_response = @response_map[var.sourceId]
             variable_value = variable_source_response.response[:headers][var.headerField]
-            input.gsub!("${" + var.name + "}", variable_value)
+            input.gsub!("${#{var.name}}", variable_value)
           elsif !var.path.nil?
 
             resource_xml = nil
@@ -366,14 +358,16 @@ module Crucible
 
             extracted_value = extract_xpath_value(resource_xml, var.path)
 
-            input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
+            input.gsub!("${#{var.name}}", extracted_value) unless extracted_value.nil?
 
-          end if input.include? "${" + var.name + "}"
+          end if input.include? "${#{var.name}}"
         end
 
         if input.include? '${'
-          puts "An unknown variable was unable to be replaced: #{input}!"
-          warning {  assert !input.include?('${'), "An unknown variable was unable to be substituted: #{input}" }
+          unknown_variables = input.scan(/(\$\{)([A-Za-z0-9]+)(\})/).map{|x|x[1]}
+          message = "Unknown variables: #{unknown_variables.join(', ')}"
+          log message
+          warning {  assert unknown_variables.empty?, message }
         end
 
         input
@@ -425,20 +419,15 @@ module Crucible
         if reference.start_with?('#')
           contained_id = reference[1..-1]
           resource = @testscript.contained.select{|r| r.id == contained_id}.first
+        elsif reference.start_with?('http')
+          raise "Remote references not supported: #{reference}"
         else 
-          root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
-          return nil unless File.exist? "#{root}/xml#{reference}"
-          file = File.open("#{root}/xml#{reference}", "r:UTF-8", &:read)
+          filepath = File.expand_path reference, File.dirname(File.absolute_path(@testscript.url))
+          return nil unless File.exist? filepath
+          file = File.open(filepath, 'r:UTF-8', &:read)
           file.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
           file = preprocess(file) if file.include?('${')
-          if reference.split('.').last == "json"
-            resourceType = JSON.parse(file)["resourceType"]
-            resource = FHIR::Json.from_json(file)
-          else
-            resourceType = Nokogiri::XML(file).children.find{|x| x.class == Nokogiri::XML::Element}.name
-            resource = FHIR::Xml.from_xml(file)
-
-          end
+          resource = FHIR.from_contents(file)
         end
 
         resource

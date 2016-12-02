@@ -16,15 +16,20 @@ module Crucible
       end
 
       def find_test(key)
-        @scripts.find{|s| s.id == key || s.title == key} || []
+        @scripts.find{|s| s.id == key || s.title == key}
       end
 
       def execute_all
         results = {}
         self.tests.each do |test|
-          # TODO: Do we want to separate out multiserver tests?
-          next if test.multiserver
-          results.merge! test.execute
+          if test.multiserver
+            puts "Skipping Multiserver Test: #{test.id}"
+            FHIR.logger.info "Skipping Multiserver Test: #{test.id}"
+          else
+            puts "Executing: #{test.id}"
+            FHIR.logger.info "Executing: #{test.id}"
+            results.merge! test.execute
+          end
         end
         results
       end
@@ -54,30 +59,30 @@ module Crucible
         end
       end
 
-      def self.parse_testscript_xml
+      def self.parse_testscripts
         return unless @@models.empty?
-        # get all TestScript's in testscripts/xml
+        # get all specification example TestScripts
         root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
-        files = File.join(root, 'xml', '**/*.xml')
-        Dir.glob(files).each do |f|
-          next if f.include? "/_reference/" # to support connectathon11 fixtures; review if there is a better way
-          next if f.include? "/resources/" # to support connectathon11 fixtures; review if there is a better way
-          next if f.include? "/_LoadTestResources/" # to support connectathon11 fixtures; review if there is a better way
-          next if f.include? "Track11-SDC" # uses STU3 models
-          next if f.include? "Track3-CDS-on-FHIR" # uses STU3 models
-          next if f.include? "Track9-Patch" # uses Patch
-          next if f.include? "Track6-FHIR-Genomics" # uses STU3 models
-
-          #TODO: these can be finished with DSTU2
-          next if f.include? "Track2-Terminology"
-          next if f.include? "Track7-LabOrderLabReport"
-
-          @@models << FHIR::Xml.from_xml( File.read(f) )
+        spec_files = File.join(root, 'scripts', 'spec', '**/*.xml')
+        Dir.glob(spec_files).each do |f|
+          begin
+            script = FHIR.from_contents( File.read(f) )
+            if script.is_valid?
+              script.url = f # replace the URL with the local file path so file system references can properly resolve
+              @@models << script
+            else
+              FHIR.logger.error "TestScriptEngine.parse_testscripts: Skipping invalid TestScript: #{f}"
+            end
+          rescue
+            FHIR.logger.error "TestScriptEngine.parse_testscripts: Exception deserializing TestScript: #{f}"
+          end
         end
+
+        # TODO get all the Connecthathon TestScripts
       end
 
     end
 
   end
 end
-Crucible::Tests::TestScriptEngine.parse_testscript_xml
+Crucible::Tests::TestScriptEngine.parse_testscripts

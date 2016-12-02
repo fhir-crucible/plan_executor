@@ -46,7 +46,7 @@
 
 	<fixture id="fixture-patient-create">
 		<resource>
-			<reference value="Patient/example"/>
+			<reference value="./_reference/resources/patient-example.json"/>
 			<display value="Peter Chalmers"/>
 		</resource>
 	</fixture>

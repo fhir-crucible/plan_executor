@@ -50,7 +50,7 @@
 		<autocreate value="false"/>
 		<autodelete value="false"/>
 		<resource>
-			<reference value="Patient/example"/>
+			<reference value="./_reference/resources/patient-example.json"/>
 			<display value="Peter Chalmers"/>
 		</resource>
 	</fixture>
@@ -59,7 +59,7 @@
 		<autocreate value="false"/>
 		<autodelete value="false"/>
 		<resource>
-			<reference value="Patient/example"/>
+			<reference value="./_reference/resources/patient-example.json"/>
 			<display value="Peter Chalmers (minimum)"/>
 		</resource>
 	</fixture>

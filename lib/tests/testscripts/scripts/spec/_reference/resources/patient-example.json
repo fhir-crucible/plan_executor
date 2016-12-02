@@ -141,6 +141,6 @@
     }
   ],
   "managingOrganization": {
-    "reference": "Organization/1"
+    "display": "Organization/1"
   }
 }

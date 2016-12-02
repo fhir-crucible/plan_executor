@@ -116,7 +116,7 @@
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
 					<code value="read"/>
 				</type>
-				<resource value="Patient"/>
+				<resource value="Parameters"/>
 				<description value="Attempt to read the Parameters resource type. What we really want here is an illegal type but the build process won't allow that. Parameters is a valid resource which doesn't have an end-point so, this should fail."/>
 				<accept value="xml"/>
 				<params value="/1"/>
@@ -165,7 +165,7 @@
 				<resource value="Patient"/>
 				<description value="Attempt to read a Patient resource on the destination test system using known bad formatted resource id."/>
 				<accept value="xml"/>
-				<params value="/ID-may-not-contain-CAPITALS"/>
+				<params value="/Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters"/>
 			</operation>
 		</action>
 		<action>

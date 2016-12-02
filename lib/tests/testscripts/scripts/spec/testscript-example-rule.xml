@@ -122,7 +122,7 @@
 				<description value="Confirm that the returned HTTP status is 200(OK) or 204(No Content)."/>
 				<direction value="response"/>
 				<operator value="in"/>
-				<responseCode value="200,204"/>
+				<responseCode value="200,204,400,404"/>
 			</assert>
 		</action>
 

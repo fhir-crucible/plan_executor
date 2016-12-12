@@ -115,13 +115,7 @@
       </coding>
     </relationship>
     <name>
-      <family value="du">
-      <!--   the "du" part is a family name prefix (VV in iso 21090)   -->
-        <extension url="http://hl7.org/fhir/StructureDefinition/iso21090-EN-qualifier">
-          <valueCode value="VV"/>
-        </extension>
-      </family>
-      <family value="Marché"/>
+      <family value="du Marché"/>
       <given value="Bénédicte"/>
     </name>
     <telecom>

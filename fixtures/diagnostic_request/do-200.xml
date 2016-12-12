@@ -46,12 +46,7 @@
     <value value="do-200"/>
   </identifier>
   <status value="active"/>
-  <stage>
-    <coding>
-      <system value="http://hl7.org/fhir/request-stage"/>
-      <code value="original-order"/>
-    </coding>
-  </stage>
+  <intent value="original-order"/>
   <code>
     <coding>
       <system value="http://lis.acmelabs.org/codes"/>
@@ -61,14 +56,14 @@
   <subject>
     <reference value="Patient/example"/>
   </subject>
-  <reason>
+  <reasonCode>
     <coding>
       <system value="http://www.icd10data.com/icd10pcs"/>
       <code value="R78.71"/>
       <display value="Abnormal lead level in blood"/>
     </coding>
     <text value="Abnormal lead level in blood"/>
-  </reason>
+  </reasonCode>
   <supportingInformation>
     <reference value="Specimen/spec-uslab-example1"/>
   </supportingInformation>

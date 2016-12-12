@@ -23,8 +23,9 @@
         <referenceAllele value="A"/>
     </variant>
     <repository>
+        <type value="openapi"/>
         <url value="https://www.googleapis.com/genomics/v1beta2"/>
         <name value="ga4gh"/>
-        <variantId value="A1A2"/>
+        <variantsetId value="A1A2"/>
     </repository>
 </Sequence>

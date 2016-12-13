@@ -458,30 +458,30 @@
 		  <tr>
             
             <th>
-              <a href="medicationorder-daf.html">DAF-MedicationOrder</a>
+              <a href="medicationorder-daf.html">DAF-MedicationRequest</a>
             </th>
             
             <td>
               
-              <a href="#DAFMedicationOrderSearch" title="Allows discovery of DAF-MedicationOrder resources based on different search criteria">SHALL</a>
+              <a href="#DAFMedicationRequestSearch" title="Allows discovery of DAF-MedicationRequest resources based on different search criteria">SHALL</a>
             
             </td>
             
             <td>
               
-              <a href="#DAFMedicationOrderSearch" title="Allows retrieval of a specific DAF-MedicationOrder by id">SHALL</a>
+              <a href="#DAFMedicationRequestSearch" title="Allows retrieval of a specific DAF-MedicationRequest by id">SHALL</a>
             
             </td>
             
             <td>
               
-              <a href="#DAFMedicationOrderSearch" title="Allows retrieval of a historical version of a DAF-MedicationOrder">SHOULD</a>
+              <a href="#DAFMedicationRequestSearch" title="Allows retrieval of a historical version of a DAF-MedicationRequest">SHOULD</a>
             
             </td>
             
             <td>
               
-              <a href="#DAFMedicationOrderSearch" title="Allows review of changes to DAF-MedicationOrder over time">SHOULD</a>
+              <a href="#DAFMedicationRequestSearch" title="Allows review of changes to DAF-MedicationRequest over time">SHOULD</a>
             
             </td>
           
@@ -1451,7 +1451,7 @@
 		  
 		  <tr>
 		    
-            <td id="DAFMedicationOrderSearch">DAF-MedicationOrder</td>
+            <td id="DAFMedicationRequestSearch">DAF-MedicationRequest</td>
 			
             <td>
 				
@@ -1479,13 +1479,13 @@
                   <a href="../search.html#reference">reference</a>)
                 </li>
 						
-                <li>Include parameter - MedicationOrder.patient</li>
+                <li>Include parameter - MedicationRequest.patient</li>
 					
-                <li>Include parameter - MedicationOrder.medicationReference</li>
+                <li>Include parameter - MedicationRequest.medicationReference</li>
 				
-				<li>Include parameter - MedicationOrder.encounter</li>
+				<li>Include parameter - MedicationRequest.encounter</li>
 				
-				<li>Include parameter - MedicationOrder.prescriber</li>
+				<li>Include parameter - MedicationRequest.prescriber</li>
 				
               </ul>
 			
@@ -2840,7 +2840,7 @@
     </resource>
 	
 	<resource>
-      <type value="MedicationOrder"/>
+      <type value="MedicationRequest"/>
       <profile>
         <reference value="http://hl7.org/fhir/StructureDefinition/daf-medicationdispense"/>
       </profile>
@@ -2849,32 +2849,32 @@
           <valueCode value="SHALL"/>
         </extension>
         <code value="search-type"/>
-        <documentation value="Allows discovery of existing DAF-MedicationOrder resources using different search criteria"/>
+        <documentation value="Allows discovery of existing DAF-MedicationRequest resources using different search criteria"/>
       </interaction>
       <interaction>
         <extension url="http://hl7.org/fhir/StructureDefinition/conformance-expectation">
           <valueCode value="SHALL"/>
         </extension>
         <code value="read"/>
-        <documentation value="Allows retrieval of a specific DAF-MedicationOrder by id"/>
+        <documentation value="Allows retrieval of a specific DAF-MedicationRequest by id"/>
       </interaction>
       <interaction>
         <extension url="http://hl7.org/fhir/StructureDefinition/conformance-expectation">
           <valueCode value="SHOULD"/>
         </extension>
         <code value="history-instance"/>
-        <documentation value="Allows review of changes to DAF-MedicationOrder instance over time"/>
+        <documentation value="Allows review of changes to DAF-MedicationRequest instance over time"/>
       </interaction>
       <interaction>
         <extension url="http://hl7.org/fhir/StructureDefinition/conformance-expectation">
           <valueCode value="SHOULD"/>
         </extension>
         <code value="vread"/>
-        <documentation value="Allows retrieval of a historical version of a DAF-MedicationOrder instances"/>
+        <documentation value="Allows retrieval of a historical version of a DAF-MedicationRequest instances"/>
       </interaction>
-      <searchInclude value="MedicationOrder.patient"/>
-      <searchInclude value="MedicationOrder.medication"/>
-	  <searchInclude value="MedicationOrder.encounter"/>
+      <searchInclude value="MedicationRequest.patient"/>
+      <searchInclude value="MedicationRequest.medication"/>
+	  <searchInclude value="MedicationRequest.encounter"/>
       <searchParam>
         <extension url="http://hl7.org/fhir/StructureDefinition/conformance-expectation">
           <valueCode value="SHALL"/>

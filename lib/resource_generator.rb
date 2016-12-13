@@ -319,7 +319,7 @@ module Crucible
               end
             end
           end
-        when FHIR::Conformance
+        when FHIR::CapabilityStatement
           resource.kind = 'instance'
           resource.rest.each do |r|
             r.resource.each do |res|
@@ -391,7 +391,7 @@ module Crucible
             resource.abatementAge.unit = 'yr'
             resource.abatementAge.comparator = nil
           end
-        when FHIR::Conformance
+        when FHIR::CapabilityStatement
           resource.fhirVersion = 'STU3'
           resource.format = ['xml','json']
           if resource.kind == 'capability'
@@ -637,7 +637,7 @@ module Crucible
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
-        when FHIR::MedicationOrder
+        when FHIR::MedicationRequest
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }

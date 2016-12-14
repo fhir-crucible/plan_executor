@@ -397,7 +397,7 @@ module Crucible
         end
 
         if input.include? '${'
-          unknown_variables = input.scan(/(\$\{)([A-Za-z0-9]+)(\})/).map{|x|x[1]}
+          unknown_variables = input.scan(/(\$\{)([A-Za-z0-9\_]+)(\})/).map{|x|x[1]}
           message = "Unknown variables: #{unknown_variables.join(', ')}"
           log message
           warning {  assert unknown_variables.empty?, message }

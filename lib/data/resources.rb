@@ -86,15 +86,15 @@ module Crucible
       # ------------------------------ CLAIM TEST TRACK ------------------------------
 
       def simple_claim
-        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-simple.xml'))
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example.xml'))
       end
 
       def average_claim
-        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-average.xml'))
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-oral-average.xml'))
       end
 
-      def preauth_claim
-        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-preauth.xml'))
+      def complex_claim
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-oral-orthoplan.xml'))
       end
 
       # ------------------------------ SCHEDULING TEST TRACK ------------------------------

@@ -319,12 +319,11 @@ module Crucible
               end
             end
           end
-        when FHIR::Conformance
+        when FHIR::CapabilityStatement
           resource.kind = 'instance'
           resource.rest.each do |r|
             r.resource.each do |res|
               res.interaction.each{|i|i.code = ['read', 'vread', 'update', 'delete', 'history-instance', 'history-type', 'create', 'search-type'].sample}
-              res.searchParam.each{|p|p.chain=nil unless p.type=='reference'}
             end
             r.interaction.each{|i|i.code = ['transaction', 'batch', 'search-system', 'history-system'].sample }
           end
@@ -338,9 +337,6 @@ module Crucible
                 sub.service = minimal_coding('http://hl7.org/fhir/ex-USCLS','1205')
               end
             end
-          end
-          resource.missingTeeth.each do |mt|
-            mt.tooth = minimal_coding('http://hl7.org/fhir/ex-fdi','42')
           end
         when FHIR::ClaimResponse
           resource.item.each do |item|
@@ -391,7 +387,7 @@ module Crucible
             resource.abatementAge.unit = 'yr'
             resource.abatementAge.comparator = nil
           end
-        when FHIR::Conformance
+        when FHIR::CapabilityStatement
           resource.fhirVersion = 'STU3'
           resource.format = ['xml','json']
           if resource.kind == 'capability'
@@ -509,7 +505,6 @@ module Crucible
             resource.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
           end
         when FHIR::ExpansionProfile
-          resource.codeSystem.exclude = nil
           resource.designation.exclude = nil
         when FHIR::FamilyMemberHistory
           if resource.ageAge
@@ -551,10 +546,6 @@ module Crucible
             c.valueBoolean = true
             c.valueQuantity = nil
             c.valueRange = nil
-          end
-        when FHIR::GuidanceResponse
-          resource.action.each do |a|
-            a.action = []
           end
         when FHIR::ImagingStudy
           resource.uid = random_oid
@@ -624,9 +615,9 @@ module Crucible
           end
         when FHIR::MedicationAdministration
           date = DateTime.now
-          resource.effectiveTimeDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
-          resource.effectiveTimePeriod = nil
-          if resource.wasNotGiven
+          resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
+          resource.effectivePeriod = nil
+          if resource.notGiven
             resource.reasonGiven = nil
           else
             resource.reasonNotGiven = nil
@@ -637,7 +628,7 @@ module Crucible
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
-        when FHIR::MedicationOrder
+        when FHIR::MedicationRequest
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
@@ -685,7 +676,7 @@ module Crucible
           end
         when FHIR::Provenance
           resource.entity.each do |e|
-            e.agent.each{|a| a.relatedAgent = nil }
+            e.agent.each{|a| a.relatedAgentType = nil }
           end
         when FHIR::Practitioner
           resource.communication.each do |comm|

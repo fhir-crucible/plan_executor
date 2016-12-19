@@ -334,6 +334,32 @@ namespace :crucible do
     end
   end
 
+  desc 'update fixtures from spec'
+  task :update_fixtures, [:publish_folder] do |t, args|
+
+    # open publish folder
+    # open fixtures
+    # go through each folder within fixtures
+    # if file exists in publish folder, replace it
+
+    root = File.expand_path '../..', File.dirname(File.absolute_path(__FILE__))
+    fixtures = File.join(root, 'fixtures')
+    publish = File.join(args.publish_folder)
+
+    files = Dir.glob(File.join(fixtures, '**', '*.xml'))
+    files.each do |file|
+      basename = File.basename(file)
+      updated_file = File.join(publish, basename)
+      if File.exists?(updated_file)
+        puts "Updating Fixture: #{basename}..."
+        FileUtils.copy updated_file, file 
+      else
+        puts "Unable to update fixture: #{basename}"
+      end
+    end
+
+  end
+
   namespace :multiserver do
     desc 'execute'
     task :execute, [:url1, :url2, :test] do |t, args|

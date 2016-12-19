@@ -37,8 +37,8 @@ module Crucible
         @client.destroy(FHIR::Patient, @daf_patient.id) if @daf_patient && !@daf_patient.id.nil?
       end
 
-      # Check Conformance for DAF Profiles
-      test 'DAF00','Check Conformance for DAF Profiles' do
+      # Check CapabilityStatement for DAF Profiles
+      test 'DAF00','Check CapabilityStatement for DAF Profiles' do
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
@@ -61,11 +61,11 @@ module Crucible
         rest_profiles = @conformance.rest.map{|r|r.resource.map{|r|r.try(:profile).try(:reference)}}.flatten.compact
 
         missing_daf_profiles = daf_profiles - root_profiles - rest_profiles
-        assert(missing_daf_profiles.compact.empty?, "The Conformance statement does not declare support for the following DAF profiles: #{missing_daf_profiles}", @conformance.to_xml)
+        assert(missing_daf_profiles.compact.empty?, "The CapabilityStatement statement does not declare support for the following DAF profiles: #{missing_daf_profiles}", @conformance.to_xml)
       end
 
-      # Check Conformance for SMART Security Extensions
-      test 'DAF01','Check Conformance for SMART-on-FHIR Security Extensions' do
+      # Check CapabilityStatement for SMART Security Extensions
+      test 'DAF01','Check CapabilityStatement for SMART-on-FHIR Security Extensions' do
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
@@ -107,12 +107,12 @@ module Crucible
           end
         end # each restful endpoint
 
-        assert(@found_smart_code,'Conformance does not declare the SMART-on-FHIR security service for any REST endpoints.',@conformance.to_xml)
-        assert((found_smart_base && smart_security_extensions.empty?),"Conformance does not declare the SMART-on-FHIR security extensions: #{smart_security_base} #{smart_security_extensions}",@conformance.to_xml)
+        assert(@found_smart_code,'CapabilityStatement does not declare the SMART-on-FHIR security service for any REST endpoints.',@conformance.to_xml)
+        assert((found_smart_base && smart_security_extensions.empty?),"CapabilityStatement does not declare the SMART-on-FHIR security extensions: #{smart_security_base} #{smart_security_extensions}",@conformance.to_xml)
       end
 
-      # Check that Conformance Resource Interactions
-      test 'DAF02','Check Conformance Resource Interactions against DAF Conformance' do
+      # Check that CapabilityStatement Resource Interactions
+      test 'DAF02','Check CapabilityStatement Resource Interactions against DAF CapabilityStatement' do
          metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
@@ -150,8 +150,8 @@ module Crucible
         end
       end
 
-      # Check that Conformance searchParams
-      test 'DAF03','Check Conformance Search Parameters against DAF Conformance' do
+      # Check that CapabilityStatement searchParams
+      test 'DAF03','Check CapabilityStatement Search Parameters against DAF CapabilityStatement' do
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
@@ -202,8 +202,8 @@ module Crucible
         end
       end
 
-      # Check Conformance for $everything on Patient and Encounter
-      test 'DAF04','Check Conformance for $everything on Patient and Encounter' do
+      # Check CapabilityStatement for $everything on Patient and Encounter
+      test 'DAF04','Check CapabilityStatement for $everything on Patient and Encounter' do
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
@@ -231,9 +231,9 @@ module Crucible
         warning{ assert(supports_encounter_everything, "Cannot find Encounter $everything operation. #{message}")}
       end
 
-      # Check Conformance for $validate operation support
+      # Check CapabilityStatement for $validate operation support
       # NOT REQUIRED BY DAF IMPLEMENTATION GUIDE -- WARNING ONLY
-      test 'DAF05','Optional: Check Conformance for $validate Operation Support' do
+      test 'DAF05','Optional: Check CapabilityStatement for $validate Operation Support' do
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"
@@ -254,9 +254,9 @@ module Crucible
         warning{ assert(@supports_validate, message) }
       end
 
-      # Check Conformance for transaction support
+      # Check CapabilityStatement for transaction support
       # NOT REQUIRED BY DAF IMPLEMENTATION GUIDE -- WARNING ONLY
-      test 'DAF06','Optional: Check Conformance for Transaction Support' do
+      test 'DAF06','Optional: Check CapabilityStatement for Transaction Support' do
         metadata {
           links "#{REST_SPEC_LINK}#conformance"
           links "#{BASE_SPEC_LINK}/conformance.html"

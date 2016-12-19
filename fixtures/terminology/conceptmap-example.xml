@@ -11,7 +11,7 @@
         <a href="v3/AddressUse/vs.html">http://hl7.org/fhir/ValueSet/v3-AddressUse</a>
       </p>
       <p>DRAFT (not intended for production usage). Published on Jun 13, 2012 by HL7, Inc (FHIR project team (example): 
-        <a href="http://hl7.org/fhir">http://hl7.org/fhir</a>; ). Creative Commons 0
+        <a href="http://hl7.org/fhir">http://hl7.org/fhir</a>). Creative Commons 0
       </p>
       <div>
         <p>A mapping between the FHIR and HL7 v3 AddressUse Code systems</p>
@@ -79,16 +79,22 @@
   <contact>
     <name value="FHIR project team (example)"/>
     <telecom>
-      <system value="other"/>
+      <system value="url"/>
       <value value="http://hl7.org/fhir"/>
     </telecom>
   </contact>
   <date value="2012-06-13"/>
   <description value="A mapping between the FHIR and HL7 v3 AddressUse Code systems"/>
   <useContext>
-    <text value="for CDA Usage"/>
+    <code>
+      <system value="http://hl7.org/fhir/usage-context-type"/>
+      <code value="venue"/>
+    </code>
+    <valueCodeableConcept>
+      <text value="for CDA Usage"/>
+    </valueCodeableConcept>
   </useContext>
-  <requirements value="To help implementers map from HL7 v3/CDA to FHIR"/>
+  <purpose value="To help implementers map from HL7 v3/CDA to FHIR"/>
   <copyright value="Creative Commons 0"/>
   <sourceReference>
     <reference value="http://hl7.org/fhir/ValueSet/address-use"/>

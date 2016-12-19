@@ -28,26 +28,26 @@ module Crucible
       end
 
       def teardown
-        @client.destroy(FHIR::MedicationOrder, @medication_order_id) unless @medication_order_id.nil?
+        @client.destroy(FHIR::MedicationRequest, @medication_order_id) unless @medication_order_id.nil?
       end
 
       ['JSON','XML'].each do |fmt|
 
         #
-        # Get the MedicationOrder that was just created.
+        # Get the MedicationRequest that was just created.
         #
-        test "C12PATCH_1_(#{fmt})","Get Existing MedicationOrder by #{fmt}" do
+        test "C12PATCH_1_(#{fmt})","Get Existing MedicationRequest by #{fmt}" do
           metadata {
             links "#{REST_SPEC_LINK}#read"
             links "#{BASE_SPEC_LINK}/medicationorder.html"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'
-            requires resource: 'MedicationOrder', methods: ['read']
-            validates resource: 'MedicationOrder', methods: ['read']
+            requires resource: 'MedicationRequest', methods: ['read']
+            validates resource: 'MedicationRequest', methods: ['read']
           }
           
-          reply = @client.read(FHIR::MedicationOrder, @medication_order_id, resource_format(fmt))
+          reply = @client.read(FHIR::MedicationRequest, @medication_order_id, resource_format(fmt))
           assert_response_ok(reply)
-          assert_resource_type(reply, FHIR::MedicationOrder)
+          assert_resource_type(reply, FHIR::MedicationRequest)
           assert_resource_content_type(reply, fmt.downcase)
           warning { 
             assert(!reply.resource.meta.nil?, 'Last Updated and VersionId not present.')
@@ -59,25 +59,25 @@ module Crucible
 
 
         #
-        # Patch the MedicationOrder.
+        # Patch the MedicationRequest.
         #
-        test "C12PATCH_2_(#{fmt})","#{fmt} Patch Existing MedicationOrder" do
+        test "C12PATCH_2_(#{fmt})","#{fmt} Patch Existing MedicationRequest" do
           metadata {
             links "#{REST_SPEC_LINK}#patch"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'
-            requires resource: 'MedicationOrder', methods: ['read']
-            validates resource: 'MedicationOrder', methods: ['read']
+            requires resource: 'MedicationRequest', methods: ['read']
+            validates resource: 'MedicationRequest', methods: ['read']
           }
 
-          patchset = [{ op: "replace", path: "MedicationOrder/status", value: "completed" }]
-          reply = @client.partial_update(FHIR::MedicationOrder, @medication_order_id, patchset, {}, resource_format(fmt))
+          patchset = [{ op: "replace", path: "MedicationRequest/status", value: "completed" }]
+          reply = @client.partial_update(FHIR::MedicationRequest, @medication_order_id, patchset, {}, resource_format(fmt))
 
           assert_response_ok(reply)
           warning { 
-            assert_resource_type(reply, FHIR::MedicationOrder)
+            assert_resource_type(reply, FHIR::MedicationRequest)
             assert_resource_content_type(reply, fmt.downcase)
           }
-          reply = @client.read(FHIR::MedicationOrder, @medication_order_id, resource_format(fmt))
+          reply = @client.read(FHIR::MedicationRequest, @medication_order_id, resource_format(fmt))
           assert_response_ok(reply)
           assert_equal(reply.resource.status, 'completed', 'Status not updated from patch.')
           warning {
@@ -86,29 +86,29 @@ module Crucible
         end
 
         #
-        # Attempt to PATCH the MedicationOrder with an old Version Id.
+        # Attempt to PATCH the MedicationRequest with an old Version Id.
         #
         test "C12PATCH_3_(#{fmt})","#{fmt} Patching Medication Order with old Version Id should result in error" do
           metadata {
             links "#{REST_SPEC_LINK}#patch"
             links 'http://wiki.hl7.org/index.php?title=201605_PATCH_Connectathon_Track_Proposal'
-            requires resource: 'MedicationOrder', methods: ['read']
-            validates resource: 'MedicationOrder', methods: ['read']
+            requires resource: 'MedicationRequest', methods: ['read']
+            validates resource: 'MedicationRequest', methods: ['read']
           }
 
           skip if @previous_version_id.nil?
 
-          patchset = [{ op: "replace", path: "MedicationOrder/status", value: "active" }]
+          patchset = [{ op: "replace", path: "MedicationRequest/status", value: "active" }]
 
           # http://hl7.org/fhir/2016Sep/http.html#2.42.0.2
           # According to the FHIR spec, the If-Match eTag for version id should be weak.
           options = { 'If-Match' => "W/\"#{@previous_version_id}\"" }
 
-          reply = @client.partial_update(FHIR::MedicationOrder, @medication_order_id, patchset, options, resource_format(fmt))
+          reply = @client.partial_update(FHIR::MedicationRequest, @medication_order_id, patchset, options, resource_format(fmt))
 
           assert_response_conflict(reply)
 
-          reply = @client.read(FHIR::MedicationOrder, @medication_order_id, resource_format(fmt))
+          reply = @client.read(FHIR::MedicationRequest, @medication_order_id, resource_format(fmt))
           assert_response_ok(reply)
           assert_equal(reply.resource.status, 'completed', 'Resource should not have been patched because version id was stale.')
 

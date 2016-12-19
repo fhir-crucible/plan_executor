@@ -44,12 +44,7 @@
     <value value="do-300"/>
   </identifier>
   <status value="active"/>
-  <stage>
-    <coding>
-      <system value="http://hl7.org/fhir/request-stage"/>
-      <code value="original-order"/>
-    </coding>
-  </stage>
+  <intent value="original-order"/>
   <code>
     <coding>
       <system value="http://lis.acmelabs.org/codes"/>
@@ -64,13 +59,13 @@
     <reference value="Practitioner/pract-uslab-example1"/>
     <display value="Leonard T Bloodraw"/>
   </requester>
-  <reason>
+  <reasonCode>
     <coding>
       <system value="http://hl7.org/fhir/sid/icd-10-us"/>
       <code value="J18.8"/>
       <display value="Other pneumonia, unspecified organism"/>
     </coding>
-  </reason>
+  </reasonCode>
   <supportingInformation>
     <reference value="Specimen/spec-uslab-example1"/>
     <display value="Blood Specimen"/>

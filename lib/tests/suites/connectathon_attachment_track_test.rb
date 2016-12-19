@@ -79,7 +79,9 @@ module Crucible
           reply = @client.search(FHIR::CommunicationRequest, options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          comm_req = reply.resource.entry.sample.resource
+          comm_req = reply.resource.entry.sample.try(:resource)
+
+          assert comm_req, 'No CommunicationRequest returned from server'
 
           comm = FHIR::Communication.new()
           comm.subject = [comm_req.subject]

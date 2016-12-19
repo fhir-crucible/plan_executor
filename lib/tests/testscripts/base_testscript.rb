@@ -65,6 +65,27 @@ module Crucible
         "TS-#{id}"
       end
 
+      def multiserver
+        @testscript.origin.length >= 2 || @testscript.destination.length >= 2
+      end
+
+      def containsRuleAssertions?
+        has_declared_rule = !@testscript.rule.empty? || !@testscript.ruleset.empty?
+        return true if has_declared_rule
+
+        if @testscript.setup
+          has_setup_rule = @testscript.setup.action.find{ |action| action.assert && (action.assert.rule || action.assert.ruleset) }
+          return true if has_setup_rule
+        end
+
+        has_test_rule = @testscript.test.find do |test|
+          test.action.find{ |action| action.assert && (action.assert.rule || action.assert.ruleset) }
+        end
+        return true if has_test_rule
+
+        false
+      end
+
       def tests
         @testscript.test.map { |test| "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym }
       end
@@ -117,19 +138,6 @@ module Crucible
         end
         result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
         result.warnings = @warnings unless @warnings.empty?
-        result.requires = []
-        result.validates = []
-        unless test.metadata.nil?
-          test.metadata.capability.each do |capability|
-            conf = get_reference(capability.conformance.reference)
-            conf.rest.each do |rest|
-              interactions = rest.resource.map{|resource| { resource: resource.type, methods: resource.interaction.map(&:code)}}
-              result.requires.concat(interactions) if capability.required
-              result.validates.concat(interactions) if capability.fhirValidated
-            end
-          end
-          result.links = test.metadata.capability.map(&:link).flatten.uniq
-        end
         result
       end
 
@@ -177,8 +185,12 @@ module Crucible
 
         case operationCode
         when 'read'
-          if !operation.targetId.nil?
+          if operation.targetId
             @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
+          elsif operation.url
+            @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
+            @last_response.resource = FHIR.from_contents(@last_response.body)
+            @last_response.resource_class = @last_response.resource.class
           else
             resource_type = replace_variables(operation.resource)
             resource_id = replace_variables(operation.params)
@@ -331,13 +343,13 @@ module Crucible
           call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
 
         else
-          raise "Unknown Assertion"
-
+          raise "Unhandled Assertion: #{assertion.to_json}"
         end
 
       end
 
       def call_assertion(method, warned, *params)
+        FHIR.logger.debug "Assertion: #{method}"
         if warned
           warning { self.method(method).call(*params) }
         else
@@ -347,33 +359,48 @@ module Crucible
 
       def replace_variables(input)
         return nil if input.nil?
+        return input unless input.include?('${')
 
         @testscript.variable.each do |var|
-          if !var.headerField.nil?
-            variable_source_response = @response_map[var.sourceId]
-            variable_value = variable_source_response.response[:headers][var.headerField]
-            input.gsub!("${" + var.name + "}", variable_value)
-          elsif !var.path.nil?
+          if input.include? "${#{var.name}}"
+            variable_value = nil
 
-            resource_xml = nil
-            
-            variable_source_response = @response_map[var.sourceId]
-            unless variable_source_response.nil?
-              resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
-            else
-              resource_xml = @fixtures[var.sourceId].to_xml
+            if !var.headerField.nil?
+              variable_source_response = @response_map[var.sourceId]
+              headers = variable_source_response.response[:headers]
+              headers.each do |key,value|
+                variable_value = value if key.downcase == var.headerField.downcase
+              end
+            elsif !var.path.nil?
+              resource_xml = nil
+
+              variable_source_response = @response_map[var.sourceId]
+              unless variable_source_response.nil?
+                resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
+              else
+                resource_xml = @fixtures[var.sourceId].to_xml
+              end
+
+              variable_value = extract_xpath_value(resource_xml, var.path)
             end
 
-            extracted_value = extract_xpath_value(resource_xml, var.path)
+            unless variable_value
+              if var.defaultValue
+                variable_value = var.defaultValue
+              else
+                variable_value = ''
+              end
+            end
 
-            input.gsub!("${" + var.name + "}", extracted_value) unless extracted_value.nil?
-
-          end if input.include? "${" + var.name + "}"
+            input.gsub!("${#{var.name}}", variable_value)
+          end
         end
 
         if input.include? '${'
-          puts "An unknown variable was unable to be replaced: #{input}!"
-          warning {  assert !input.include?('${'), "An unknown variable was unable to be substituted: #{input}" }
+          unknown_variables = input.scan(/(\$\{)([A-Za-z0-9\_]+)(\})/).map{|x|x[1]}
+          message = "Unknown variables: #{unknown_variables.join(', ')}"
+          log message
+          warning {  assert unknown_variables.empty?, message }
         end
 
         input
@@ -403,8 +430,8 @@ module Crucible
 
         # Massage the xpath if it doesn't have fhir: namespace or if doesn't end in @value
         # Also make it look in the entire xml document instead of just starting at the root
-        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?("fhir:") || s.length == 0 then s else "fhir:#{s}" end}.join("/")
-        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? "/@value"
+        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?('fhir:') || s.length == 0 || s.starts_with?('@') then s else "fhir:#{s}" end}.join('/')
+        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? '@value'
         resource_xpath = "//#{resource_xpath}"
 
         resource_doc = Nokogiri::XML(resource_xml)
@@ -425,20 +452,15 @@ module Crucible
         if reference.start_with?('#')
           contained_id = reference[1..-1]
           resource = @testscript.contained.select{|r| r.id == contained_id}.first
+        elsif reference.start_with?('http')
+          raise "Remote references not supported: #{reference}"
         else 
-          root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
-          return nil unless File.exist? "#{root}/xml#{reference}"
-          file = File.open("#{root}/xml#{reference}", "r:UTF-8", &:read)
+          filepath = File.expand_path reference, File.dirname(File.absolute_path(@testscript.url))
+          return nil unless File.exist? filepath
+          file = File.open(filepath, 'r:UTF-8', &:read)
           file.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
           file = preprocess(file) if file.include?('${')
-          if reference.split('.').last == "json"
-            resourceType = JSON.parse(file)["resourceType"]
-            resource = FHIR::Json.from_json(file)
-          else
-            resourceType = Nokogiri::XML(file).children.find{|x| x.class == Nokogiri::XML::Element}.name
-            resource = FHIR::Xml.from_xml(file)
-
-          end
+          resource = FHIR.from_contents(file)
         end
 
         resource

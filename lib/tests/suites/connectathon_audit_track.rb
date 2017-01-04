@@ -223,6 +223,7 @@ module Crucible
         assert_bundle_response(reply)
         found_update_type = false
         reply.resource.entry.each do |entry|
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference), 'Patient entity not found', reply.body)
           assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
           if entry.try(:resource).try(:action) == 'U'
             found_update_type = true
@@ -342,6 +343,7 @@ module Crucible
         assert_bundle_response(reply)
         assert_equal(2, reply.resource.entry.size, 'There should be two Provenance resources for the test Patient currently in the system.', reply.body)
         reply.resource.entry.each do |entry|
+          assert(entry.try(:resource).try(:target).try(:first).try(:reference), 'An incorrect Provenance was returned.', reply.body)
           assert(entry.try(:resource).try(:target).try(:first).try(:reference).include?(@patient2.id), 'An incorrect Provenance was returned.', reply.body)
         end
         @provenance3.id = FHIR::ResourceAddress.pull_out_id('Provenance',reply.resource.entry[0].try(:response).try(:location))
@@ -380,6 +382,7 @@ module Crucible
         assert_bundle_response(reply)
         found_read_type = false
         reply.resource.entry.each do |entry|
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference), 'Patient Entity not found', reply.body)
           assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
           if entry.try(:resource).try(:action) == 'R'
             found_read_type = true

@@ -52,6 +52,7 @@ module Crucible
         }
 
         @conformance = @client.conformance_statement
+        assert(@conformance, 'No capability statement found.')
 
         # Collect the list of DAF profiles
         daf_profiles = @daf_conformance.profile.map{|x|x.reference}
@@ -85,6 +86,7 @@ module Crucible
         @found_smart_code = false
         found_smart_base = false
 
+        assert(@conformance, 'No capability statement found.')
         @conformance.rest.each_with_index do |rest,index|
           service = rest.try(:security).try(:service)
           if !service.nil? && !service.empty?
@@ -125,6 +127,7 @@ module Crucible
           validates resource: 'CapabilityStatement', methods: ['read']
         }
 
+        assert(@conformance, 'No capability statement found.')
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
@@ -164,6 +167,7 @@ module Crucible
           validates resource: 'CapabilityStatement', methods: ['read']
         }
 
+        assert(@conformance, 'No capability statement found.')
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
@@ -216,6 +220,8 @@ module Crucible
           validates resource: 'Conformance', methods: ['read']
           validates resource: 'CapabilityStatement', methods: ['read']
         }
+
+        assert(@conformance, 'No capability statement found.')
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
@@ -246,6 +252,8 @@ module Crucible
           validates resource: 'Conformance', methods: ['read']
           validates resource: 'CapabilityStatement', methods: ['read']
         }
+
+        assert(@conformance, 'No capability statement found.')
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 
@@ -269,6 +277,8 @@ module Crucible
           validates resource: 'Conformance', methods: ['read']
           validates resource: 'CapabilityStatement', methods: ['read']
         }
+
+        assert(@conformance, 'No capability statement found.')
         rest = @conformance.rest.first
         rest = @conformance.rest[@rest_index] if @found_smart_code
 

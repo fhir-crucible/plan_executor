@@ -223,7 +223,7 @@ module Crucible
         assert_bundle_response(reply)
         found_update_type = false
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference), 'Patient entity not found', reply.body)
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference), 'An incorrect AuditEvent was returned.', reply.body)
           assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
           if entry.try(:resource).try(:action) == 'U'
             found_update_type = true
@@ -382,7 +382,7 @@ module Crucible
         assert_bundle_response(reply)
         found_read_type = false
         reply.resource.entry.each do |entry|
-          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference), 'Patient Entity not found', reply.body)
+          assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference), 'An incorrect AuditEvent was returned.', reply.body)
           assert(entry.try(:resource).try(:entity).try(:first).try(:reference).try(:reference).include?(@patient.id), 'An incorrect AuditEvent was returned.', reply.body)
           if entry.try(:resource).try(:action) == 'R'
             found_read_type = true

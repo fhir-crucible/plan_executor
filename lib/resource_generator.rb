@@ -67,7 +67,7 @@ module Crucible
           elsif type == 'date'
             gen = DateTime.now.strftime("%Y-%m-%d")
           elsif type == 'time'
-            gem = DateTime.now.strftime("%T")
+            gen = DateTime.now.strftime("%T")
           elsif type == 'boolean'
             gen = (SecureRandom.random_number(100) % 2 == 0)
           elsif type == 'positiveInt' || type == 'unsignedInt' || type == 'integer'
@@ -274,7 +274,7 @@ module Crucible
           resource.system = 'urn:iso:std:iso:4217'
           resource.code = 'USD'
           resource.unit = nil
-          resource.comparator = nil       
+          resource.comparator = nil 
         when FHIR::Appointment
           resource.reason = minimal_codeableconcept('http://snomed.info/sct','219006') # drinker of alcohol
           resource.participant.each{|p| p.type=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
@@ -386,6 +386,13 @@ module Crucible
             resource.abatementAge.code = 'a'
             resource.abatementAge.unit = 'yr'
             resource.abatementAge.comparator = nil
+          end
+          # Make sure the onsetAge is before the abatementAge. If it's not (and both exist), flip them around
+          if resource.onsetAge && resource.abatementAge
+            if resource.onsetAge.value > resource.abatementAge.value
+              # This is the "Ruby Way" to swap two variables without using a temporary third variable
+              resource.onsetAge, resource.abatementAge = resource.abatementAge, resource.onsetAge
+            end
           end
         when FHIR::CapabilityStatement
           resource.fhirVersion = 'STU3'
@@ -717,6 +724,14 @@ module Crucible
           resource.item.each do |i|
             i.item = nil
             i.answer.each {|q|q.valueBoolean = true if !q.value }
+          end
+        when FHIR::Range
+          # validate that the low/high values in the range are correct (e.g. the low value is not higher than the high value)
+          if resource.low && resource.high
+            if resource.low.value > resource.high.value
+              # This is the "Ruby Way" to swap two variables without using a temporary third variable
+              resource.low.value,resource.high.value = resource.high.value,resource.low.value
+            end
           end
         when FHIR::Signature
           resource.type = [ minimal_coding('urn:iso-astm:E1762-95:2013','1.2.840.10065.1.12.1.18') ]

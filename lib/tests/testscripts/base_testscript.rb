@@ -40,7 +40,6 @@ module Crucible
         @category = {id: 'testscript', title: 'TestScript'}
         @id_map = {}
         @response_map = {}
-        @warnings = []
         @autocreate = []
         @autodelete = []
         @testscript = testscript
@@ -95,7 +94,9 @@ module Crucible
       end
 
       def log(message)
-        puts "#{debug_prefix}#{message}"
+        output = "#{debug_prefix}#{message}"
+        puts output
+        FHIR.logger.info(output)
       end
 
       def define_tests
@@ -115,66 +116,180 @@ module Crucible
         end
       end
 
-      def collect_metadata(methods_only=false)
-        @metadata_only = true
-        result = execute
-        result = result.values.first if methods_only
-        @metadata_only = false
-        result
+      def collect_metadata(_methods_only=nil)
+        metadata = {}
+        metadata['links'] = []
+        metadata['requires'] = nil
+        metadata['validates'] = nil
+
+        if @testscript.metadata
+          @testscript.metadata.link.each do |link|
+            metadata['links'] << link.url
+          end
+          @testscript.metadata.capability.each do |capability|
+            capability.link.each{|url| metadata['links'] << url }
+            metadata['links'] << capability.capabilities.reference if capability.capabilities.reference
+          end
+        end
+        tests.map do |test_symbol|
+          { :test_method => test_symbol }.merge(metadata)
+        end
       end
 
+      private def testreport_template
+        report = FHIR::TestReport.new(
+              {
+                'identifier' => { 'system' => 'http://projectcrucible.org', 'value' => id },
+                'status' => 'complete',
+                'TestScript' => { 'display' => id },
+                'issued' => Time.now.to_s.sub(' ','T').sub(' ','').insert(-3,':'),
+                'participant' => [
+                  {
+                    'type' => 'test-engine',
+                    'uri' => 'http://projectcrucible.org',
+                    'display' => 'plan_executor'
+                  },
+                  {
+                    'type' => 'server',
+                    'uri' => (@client ? @client.full_resource_url({}) : nil )
+                  }
+                ]
+              })
+        report.participant.pop if @client.nil?
+        report
+      end
+
+      # This overrides a method of the same name in the Crucible::Tests::BaseTest base class,
+      # to handle differences in the structure of the FHIR TestReport resource than Crucible's
+      # internal TestResult class.
+      def execute_test_methods
+        @testreport = testreport_template
+        begin
+          @testreport.setup = setup if respond_to? :setup and not @metadata_only
+        rescue AssertionException => e
+          FHIR.logger.error "Setup Error #{id}: #{e.message}"
+          @setup_failed = e
+          @testreport.status = 'error'
+        end
+        prefix = if @metadata_only then 'generating metadata' else 'executing' end
+        methods = tests
+        methods = tests & @tests_subset unless @tests_subset.blank?
+        methods.each do |test_method|
+          @client.requests = [] if @client
+          FHIR.logger.info "[#{title}#{('_' + @resource_class.name.demodulize) if @resource_class}] #{prefix}: #{test_method}..."
+          begin
+            @testreport.test << self.method(test_method).call
+          rescue => e
+            FHIR.logger.error "Fatal Error executing #{id} #{test_method}: #{e.message}"
+            @testreport.status = 'error'
+          end
+        end
+        begin
+          @testreport.teardown = teardown if respond_to? :teardown and not @metadata_only
+        rescue
+        end
+        @testreport
+      end
+
+      # Returns a FHIR::TestReport::Test
       def process_test(test)
-        result = TestResult.new("TS_#{test.id}", test.name, STATUS[:pass], '','')
+        result = FHIR::TestReport::Test.new({
+            'name' => test.id,
+            'description' => test.description,
+            'action' => []
+          })
         @last_response = nil # clear out any responses from previous tests
-        @warnings = [] # clear out any previous warnings
         begin
           test.action.each do |action|
-            perform_action action
-          end unless @setup_failed || @metadata_only
-        rescue AssertionException => e
-          result.update(STATUS[:fail], e.message, e.data)
+            result.action << perform_action(action)
+          end unless @metadata_only
         rescue => e
-          result.update(STATUS[:error], "Fatal Error: #{e.message}", e.backtrace.join("\n"))
+          binding.pry
+          @testreport.status = 'error'
+          FHIR.logger.error "Fatal Error processing TestScript #{test.id} Action: #{e.message}"
         end
-        result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
-        result.warnings = @warnings unless @warnings.empty?
         result
       end
 
-      def setup
-        return if @testscript.setup.blank? && @autocreate.empty?
-        @setup_failed = false
-        begin
-          @autocreate.each do |fixture_id|
-            @last_response = @client.create @fixtures[fixture_id]
-            @id_map[fixture_id] = @last_response.id
-          end unless @client.nil?
-          @testscript.setup.action.each do |action|
-            perform_action action
-          end unless @testscript.setup.blank?
-        rescue AssertionException
-          @setup_failed = true
+      def action_failed?(action)
+        return true if action.nil?
+        if action.operation
+          ['fail','error'].include?(action.operation.result)
+        elsif action.assert
+          ['fail','error'].include?(action.assert.result)
+        else
+          true
         end
       end
 
+      # Returns a FHIR::TestReport::Setup
+      def setup
+        return nil if @testscript.setup.blank? && @autocreate.empty?
+        report_setup = FHIR::TestReport::Setup.new
+        @setup_failed = false
+        # Run any autocreates
+        @autocreate.each do |fixture_id|
+          @last_response = @client.create @fixtures[fixture_id]
+          @id_map[fixture_id] = @last_response.id
+          report_setup.action << FHIR::TestReport::Setup::Action.new({
+              'operation' => {
+                'result' => ( [200,201].include?(@last_response.code) ? 'pass' : 'fail' ),
+                'message' => "Autocreate Fixture #{fixture_id}"
+              }
+            })
+          @setup_failed = true unless [200,201].include?(@last_response.code)
+        end unless @client.nil?
+        # Run setup actions if any
+        @testscript.setup.action.each do |action|
+          report_setup.action << perform_action(action)
+          @setup_failed = true if action_failed?(report_setup.action.last)
+        end unless @testscript.setup.blank?
+        report_setup
+      end
+
+      # Returns a FHIR::TestReport::Teardown
       def teardown
-        return if @testscript.teardown.blank? && @autodelete.empty?
+        return nil if @testscript.teardown.blank? && @autodelete.empty?
+        report_teardown = FHIR::TestReport::Teardown.new
+        # First run teardown as normal
         @testscript.teardown.action.each do |action|
-          execute_operation action.operation unless action.operation.nil?
+          report_teardown.action << perform_action(action)
         end unless @testscript.teardown.blank?
+        # Next autodelete any auto fixtures
         @autodelete.each do |fixture_id|
           @last_response = @client.destroy @fixtures[fixture_id].class, @id_map[fixture_id]
           @id_map.delete(fixture_id)
+          report_teardown.action << FHIR::TestReport::Setup::Action.new({
+              'operation' => {
+                'result' => ( [200,204].include?(@last_response.code) ? 'pass' : 'fail' ),
+                'message' => "Autodelete Fixture #{fixture_id}"
+              }
+            })
         end unless @client.nil?
+        report_teardown
       end
 
+      # Returns a FHIR::TestReport::Setup::Action
+      # containing either a FHIR::TestReport::Setup::Action::Operation
+      #                or a FHIR::TestReport::Setup::Action::Assert
       def perform_action(action)
-        execute_operation action.operation unless action.operation.nil?
-        handle_assertion action.assert unless action.assert.nil?
+        result = FHIR::TestReport::Setup::Action.new
+        if action.operation
+          result.operation = execute_operation(action.operation)
+        elsif action.assert
+          result.assert = handle_assertion(action.assert)
+        end
+        result
       end
 
+      # Returns a FHIR::TestReport::Setup::Action::Operation
       def execute_operation(operation)
-        return if @client.nil?
+        return nil if @client.nil?
+        result = FHIR::TestReport::Setup::Action::Operation.new({
+          'result' => 'pass',
+          'message' => operation.description
+          })
+
         requestHeaders = Hash[(operation.requestHeader || []).map{|u| [u.field, u.value]}] #Client needs upgrade to support
         format = FHIR::Formats::ResourceFormat::RESOURCE_XML
         format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
@@ -197,7 +312,8 @@ module Crucible
             @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
           end
         when 'vread'
-          raise 'vread not implemented'
+          result.result = 'error'
+          result.message = 'vread not implemented'
         when 'search'
           if operation.url.nil?
             params = extract_operation_parameters(operation)
@@ -222,15 +338,18 @@ module Crucible
             target_id = id_from_path(replace_variables(operation.params))
           end
 
-          raise "No target specified for update" if target_id.nil?
+          result.result = 'fail'
+          result.message = "No target specified for update" if target_id.nil?
 
           fixture = @fixtures[operation.sourceId]
           fixture.id = replace_variables(target_id) if fixture.id.nil?
           @last_response = @client.update fixture, replace_variables(target_id), format
         when 'transaction'
-          raise 'transaction not implemented'
+          result.result = 'error'
+          result.message = 'transaction not implemented'
         when 'conformance'
-          raise 'conformance not implemented'
+          result.result = 'error'
+          result.message = 'conformance not implemented'
         when 'delete'
           if operation.targetId.nil?
             params = replace_variables(operation.params)
@@ -240,49 +359,45 @@ module Crucible
             @id_map.delete(operation.targetId)
           end
         when '$expand'
-          raise '$expand not supported'
+          result.result = 'error'
+          result.message = '$expand not supported'
           # @last_response = @client.value_set_expansion( extract_operation_parameters(operation) )
         when '$validate'
-          raise '$validate not supported'
+          result.result = 'error'
+          result.message = '$validate not supported'
           # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
         when '$validate-code'
-          raise 'could not find params for $validate-code' unless operation.params
-
-          params = nil
-          # TODO: need to figure this out          
-          # if operation.params =~ URI::regexp
-          #   params = CGI.parse(URI.parse(operation.params).query)
-          # end
-
-          raise 'could not find any parameters for $validate-code' unless params
-          raise 'could not find system for $validate-code' unless params['system']
-          raise 'could not find code for $validate-code' unless params['code']
-
-          options = {
-            :operation => {
-              :method => 'GET',
-              :parameters => {
-                'code' => { type: 'Code', value: params['code'] },
-                'identifier' => { type: 'Uri', value: params['system'] }
-              }
-            }
-          }
-          @last_response = @client.value_set_code_validation(options)
-
+          result.result = 'error'
+          result.message = '$validate-code not supported'
+          # options = {
+          #   :operation => {
+          #     :method => 'GET',
+          #     :parameters => {
+          #       'code' => { type: 'Code', value: params['code'] },
+          #       'identifier' => { type: 'Uri', value: params['system'] }
+          #     }
+          #   }
+          # }
+          # @last_response = @client.value_set_code_validation(options)
         when 'empty'
-
           if !operation.params.nil? && !operation.resource.nil?
             resource = "FHIR::#{operation.resource}".constantize 
             @last_response = @client.read resource, nil, FORMAT_MAP[operation.accept], nil, params: replace_variables(operation.params)
-          end 
-
+          end
         else
-          raise "Undefined operation for #{@testscript.name}-#{title}: #{operation.type}"
+          result.result = 'error'
+          result.message = "Undefined operation for #{@testscript.name}-#{title}: #{operation.type}"
         end
         handle_response(operation)
+        result
       end
 
+      # Returns a FHIR::TestReport::Setup::Action::Assert
       def handle_assertion(assertion)
+        result = FHIR::TestReport::Setup::Action::Assert.new({
+          'result' => 'pass',
+          'message' => assertion.label || assertion.description
+          })
 
         operator = :equals
         operator = OPERATOR_MAP[assertion.operator] unless assertion.operator.nil?
@@ -290,62 +405,69 @@ module Crucible
         warningOnly = false
         warningOnly = assertion.warningOnly unless assertion.warningOnly.nil?
 
-        case
-        when !assertion.contentType.nil?
-          call_assertion(:assert_resource_content_type, warningOnly, @last_response, assertion.contentType)
+        begin
+          case
+          when !assertion.contentType.nil?
+            call_assertion(:assert_resource_content_type, warningOnly, @last_response, assertion.contentType)
 
-        when !assertion.headerField.nil?
-          call_assertion(:assert_operator, warningOnly, operator, replace_variables(assertion.value), @last_response.response[:headers][assertion.headerField.downcase], "Header field #{assertion.headerField}")
+          when !assertion.headerField.nil?
+            call_assertion(:assert_operator, warningOnly, operator, replace_variables(assertion.value), @last_response.response[:headers][assertion.headerField.downcase], "Header field #{assertion.headerField}")
 
-        when !assertion.minimumId.nil?
-          call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
+          when !assertion.minimumId.nil?
+            call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
 
-        when !assertion.navigationLinks.nil?
-          call_assertion(:assert_navigation_links, warningOnly, @last_response.resource)
+          when !assertion.navigationLinks.nil?
+            call_assertion(:assert_navigation_links, warningOnly, @last_response.resource)
 
-        when !assertion.path.nil?
-          actual_value = nil
+          when !assertion.path.nil?
+            actual_value = nil
 
-          resource_xml = nil
-          if assertion.sourceId.nil?
-            resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+            resource_xml = nil
+            if assertion.sourceId.nil?
+              resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+            else
+              resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
+              resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
+            end
+
+            actual_value = extract_xpath_value(resource_xml, assertion.path)
+
+            expected_value = replace_variables(assertion.value)
+            unless assertion.compareToSourceId.nil?
+              resource_xml = @fixtures[assertion.compareToSourceId].try(:to_xml)
+              resource_xml = @response_map[assertion.compareToSourceId].try(:resource).try(:to_xml) || @response_map[assertion.compareToSourceId].body if resource_xml.nil?
+
+              expected_value = extract_xpath_value(resource_xml, assertion.path)
+            end
+
+            call_assertion(:assert_operator, warningOnly, operator, expected_value, actual_value)
+
+          when !assertion.resource.nil?
+            call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
+
+          when !assertion.responseCode.nil?
+            call_assertion(:assert_operator, warningOnly, operator, assertion.responseCode, @last_response.response[:code], "Response Code #{assertion.responseCode}")
+
+            # call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
+
+          when !assertion.response.nil?
+            call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
+
+          when !assertion.validateProfileId.nil?
+            profile_uri = @testscript.profile.first{|p| p.id = assertion.validateProfileId}.reference
+            reply = @client.validate(@last_response.resource,{profile_uri: profile_uri})
+            call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
+
           else
-            resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
-            resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
+            result.result = 'error'
+            result.message = "Unhandled Assertion: #{assertion.to_json}"
           end
-
-          actual_value = extract_xpath_value(resource_xml, assertion.path)
-
-          expected_value = replace_variables(assertion.value)
-          unless assertion.compareToSourceId.nil?
-            resource_xml = @fixtures[assertion.compareToSourceId].try(:to_xml)
-            resource_xml = @response_map[assertion.compareToSourceId].try(:resource).try(:to_xml) || @response_map[assertion.compareToSourceId].body if resource_xml.nil?
-
-            expected_value = extract_xpath_value(resource_xml, assertion.path)
-          end
-
-          call_assertion(:assert_operator, warningOnly, operator, expected_value, actual_value)
-
-        when !assertion.resource.nil?
-          call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
-
-        when !assertion.responseCode.nil?
-          call_assertion(:assert_operator, warningOnly, operator, assertion.responseCode, @last_response.response[:code], "Response Code #{assertion.responseCode}")
-
-          # call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
-
-        when !assertion.response.nil?
-          call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
-
-        when !assertion.validateProfileId.nil?
-          profile_uri = @testscript.profile.first{|p| p.id = assertion.validateProfileId}.reference
-          reply = @client.validate(@last_response.resource,{profile_uri: profile_uri})
-          call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
-
-        else
-          raise "Unhandled Assertion: #{assertion.to_json}"
+        rescue AssertionException => ae
+          result.result = 'fail'
+          result.detail = ae.message
         end
 
+        result
       end
 
       def call_assertion(method, warned, *params)

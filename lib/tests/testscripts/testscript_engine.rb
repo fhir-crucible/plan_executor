@@ -66,26 +66,30 @@ module Crucible
         return unless @@models.empty?
         # get all specification example TestScripts
         root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
-        spec_files = File.join(root, 'scripts', 'spec', '**/*.xml')
-        Dir.glob(spec_files).each do |f|
+        path = File.join(root, 'scripts', 'spec', '**/*.xml')
+        script_files = Dir.glob(path)
+        # get all the Connectathon TestScripts
+        path = File.join(root, 'scripts', 'connectathon', '**/*.xml')
+        script_files += Dir.glob(path)
+
+        script_files.each do |f|
           begin
             script = FHIR.from_contents( File.read(f) )
-            if script.is_valid?
+            if script.is_a?(FHIR::TestScript) && script.is_valid?
               script.url = f # replace the URL with the local file path so file system references can properly resolve
               @@models << script
-            else
-              FHIR.logger.error "TestScriptEngine.parse_testscripts: Skipping invalid TestScript: #{f}"
+              FHIR.logger.info "TestScriptEngine.parse_testscripts: Loaded #{f}"
+            elsif script.is_a?(FHIR::TestScript)
+              FHIR.logger.error "TestScriptEngine.parse_testscripts: Skipping invalid TestScript #{f}"
+            else # this is a fixture...
+              FHIR.logger.warn "TestScriptEngine.parse_testscripts: Skipping fixture #{f}"
             end
           rescue
-            FHIR.logger.error "TestScriptEngine.parse_testscripts: Exception deserializing TestScript: #{f}"
+            FHIR.logger.error "TestScriptEngine.parse_testscripts: Exception deserializing TestScript #{f}"
           end
         end
-
-        # TODO get all the Connecthathon TestScripts
       end
-
     end
-
   end
 end
 Crucible::Tests::TestScriptEngine.parse_testscripts

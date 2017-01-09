@@ -136,7 +136,7 @@ module Crucible
         end
       end
 
-      private def testreport_template
+      def testreport_template
         report = FHIR::TestReport.new(
               {
                 'identifier' => { 'system' => 'http://projectcrucible.org', 'value' => id },

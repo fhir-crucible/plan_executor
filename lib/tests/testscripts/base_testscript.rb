@@ -597,8 +597,8 @@ module Crucible
           if @preprocessed_vars.key?(match[0])
             output.sub!("${#{match[0]}}", @preprocessed_vars[match[0]])
           else
-            code_matches = /^([a-zA-Z]+)(\d+)$/.match(match[0])
-            continue unless code_matches.size == 3 
+            code_matches = /^(C|c|D|d|CD|cd)(\d+)$/.match(match[0])
+            next unless code_matches && code_matches.size == 3
             mock_data = generate_mock_data(code_matches[1], code_matches[2].to_i)
             output.sub!("${#{match[0]}}", mock_data)
             @preprocessed_vars[match[0]] = mock_data

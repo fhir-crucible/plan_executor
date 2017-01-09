@@ -167,9 +167,14 @@ module Crucible
         begin
           @testreport.setup = setup if respond_to? :setup and not @metadata_only
         rescue AssertionException => e
-          FHIR.logger.error "Setup Error #{id}: #{e.message}"
+          FHIR.logger.error "Setup Error #{id}: #{e.message}\n#{e.backtrace}"
           @setup_failed = e
           @testreport.status = 'error'
+          if @testreport.setup.action.last.operation
+            @testreport.setup.action.last.operation.message = "#{e.message}\n#{e.backtrace}"
+          elsif @testreport.setup.action.last.assert
+            @testreport.setup.action.last.assert.message = "#{e.message}\n#{e.backtrace}"
+          end
         end
         prefix = if @metadata_only then 'generating metadata' else 'executing' end
         methods = tests
@@ -180,8 +185,13 @@ module Crucible
           begin
             @testreport.test << self.method(test_method).call
           rescue => e
-            FHIR.logger.error "Fatal Error executing #{id} #{test_method}: #{e.message}"
+            FHIR.logger.error "Fatal Error executing #{id} #{test_method}: #{e.message}\n#{e.backtrace}"
             @testreport.status = 'error'
+            if @testreport.test.last.action.last.operation
+              @testreport.test.last.action.last.operation.message = "#{e.message}\n#{e.backtrace}"
+            elsif @testreport.test.last.action.last.assert
+              @testreport.test.last.action.last.assert.message = "#{e.message}\n#{e.backtrace}"
+            end
           end
         end
         begin
@@ -204,9 +214,8 @@ module Crucible
             result.action << perform_action(action)
           end unless @metadata_only
         rescue => e
-          binding.pry
           @testreport.status = 'error'
-          FHIR.logger.error "Fatal Error processing TestScript #{test.id} Action: #{e.message}"
+          FHIR.logger.error "Fatal Error processing TestScript #{test.id} Action: #{e.message}\n#{e.backtrace}"
         end
         result
       end
@@ -386,7 +395,8 @@ module Crucible
           end
         else
           result.result = 'error'
-          result.message = "Undefined operation for #{@testscript.name}-#{title}: #{operation.type}"
+          result.message = "Undefined operation for #{@testscript.name}-#{title}: #{operation.type.to_json}"
+          FHIR.logger.error(result.message)
         end
         handle_response(operation)
         result
@@ -422,22 +432,22 @@ module Crucible
           when !assertion.path.nil?
             actual_value = nil
 
-            resource_xml = nil
+            resource = nil
             if assertion.sourceId.nil?
-              resource_xml = @last_response.try(:resource).try(:to_xml) || @last_response.body
+              resource = @last_response.try(:resource) || FHIR.from_contents(@last_response.body)
             else
-              resource_xml = @fixtures[assertion.sourceId].try(:to_xml)
-              resource_xml = @response_map[assertion.sourceId].try(:resource).try(:to_xml) || @response_map[assertion.soureId].body if resource_xml.nil?
+              resource = @fixtures[assertion.sourceId]
+              resource = @response_map[assertion.sourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.soureId].body) if resource.nil?
             end
 
-            actual_value = extract_xpath_value(resource_xml, assertion.path)
+            actual_value = extract_value_by_path(resource, assertion.path)
 
             expected_value = replace_variables(assertion.value)
             unless assertion.compareToSourceId.nil?
-              resource_xml = @fixtures[assertion.compareToSourceId].try(:to_xml)
-              resource_xml = @response_map[assertion.compareToSourceId].try(:resource).try(:to_xml) || @response_map[assertion.compareToSourceId].body if resource_xml.nil?
+              resource = @fixtures[assertion.compareToSourceId]
+              resource = @response_map[assertion.compareToSourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.compareToSourceId].body) if resource.nil?
 
-              expected_value = extract_xpath_value(resource_xml, assertion.path)
+              expected_value = extract_value_by_path(resource, assertion.path)
             end
 
             call_assertion(:assert_operator, warningOnly, operator, expected_value, actual_value)
@@ -464,7 +474,10 @@ module Crucible
           end
         rescue AssertionException => ae
           result.result = 'fail'
-          result.detail = ae.message
+          result.message = ae.message
+        rescue => e
+          result.result = 'error'
+          result.message = "#{e.message}\n#{e.backtrace}"
         end
 
         result
@@ -494,16 +507,16 @@ module Crucible
                 variable_value = value if key.downcase == var.headerField.downcase
               end
             elsif !var.path.nil?
-              resource_xml = nil
 
+              resource = nil
               variable_source_response = @response_map[var.sourceId]
               unless variable_source_response.nil?
-                resource_xml = variable_source_response.try(:resource).try(:to_xml) || variable_source_response.body
+                resource = variable_source_response.try(:resource) || FHIR.from_contents(variable_source_response.body)
               else
-                resource_xml = @fixtures[var.sourceId].to_xml
+                resource = @fixtures[var.sourceId]
               end
 
-              variable_value = extract_xpath_value(resource_xml, var.path)
+              variable_value = extract_value_by_path(resource, var.path)
             end
 
             unless variable_value
@@ -548,17 +561,28 @@ module Crucible
         end
       end
 
-      def extract_xpath_value(resource_xml, resource_xpath)
+      def extract_value_by_path(resource, path)
+        result = nil
+        begin
+          # First, try xpath
+          result = extract_xpath_value(resource.to_xml, path)
+        rescue
+          # If xpath fails, see if JSON path will work...
+          result = JsonPath.new(path).first(resource.to_json)
+        end
+        result
+      end
 
+      def extract_xpath_value(resource_xml, resource_xpath)
         # Massage the xpath if it doesn't have fhir: namespace or if doesn't end in @value
         # Also make it look in the entire xml document instead of just starting at the root
-        resource_xpath = resource_xpath.split("/").map{|s| if s.starts_with?('fhir:') || s.length == 0 || s.starts_with?('@') then s else "fhir:#{s}" end}.join('/')
-        resource_xpath = "#{resource_xpath}/@value" unless resource_xpath.ends_with? '@value'
-        resource_xpath = "//#{resource_xpath}"
+        xpath = resource_xpath.split("/").map{|s| if s.starts_with?('fhir:') || s.length == 0 || s.starts_with?('@') then s else "fhir:#{s}" end}.join('/')
+        xpath = "#{xpath}/@value" unless xpath.ends_with? '@value'
+        xpath = "//#{xpath}"
 
         resource_doc = Nokogiri::XML(resource_xml)
         resource_doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
-        resource_element = resource_doc.xpath(resource_xpath)
+        resource_element = resource_doc.xpath(xpath)
 
         # This doesn't work on warningOnly; consider putting back in place
         # raise AssertionException.new("[#{resource_xpath}] resolved to multiple values instead of a single value", resource_element.to_s) if resource_element.length>1

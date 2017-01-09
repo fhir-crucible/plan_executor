@@ -10,6 +10,7 @@ require 'fhir_client'
 require 'nokogiri/diff'
 require 'active_support/inflector'
 require 'active_support/core_ext'
+require 'jsonpath'
 
 require_relative File.join('.','executor.rb')
 require_relative File.join('.','test_result.rb')

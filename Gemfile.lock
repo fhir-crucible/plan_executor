@@ -16,10 +16,11 @@ GIT
 PATH
   remote: .
   specs:
-    plan_executor (1.0.0)
+    plan_executor (1.8.0)
       ansi
       fhir_client
       fhir_models
+      jsonpath
       method_source
       nokogiri
       nokogiri-diff
@@ -81,6 +82,8 @@ GEM
       domain_name (~> 0.5)
     i18n (0.7.0)
     json (1.8.3)
+    jsonpath (0.5.8)
+      multi_json
     jwt (1.5.6)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)

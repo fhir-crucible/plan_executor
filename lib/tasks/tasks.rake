@@ -164,7 +164,7 @@ namespace :crucible do
       suite = convert_testreport_to_testresults(suite) if suite.is_a?(FHIR::TestReport)
       suite.each do |test|
         puts write_result(test['status'], test[:test_method], test['message'])
-        if test['status'].upcase=='ERROR'
+        if test['status'].upcase=='ERROR' && test['data']
           puts " "*12 + "-"*40
           puts " "*12 + "#{test['data'].gsub("\n","\n"+" "*12)}"
           puts " "*12 + "-"*40
@@ -178,9 +178,6 @@ namespace :crucible do
           puts (test['validates'].map { |w| "#{(' '*10)}Validates: #{w[:resource]}: #{w[:methods]}" }).join("\n") if test['validates']
           # data
           puts (' '*10) + test['data'] if test['data']
-        else
-
-
         end
       end
     end
@@ -189,15 +186,42 @@ namespace :crucible do
 
   def convert_testreport_to_testresults(testreport)
     results = []
+
+    if testreport.setup
+      statuses = Hash.new(0)
+      message = nil
+      testreport.setup.action.each do |action|
+        if action.operation
+          statuses[action.operation.result] += 1
+          message = action.operation.message if ['fail','error','skip'].include?(action.operation.result) && message.nil? && action.operation.message
+        elsif action.assert
+          statuses[action.assert.result] += 1
+          message = action.assert.message if ['fail','error','skip'].include?(action.assert.result) && message.nil? && action.assert.message
+        end
+      end
+      if statuses['error'] > 0
+        status = 'error'
+      elsif statuses['fail'] > 0
+        status = 'fail'
+      elsif statuses['skip'] > 0
+        status = 'skip'
+      else
+        status = 'pass'
+      end
+      results << Crucible::Tests::TestResult.new('SETUP', 'Setup for TestScript', status, message, nil).to_hash
+      results.last[:test_method] = 'SETUP'
+    end
+
     testreport.test.each do |test|
       statuses = Hash.new(0)
       message = nil
       test.action.each do |action|
         if action.operation
           statuses[action.operation.result] += 1
+          message = action.operation.message if ['fail','error','skip'].include?(action.operation.result) && message.nil? && action.operation.message
         elsif action.assert
           statuses[action.assert.result] += 1
-          message = action.assert.detail if message.nil? && action.assert.detail
+          message = action.assert.message if ['fail','error','skip'].include?(action.assert.result) && message.nil? && action.assert.message
         end
       end
       if statuses['error'] > 0

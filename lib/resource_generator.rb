@@ -67,7 +67,7 @@ module Crucible
           elsif type == 'date'
             gen = DateTime.now.strftime("%Y-%m-%d")
           elsif type == 'time'
-            gem = DateTime.now.strftime("%T")
+            gen = DateTime.now.strftime("%T")
           elsif type == 'boolean'
             gen = (SecureRandom.random_number(100) % 2 == 0)
           elsif type == 'positiveInt' || type == 'unsignedInt' || type == 'integer'

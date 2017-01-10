@@ -19,52 +19,52 @@ module Crucible
         case operator
         when :equals
           unless assertion_negated( expected == actual )
-            message += " Expected: #{expected}, but found: #{actual}."
+            message += " Expected #{expected} but found #{actual}."
             raise AssertionException.new message, data
           end
         when :notEquals
           unless assertion_negated( expected != actual )
-            message += " Expected not: #{expected}, but found: #{actual}."
+            message += " Did not expect #{expected} but found #{actual}."
             raise AssertionException.new message, data
           end
         when :in
           unless assertion_negated(expected.split(",").include?(actual))
-            message += " Expected #{actual} to be in #{expected}."
+            message += " Expected #{expected} but found #{actual}."
             raise AssertionException.new message, data
           end
         when :notIn
           unless assertion_negated(!expected.split(",").include?(actual))
-            message += " Expected #{actual} to not be in: #{expected}."
+            message += " Did not expect #{expected} but found #{actual}."
             raise AssertionException.new message, data
           end
         when :greaterThan
           unless assertion_negated(!actual.nil? && !expected.nil? && actual > expected)
-            message += " Expected #{actual} to be greater than #{expected}."
+            message += " Expected greater than #{expected} but found #{actual}."
             raise AssertionException.new message, data
           end
         when :lessThan
           unless assertion_negated(!actual.nil? && !expected.nil? && actual < expected)
-            message += " Expected #{actual} to be greater than #{expected}."
+            message += " Expected less than #{expected} but found #{actual}."
             raise AssertionException.new message, data
           end
         when :empty
           unless assertion_negated(actual.nil? || actual.length == 0)
-            message += " Expected #{actual} to be empty."
+            message += " Expected empty but found #{actual}."
             raise AssertionException.new message, data
           end
         when :notEmpty
           unless assertion_negated(!actual.nil? && actual.length > 0)
-            message += " Expected #{actual} to not be empty."
+            message += " Expected not empty but found #{actual}."
             raise AssertionException.new message, data
           end
         when :contains
-          unless assertion_negated(actual.include?(expected))
-            message += " Expected #{actual} to contain #{actual}."
+          unless assertion_negated(actual && actual.include?(expected))
+            message += " Expected #{actual} to contain #{expected}."
             raise AssertionException.new message, data
           end
         when :notContains
-          unless assertion_negated(!actual.include?(expected))
-            message += " Expected #{actual} to not contain #{actual}."
+          unless assertion_negated(actual.nil? || !actual.include?(expected))
+            message += " Expected #{actual} to not contain #{expected}."
             raise AssertionException.new message, data
           end
         else
@@ -163,9 +163,8 @@ module Crucible
         response_content_type = header[0, header.index(';')] if !header.index(';').nil?
 
         unless assertion_negated( "application/fhir+#{content_type}" == response_content_type )
-          raise AssertionException.new "Expected a #{content_type} content-type", response_content_type
+          raise AssertionException.new "Expected content-type application/fhir+#{content_type} but found #{response_content_type}", response_content_type
         end
-
       end
 
       # Based on MIME Types defined in

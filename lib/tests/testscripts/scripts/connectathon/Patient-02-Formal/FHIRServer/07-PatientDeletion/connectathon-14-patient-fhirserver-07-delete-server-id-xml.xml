@@ -277,7 +277,7 @@
 			<assert>
 				<description value="Confirm that no entries exist in the Bundle"/>
 				<direction value="response"/>
-				<expression value="where(entry).empty()"/>
+				<expression value="entry.empty()"/>
 			</assert>
 		</action>
 	</test>

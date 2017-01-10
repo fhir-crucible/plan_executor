@@ -140,7 +140,7 @@ module Crucible
           validates resource: "Patient", methods: ["search"]
         }
         skip unless @read_entire_feed
-        search_string = @patient.name[0].family[0][0..2]
+        search_string = @patient.name[0].family[0..2]
         search_regex = Regexp.new(search_string, Regexp::IGNORECASE)
         # how many patients in the bundle have matching names?
         expected = 0
@@ -150,10 +150,8 @@ module Crucible
           if !patient.nil? && !patient.name.nil?
             patient.name.each do |name|
               if !name.family.nil?
-                name.family.each do |family|
-                  if !(family =~ search_regex).nil?
-                    isMatch = true
-                  end
+                if !(name.family =~ search_regex).nil?
+                  isMatch = true
                 end
               end
             end
@@ -417,7 +415,7 @@ module Crucible
         }
         skip unless @read_entire_feed
         # pick some search parameters... we previously created
-        patient_name = @patient.name[0].family[0]
+        patient_name = @patient.name[0].family
 
         # next, we're going execute a series of searches for conditions referencing the patient
         options = {

@@ -208,10 +208,16 @@ module Crucible
             'description' => test.description,
             'action' => []
           })
+        @current_test = test
         @last_response = nil # clear out any responses from previous tests
+        @test_failed = false
         begin
           test.action.each do |action|
-            result.action << perform_action(action)
+            if !@test_failed
+              @current_action = action
+              result.action << perform_action(action)
+              @test_failed = true if action_failed?(result.action.last)
+            end
           end unless @metadata_only
         rescue => e
           @testreport.status = 'error'
@@ -235,23 +241,30 @@ module Crucible
       def setup
         return nil if @testscript.setup.blank? && @autocreate.empty?
         report_setup = FHIR::TestReport::Setup.new
+        @current_test = :setup
         @setup_failed = false
         # Run any autocreates
         @autocreate.each do |fixture_id|
-          @last_response = @client.create @fixtures[fixture_id]
-          @id_map[fixture_id] = @last_response.id
-          report_setup.action << FHIR::TestReport::Setup::Action.new({
-              'operation' => {
-                'result' => ( [200,201].include?(@last_response.code) ? 'pass' : 'fail' ),
-                'message' => "Autocreate Fixture #{fixture_id}"
-              }
-            })
-          @setup_failed = true unless [200,201].include?(@last_response.code)
+          if !@setup_failed
+            @current_action = "Autocreate Fixture #{fixture_id}"
+            @last_response = @client.create @fixtures[fixture_id]
+            @id_map[fixture_id] = @last_response.id
+            report_setup.action << FHIR::TestReport::Setup::Action.new({
+                'operation' => {
+                  'result' => ( [200,201].include?(@last_response.code) ? 'pass' : 'fail' ),
+                  'message' => @current_action
+                }
+              })
+            @setup_failed = true unless [200,201].include?(@last_response.code)
+          end
         end unless @client.nil?
         # Run setup actions if any
         @testscript.setup.action.each do |action|
-          report_setup.action << perform_action(action)
-          @setup_failed = true if action_failed?(report_setup.action.last)
+          if !@setup_failed
+            @current_action = action
+            report_setup.action << perform_action(action) 
+            @setup_failed = true if action_failed?(report_setup.action.last)
+          end
         end unless @testscript.setup.blank?
         report_setup
       end
@@ -310,7 +323,7 @@ module Crucible
         case operationCode
         when 'read'
           if operation.targetId
-            @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId]
+            @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId], format
           elsif operation.url
             @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
             @last_response.resource = FHIR.from_contents(@last_response.body)
@@ -318,11 +331,18 @@ module Crucible
           else
             resource_type = replace_variables(operation.resource)
             resource_id = replace_variables(operation.params)
-            @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id)
+            @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id), format
           end
         when 'vread'
-          result.result = 'error'
-          result.message = 'vread not implemented'
+          if operation.url
+            @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
+            @last_response.resource = FHIR.from_contents(@last_response.body)
+            @last_response.resource_class = @last_response.resource.class
+          else
+            resource_type = replace_variables(operation.resource)
+            resource_id = replace_variables(operation.params)
+            @last_response = @client.read "FHIR::#{resource_type}".constantize, resource_id, format
+          end
         when 'search'
           if operation.url.nil?
             params = extract_operation_parameters(operation)
@@ -338,7 +358,7 @@ module Crucible
         when 'create'
           @last_response = @client.base_create(@fixtures[operation.sourceId], requestHeaders, format)
           @id_map[operation.sourceId] = @last_response.id
-        when 'update'
+        when 'update','updateCreate'
           target_id = nil
           
           if !operation.targetId.nil? 
@@ -346,9 +366,6 @@ module Crucible
           elsif !operation.params.nil?
             target_id = id_from_path(replace_variables(operation.params))
           end
-
-          result.result = 'fail'
-          result.message = "No target specified for update" if target_id.nil?
 
           fixture = @fixtures[operation.sourceId]
           fixture.id = replace_variables(target_id) if fixture.id.nil?
@@ -395,7 +412,7 @@ module Crucible
           end
         else
           result.result = 'error'
-          result.message = "Undefined operation for #{@testscript.name}-#{title}: #{operation.type.to_json}"
+          result.message = "Undefined operation #{operation.type.to_json}"
           FHIR.logger.error(result.message)
         end
         handle_response(operation)
@@ -418,62 +435,112 @@ module Crucible
         begin
           case
           when !assertion.contentType.nil?
-            call_assertion(:assert_resource_content_type, warningOnly, @last_response, assertion.contentType)
+            call_assertion(:assert_resource_content_type, @last_response, assertion.contentType)
 
           when !assertion.headerField.nil?
-            call_assertion(:assert_operator, warningOnly, operator, replace_variables(assertion.value), @last_response.response[:headers][assertion.headerField.downcase], "Header field #{assertion.headerField}")
-
+            if assertion.direction && assertion.direction=='request'
+              header_value = @last_response.request[:headers][assertion.headerField]
+              msg_prefix = 'Request'
+            else
+              header_value = @last_response.response[:headers][assertion.headerField.downcase]
+              msg_prefix = 'Response'
+            end
+            call_assertion(:assert_operator, operator, replace_variables(assertion.value), header_value, "#{msg_prefix} Header field #{assertion.headerField}")
           when !assertion.minimumId.nil?
-            call_assertion(:assert_minimum, warningOnly, @last_response, @fixtures[assertion.minimumId])
+            call_assertion(:assert_minimum, @last_response, @fixtures[assertion.minimumId])
 
           when !assertion.navigationLinks.nil?
-            call_assertion(:assert_navigation_links, warningOnly, @last_response.resource)
+            call_assertion(:assert_navigation_links, @last_response.resource)
 
           when !assertion.path.nil?
             actual_value = nil
-
             resource = nil
             if assertion.sourceId.nil?
               resource = @last_response.try(:resource) || FHIR.from_contents(@last_response.body)
             else
               resource = @fixtures[assertion.sourceId]
-              resource = @response_map[assertion.sourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.soureId].body) if resource.nil?
+              resource = @response_map[assertion.sourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.sourceId].body) if resource.nil?
             end
-
             actual_value = extract_value_by_path(resource, assertion.path)
 
             expected_value = replace_variables(assertion.value)
             unless assertion.compareToSourceId.nil?
               resource = @fixtures[assertion.compareToSourceId]
               resource = @response_map[assertion.compareToSourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.compareToSourceId].body) if resource.nil?
-
               expected_value = extract_value_by_path(resource, assertion.path)
             end
 
-            call_assertion(:assert_operator, warningOnly, operator, expected_value, actual_value)
+            call_assertion(:assert_operator, operator, expected_value, actual_value)
+          when !assertion.compareToSourcePath.nil?
+            actual_value = nil
+            resource = nil
+            if assertion.sourceId
+              resource = @fixtures[assertion.sourceId]
+              resource = @response_map[assertion.sourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.sourceId].body) if resource.nil?
+            else
+              raise AssertionException.new("compareToSourcePath requires sourceId: #{assertion.to_json}")
+            end
+            actual_value = extract_value_by_path(resource, assertion.compareToSourcePath)
 
+            expected_value = replace_variables(assertion.value)
+            unless assertion.compareToSourceId.nil?
+              resource = @fixtures[assertion.compareToSourceId]
+              resource = @response_map[assertion.compareToSourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.compareToSourceId].body) if resource.nil?
+              expected_value = extract_value_by_path(resource, assertion.compareToSourcePath)
+            end
+
+            call_assertion(:assert_operator, operator, expected_value, actual_value)
           when !assertion.resource.nil?
-            call_assertion(:assert_resource_type, warningOnly, @last_response, "FHIR::#{assertion.resource}".constantize)
+            call_assertion(:assert_resource_type, @last_response, "FHIR::#{assertion.resource}".constantize)
 
           when !assertion.responseCode.nil?
-            call_assertion(:assert_operator, warningOnly, operator, assertion.responseCode, @last_response.response[:code], "Response Code #{assertion.responseCode}")
-
-            # call_assertion(:assert_response_code, warningOnly, @last_response, assertion.responseCode)
+            call_assertion(:assert_operator, operator, assertion.responseCode, @last_response.response[:code].to_s)
 
           when !assertion.response.nil?
-            call_assertion(:assert_response_code, warningOnly, @last_response, CODE_MAP[assertion.response])
+            call_assertion(:assert_response_code, @last_response, CODE_MAP[assertion.response])
 
           when !assertion.validateProfileId.nil?
             profile_uri = @testscript.profile.first{|p| p.id = assertion.validateProfileId}.reference
             reply = @client.validate(@last_response.resource,{profile_uri: profile_uri})
-            call_assertion(:assert_valid_profile, warningOnly, reply.response, @last_response.resource.class)
+            call_assertion(:assert_valid_profile, reply.response, @last_response.resource.class)
 
+          when !assertion.expression.nil?
+            resource = nil
+            if assertion.sourceId.nil?
+              resource = @last_response.try(:resource) || FHIR.from_contents(@last_response.body)
+            else
+              resource = @fixtures[assertion.sourceId]
+              resource = @response_map[assertion.sourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.sourceId].body) if resource.nil?
+            end
+            begin
+              unless FluentPath.evaluate(assertion.expression, resource.to_hash)
+                raise AssertionException.new("Expression did not evaluate to true: #{assertion.expression}", assertion.expression)
+              end
+            rescue => fpe
+              raise "Invalid Expression: #{assertion.expression}"
+            end
+          when !assertion.compareToSourceExpression.nil?
+            resource = nil
+            if assertion.sourceId
+              resource = @fixtures[assertion.sourceId]
+              resource = @response_map[assertion.sourceId].try(:resource) || FHIR.from_contents(@response_map[assertion.sourceId].body) if resource.nil?
+            else
+              raise AssertionException.new("compareToSourceExpression requires sourceId: #{assertion.to_json}")
+            end
+            begin
+              unless FluentPath.evaluate(assertion.compareToSourceExpression, resource.to_hash)
+                raise AssertionException.new("Expression did not evaluate to true: #{assertion.compareToSourceExpression}", assertion.compareToSourceExpression)
+              end
+            rescue => fpe
+              raise "Invalid Expression: #{assertion.compareToSourceExpression}"
+            end
           else
             result.result = 'error'
             result.message = "Unhandled Assertion: #{assertion.to_json}"
           end
         rescue AssertionException => ae
           result.result = 'fail'
+          result.result = 'warning' if warningOnly
           result.message = ae.message
         rescue => e
           result.result = 'error'
@@ -483,13 +550,9 @@ module Crucible
         result
       end
 
-      def call_assertion(method, warned, *params)
+      def call_assertion(method, *params)
         FHIR.logger.debug "Assertion: #{method}"
-        if warned
-          warning { self.method(method).call(*params) }
-        else
-          self.method(method).call(*params)
-        end
+        self.method(method).call(*params)
       end
 
       def replace_variables(input)

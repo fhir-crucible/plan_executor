@@ -203,9 +203,9 @@ module Crucible
       def self.minimal_humanname(name='Name')
         hn = FHIR::HumanName.new
         hn.use = 'official'
-        hn.family = [ 'Crucible' ]
+        hn.family = 'Crucible'
         hn.given = [ name ]
-        hn.text = "#{hn.given[0]} #{hn.family[0]}"
+        hn.text = "#{hn.given[0]} #{hn.family}"
         hn
       end
 

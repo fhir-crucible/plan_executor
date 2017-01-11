@@ -62,6 +62,31 @@ namespace :crucible do
     puts "Execute All completed in #{b.real} seconds."
   end
 
+  desc 'execute testscript and get testreport'
+  task :testreport, [:url, :test, :filename] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
+    require 'benchmark'
+    b = Benchmark.measure {
+      client = FHIR::Client.new(args.url)
+      options = client.get_oauth2_metadata_from_conformance
+      set_client_secrets(client,options) unless options.empty?
+      engine = Crucible::Tests::TestScriptEngine.new(client)
+      script = engine.find_test(args.test)
+      if script.nil?
+        puts "Unable to find TestScript #{args.test}"
+      else
+        results = script.execute
+        if args.filename
+          f = File.open(args.filename,'w:UTF-8')
+          f.write(results.values.first.to_json)
+          f.close
+        end
+        puts results.values.first.to_json
+      end
+    }
+    puts "TestReport completed in #{b.real} seconds."
+  end
+
   desc 'execute'
   task :execute, [:url, :test, :resource] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
@@ -76,10 +101,10 @@ namespace :crucible do
   end
 
   desc 'metadata'
-  task :metadata, [:url, :test] do |t, args|
+  task :metadata, [:test] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
-    b = Benchmark.measure { collect_metadata(FHIR::Client.new(args.url), args.test) }
+    b = Benchmark.measure { puts JSON.pretty_unparse(Crucible::Tests::Executor.new(nil).extract_metadata_from_test(args.test)) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
   end
 
@@ -131,17 +156,15 @@ namespace :crucible do
     output_results executor.execute(executor.find_test(key))
   end
 
-  def collect_metadata(client, test)
-    output_results Crucible::Tests::Executor.new(client).metadata(test), true
-  end
-
   def output_results(results, metadata_only=false)
     require 'ansi'
     results.keys.each do |suite_key|
       puts suite_key
-      results[suite_key].each do |test|
+      suite = results[suite_key]
+      suite = convert_testreport_to_testresults(suite) if suite.is_a?(FHIR::TestReport)
+      suite.each do |test|
         puts write_result(test['status'], test[:test_method], test['message'])
-        if test['status'].upcase=='ERROR'
+        if test['status'].upcase=='ERROR' && test['data']
           puts " "*12 + "-"*40
           puts " "*12 + "#{test['data'].gsub("\n","\n"+" "*12)}"
           puts " "*12 + "-"*40
@@ -157,6 +180,61 @@ namespace :crucible do
           puts (' '*10) + test['data'] if test['data']
         end
       end
+    end
+    results
+  end
+
+  def convert_testreport_to_testresults(testreport)
+    results = []
+
+    if testreport.setup
+      statuses = Hash.new(0)
+      message = nil
+      testreport.setup.action.each do |action|
+        if action.operation
+          statuses[action.operation.result] += 1
+          message = action.operation.message if ['fail','error','skip'].include?(action.operation.result) && message.nil? && action.operation.message
+        elsif action.assert
+          statuses[action.assert.result] += 1
+          message = action.assert.message if ['fail','error','skip'].include?(action.assert.result) && message.nil? && action.assert.message
+        end
+      end
+      if statuses['error'] > 0
+        status = 'error'
+      elsif statuses['fail'] > 0
+        status = 'fail'
+      elsif statuses['skip'] > 0
+        status = 'skip'
+      else
+        status = 'pass'
+      end
+      results << Crucible::Tests::TestResult.new('SETUP', 'Setup for TestScript', status, message, nil).to_hash
+      results.last[:test_method] = 'SETUP'
+    end
+
+    testreport.test.each do |test|
+      statuses = Hash.new(0)
+      message = nil
+      test.action.each do |action|
+        if action.operation
+          statuses[action.operation.result] += 1
+          message = action.operation.message if ['fail','error','skip'].include?(action.operation.result) && message.nil? && action.operation.message
+        elsif action.assert
+          statuses[action.assert.result] += 1
+          message = action.assert.message if ['fail','error','skip'].include?(action.assert.result) && message.nil? && action.assert.message
+        end
+      end
+      if statuses['error'] > 0
+        status = 'error'
+      elsif statuses['fail'] > 0
+        status = 'fail'
+      elsif statuses['skip'] > 0
+        status = 'skip'
+      else
+        status = 'pass'
+      end
+      results << Crucible::Tests::TestResult.new(test.name, test.description, status, message, nil).to_hash
+      results.last[:test_method] = test.name
     end
     results
   end
@@ -276,7 +354,7 @@ namespace :crucible do
   end
 
   desc 'list all test scripts'
-  task :list_all_test_scripts do
+  task :list_testscripts do
     require 'benchmark'
     b = Benchmark.measure { puts Crucible::Tests::TestScriptEngine.list_all.keys }
     puts "List all tests completed in #{b.real} seconds."

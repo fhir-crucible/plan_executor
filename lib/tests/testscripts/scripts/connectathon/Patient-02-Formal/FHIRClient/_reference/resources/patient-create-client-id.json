@@ -1,0 +1,21 @@
+{
+  "resourceType": "Patient",
+  "id": "${patientResourceId}",
+  "identifier": [
+    {
+      "value": "${patientIdentifier}"
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "${patientFamilyName}",
+      "given": [
+        "${patientGivenName}"
+      ]
+    }
+  ],
+  "gender": "${patientGender}",
+  "birthDate": "${patientBirthDate}"
+}

@@ -47,7 +47,7 @@ module Crucible
             test_metadata = test.collect_metadata(true)
             BaseTest::METADATA_FIELDS.each do |field|
               field_hash = {}
-              test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+              test_metadata.values.first.each { |tm| field_hash[tm[:test_method]] = tm[field] }
               list[test.title][field] = field_hash
             end
           end

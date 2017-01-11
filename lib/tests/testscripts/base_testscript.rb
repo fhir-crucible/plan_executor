@@ -131,9 +131,19 @@ module Crucible
             metadata['links'] << capability.capabilities.reference if capability.capabilities.reference
           end
         end
-        tests.map do |test_symbol|
-          { :test_method => test_symbol }.merge(metadata)
-        end
+
+        {
+          @testscript.id => @testscript.test.map do |test|
+            {
+              "key" => "#{test.id} #{test.name} test".downcase.tr(' ', '_'),
+              "id" =>  "#{test.id} #{test.name} test".downcase.tr(' ', '_'),
+              "description" => test.description,
+              :test_method=> "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym
+
+            }.merge(metadata)
+          end
+        }
+
       end
 
       def testreport_template

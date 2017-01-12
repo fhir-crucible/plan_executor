@@ -91,6 +91,8 @@ module Crucible
                 gen.coding.each do |c|
                   c.system = meta['valid_codes'].keys.sample
                   c.code = meta['valid_codes'][c.system].sample
+                  display = FHIR::Definitions.get_display(c.system, c.code)
+                  c.display = display ? display : nil
                 end
               elsif type == 'CodeableConcept' && meta['binding'] && meta['binding']['uri'] == 'http://hl7.org/fhir/ValueSet/use-context'
                 gen.coding.each do |c|
@@ -100,6 +102,8 @@ module Crucible
               elsif type == 'Coding' && meta['valid_codes'] && meta['binding']
                 gen.system = meta['valid_codes'].keys.sample
                 gen.code = meta['valid_codes'][gen.system].sample
+                display = FHIR::Definitions.get_display(gen.system, gen.code)
+                gen.display = display ? display : nil
               elsif type == 'Reference'
                 gen.reference = nil
                 gen.display = "#{meta['type_profiles'].map{|x|x.split('/').last}.sample} #{gen.display}" if meta['type_profiles']

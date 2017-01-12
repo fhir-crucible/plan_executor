@@ -132,7 +132,8 @@
                 },{
                   "name": "procedure request"
                 },{
-                  "name": "nutrition request"
+                  "name": "nutrition request",
+                  "aka": ["nutrition order"]
                 },{
                   "name": "risk assessment"
                 },{
@@ -145,7 +146,8 @@
                 {
                   "name": "medication"
                 },{
-                  "name": "medication order"
+                  "name": "medication request",
+                  "aka": ["medication order"]
                 },{
                   "name": "medication administration"
                 },{
@@ -166,11 +168,13 @@
                 },{
                   "name": "diagnostic report"
                 },{
-                  "name": "diagnostic request"
+                  "name": "diagnostic request",
+                  "aka": ["diagnostic order"]
                 },{
                   "name": "imaging study"
                 },{
-                  "name": "imaging manifest"
+                  "name": "imaging manifest",
+                  "aka": ["imaging object selection"]
                 },{
                   "name": "specimen"
                 },{
@@ -248,6 +252,15 @@
                 }
               ]
             },{
+              "name": "Research",
+              "children": [
+                {
+                  "name": "research study"
+                },{
+                  "name": "research subject"
+                }
+              ]
+            },{
               "name": "Security & Privacy",
               "children": [
                 {
@@ -301,7 +314,8 @@
               "name": "Clinical Reasoning",
               "children": [
                 {
-                  "name": "decision support service module"
+                  "name": "service definition",
+                  "aka": ["decision support service module"]
                 },{
                   "name": "guidance response"
                 },{
@@ -312,6 +326,8 @@
                   "name": "measure report"
                 },{
                   "name": "activity definition"
+                },{
+                  "name": "request group"
                 },{
                   "name": "plan definition"
                 }
@@ -368,7 +384,10 @@
                 },{
                   "name": "data element"
                 },{
-                  "name": "conformance"
+                  "name": "capability statement",
+                  "aka": ["conformance"]
+                },{
+                  "name": "message definition"
                 },{
                   "name": "operation definition"
                 },{
@@ -399,6 +418,8 @@
               "children": [
                 {
                   "name": "test script"
+                },{
+                  "name": "test report"
                 }
               ]
             }

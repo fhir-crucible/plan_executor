@@ -11,58 +11,52 @@ module Crucible
       end
 
       def setup
-        begin
-          @resources = Crucible::Tests::ResourceGenerator
-          @records = {}
+        @resources = Crucible::Tests::ResourceGenerator
+        @records = {}
 
-          patient = @resources.generate(FHIR::Patient, 3)
-          create_object(patient, "patient")
+        patient = @resources.generate(FHIR::Patient, 3)
+        create_object(patient, "patient")
 
-          @num_care_plans = rand(2..5)
+        @num_care_plans = rand(2..5)
 
-          # Create some generic care plans, with a subject and no categories
-          @num_care_plans.times do |t|
-            care_plan = @resources.generate(FHIR::CarePlan, 3)
-            care_plan.subject = patient.to_reference
-            care_plan.category = []
-            create_object(care_plan, "care_plan_#{t}")
-          end
+        # Create some generic care plans, with a subject and no categories
+        @num_care_plans.times do |t|
+          care_plan = @resources.generate(FHIR::CarePlan, 3)
+          care_plan.subject = patient.to_reference
+          care_plan.category = []
+          create_object(care_plan, "care_plan_#{t}")
+        end
 
-          # Create some cancer-category care plans
-          @num_cancer_care_plans = rand(1..3)
-          @cancer_care_plan_category = FHIR::CodeableConcept.new(text: "Cancer care plan")
-          @cancer_care_plan_category.coding = FHIR::Coding.new(code: "395082007", system: "http://snomed.info/sct", display: "Cancer care plan")
-          @num_cancer_care_plans.times do |t|
-            care_plan = @resources.generate(FHIR::CarePlan, 3)
-            care_plan.subject = patient.to_reference
-            care_plan.category = [@cancer_care_plan_category]
-            create_object(care_plan, "cancer_care_plan_#{t}")
-          end
+        # Create some cancer-category care plans
+        @num_cancer_care_plans = rand(1..3)
+        @cancer_care_plan_category = FHIR::CodeableConcept.new(text: "Cancer care plan")
+        @cancer_care_plan_category.coding = FHIR::Coding.new(code: "395082007", system: "http://snomed.info/sct", display: "Cancer care plan")
+        @num_cancer_care_plans.times do |t|
+          care_plan = @resources.generate(FHIR::CarePlan, 3)
+          care_plan.subject = patient.to_reference
+          care_plan.category = [@cancer_care_plan_category]
+          create_object(care_plan, "cancer_care_plan_#{t}")
+        end
 
-          # Create some care teams for a patient
-          @num_care_teams = rand(1..3)
-          @num_care_teams.times do |t|
-            care_team = @resources.generate(FHIR::CareTeam, 3)
-            care_team.subject = patient.to_reference
-            create_object(care_team, "care_team_#{t}")
-          end
+        # Create some care teams for a patient
+        @num_care_teams = rand(1..3)
+        @num_care_teams.times do |t|
+          care_team = @resources.generate(FHIR::CareTeam, 3)
+          care_team.subject = patient.to_reference
+          create_object(care_team, "care_team_#{t}")
+        end
 
-          # Create some care teams with a specific Practitioner
-          @num_practitioner_care_teams = rand(2..4)
-          care_team_practitioner = @resources.generate(FHIR::Practitioner, 3)
-          create_object(care_team_practitioner, "care_team_practitioner")
-          @num_practitioner_care_teams.times do |t|
-            care_team = @resources.generate(FHIR::CareTeam, 3)
-            care_team.subject = patient.to_reference
-            participant = FHIR::CareTeam::Participant.new
-            participant.member = @records['care_team_practitioner'].to_reference
-            care_team.participant = [participant]
-            create_object(care_team, "practitioner_care_team_#{t}")
-          end
-
-        rescue Exception => e
-          require 'pry'
-          binding.pry
+        # Create some care teams with a specific Practitioner
+        @num_practitioner_care_teams = rand(2..4)
+        care_team_practitioner = @resources.generate(FHIR::Practitioner, 3)
+        create_object(care_team_practitioner, "care_team_practitioner")
+        @num_practitioner_care_teams.times do |t|
+          care_team = @resources.generate(FHIR::CareTeam, 3)
+          care_team.subject = patient.to_reference
+          participant = FHIR::CareTeam::Participant.new
+          participant.member = @records['care_team_practitioner'].to_reference
+          care_team.participant = [participant]
+          create_object(care_team, "practitioner_care_team_#{t}")
         end
       end
 

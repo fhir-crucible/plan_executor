@@ -267,8 +267,11 @@ module Crucible
         when FHIR::Age 
           resource.system = 'http://unitsofmeasure.org'
           resource.code = 'a'
+          resource.value = (SecureRandom.random_number(100) + 1)
           resource.unit = nil
           resource.comparator = nil
+        when FHIR::AllergyIntolerance
+          resource.clinicalStatus = nil if resource.verificationStatus=='entered-in-error'
         when FHIR::Duration 
           resource.system = 'http://unitsofmeasure.org'
           resource.code = 'mo'

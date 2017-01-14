@@ -1,0 +1,231 @@
+{
+  "resourceType": "CodeSystem",
+  "id": "data-types",
+  "url": "http://hl7.org/fhir/data-types",
+  "version": "1.8.0",
+  "name": "DataType",
+  "status": "draft",
+  "experimental": false,
+  "date": "2016-12-07T09:17:27-05:00",
+  "caseSensitive": true,
+  "valueSet": "http://hl7.org/fhir/ValueSet/data-types",
+  "content": "complete",
+  "concept": [
+    {
+      "code": "Address",
+      "display": "Address"
+    },
+    {
+      "code": "Age",
+      "display": "Age"
+    },
+    {
+      "code": "Annotation",
+      "display": "Annotation"
+    },
+    {
+      "code": "Attachment",
+      "display": "Attachment"
+    },
+    {
+      "code": "BackboneElement",
+      "display": "BackboneElement"
+    },
+    {
+      "code": "CodeableConcept",
+      "display": "CodeableConcept"
+    },
+    {
+      "code": "Coding",
+      "display": "Coding"
+    },
+    {
+      "code": "ContactDetail",
+      "display": "ContactDetail"
+    },
+    {
+      "code": "ContactPoint",
+      "display": "ContactPoint"
+    },
+    {
+      "code": "Contributor",
+      "display": "Contributor"
+    },
+    {
+      "code": "Count",
+      "display": "Count"
+    },
+    {
+      "code": "DataRequirement",
+      "display": "DataRequirement"
+    },
+    {
+      "code": "Distance",
+      "display": "Distance"
+    },
+    {
+      "code": "DosageInstruction",
+      "display": "DosageInstruction"
+    },
+    {
+      "code": "Duration",
+      "display": "Duration"
+    },
+    {
+      "code": "Element",
+      "display": "Element"
+    },
+    {
+      "code": "ElementDefinition",
+      "display": "ElementDefinition"
+    },
+    {
+      "code": "Extension",
+      "display": "Extension"
+    },
+    {
+      "code": "HumanName",
+      "display": "HumanName"
+    },
+    {
+      "code": "Identifier",
+      "display": "Identifier"
+    },
+    {
+      "code": "Meta",
+      "display": "Meta"
+    },
+    {
+      "code": "Money",
+      "display": "Money"
+    },
+    {
+      "code": "Narrative",
+      "display": "Narrative"
+    },
+    {
+      "code": "ParameterDefinition",
+      "display": "ParameterDefinition"
+    },
+    {
+      "code": "Period",
+      "display": "Period"
+    },
+    {
+      "code": "Quantity",
+      "display": "Quantity"
+    },
+    {
+      "code": "Range",
+      "display": "Range"
+    },
+    {
+      "code": "Ratio",
+      "display": "Ratio"
+    },
+    {
+      "code": "Reference",
+      "display": "Reference"
+    },
+    {
+      "code": "RelatedArtifact",
+      "display": "RelatedArtifact"
+    },
+    {
+      "code": "SampledData",
+      "display": "SampledData"
+    },
+    {
+      "code": "Signature",
+      "display": "Signature"
+    },
+    {
+      "code": "SimpleQuantity",
+      "display": "SimpleQuantity"
+    },
+    {
+      "code": "Timing",
+      "display": "Timing"
+    },
+    {
+      "code": "TriggerDefinition",
+      "display": "TriggerDefinition"
+    },
+    {
+      "code": "UsageContext",
+      "display": "UsageContext"
+    },
+    {
+      "code": "base64Binary",
+      "display": "base64Binary"
+    },
+    {
+      "code": "boolean",
+      "display": "boolean"
+    },
+    {
+      "code": "code",
+      "display": "code"
+    },
+    {
+      "code": "date",
+      "display": "date"
+    },
+    {
+      "code": "dateTime",
+      "display": "dateTime"
+    },
+    {
+      "code": "decimal",
+      "display": "decimal"
+    },
+    {
+      "code": "id",
+      "display": "id"
+    },
+    {
+      "code": "instant",
+      "display": "instant"
+    },
+    {
+      "code": "integer",
+      "display": "integer"
+    },
+    {
+      "code": "markdown",
+      "display": "markdown"
+    },
+    {
+      "code": "oid",
+      "display": "oid"
+    },
+    {
+      "code": "positiveInt",
+      "display": "positiveInt"
+    },
+    {
+      "code": "string",
+      "display": "string"
+    },
+    {
+      "code": "time",
+      "display": "time"
+    },
+    {
+      "code": "unsignedInt",
+      "display": "unsignedInt"
+    },
+    {
+      "code": "uri",
+      "display": "uri"
+    },
+    {
+      "code": "uuid",
+      "display": "uuid"
+    },
+    {
+      "code": "xhtml",
+      "display": "XHTML"
+    }
+  ]
+}

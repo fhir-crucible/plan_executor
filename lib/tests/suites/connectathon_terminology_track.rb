@@ -33,10 +33,29 @@ module Crucible
           bundle = reply.resource
           @valueset = bundle.entry[0].resource if bundle.entry.size > 0
         end
+
+        if @valueset.nil?
+          # The resource was not found, try to create it in case the server
+          # dynamically calculates terminology operations based on local resources
+          @resources = Crucible::Generator::Resources.new
+          codesystem_types = @resources.load_fixture('terminology/codesystem-data-types.json')
+          codesystem_rsrcs = @resources.load_fixture('terminology/codesystem-resource-types.json')
+          valueset_defined = @resources.load_fixture('terminology/valueset-defined-types.json')
+          @codesystem_types_id = @client.create(codesystem_types).id
+          @codesystem_rsrcs_id = @client.create(codesystem_rsrcs).id
+          @valueset_defined_id = @client.create(valueset_defined).id
+          @valueset_defined.id = @valueset_defined_id
+          @valueset = valueset_defined
+        end
       end
 
       def teardown
-        # not required
+        @client.destroy(FHIR::ValueSet, @valueset_defined_id) if @valueset_defined_id
+        @client.destroy(FHIR::CodeSystem, @codesystem_types_id) if @codesystem_types_id
+        @client.destroy(FHIR::CodeSystem, @codesystem_rsrcs_id) if @codesystem_rsrcs_id
+        # CT13 does # DELETE codesystem_simple
+        # CT13 does # DELETE valueset_simple
+        # CT17 does # DELETE conceptmap_created_id
       end
 
       ['GET','POST'].each do |how|
@@ -57,7 +76,7 @@ module Crucible
           reply = @client.value_set_expansion(options)
           assert_response_ok(reply)
           assert_resource_type(reply, FHIR::ValueSet)
-          reference_set = FHIR::ElementDefinition::Type::METADATA['code']['valid_codes'].values.flatten
+          reference_set = FHIR::StructureDefinition::METADATA['type']['valid_codes'].values.flatten
           check_expansion_for_concepts(reply.resource, reference_set)
         end
 
@@ -71,14 +90,14 @@ module Crucible
             :operation => {
               :method => how,
               :parameters => {
-                'context' => { type: 'Uri', value: 'http://hl7.org/fhir/StructureDefinition/StructureDefinition#StructureDefinition.constrainedType' }
+                'context' => { type: 'Uri', value: 'http://hl7.org/fhir/StructureDefinition/StructureDefinition#StructureDefinition.type' }
               }
             }
           }
           reply = @client.value_set_expansion(options)
           assert_response_ok(reply)
           assert_resource_type(reply, FHIR::ValueSet)
-          reference_set = FHIR::ElementDefinition::Type::METADATA['code']['valid_codes'].values.flatten
+          reference_set = FHIR::StructureDefinition::METADATA['type']['valid_codes'].values.flatten
           check_expansion_for_concepts(reply.resource, reference_set)
         end
 
@@ -88,13 +107,14 @@ module Crucible
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
             validates resource: 'ValueSet', methods: ['$validate-code']
           }
+          skip if @valueset.nil?
           options = {
             :operation => {
               :method => how,
               :parameters => {
-                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/administrative-gender' },
-                'code' => { type: 'Code', value: 'female' },
-                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/administrative-gender' }
+                'identifier' => { type: 'Uri', value: 'http://hl7.org/fhir/ValueSet/data-types' },
+                'code' => { type: 'Code', value: 'base64Binary' },
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/data-types' }
               }
             }
           }
@@ -135,8 +155,8 @@ module Crucible
             :operation => {
               :method => how,
               :parameters => {
-                'code' => { type: 'Code', value: 'female' },
-                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/administrative-gender' }
+                'code' => { type: 'Code', value: 'base64Binary' },
+                'system' => { type: 'Uri', value: 'http://hl7.org/fhir/data-types' }
               }
             }
           }
@@ -295,7 +315,6 @@ module Crucible
       end
 
       ['GET','POST'].each do |how|
-
         test "CT15#{how[0]}", "$translate a code using a ConceptMap (#{how})" do
           metadata {
             links "#{BASE_SPEC_LINK}/operations.html#executing"
@@ -318,32 +337,29 @@ module Crucible
           assert_response_ok(reply)
           check_response_params(reply.body,'result','valueBoolean','true')
         end
+      end
 
-        test "CT16#{how[0]}", "$closure table maintenance (#{how})" do
-          metadata {
-            links "#{BASE_SPEC_LINK}/operations.html#executing"
-            links "#{BASE_SPEC_LINK}/conceptmap-operations.html#closure"
-            validates resource: 'ConceptMap', methods: ['$closure']
-          }
-          coding = FHIR::Coding.new({'system'=>'http://snomed.info/sct','code'=>'22298006'})
-          options = {
-            :operation => {
-              :method => how,
-              :parameters => {
-                'name' => { type: 'String', value: 'crucible-test-closure' },
-                'concept' => { type: 'Coding', value: coding }
-              }
+      test "CT16", "$closure table maintenance" do
+        metadata {
+          links "#{BASE_SPEC_LINK}/operations.html#executing"
+          links "#{BASE_SPEC_LINK}/conceptmap-operations.html#closure"
+          validates resource: 'ConceptMap', methods: ['$closure']
+        }
+        coding = FHIR::Coding.new({'system'=>'http://snomed.info/sct','code'=>'22298006'})
+        options = {
+          :operation => {
+            :method => 'POST',
+            :parameters => {
+              'name' => { type: 'String', value: 'crucible-test-closure' },
+              'concept' => { type: 'Coding', value: coding }
             }
           }
-          if how=='GET'
-            options[:operation][:parameters]['concept'][:value] = "#{coding.system}|#{coding.code}"
-          end
-          reply = @client.closure_table_maintenance(options)
-          assert_response_ok(reply)
-          assert_resource_type(reply, FHIR::ConceptMap)
-          code = reply.resource.element.find{|x|x.code=='22298006'}
-          assert code, 'Closure Table Operation should return the code that was supplied in the request.'
-        end
+        }
+        reply = @client.closure_table_maintenance(options)
+        assert_response_ok(reply)
+        assert_resource_type(reply, FHIR::ConceptMap)
+        code = reply.resource.element.find{|x|x.code=='22298006'}
+        assert code, 'Closure Table Operation should return the code that was supplied in the request.'
       end
 
       test "CT17", "Delete ConceptMap" do

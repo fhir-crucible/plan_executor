@@ -1,6 +1,5 @@
 {
   "resourceType": "CodeSystem",
-  "id": "resource-types",
   "url": "http://hl7.org/fhir/resource-types",
   "version": "1.8.0",
   "name": "ResourceType",

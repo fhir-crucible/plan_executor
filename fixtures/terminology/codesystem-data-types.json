@@ -1,6 +1,5 @@
 {
   "resourceType": "CodeSystem",
-  "id": "data-types",
   "url": "http://hl7.org/fhir/data-types",
   "version": "1.8.0",
   "name": "DataType",

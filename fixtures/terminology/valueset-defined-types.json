@@ -1,6 +1,5 @@
 {
   "resourceType": "ValueSet",
-  "id": "defined-types",
   "url": "http://hl7.org/fhir/ValueSet/defined-types",
   "identifier": [
     {

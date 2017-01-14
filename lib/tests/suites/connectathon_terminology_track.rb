@@ -34,10 +34,11 @@ module Crucible
           @valueset = bundle.entry[0].resource if bundle.entry.size > 0
         end
 
+        @resources = Crucible::Generator::Resources.new
+
         if @valueset.nil?
           # The resource was not found, try to create it in case the server
           # dynamically calculates terminology operations based on local resources
-          @resources = Crucible::Generator::Resources.new
           codesystem_types = @resources.load_fixture('terminology/codesystem-data-types.json')
           codesystem_rsrcs = @resources.load_fixture('terminology/codesystem-resource-types.json')
           valueset_defined = @resources.load_fixture('terminology/valueset-defined-types.json')
@@ -47,12 +48,19 @@ module Crucible
           @valueset_defined.id = @valueset_defined_id
           @valueset = valueset_defined
         end
+
+        v2_codesystem = @resources.load_fixture('terminology/v2-codesystem.json')
+        v2_valueset = @resources.load_fixture('terminology/v2-valueset.json')
+        @v2_codesystem_id = @client.create(v2_codesystem).id
+        @v2_valueset_id = @client.create(v2_valueset).id
       end
 
       def teardown
         @client.destroy(FHIR::ValueSet, @valueset_defined_id) if @valueset_defined_id
         @client.destroy(FHIR::CodeSystem, @codesystem_types_id) if @codesystem_types_id
         @client.destroy(FHIR::CodeSystem, @codesystem_rsrcs_id) if @codesystem_rsrcs_id
+        @client.destroy(FHIR::ValueSet, @v2_valueset_id) if @v2_valueset_id
+        @client.destroy(FHIR::CodeSystem, @v2_codesystem_id) if @v2_codesystem_id
         # CT13 does # DELETE codesystem_simple
         # CT13 does # DELETE valueset_simple
         # CT17 does # DELETE conceptmap_created_id

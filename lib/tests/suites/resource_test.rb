@@ -142,7 +142,7 @@ module Crucible
 
         result = TestResult.new('X013',"Conditional Create #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
         # this ID should already exist if temp resource was created
-        if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if !@bundle.nil? && @bundle.is_a?(FHIR::Bundle) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
         elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
@@ -180,7 +180,7 @@ module Crucible
         end
 
         result
-      end      
+      end
 
       #
       # Test if we can read a preexisting resource
@@ -191,7 +191,7 @@ module Crucible
         }
 
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
-        if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if !@bundle.nil? && @bundle.is_a?(FHIR::Bundle) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
         elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
@@ -231,7 +231,7 @@ module Crucible
         if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        elsif !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif !@bundle.nil? && @bundle.is_a?(FHIR::Bundle) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end
@@ -290,7 +290,7 @@ module Crucible
         result = TestResult.new('X032',"Conditional Update #{resource_class.name.demodulize} (No Matches)", nil, nil, nil)
 
         searchParams = { '_id' => "#{(SecureRandom.uuid * 2)[0..63]}" }
-        ignore_client_exception { @conditional_update_resource_a = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams) } 
+        ignore_client_exception { @conditional_update_resource_a = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams) }
         # chances are good that no resource has this ID
 
         if @client.reply.code==201
@@ -318,7 +318,7 @@ module Crucible
         if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        elsif !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif !@bundle.nil? && @bundle.is_a?(FHIR::Bundle) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end
@@ -336,9 +336,9 @@ module Crucible
         else
           ResourceGenerator.set_fields!(@preexisting)
           ResourceGenerator.apply_invariants!(@preexisting)
-          
+
           searchParams = { '_id' => @preexisting_id }
-          ignore_client_exception { @preexisting.conditional_update(searchParams) } 
+          ignore_client_exception { @preexisting.conditional_update(searchParams) }
 
           if @client.reply.code==200
             result.update(STATUS[:pass], "Updated existing #{resource_class.name.demodulize}.", @client.reply.body)
@@ -387,7 +387,7 @@ module Crucible
           result.update(STATUS[:fail], "Request should have failed with HTTP 412.", @client.reply.body)
         end
         result
-      end   
+      end
 
       #
       # Test if we can retrieve the history of a preexisting resource.
@@ -529,7 +529,7 @@ module Crucible
 
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if !@bundle.nil? && @bundle.is_a?(FHIR::Bundle) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         elsif !@temp_resource.nil? && !@temp_resource.id.nil?
@@ -576,7 +576,7 @@ module Crucible
               security_codes = ['security','login','unknown','expired','forbidden','suppressed']
               processing_codes = ['processing','not-supported','duplicate','not-found','too-long','code-invalid','extension','too-costly','business-rule','conflict','incomplete']
               transient_codes = ['transient','lock-error','no-store','exception','timeout','throttled']
-            
+
               status = :pass
               if is_preexisting_valid
                 outcome.issue.each do |issue|
@@ -666,7 +666,7 @@ module Crucible
         if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        elsif @preexisting_id.nil? &&!@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif @preexisting_id.nil? &&!@bundle.nil? && @bundle.is_a?(FHIR::Bundle) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end

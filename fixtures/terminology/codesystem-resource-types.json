@@ -1,0 +1,482 @@
+{
+  "resourceType": "CodeSystem",
+  "url": "http://hl7.org/fhir/resource-types",
+  "version": "1.8.0",
+  "name": "ResourceType",
+  "status": "draft",
+  "experimental": false,
+  "date": "2016-12-07T09:17:27-05:00",
+  "caseSensitive": true,
+  "valueSet": "http://hl7.org/fhir/ValueSet/resource-types",
+  "content": "complete",
+  "concept": [
+    {
+      "code": "Account",
+      "display": "Account"
+    },
+    {
+      "code": "ActivityDefinition",
+      "display": "ActivityDefinition"
+    },
+    {
+      "code": "AllergyIntolerance",
+      "display": "AllergyIntolerance"
+    },
+    {
+      "code": "Appointment",
+      "display": "Appointment"
+    },
+    {
+      "code": "AppointmentResponse",
+      "display": "AppointmentResponse"
+    },
+    {
+      "code": "AuditEvent",
+      "display": "AuditEvent"
+    },
+    {
+      "code": "Basic",
+      "display": "Basic"
+    },
+    {
+      "code": "Binary",
+      "display": "Binary"
+    },
+    {
+      "code": "BodySite",
+      "display": "BodySite"
+    },
+    {
+      "code": "Bundle",
+      "display": "Bundle"
+    },
+    {
+      "code": "CapabilityStatement",
+      "display": "CapabilityStatement"
+    },
+    {
+      "code": "CarePlan",
+      "display": "CarePlan"
+    },
+    {
+      "code": "CareTeam",
+      "display": "CareTeam"
+    },
+    {
+      "code": "Claim",
+      "display": "Claim"
+    },
+    {
+      "code": "ClaimResponse",
+      "display": "ClaimResponse"
+    },
+    {
+      "code": "ClinicalImpression",
+      "display": "ClinicalImpression"
+    },
+    {
+      "code": "CodeSystem",
+      "display": "CodeSystem"
+    },
+    {
+      "code": "Communication",
+      "display": "Communication"
+    },
+    {
+      "code": "CommunicationRequest",
+      "display": "CommunicationRequest"
+    },
+    {
+      "code": "CompartmentDefinition",
+      "display": "CompartmentDefinition"
+    },
+    {
+      "code": "Composition",
+      "display": "Composition"
+    },
+    {
+      "code": "ConceptMap",
+      "display": "ConceptMap"
+    },
+    {
+      "code": "Condition",
+      "display": "Condition"
+    },
+    {
+      "code": "Consent",
+      "display": "Consent"
+    },
+    {
+      "code": "Contract",
+      "display": "Contract"
+    },
+    {
+      "code": "Coverage",
+      "display": "Coverage"
+    },
+    {
+      "code": "DataElement",
+      "display": "DataElement"
+    },
+    {
+      "code": "DetectedIssue",
+      "display": "DetectedIssue"
+    },
+    {
+      "code": "Device",
+      "display": "Device"
+    },
+    {
+      "code": "DeviceComponent",
+      "display": "DeviceComponent"
+    },
+    {
+      "code": "DeviceMetric",
+      "display": "DeviceMetric"
+    },
+    {
+      "code": "DeviceUseRequest",
+      "display": "DeviceUseRequest"
+    },
+    {
+      "code": "DeviceUseStatement",
+      "display": "DeviceUseStatement"
+    },
+    {
+      "code": "DiagnosticReport",
+      "display": "DiagnosticReport"
+    },
+    {
+      "code": "DiagnosticRequest",
+      "display": "DiagnosticRequest"
+    },
+    {
+      "code": "DocumentManifest",
+      "display": "DocumentManifest"
+    },
+    {
+      "code": "DocumentReference",
+      "display": "DocumentReference"
+    },
+    {
+      "code": "DomainResource",
+      "display": "DomainResource"
+    },
+    {
+      "code": "EligibilityRequest",
+      "display": "EligibilityRequest"
+    },
+    {
+      "code": "EligibilityResponse",
+      "display": "EligibilityResponse"
+    },
+    {
+      "code": "Encounter",
+      "display": "Encounter"
+    },
+    {
+      "code": "Endpoint",
+      "display": "Endpoint"
+    },
+    {
+      "code": "EnrollmentRequest",
+      "display": "EnrollmentRequest"
+    },
+    {
+      "code": "EnrollmentResponse",
+      "display": "EnrollmentResponse"
+    },
+    {
+      "code": "EpisodeOfCare",
+      "display": "EpisodeOfCare"
+    },
+    {
+      "code": "ExpansionProfile",
+      "display": "ExpansionProfile"
+    },
+    {
+      "code": "ExplanationOfBenefit",
+      "display": "ExplanationOfBenefit"
+    },
+    {
+      "code": "FamilyMemberHistory",
+      "display": "FamilyMemberHistory"
+    },
+    {
+      "code": "Flag",
+      "display": "Flag"
+    },
+    {
+      "code": "Goal",
+      "display": "Goal"
+    },
+    {
+      "code": "Group",
+      "display": "Group"
+    },
+    {
+      "code": "GuidanceResponse",
+      "display": "GuidanceResponse"
+    },
+    {
+      "code": "HealthcareService",
+      "display": "HealthcareService"
+    },
+    {
+      "code": "ImagingManifest",
+      "display": "ImagingManifest"
+    },
+    {
+      "code": "ImagingStudy",
+      "display": "ImagingStudy"
+    },
+    {
+      "code": "Immunization",
+      "display": "Immunization"
+    },
+    {
+      "code": "ImmunizationRecommendation",
+      "display": "ImmunizationRecommendation"
+    },
+    {
+      "code": "ImplementationGuide",
+      "display": "ImplementationGuide"
+    },
+    {
+      "code": "Library",
+      "display": "Library"
+    },
+    {
+      "code": "Linkage",
+      "display": "Linkage"
+    },
+    {
+      "code": "List",
+      "display": "List"
+    },
+    {
+      "code": "Location",
+      "display": "Location"
+    },
+    {
+      "code": "Measure",
+      "display": "Measure"
+    },
+    {
+      "code": "MeasureReport",
+      "display": "MeasureReport"
+    },
+    {
+      "code": "Media",
+      "display": "Media"
+    },
+    {
+      "code": "Medication",
+      "display": "Medication"
+    },
+    {
+      "code": "MedicationAdministration",
+      "display": "MedicationAdministration"
+    },
+    {
+      "code": "MedicationDispense",
+      "display": "MedicationDispense"
+    },
+    {
+      "code": "MedicationRequest",
+      "display": "MedicationRequest"
+    },
+    {
+      "code": "MedicationStatement",
+      "display": "MedicationStatement"
+    },
+    {
+      "code": "MessageDefinition",
+      "display": "MessageDefinition"
+    },
+    {
+      "code": "MessageHeader",
+      "display": "MessageHeader"
+    },
+    {
+      "code": "NamingSystem",
+      "display": "NamingSystem"
+    },
+    {
+      "code": "NutritionRequest",
+      "display": "NutritionRequest"
+    },
+    {
+      "code": "Observation",
+      "display": "Observation"
+    },
+    {
+      "code": "OperationDefinition",
+      "display": "OperationDefinition"
+    },
+    {
+      "code": "OperationOutcome",
+      "display": "OperationOutcome"
+    },
+    {
+      "code": "Organization",
+      "display": "Organization"
+    },
+    {
+      "code": "Parameters",
+      "display": "Parameters"
+    },
+    {
+      "code": "Patient",
+      "display": "Patient"
+    },
+    {
+      "code": "PaymentNotice",
+      "display": "PaymentNotice"
+    },
+    {
+      "code": "PaymentReconciliation",
+      "display": "PaymentReconciliation"
+    },
+    {
+      "code": "Person",
+      "display": "Person"
+    },
+    {
+      "code": "PlanDefinition",
+      "display": "PlanDefinition"
+    },
+    {
+      "code": "Practitioner",
+      "display": "Practitioner"
+    },
+    {
+      "code": "PractitionerRole",
+      "display": "PractitionerRole"
+    },
+    {
+      "code": "Procedure",
+      "display": "Procedure"
+    },
+    {
+      "code": "ProcedureRequest",
+      "display": "ProcedureRequest"
+    },
+    {
+      "code": "ProcessRequest",
+      "display": "ProcessRequest"
+    },
+    {
+      "code": "ProcessResponse",
+      "display": "ProcessResponse"
+    },
+    {
+      "code": "Provenance",
+      "display": "Provenance"
+    },
+    {
+      "code": "Questionnaire",
+      "display": "Questionnaire"
+    },
+    {
+      "code": "QuestionnaireResponse",
+      "display": "QuestionnaireResponse"
+    },
+    {
+      "code": "ReferralRequest",
+      "display": "ReferralRequest"
+    },
+    {
+      "code": "RelatedPerson",
+      "display": "RelatedPerson"
+    },
+    {
+      "code": "RequestGroup",
+      "display": "RequestGroup"
+    },
+    {
+      "code": "ResearchStudy",
+      "display": "ResearchStudy"
+    },
+    {
+      "code": "ResearchSubject",
+      "display": "ResearchSubject"
+    },
+    {
+      "code": "Resource",
+      "display": "Resource"
+    },
+    {
+      "code": "RiskAssessment",
+      "display": "RiskAssessment"
+    },
+    {
+      "code": "Schedule",
+      "display": "Schedule"
+    },
+    {
+      "code": "SearchParameter",
+      "display": "SearchParameter"
+    },
+    {
+      "code": "Sequence",
+      "display": "Sequence"
+    },
+    {
+      "code": "ServiceDefinition",
+      "display": "ServiceDefinition"
+    },
+    {
+      "code": "Slot",
+      "display": "Slot"
+    },
+    {
+      "code": "Specimen",
+      "display": "Specimen"
+    },
+    {
+      "code": "StructureDefinition",
+      "display": "StructureDefinition"
+    },
+    {
+      "code": "StructureMap",
+      "display": "StructureMap"
+    },
+    {
+      "code": "Subscription",
+      "display": "Subscription"
+    },
+    {
+      "code": "Substance",
+      "display": "Substance"
+    },
+    {
+      "code": "SupplyDelivery",
+      "display": "SupplyDelivery"
+    },
+    {
+      "code": "SupplyRequest",
+      "display": "SupplyRequest"
+    },
+    {
+      "code": "Task",
+      "display": "Task"
+    },
+    {
+      "code": "TestReport",
+      "display": "TestReport"
+    },
+    {
+      "code": "TestScript",
+      "display": "TestScript"
+    },
+    {
+      "code": "ValueSet",
+      "display": "ValueSet"
+    },
+    {
+      "code": "VisionPrescription",
+      "display": "VisionPrescription"
+    }
+  ]
+}

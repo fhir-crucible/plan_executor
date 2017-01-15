@@ -3,49 +3,49 @@
   <text>
     <status value="generated"/>
     <div xmlns="http://www.w3.org/1999/xhtml">
-      
+
       <table>
-        
+
         <tbody>
-          
+
           <tr>
-            
+
             <td>Name</td>
-            
-            <td>Peter James 
+
+            <td>Peter James
               <b>Chalmers</b> (&quot;Jim&quot;)
             </td>
-          
+
           </tr>
-          
+
           <tr>
-            
+
             <td>Address</td>
-            
+
             <td>534 Erewhon, Pleasantville, Vic, 3999</td>
-          
+
           </tr>
-          
+
           <tr>
-            
+
             <td>Contacts</td>
-            
+
             <td>Home: unknown. Work: (03) 5555 6473</td>
-          
+
           </tr>
-          
+
           <tr>
-            
+
             <td>Id</td>
-            
+
             <td>MRN: 12345 (Acme Healthcare)</td>
-          
+
           </tr>
-        
+
         </tbody>
-      
-      </table>    
-    
+
+      </table>
+
     </div>
   </text>
 <!--   MRN assigned by ACME healthcare on 6-May 2001   -->
@@ -146,6 +146,6 @@
     </period>
   </contact>
   <managingOrganization>
-    <reference value="Organization/1"/>
+    <display value="Organization 1"/>
   </managingOrganization>
 </Patient>

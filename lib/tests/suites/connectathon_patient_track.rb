@@ -135,10 +135,11 @@ module Crucible
           validates extensions: ['extensions']
         }
         skip unless @patient_us_id
-		
+
         @patient_us.id = @patient_us_id
-        @patient_us.extension[0].valueCodeableConcept.coding[0].code = '1569-3'
-        @patient_us.extension[1].valueCodeableConcept.coding[0].code = '2186-5'
+
+        @patient_us.extension[0].extension[0].valueCoding.code = '1569-3'
+        @patient_us.extension[1].extension[0].valueCoding.code = '2186-5'
 
         reply = @client.update @patient_us, @patient_us_id
         assert_response_ok(reply)
@@ -146,7 +147,7 @@ module Crucible
         if !reply.resource.nil?
           temp = reply.resource.id
           reply.resource.id = nil
-          warning { assert @patient.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
+          warning { assert @patient_us.equals?(reply.resource), 'The server did not correctly preserve the Patient data.' }
           reply.resource.id = temp
         end
 
@@ -353,8 +354,8 @@ module Crucible
 
         skip unless @patient_id
 
-        reply = @client.destroy(FHIR::Patient,@patient_id)
-        assert_response_code(reply,204)
+        reply = @client.destroy(FHIR::Patient, @patient_id)
+        assert_response_code(reply, 204)
 
         reply = @client.read(FHIR::Patient, @patient_id)
 

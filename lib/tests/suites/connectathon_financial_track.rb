@@ -28,11 +28,11 @@ module Crucible
         @average.identifier = nil # clear the identifier, in case the server checks for duplicates
 
 
-        @preauth = @resources.preauth_claim
+        @preauth = @resources.complex_claim
         @preauth.id = nil # clear the identifier, in case the server checks for duplicates
         @preauth.identifier = nil # clear the identifier, in case the server checks for duplicates
 
-        @er = @resources.load_fixture('financial/eligibility-request.xml')
+        @er = @resources.load_fixture('financial/eligibilityrequest-example.xml')
         @er.id = nil
         @er.identifier = nil
 
@@ -189,7 +189,7 @@ module Crucible
               :flag => true,
               :compartment => nil,
               :parameters => {
-                'requestreference' => search_string
+                'request' => search_string
               }
             }
           }
@@ -198,7 +198,7 @@ module Crucible
           assert_response_ok(reply)
           assert_bundle_response(reply)
           assert (reply.resource.total > 0), 'The server does not have a record of the submitted preauthorization.'
-          assert(reply.resource.entry[0].resource.requestReference.reference.include?(@preauth_id), 'The server did not return a request with the proper preauthorization.')
+          assert(reply.resource.entry[0].resource.request.reference.include?(@preauth_id), 'The server did not return a request with the proper preauthorization.')
 
           @preauth_response = reply.resource.entry[0].resource
           @preauth_response_id = @preauth_response.id
@@ -342,8 +342,8 @@ module Crucible
         reply = @client.read(FHIR::Claim,@simple_id)
         assert_response_ok(reply)
         assert_resource_type(reply,FHIR::Claim)
-        reply.resource.coverage.each do |coverage|
-          assert(!coverage.try(:claimResponse).try(:reference).nil?,'Claim does not reference a ClaimResponse.',reply.body)
+        reply.resource.insurance.each do |insurance|
+          assert(!insurance.try(:claimResponse).try(:reference).nil?,'Claim does not reference a ClaimResponse.',reply.body)
         end
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -365,8 +365,8 @@ module Crucible
         reply = @client.read(FHIR::Claim,@average_id)
         assert_response_ok(reply)
         assert_resource_type(reply,FHIR::Claim)
-        reply.resource.coverage.each do |coverage|
-          assert(!coverage.try(:claimResponse).try(:reference).nil?,'Claim does not reference a ClaimResponse.',reply.body)
+        reply.resource.insurance.each do |insurance|
+          assert(!insurance.try(:claimResponse).try(:reference).nil?,'Claim does not reference a ClaimResponse.',reply.body)
         end
         warning { assert_valid_resource_content_type_present(reply) }
         warning { assert_last_modified_present(reply) }
@@ -396,7 +396,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'requestreference' => search_string
+              'request' => search_string
             }
           }
         }
@@ -405,7 +405,7 @@ module Crucible
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
-        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@simple_id), 'The server did not return a request with the proper claim')
+        assert(reply.resource.entry[0].resource.request.reference.include?(@simple_id), 'The server did not return a request with the proper claim')
 
         @simple_response_id = reply.resource.entry[0].resource.id unless @simple_response_id
       end
@@ -501,7 +501,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'requestreference' => search_string
+              'request' => search_string
             }
           }
         }
@@ -511,7 +511,7 @@ module Crucible
         assert_bundle_response(reply)
         assert (reply.resource.total > 0), 'The server did not report any results.'
 
-        assert(reply.resource.entry[0].resource.requestReference.reference.include?(@average_id), 'The server did not return a request with the proper claim')
+        assert(reply.resource.entry[0].resource.request.reference.include?(@average_id), 'The server did not return a request with the proper claim')
         @average_response_id = reply.resource.entry[0].resource.id unless @average_response_id
       end
 

@@ -16,7 +16,7 @@ module Crucible
       end
 
       def setup
-        # nothing
+        @transferIds = {}
       end
 
       def teardown
@@ -342,7 +342,6 @@ module Crucible
           validates resource: 'Patient', methods: ['$everything']
           validates resource: nil, methods: ['transaction-system']
         }
-        @transferIds = {}
         skip unless @created_patient_record
 
         reply = @client.fetch_patient_record(@patient0.xmlId, nil, nil, 'GET')

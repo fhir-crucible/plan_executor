@@ -342,6 +342,7 @@ module Crucible
           validates resource: 'Patient', methods: ['$everything']
           validates resource: nil, methods: ['transaction-system']
         }
+        @transferIds = {}
         skip unless @created_patient_record
 
         reply = @client.fetch_patient_record(@patient0.xmlId, nil, nil, 'GET')
@@ -361,7 +362,6 @@ module Crucible
 
         # get the new IDs
         @transferPatientId = nil
-        @transferIds = {}
         reply.resource.entry.each do |entry|
           klass = entry.resource.class
           entry_id = FHIR::ResourceAddress.pull_out_id(klass.name.demodulize, entry.try(:response).try(:location))

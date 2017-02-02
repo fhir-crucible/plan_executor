@@ -47,7 +47,12 @@ module Crucible
           :id => @entries.try(:[],0).try(:resource).try(:xmlId),
           :resource => @entries.try(:[],0).try(:resource).try(:class)
         }
-        @condition.patient.reference = @client.resource_url(options)
+        temp = @client.use_format_param
+        @client.use_format_param = false
+        patient_url = @client.resource_url(options)
+        patient_url = patient_url[1..-1] if patient_url[0]=='/'
+        @client.use_format_param = temp
+        @condition.patient.reference = patient_url
         reply = @client.create(@condition)
         @condition_id = reply.id
 

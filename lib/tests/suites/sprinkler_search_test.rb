@@ -49,7 +49,14 @@ module Crucible
           :id => @entries.try(:[],0).try(:resource).try(:xmlId),
           :resource => @entries.try(:[],0).try(:resource).try(:class)
         }
-        @condition.patient.reference = @client.resource_url(options)
+
+        temp = @client.use_format_param
+        @client.use_format_param = false
+        patient_url = @client.resource_url(options)
+        patient_url = patient_url[1..-1] if patient_url[0]=='/'
+        @condition.patient.reference = patient_url
+        @client.use_format_param = temp
+
         reply = @client.create(@condition)
         @condition_id = reply.id
 
@@ -132,7 +139,7 @@ module Crucible
           }
         }
         reply = @client.search_all(options)
-        assert( (reply.code >= 400 && reply.code < 600), 'If the search fails, the return value should be status code 4xx or 5xx.', reply)
+        assert( (reply.code >= 400 && reply.code < 600), 'If the search fails, the return value should be status code 4xx or 5xx.', reply.body)
       end
 
       test "SE03#{action[0]}",'Search patient resource on partial family surname' do

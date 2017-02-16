@@ -847,6 +847,14 @@ module Crucible
               exc.filter = nil if exc.concept
             end
           end
+        when FHIR::RequestGroup::Action
+          if !resource.resource.nil? and resource.action.count > 0
+            if SecureRandom.random_number(2)==0
+              resource.resource = nil
+            else
+              resource.action = []
+            end
+          end
         else
           # default
         end

@@ -527,7 +527,7 @@ module Crucible
             resource.ageAge.unit = nil
             resource.ageAge.comparator = nil
           end
-          if SecureRandom.random_number(1)==0
+          if SecureRandom.random_number(2)==0
             resource.bornPeriod = nil
             resource.bornDate = nil
             resource.bornString = nil
@@ -761,7 +761,7 @@ module Crucible
           resource.derivation = 'constraint'
           resource.fhirVersion = 'STU3'
           resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.type}"
-          is_pattern = (SecureRandom.random_number(1)==0)
+          is_pattern = (SecureRandom.random_number(2)==0)
           if resource.snapshot && resource.snapshot.element
             resource.snapshot.element.first.id = resource.type
             resource.snapshot.element.first.path = resource.type 

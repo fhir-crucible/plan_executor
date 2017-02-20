@@ -26,7 +26,7 @@ class FinancialTest < Test::Unit::TestCase
       to_return(:status => 200, :body => "", :headers => {})
 
     stub_request(:delete, "#{TESTING_ENDPOINT}/Claim/100151").
-      with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Id'=>'100151', 'Resource'=>'FHIR::Claim', 'User-Agent'=>'Ruby FHIR Client'}).
+      with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Format'=>'application/xml+fhir', 'Id'=>'100151', 'Resource'=>'FHIR::Claim', 'User-Agent'=>'Ruby FHIR Client'}).
       to_return(:status => 200, :body => "", :headers => {})
 
     client = FHIR::Client.new(TESTING_ENDPOINT)

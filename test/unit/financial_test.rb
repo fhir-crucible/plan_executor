@@ -22,7 +22,7 @@ class FinancialTest < Test::Unit::TestCase
       to_return(:status => 200, :body => "", :headers => {'Content-Type'=>'application/xml+fhir;charset=UTF-8', 'Last-Modified' => Time.now.httpdate, 'Content-Location' => "#{TESTING_ENDPOINT}/Claim/100151"})
 
     stub_request(:delete, "#{TESTING_ENDPOINT}/Claim/100150").
-      with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Id'=>'100150', 'Resource'=>'FHIR::Claim', 'User-Agent'=>'Ruby FHIR Client'}).
+      with(:headers => {'Accept'=>'application/xml+fhir', 'Accept-Charset'=>'UTF-8', 'Accept-Encoding'=>'gzip, deflate', 'Format'=>'application/xml+fhir', 'Id'=>'100150', 'Resource'=>'FHIR::Claim', 'User-Agent'=>'Ruby FHIR Client'}).
       to_return(:status => 200, :body => "", :headers => {})
 
     stub_request(:delete, "#{TESTING_ENDPOINT}/Claim/100151").

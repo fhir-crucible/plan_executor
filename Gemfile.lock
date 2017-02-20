@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 0301ce020b810865a209325c91770358383a6ca4
+  revision: ead75da567a832023d72038f5c0e4ae2d4526fbd
   branch: master
   specs:
     fhir_client (1.8.0)

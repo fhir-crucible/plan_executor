@@ -127,10 +127,10 @@ module Crucible
         }
 
         # Skips if diagnostic reports do not exist
-        skip if @records[:diag_order_1].nil?
-        skip if @records[:diag_order_2].nil?
-        skip if @records[:diag_order_3].nil?
-        skip if @records[:diag_order_4].nil?
+        skip 'Diagnostic Order 1 not successfully created in startup.' if @records[:diag_order_1].nil?
+        skip 'Diagnostic Order 2 not successfully created in startup.' if @records[:diag_order_2].nil?
+        skip 'Diagnostic Order 3 not successfully created in startup.' if @records[:diag_order_3].nil?
+        skip 'Diagnostic Order 4 not successfully created in startup.' if @records[:diag_order_4].nil?
 
         create_diagnostic_report(:spec_100, ['observation/obs-100.xml', 'observation/obs-101.xml'], 'diagnostic_report/dr-100.xml', :diag_report_1, @records[:diag_order_1])
         create_diagnostic_report(:spec_uslab, ['observation/obs-200.xml'], 'diagnostic_report/dr-200.xml', :diag_report_2, @records[:diag_order_2])

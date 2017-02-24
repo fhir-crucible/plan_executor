@@ -245,8 +245,8 @@ module Crucible
         if @negated then !expression else expression end
       end
 
-      def skip
-        raise SkipException.new
+      def skip(message = '')
+        raise SkipException.new message
       end
 
     end
@@ -261,6 +261,10 @@ module Crucible
     end
 
     class SkipException < Exception
+      def initialize(message = '')
+        super(message)
+        FHIR.logger.info "SkipException: #{message}"
+      end
     end
 
   end

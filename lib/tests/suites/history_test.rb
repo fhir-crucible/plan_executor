@@ -33,7 +33,7 @@ module Crucible
           @patient.update
           @version << @client.reply.version
           @patient.destroy
-          assert_response_code(@client.reply,204)
+          assert([200,204].include?(@client.reply.code), 'The server should have returned a 200 or 204 upon successful deletion.')
 
           @entry_count = @version.length
           # add one for deletion
@@ -55,7 +55,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
-        skip unless @patient_setup
+        skip 'Patient not correctly created in setup.' unless @patient_setup
 
         bundle = FHIR::Patient.resource_instance_history(@patient.id)
 
@@ -70,7 +70,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
-        skip unless @patient_setup
+        skip 'Patient not correctly created in setup.' unless @patient_setup
         bundle = FHIR::Patient.resource_instance_history(@patient.id)
         entries = bundle.entry
 
@@ -86,7 +86,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["history"]
         }
-        skip unless @patient_setup
+        skip 'Patient not correctly created in setup.' unless @patient_setup
 
         before = @create_date - 1.minute
         after = before + 1.hour
@@ -110,7 +110,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "update", "delete"]
           validates resource: "Patient", methods: ["vread", "history"]
         }
-        skip unless @patient_setup
+        skip 'Patient not correctly created in setup.' unless @patient_setup
 
         bundle = FHIR::Patient.resource_instance_history(@patient.id)
 

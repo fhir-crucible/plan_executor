@@ -126,7 +126,7 @@ module Crucible
           validates resource: 'Observation', methods: ['create']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         # patient has gained weight
         @obs1 = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',250,'kg',@patient0.id)
@@ -162,7 +162,7 @@ module Crucible
           validates resource: 'Condition', methods: ['update']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         # weight
         @obs2 = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',100,'kg',@patient0.id)
@@ -202,7 +202,7 @@ module Crucible
           validates resource: 'Patient', methods: ['create']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         @patient1 = ResourceGenerator.minimal_patient(@patient0.identifier.first.value,@patient0.name.first.given.first)
         reply = @client.create @patient1
@@ -233,7 +233,7 @@ module Crucible
           validates resource: 'Observation', methods: ['create','read','delete']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         # height observation
         @obs3 = ResourceGenerator.minimal_observation('http://loinc.org','8302-2',177,'cm',@patient0.id)
@@ -283,7 +283,7 @@ module Crucible
           validates resource: 'Patient', methods: ['$everything']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         reply = @client.fetch_patient_record(@patient0.id, nil, nil, 'GET')
         assert_response_ok(reply)
@@ -344,7 +344,7 @@ module Crucible
           validates resource: 'Condition', methods: ['delete']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         @client.begin_transaction
         @client.add_transaction_request('DELETE', "Patient/#{@patient0.id}") if @patient0 && !@patient0.id.nil?
@@ -377,7 +377,7 @@ module Crucible
           validates resource: 'Condition', methods: ['delete']
           validates resource: nil, methods: ['transaction-system']
         }
-        skip unless @created_patient_record
+        skip 'Could not create patient in XFER0.' unless @created_patient_record
 
         @client.begin_transaction
         @client.add_transaction_request('DELETE', "Observation/#{@obs4.id}") if @obs4 && !@obs4.id.nil?
@@ -494,7 +494,7 @@ module Crucible
           validates resource: 'Observation', methods: ['delete']
           validates resource: nil, methods: ['batch-system']
         }
-        skip unless ((@batch_patient_2 && !@batch_patient_2.id.nil?) ||
+        skip 'Could not create necessary records in XFER11.' unless ((@batch_patient_2 && !@batch_patient_2.id.nil?) ||
                      (@batch_obs_2 && !@batch_obs_2.id.nil?) ||
                      (@batch_obs_3 && !@batch_obs_3.id.nil? ))
 

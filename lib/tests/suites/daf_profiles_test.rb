@@ -338,11 +338,11 @@ module Crucible
             links "#{BASE_SPEC_LINK}/daf/daf-#{daf_resource.type.downcase}.html"
           }
           resource = @server_side_resources[daf_resource.type]
-          skip if resource.nil? || resource.empty?
+          skip "#{daf_resource.type} not properly created." if resource.nil? || resource.empty?
 
           profiles = FHIR::Definitions.get_profiles_for_resource(daf_resource.type)
           profile = profiles.select{|x|x.id.start_with?'daf'}.first
-          skip if profile.nil?
+          skip "Profile for #{daf_resource.type} not found."  if profile.nil?
 
           resource.each do |r|
             assert(profile.is_valid?(r),"The #{daf_resource.type} with ID #{r.id} is not DAF compliant but claims to be.",r.to_xml)
@@ -357,9 +357,9 @@ module Crucible
             validates resource: "#{daf_resource.type}", methods: ['$validate']
             validates profiles: ['validate-profile']
           }
-          skip unless @supports_validate
+          skip 'Validate not supported.' unless @supports_validate
           resource = @server_side_resources[daf_resource.type]
-          skip if resource.nil? || resource.empty?
+          skip "#{daf_resource.type} not created properly." if resource.nil? || resource.empty?
 
           resource.each do |r|
             reply = @client.validate(r,{profile_uri: daf_resource.profile.reference})
@@ -382,7 +382,7 @@ module Crucible
           requires resource: 'Patient', methods: ['$validate']
           validates profiles: ['validate-profile']
         }
-        skip unless @supports_validate
+        skip 'Validate not supported.' unless @supports_validate
 
         # Removing the identifier and adding an "animal" to the
         # Patient violates the DAF-Patient profile.
@@ -426,7 +426,7 @@ module Crucible
           assert_bundle_response(reply)
           resource = reply.resource.entry.map{|x|x.resource}
         end
-        skip if resource.nil? || resource.empty?
+        skip 'Patient resource not created.' if resource.nil? || resource.empty?
 
         reply = @client.fetch_patient_record(resource.first.id)
 
@@ -456,7 +456,7 @@ module Crucible
           assert_bundle_response(reply)
           resource = reply.resource.entry.map{|x|x.resource}
         end
-        skip if resource.nil? || resource.empty?
+        skip 'Encounter resource not created.' if resource.nil? || resource.empty?
 
         reply = @client.fetch_encounter_record(resource.first.id)
 

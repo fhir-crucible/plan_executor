@@ -42,7 +42,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
-        skip if @patient.nil?
+        skip 'Patient not created in setup.' if @patient.nil?
         
         patient = FHIR::Patient.read(@patient.id)
 
@@ -86,7 +86,7 @@ module Crucible
         }
 
         ignore_client_exception { FHIR::Patient.read('Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters') }
-        assert_response_not_found(@client.reply)
+        assert(([400,404].include?(@client.reply.code)), "Expecting 400 since invalid id, or 404 since unknown resource.  Returned #{@client.reply.code}." )
       end
 
       test 'R005', 'Read _summary=text' do
@@ -97,7 +97,7 @@ module Crucible
           requires resource: "Patient", methods: ["create", "read", "delete"]
           validates resource: "Patient", methods: ["read"]
         }
-        skip if @patient.nil?
+        skip 'Patient not created in setup.' if @patient.nil?
 
         patient = FHIR::Patient.read_with_summary(@patient.id, "text")
         assert(patient.text, 'Requested summary narrative was not provided.', @client.reply.body)

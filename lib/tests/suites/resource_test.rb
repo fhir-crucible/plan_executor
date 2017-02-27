@@ -675,17 +675,17 @@ module Crucible
           result.update(STATUS[:skip],"Preexisting #{resource_class.name.demodulize} unknown.", nil)
         else
           reply = @client.destroy(@resource_class,@preexisting_id)
-          if reply.code==204 and reply.body.blank?
+          if reply.code==204 && reply.body.blank?
             @x070_success = true
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
-          elsif reply.code==200 and !reply.body.blank?
+          elsif reply.code==200 && !reply.body.blank?
             @x070_success = true
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
-          elsif reply.code==204 and !reply.body.blank?
+          elsif reply.code==204 && !reply.body.blank?
             outcome = self.parse_operation_outcome(reply.body) rescue nil
             message = self.build_messages(outcome)
             result.update(STATUS[:fail], "Deletions that return 204 cannot return content. Content: #{message}", reply.body)
-          elsif reply.code==200 and reply.body.blank?
+          elsif reply.code==200 && reply.body.blank?
             result.update(STATUS[:fail], 'Deletions that return 200 must return content.', reply.body)
           elsif reply.code==405
             outcome = self.parse_operation_outcome(reply.body) rescue nil

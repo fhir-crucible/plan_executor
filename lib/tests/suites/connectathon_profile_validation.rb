@@ -27,7 +27,7 @@ module Crucible
         if !reply.id.nil?
           @profile.id = reply.id
         else
-          if reply.code >= 400 and reply.code < 500
+          if reply.code >= 400 && reply.code < 500
             outcome = self.parse_operation_outcome(reply.body) rescue nil
             @profile_error_message = self.build_messages(outcome) rescue nil
           end

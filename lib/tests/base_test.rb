@@ -50,7 +50,7 @@ module Crucible
       def execute_test_methods
         result = []
         begin
-          setup if respond_to? :setup and not @metadata_only
+          setup if respond_to? :setup && !@metadata_only
         rescue AssertionException => e
           @setup_failed = e
         end
@@ -67,7 +67,7 @@ module Crucible
           end
         end
         begin
-          teardown if respond_to? :teardown and not @metadata_only
+          teardown if respond_to? :teardown && !@metadata_only
         rescue
         end
         result

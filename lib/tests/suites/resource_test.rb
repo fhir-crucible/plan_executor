@@ -441,7 +441,7 @@ module Crucible
             raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", @client.reply.body)
           elsif @client.reply.code != 200
             raise AssertionException.new("Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{@client.reply.code}.", nil)
-          elsif (@client.reply.id != @preexisting_id) and (@client.reply.version != @preexisting_version)
+          elsif (@client.reply.id != @preexisting_id) && (@client.reply.version != @preexisting_version)
             raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
           end
           result.update(STATUS[:pass], "Read current version of preexisting #{resource_class.name.demodulize}.", @client.reply.body)
@@ -475,7 +475,7 @@ module Crucible
             raise AssertionException.new("Server failed to return preexisting #{resource_class.name.demodulize}.", @client.reply.body)
           elsif @client.reply.code != 200
             raise AssertionException.new("Server returned preexisting #{resource_class.name.demodulize}, but responded with HTTP#{@client.reply.code}.", nil)
-          elsif (@client.reply.id != @preexisting_id) and (@client.reply.version != @preexisting_version)
+          elsif (@client.reply.id != @preexisting_id) && (@client.reply.version != @preexisting_version)
             raise AssertionException.new("Server did not respond with correct information in the content-location header.", nil)
           end
           result.update(STATUS[:pass], "Read previous version of preexisting #{resource_class.name.demodulize}.", @client.reply.body)

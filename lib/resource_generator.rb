@@ -14,6 +14,7 @@ module Crucible
         resource.id=nil if resource.respond_to?(:id=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
+        resource.meta=FHIR::Meta.new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]}) if resource.respond_to?(:meta=)
         #resource.text=nil if [FHIR::Bundle,FHIR::Binary].include?(klass)
         apply_invariants!(resource)
         resource

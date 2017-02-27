@@ -175,7 +175,7 @@ module Crucible
       def execute_test_methods
         @testreport = testreport_template
         begin
-          @testreport.setup = setup if respond_to? :setup and not @metadata_only
+          @testreport.setup = setup if respond_to?(:setup) && !@metadata_only
         rescue AssertionException => e
           FHIR.logger.error "Setup Error #{id}: #{e.message}\n#{e.backtrace}"
           @setup_failed = e
@@ -205,7 +205,7 @@ module Crucible
           end
         end
         begin
-          @testreport.teardown = teardown if respond_to? :teardown and not @metadata_only
+          @testreport.teardown = teardown if respond_to?(:teardown) && !@metadata_only
         rescue
         end
         @testreport

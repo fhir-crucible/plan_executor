@@ -848,7 +848,7 @@ module Crucible
             end
           end
         when FHIR::RequestGroup::Action
-          if !resource.resource.nil? and resource.action.count > 0
+          if !resource.resource.nil? && resource.action.count > 0
             if SecureRandom.random_number(2)==0
               resource.resource = nil
             else

@@ -23,7 +23,15 @@ module Crucible
         @profile.id = nil
         @profile.identifier = nil # clear the identifiers, in case the server checks for duplicates
         reply = @client.create @profile
-        @profile.id = reply.id if !reply.id.nil?
+
+        if !reply.id.nil?
+          @profile.id = reply.id
+        else
+          if reply.code >= 400 && reply.code < 500
+            outcome = self.parse_operation_outcome(reply.body) rescue nil
+            @profile_error_message = self.build_messages(outcome) rescue nil
+          end
+        end
 
         options = {
           id: @profile.id,
@@ -84,7 +92,13 @@ module Crucible
           validates resource: 'Observation', methods: ['$validate']
           validates profiles: ['validate-profile']
         }
-        skip if @profile.id.nil?
+
+        if @profile.id.nil?
+          message = 'Profile not created properly in setup'
+          message += " (#{@profile_error_message})." unless @profile_error_message.nil?
+          skip message
+        end
+
         # @profile_url = "http://hl7.org/fhir/StructureDefinition/#{resource_class.name.demodulize}" # the profile to validate with
         @obs.each do |x|
           x.meta = FHIR::Meta.new

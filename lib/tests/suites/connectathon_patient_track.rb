@@ -74,7 +74,7 @@ module Crucible
 
         reply = @client.create @patient_us
         @patient_us_id = reply.id
-		    @patient_us.id = reply.resource.id || reply.id
+        @patient_us.id = reply.resource.id || reply.id
 
         assert_response_ok(reply)
 
@@ -100,9 +100,9 @@ module Crucible
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['update']
         }
-        skip unless @patient_id
+        skip 'Patient not registered properly in C8T1_1A.' unless @patient_id
 
-		    @patient.id = @patient_id
+        @patient.id = @patient_id
         @patient.telecom[0].value='1-800-TOLL-FREE'
         @patient.telecom[0].system='phone'
         @patient.name[0].given = ['Crocodile','Pants']
@@ -134,7 +134,7 @@ module Crucible
           validates resource: 'Patient', methods: ['update']
           validates extensions: ['extensions']
         }
-        skip unless @patient_us_id
+        skip 'Patient with unmodified extension not properly created in test C8T1_1B' unless @patient_us_id
 
         @patient_us.id = @patient_us_id
 
@@ -167,9 +167,9 @@ module Crucible
           validates resource: 'Patient', methods: ['update']
           validates extensions: ['modifying extensions']
         }
-        skip unless @patient_us_id
+        skip 'Patient with unmodified extension not properly created in test C8T1_1B' unless @patient_us_id
 
-		    @patient_us.id = @patient_us_id
+        @patient_us.id = @patient_us_id
         @patient_us.modifierExtension ||= []
         @patient_us.modifierExtension << FHIR::Extension.new
         @patient_us.modifierExtension[0].url='http://projectcrucible.org/modifierExtension/foo'
@@ -244,7 +244,7 @@ module Crucible
           validates resource: 'Patient', methods: ['update']
           validates extensions: ['complex extensions']
         }
-        skip unless @patient_us_id
+        skip 'Patient with unmodified extension not properly created in test C8T1_1B' unless @patient_us_id
 
         @patient_us.id = @patient_us_id
         begin
@@ -287,7 +287,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create', 'update']
           validates resource: 'Patient', methods: ['history']
         }
-        skip unless @patient_id
+        skip 'Patient not registered properly in C8T1_1A.' unless @patient_id
 
         result = @client.resource_instance_history(FHIR::Patient,@patient_id)
         assert_response_ok result
@@ -352,10 +352,10 @@ module Crucible
           requires resource: 'Patient', methods: ['delete']
         }
 
-        skip unless @patient_id
+        skip 'Patient not registered properly in C8T1_1A.' unless @patient_id
 
         reply = @client.destroy(FHIR::Patient, @patient_id)
-        assert_response_code(reply, 204)
+        assert([200, 204].include?(reply.code), 'The server should have returned a 200 or 204 upon successful deletion.')
 
         reply = @client.read(FHIR::Patient, @patient_id)
 

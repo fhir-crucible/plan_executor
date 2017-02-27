@@ -96,7 +96,7 @@ module Crucible
             validates resource: 'MedicationRequest', methods: ['read']
           }
 
-          skip if @previous_version_id.nil?
+          skip "VersionId of Existing Medication Request not returned in C12PATCH_1_(#{fmt})." if @previous_version_id.nil?
 
           patchset = [{ op: "replace", path: "MedicationRequest/status", value: "active" }]
 

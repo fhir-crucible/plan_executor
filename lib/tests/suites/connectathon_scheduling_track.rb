@@ -287,7 +287,7 @@ module Crucible
 
         practitioner = reply.resource.entry.try(:first).try(:resource)
 
-        skip unless practitioner
+        skip 'Practitioner not found.' unless practitioner
 
       end
 
@@ -314,7 +314,7 @@ module Crucible
 
         service = reply.resource.entry.try(:first).try(:resource)
 
-        skip unless service
+        skip 'HealthcareService not found.' unless service
 
       end
 

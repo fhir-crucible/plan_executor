@@ -74,7 +74,7 @@ module Crucible
             links "#{BASE_SPEC_LINK}/valueset-operations.html#expand"
             validates resource: 'ValueSet', methods: ['$expand']
           }
-          skip if @valueset.nil?
+          skip 'Valueset not created in setup.' if @valueset.nil?
           options = {
             :id => @valueset.id,
             :operation => {
@@ -115,7 +115,7 @@ module Crucible
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
             validates resource: 'ValueSet', methods: ['$validate-code']
           }
-          skip if @valueset.nil?
+          skip 'Valueset not created in setup.' if @valueset.nil?
           options = {
             :operation => {
               :method => how,
@@ -229,7 +229,8 @@ module Crucible
             links "#{BASE_SPEC_LINK}/valueset-operations.html#expand"
             validates resource: 'ValueSet', methods: ['$expand']
           }
-          skip if @valueset_created_id.nil? || @codesystem_created_id.nil?
+          skip 'ValueSet not created in setup.' if @valueset_created_id.nil?
+          skip 'CodeSystem not created in CT09.' if @codesystem_created_id.nil?
           options = {
             :id => @valueset_created_id,
             :operation => {
@@ -249,7 +250,8 @@ module Crucible
             links "#{BASE_SPEC_LINK}/valueset-operations.html#validate-code"
             validates resource: 'ValueSet', methods: ['$validate-code']
           }
-          skip if @valueset_created_id.nil? || @codesystem_created_id.nil?
+          skip 'ValueSet not created in setup.' if @valueset_created_id.nil?
+          skip 'CodeSystem not created in CT09.' if @codesystem_created_id.nil?
           options = {
             :operation => {
               :method => how,
@@ -271,7 +273,7 @@ module Crucible
             links "#{BASE_SPEC_LINK}/codesystem-operations.html#lookup"
             validates resource: 'ValueSet', methods: ['$lookup']
           }
-          skip if @codesystem_created_id.nil?
+          skip 'CodeSystem not created in CT09.' if @codesystem_created_id.nil?
           options = {
             :operation => {
               :method => how,
@@ -296,7 +298,7 @@ module Crucible
           validates resource: 'ValueSet', methods: ['delete']
         }
 
-        skip if @codesystem_created_id.nil?
+        skip 'CodeSystem not created in CT09.' if @codesystem_created_id.nil?
         reply = @client.destroy FHIR::CodeSystem, @codesystem_created_id
         assert_response_code(reply, 204)
 
@@ -329,7 +331,7 @@ module Crucible
             links "#{BASE_SPEC_LINK}/conceptmap-operations.html#translate"
             validates resource: 'ConceptMap', methods: ['$translate']
           }
-          skip if @conceptmap_created_id.nil?
+          skip 'ConceptMap not created in test CT14.' if @conceptmap_created_id.nil?
           assert @conceptmap_simple.group.first.try(:element).try(:first), "ConceptMap #{@conceptmap_simple.id} does not have a code to translate in group"
           options = {
             :operation => {
@@ -377,7 +379,7 @@ module Crucible
           validates resource: 'ConceptMap', methods: ['delete']
         }
 
-        skip if @conceptmap_created_id.nil?
+        skip 'ConceptMap not created in test CT14.' if @conceptmap_created_id.nil?
         reply = @client.destroy FHIR::ConceptMap, @conceptmap_created_id
         assert_response_code(reply, 204)
       end

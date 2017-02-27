@@ -80,7 +80,7 @@ module Crucible
           rescue AssertionException => e
             result.update(STATUS[:fail], e.message, e.data)
           rescue SkipException => e
-            result.update(STATUS[:skip], "Skipped: #{test_method}", '')
+            result.update(STATUS[:skip], "Skipped: #{e.message}", '')
           rescue ClientException => e
             result.update(STATUS[:fail], e.message, '')
           rescue => e

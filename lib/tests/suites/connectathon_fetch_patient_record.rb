@@ -105,7 +105,8 @@ module Crucible
           validates resource: 'Patient', methods: ['create', '$everything']
         }
 
-        skip unless @created_patient_record
+        skip 'Patient record not created during setup.' unless @created_patient_record
+
         record = @client.fetch_patient_record(@patient_id, nil, nil, how)
 
         assert_response_ok(record)
@@ -133,7 +134,7 @@ module Crucible
           validates resource: 'Patient', methods: ['create', '$everything']
         }
 
-        skip unless @created_patient_record
+        skip 'Patient record not created during setup.' unless @created_patient_record
 
         start = (DateTime.now - (6*30)).strftime("%Y-%m-%d")
         stop = DateTime.now.strftime("%Y-%m-%d")
@@ -166,7 +167,8 @@ module Crucible
           validates resource: 'Patient', methods: ['create', 'update', '$everything']
         }
 
-        skip unless @created_patient_record
+        skip 'Patient record not created during setup.' unless @created_patient_record
+
         record = @client.fetch_patient_record(@patient_id,nil,nil,how)
 
         assert_response_ok(record)
@@ -219,7 +221,8 @@ module Crucible
           validates resource: 'Procedure', methods: ['create']
         }
 
-        skip unless @created_patient_record
+        skip 'Patient record not created during setup.' unless @created_patient_record
+
         record = @client.fetch_patient_record(@pat_reply.id)
         assert_response_ok(record)
         assert_bundle_response(record)
@@ -293,7 +296,8 @@ module Crucible
           validates resource: 'Procedure', methods: ['create']
         }
 
-        skip unless @created_patient_record
+        skip 'Patient record not created during setup.' unless @created_patient_record
+
         record = @client.fetch_patient_record(@pat_reply.id)
         assert_response_ok(record)
         assert_bundle_response(record)

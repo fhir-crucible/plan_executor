@@ -386,7 +386,7 @@ module Crucible
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
-        skip unless @simple_id
+        skip 'Simple claim not successfully registered in C9F_1A.' unless @simple_id
 
         search_string = @simple_id
         search_regex = Regexp.new(search_string)
@@ -421,7 +421,7 @@ module Crucible
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
-        skip unless @simple_id
+        skip 'Simple claim not successfully registered in C9F_1A.' unless @simple_id
 
         search_string = @simple_id
         search_regex = Regexp.new(search_string)
@@ -455,7 +455,7 @@ module Crucible
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
-        skip unless @simple_id
+        skip 'Simple claim not successfully registered in C9F_1A.' unless @simple_id
 
         search_string = @simple_id
         search_regex = Regexp.new(search_string)
@@ -491,7 +491,7 @@ module Crucible
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
-        skip unless @average_id
+        skip 'Average claim not successfully registered in C9F_1B.' unless @average_id
 
         search_string = @average_id
         search_regex = Regexp.new(search_string)
@@ -526,7 +526,7 @@ module Crucible
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
-        skip unless @average_id
+        skip 'Average claim not successfully registered in C9F_1B.' unless @average_id
 
         search_string = @average_id
         search_regex = Regexp.new(search_string)
@@ -560,7 +560,7 @@ module Crucible
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
-        skip unless @average_id
+        skip 'Average claim not successfully registered in C9F_1B.' unless @average_id
 
         search_string = @average_id
         search_regex = Regexp.new(search_string)

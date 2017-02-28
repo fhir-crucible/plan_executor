@@ -17,6 +17,10 @@ module Crucible
         resource.xmlId=nil if resource.respond_to?(:xmlId=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
+        if resource.respond_to?(:meta=)
+          resource.meta = FHIR::Resource::ResourceMetaComponent.new
+          resource.meta.tag = [ minimal_coding('http://projectcrucible.org','testdata') ]
+        end
         resource.text=nil if [FHIR::Bundle,FHIR::Binary,FHIR::Parameters].include?(klass)
         apply_invariants!(resource)
         resource

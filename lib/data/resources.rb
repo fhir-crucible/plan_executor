@@ -82,7 +82,7 @@ module Crucible
         observations = []
         files = File.join(fixture_path, 'validation', 'observations', '*.xml')
         Dir.glob(files).each do |f|
-            observations << tag_metadata( FHIR::Observation.from_xml( File.read(f)))
+            observations << Crucible::Generator::Resources.tag_metadata( FHIR::Observation.from_xml( File.read(f)))
         end
         observations
       end
@@ -129,7 +129,7 @@ module Crucible
         load_fixture('daf/conformance-daf-query-responder.xml')
       end
 
-      def tag_metadata(resource)
+      def self.tag_metadata(resource)
         if resource.meta.nil?
           resource.meta = FHIR::Resource::ResourceMetaComponent.new
           resource.meta.tag = [ Crucible::Tests::ResourceGenerator.minimal_coding('http://projectcrucible.org','testdata') ]
@@ -140,7 +140,7 @@ module Crucible
       end
 
       def load_fixture(path)
-        tag_metadata(FHIR::Resource.from_contents(File.read(File.join(fixture_path, path))))
+        Crucible::Generator::Resources.tag_metadata(FHIR::Resource.from_contents(File.read(File.join(fixture_path, path))))
       end
 
     end

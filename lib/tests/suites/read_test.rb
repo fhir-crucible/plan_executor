@@ -28,6 +28,7 @@ module Crucible
 
       def self.createPatient(family, given)
         patient = FHIR::Patient.new(name: [FHIR::HumanName.new(family: [family], given: [given])])
+        Crucible::Generator::Resources.tag_metadata(patient)
       end
 
       # [SprinklerTest("R001", "Result headers on normal read")]

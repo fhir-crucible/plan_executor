@@ -477,7 +477,7 @@ module Crucible
           result.update(STATUS[:skip],"Preexisting #{resource_class.name.demodulize} unknown.", nil)
         else
           reply = @client.destroy(@resource_class,@preexisting_id)
-          if reply.code==204
+          if reply.code==204 || reply.code==200
             @x070_success = true
             result.update(STATUS[:pass], "Existing #{resource_class.name.demodulize} was deleted.", reply.body)
           elsif reply.code==405

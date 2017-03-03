@@ -81,6 +81,7 @@ module Crucible
         body.code = '182756003'
         observation.bodySite = FHIR::CodeableConcept.new
         observation.bodySite.coding = [ body ]
+        Crucible::Generator::Resources.tag_metadata(observation)
         reply = @client.create(observation)
         reply.id
       end

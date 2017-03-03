@@ -78,7 +78,7 @@ module Crucible
         observations = []
         files = File.join(fixture_path, 'validation', 'observations', '*.xml')
         Dir.glob(files).each do |f|
-          observations << tag_metadata(FHIR::Xml.from_xml( File.read(f) ))
+          observations << Crucible::Generator::Resources.tag_metadata(FHIR::Xml.from_xml( File.read(f) ))
         end
         observations
       end
@@ -149,7 +149,7 @@ module Crucible
         load_fixture('patch/medicationrequest-simple.xml')
       end
 
-      def tag_metadata(resource)
+      def self.tag_metadata(resource)
         if resource.meta.nil?
           resource.meta = FHIR::Meta.new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]})
         else
@@ -159,7 +159,7 @@ module Crucible
       end
 
       def load_fixture(path)
-        tag_metadata(FHIR.from_contents(File.read(File.join(fixture_path, path))))
+        Crucible::Generator::Resources.tag_metadata(FHIR.from_contents(File.read(File.join(fixture_path, path))))
       end
 
     end

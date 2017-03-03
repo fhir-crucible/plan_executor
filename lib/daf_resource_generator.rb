@@ -6,7 +6,6 @@ module Crucible
         resource = minimal_patient(identifier,name)
         # resource.identifier = [ minimal_identifier(identifier) ]
         # resource.name = [ minimal_humanname(name) ]
-        resource.meta = FHIR::Meta.new
         resource.meta.profile = ['http://hl7.org/fhir/StructureDefinition/daf-patient']
         # DAF must supports and DAF extensions
         resource.active = true

@@ -12,7 +12,7 @@ module Crucible
       end
 
       def tests
-        @scripts
+        @scripts.select{|test| !test.multiserver && !test.containsRuleAssertions?}
       end
 
       def find_test(key)

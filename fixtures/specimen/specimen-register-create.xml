@@ -42,7 +42,6 @@
 		<reference value="Patient/tlerr"/>
 		<display value="Todd Lerr"/>
 	</subject>
-	</subject>
 	<collection>
 		<collectedDateTime value="2014-12-05"/>
 	</collection>

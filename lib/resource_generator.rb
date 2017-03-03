@@ -14,6 +14,7 @@ module Crucible
         resource.id=nil if resource.respond_to?(:id=)
         resource.versionId=nil if resource.respond_to?(:versionId=)
         resource.version=nil if resource.respond_to?(:version=)
+        resource.meta=FHIR::Meta.new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]}) if resource.respond_to?(:meta=)
         #resource.text=nil if [FHIR::Bundle,FHIR::Binary].include?(klass)
         apply_invariants!(resource)
         resource
@@ -161,7 +162,7 @@ module Crucible
         resource = FHIR::Patient.new
         resource.identifier = [ minimal_identifier(identifier) ]
         resource.name = [ minimal_humanname(name) ]
-        resource
+        Crucible::Generator::Resources.tag_metadata(resource)
       end
 
       # Common systems:
@@ -179,7 +180,7 @@ module Crucible
           resource.subject = ref
         end
         resource.valueQuantity = minimal_quantity(value,units)
-        resource
+        Crucible::Generator::Resources.tag_metadata(resource)
       end
 
       # Default system/code are for SNOMED "Obese (finding)"
@@ -193,7 +194,7 @@ module Crucible
         end
         resource.code = minimal_codeableconcept(system,code)
         resource.verificationStatus = 'confirmed'
-        resource
+        Crucible::Generator::Resources.tag_metadata(resource)
       end
 
       def self.minimal_identifier(identifier='0')

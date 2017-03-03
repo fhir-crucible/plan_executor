@@ -23,7 +23,7 @@ module Crucible
         rescue
           # try to create a patient
           begin
-            @patient = FHIR::Patient.create(name: { family: 'Emerald', given: 'Caro' })
+            @patient = FHIR::Patient.new(meta: { tag: [{ system: 'http://projectcrucible.org', code: 'testdata'}] }, name: { family: 'Emerald', given: 'Caro' })
             @patient_created = true
           rescue
             @patient = nil

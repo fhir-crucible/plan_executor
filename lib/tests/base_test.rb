@@ -12,6 +12,9 @@ module Crucible
       attr_accessor :tags
       attr_accessor :category
       attr_accessor :warnings
+      attr_accessor :setup_failed
+      attr_accessor :setup_requests
+      attr_accessor :teardown_requests
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category']
@@ -31,6 +34,8 @@ module Crucible
         @client2.monitor_requests if @client2
         @tags ||= []
         @warnings = []
+        @setup_requests = []
+        @teardown_requests = []
       end
 
       def multiserver
@@ -50,10 +55,12 @@ module Crucible
       def execute_test_methods
         result = []
         begin
+          @client.requests = [] if @client
           setup if respond_to?(:setup) && !@metadata_only
         rescue AssertionException => e
           @setup_failed = e
         end
+        @setup_requests = @client.requests.map(&:to_hash) if @client
         prefix = if @metadata_only then 'generating metadata' else 'executing' end
         methods = tests
         methods = tests & @tests_subset unless @tests_subset.blank?
@@ -67,7 +74,9 @@ module Crucible
           end
         end
         begin
+          @client.requests = [] if @client
           teardown if respond_to?(:teardown) && !@metadata_only
+          @teardown_requests = @client.requests.map(&:to_hash) if @client
         rescue
         end
         result

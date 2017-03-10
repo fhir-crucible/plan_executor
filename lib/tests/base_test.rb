@@ -13,6 +13,7 @@ module Crucible
       attr_accessor :category
       attr_accessor :warnings
       attr_accessor :setup_failed
+      attr_accessor :setup_failure_message
       attr_accessor :setup_requests
       attr_accessor :teardown_requests
 
@@ -34,6 +35,7 @@ module Crucible
         @client2.monitor_requests if @client2
         @tags ||= []
         @warnings = []
+        @setup_failed = false
         @setup_requests = []
         @teardown_requests = []
       end
@@ -58,7 +60,8 @@ module Crucible
           @client.requests = [] if @client
           setup if respond_to?(:setup) && !@metadata_only
         rescue AssertionException => e
-          @setup_failed = e
+          @setup_failed = true
+          @setup_failure_message = e.message
         end
         @setup_requests = @client.requests.map(&:to_hash) if @client
         prefix = if @metadata_only then 'generating metadata' else 'executing' end

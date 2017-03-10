@@ -178,7 +178,8 @@ module Crucible
           @testreport.setup = setup if respond_to?(:setup) && !@metadata_only
         rescue AssertionException => e
           FHIR.logger.error "Setup Error #{id}: #{e.message}\n#{e.backtrace}"
-          @setup_failed = e
+          @setup_failed = true
+          @setup_failure_message = e.message
           @testreport.status = 'error'
           if @testreport.setup.action.last.operation
             @testreport.setup.action.last.operation.message = "#{e.message}\n#{e.backtrace}"
@@ -253,6 +254,7 @@ module Crucible
         report_setup = FHIR::TestReport::Setup.new
         @current_test = :setup
         @setup_failed = false
+        @setup_failure_message = nil
         # Run any autocreates
         @autocreate.each do |fixture_id|
           if !@setup_failed
@@ -265,7 +267,10 @@ module Crucible
                   'message' => @current_action
                 }
               })
-            @setup_failed = true unless [200,201].include?(@last_response.code)
+            unless [200,201].include?(@last_response.code)
+              @setup_failed = true
+              @setup_failure_message = "Autocreate fixture #{fixture_id} failed: did not return code 200 or 201."
+            end
           end
         end unless @client.nil?
         # Run setup actions if any
@@ -273,7 +278,10 @@ module Crucible
           if !@setup_failed
             @current_action = action
             report_setup.action << perform_action(action) 
-            @setup_failed = true if action_failed?(report_setup.action.last)
+            if action_failed?(report_setup.action.last)
+              @setup_failed = true
+              @setup_failure_message = 'One of the setup actions failed.'
+            end
           end
         end unless @testscript.setup.blank?
         report_setup

@@ -35,11 +35,13 @@ module Crucible
         @total_count = 0
         @entries = []
 
-        while reply != nil && !reply.resource.nil?
-          @total_count += reply.resource.entry.size
-          @entries += reply.resource.entry
-          reply = @client.next_page(reply)
-          @read_entire_feed=false if (!reply.nil? && reply.code!=200)
+        mute_response_body 'The body of the Sprinkler Search setup responses are not stored for performance reasons.' do
+          while reply != nil && !reply.resource.nil?
+            @total_count += reply.resource.entry.size
+            @entries += reply.resource.entry
+            reply = @client.next_page(reply)
+            @read_entire_feed=false if (!reply.nil? && reply.code!=200)
+          end
         end
 
         # create a condition matching the first patient

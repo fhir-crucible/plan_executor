@@ -138,6 +138,15 @@ module Crucible
         end
       end
 
+      def mute_response_body(reason = '', &block)
+        return if @client.nil? || !block_given?
+
+        count_before = @client.requests.length
+        yield
+        @client.requests.from(count_before).each { |req| req.response[:body] = reason }
+
+      end
+
     end
   end
 end

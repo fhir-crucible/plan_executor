@@ -97,6 +97,10 @@ module Crucible
         load_fixture('financial/claim-example-oral-orthoplan.xml')
       end
 
+      def preauth_claim
+        FHIR::Xml.from_xml File.read(File.join(fixture_path, 'financial', 'claim-example-preauth.xml'))
+      end
+
       # ------------------------------ SCHEDULING TEST TRACK ------------------------------
 
       def scheduling_appointment

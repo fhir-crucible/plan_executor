@@ -21,6 +21,7 @@ module Crucible
         patient.identifier = [FHIR::Identifier.new]
         patient.identifier[0].value = SecureRandom.urlsafe_base64
         ignore_client_exception { @patient = FHIR::Patient.create(patient) }
+        assert_resource_type @client.reply, FHIR::Patient
         assert @patient, "Response code #{@client.reply.code} on patient creation."
       end
 

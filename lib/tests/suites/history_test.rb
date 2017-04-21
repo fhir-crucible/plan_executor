@@ -20,6 +20,7 @@ module Crucible
           @resources = Crucible::Generator::Resources.new
           response = @client.create(@resources.minimal_patient)
           assert_response_ok(response)
+          assert_resource_type(response, FHIR::Patient)
           @patient = response.resource
           @patient_created = true
           @create_date = Time.now.utc

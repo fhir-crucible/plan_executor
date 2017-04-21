@@ -274,12 +274,12 @@ module Crucible
 
       # Compare requested resource with created resource
       def compare_response(entry)
-        entry != nil && entry.resource != nil && entry.resource.equals?(@resource,['id'])
+        !entry.nil? && !entry.resource.nil? && entry.resource.equals?(@resource,['id'])
       end
 
       # Compare response format with requested format
       def compare_response_format(entry, requested_format)
-        entry != nil && entry.response != nil && entry.response_format == requested_format
+        !entry.nil? && !entry.response.nil? && entry.response_format == requested_format
       end
 
       # Compare two requested entries

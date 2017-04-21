@@ -472,9 +472,11 @@ module Crucible
             m.identity.gsub!(/[^0-9A-Za-z]/, '')
           end
         when FHIR::DeviceComponent
-          resource.languageCode.coding.each do |c|
-            c.system = 'http://tools.ietf.org/html/bcp47'
-            c.code = 'en-US'
+          unless resource.languageCode.nil?
+            resource.languageCode.coding.each do |c|
+              c.system = 'http://tools.ietf.org/html/bcp47'
+              c.code = 'en-US'
+            end
           end
         when FHIR::DeviceMetric
           resource.measurementPeriod = nil
@@ -520,7 +522,7 @@ module Crucible
             resource.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
           end
         when FHIR::ExpansionProfile
-          resource.designation.exclude = nil
+          resource.designation.exclude = nil unless resource.designation.nil?
         when FHIR::FamilyMemberHistory
           if resource.ageAge
             resource.ageAge.system = 'http://unitsofmeasure.org'
@@ -544,15 +546,17 @@ module Crucible
             resource.deceasedAge.comparator = nil
           end
         when FHIR::Goal
-          resource.outcome.each do |outcome|
-            outcome.resultCodeableConcept = nil
-            outcome.resultReference = textonly_reference('Observation')
+          resource.outcomeCode.each do |code|
+            code = nil
           end
-          if resource.targetDuration
-            resource.targetDuration.system = 'http://unitsofmeasure.org'
-            resource.targetDuration.code = 'a'
-            resource.targetDuration.unit = nil
-            resource.targetDuration.comparator = nil
+          resource.outcomeReference.each do |reference|
+            reference = textonly_reference('Observation')
+          end
+          if resource.target && resource.target.dueDuration
+            resource.target.dueDuration.system = 'http://unitsofmeasure.org'
+            resource.target.dueDuration.code = 'a'
+            resource.target.dueDuration.unit = nil
+            resource.target.dueDuration.comparator = nil
           end
         when FHIR::Group
           resource.member = [] if resource.actual==false
@@ -575,13 +579,8 @@ module Crucible
           end
           resource.availability = availability.sample
         when FHIR::ImagingManifest
-          resource.title.coding.each{|c|c.code=['113000', '113002', '113003', '113004', '113005', '113006', '113007', '113008', '113009'].sample}
           resource.study.each do |study|
             study.series.each do |series|
-              series.baseLocation.each do |b| 
-                b.type = minimal_coding('http://hl7.org/fhir/dWebType',['WADO-RS', 'WADO-URI', 'IID'].sample)
-                b.url = "http://projectcrucible.org/#{SecureRandom.base64}"
-              end
               series.instance.each do |i|
                 i.sopClass = random_oid
                 i.uid = random_oid
@@ -589,7 +588,7 @@ module Crucible
             end
           end
         when FHIR::Immunization
-          if resource.wasNotGiven
+          if resource.notGiven
             resource.explanation.reasonNotGiven = [ textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}") ]
             resource.explanation.reason = nil
             resource.reaction = nil
@@ -625,15 +624,13 @@ module Crucible
             resource.frames = nil
           end
         when FHIR::Medication
-          if resource.product.try(:ingredient)
-            resource.product.ingredient.each {|i|i.amount = nil}
-          end
+          resource.ingredient.each {|i|i.amount = nil}
         when FHIR::MedicationAdministration
           date = DateTime.now
           resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
           resource.effectivePeriod = nil
           if resource.notGiven
-            resource.reasonGiven = nil
+            resource.reasonCode = nil
           else
             resource.reasonNotGiven = nil
           end
@@ -648,7 +645,7 @@ module Crucible
           resource.medicationCodeableConcept = nil
           resource.dosageInstruction.each {|d|d.timing = nil }
         when FHIR::MedicationStatement
-          resource.reasonNotTaken = nil if resource.notTaken != true
+          resource.reasonNotTaken = nil unless resource.taken == 'n'
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosage.each{|d|d.timing=nil}
@@ -665,7 +662,7 @@ module Crucible
           resource.uniqueId.each do |uid|
             uid.preferred = nil
           end
-        when FHIR::NutritionRequest
+        when FHIR::NutritionOrder
           resource.oralDiet.schedule = nil if resource.oralDiet
           resource.supplement.each{|s|s.schedule=nil}
           resource.enteralFormula.administration = nil if resource.enteralFormula
@@ -678,13 +675,13 @@ module Crucible
         when FHIR::Patient
           resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
         when FHIR::PlanDefinition
-          resource.actionDefinition.each do |a|
-            a.actionDefinition.each do |b|
+          resource.action.each do |a|
+            a.action.each do |b|
               b.relatedAction = []
             end
           end
         when FHIR::Procedure
-          resource.reasonNotPerformed = nil if resource.notPerformed != true
+          resource.notDoneReason = nil if resource.notDone != true
           resource.focalDevice.each do |fd|
             code = ['implanted', 'explanted', 'manipulated'].sample
             fd.action = minimal_codeableconcept('http://hl7.org/fhir/device-action', code)
@@ -753,11 +750,7 @@ module Crucible
         when FHIR::SupplyDelivery
           resource.type = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
         when FHIR::SupplyRequest
-          resource.kind = minimal_codeableconcept('http://hl7.org/fhir/supply-kind','central')
-          if resource.when 
-            resource.when.schedule = nil
-            resource.when.code = minimal_codeableconcept('http://snomed.info/sct','20050000') #biweekly
-          end
+          resource.category = minimal_codeableconcept('http://hl7.org/fhir/supply-kind','central')
         when FHIR::StructureDefinition
           resource.derivation = 'constraint'
           resource.fhirVersion = 'STU3'

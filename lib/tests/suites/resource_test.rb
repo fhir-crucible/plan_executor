@@ -13,7 +13,7 @@ module Crucible
       attr_accessor :conditional_create_resource_b
       attr_accessor :conditional_create_resource_c
       attr_accessor :conditional_update_resource_a
-      attr_accessor :conditional_update_resource_c
+      attr_accessor :conditional_update_resource_b
 
       attr_accessor :preexisting_id
       attr_accessor :preexisting_version
@@ -66,7 +66,8 @@ module Crucible
         ignore_client_exception { @conditional_create_resource_a.destroy if @conditional_create_resource_a }
         ignore_client_exception { @conditional_create_resource_b.destroy if @conditional_create_resource_b }
         ignore_client_exception { @conditional_create_resource_c.destroy if @conditional_create_resource_c }
-        ignore_client_exception { @conditional_create_resource_d.destroy if @conditional_create_resource_d }
+        ignore_client_exception { @conditional_update_resource_a.destroy if @conditional_update_resource_a }
+        ignore_client_exception { @conditional_update_resource_b.destroy if @conditional_update_resource_b }
       end
 
       #
@@ -378,11 +379,11 @@ module Crucible
 
         result = TestResult.new('X034',"Conditional Update #{resource_class.name.demodulize}", nil, nil, nil)
         searchParams = { '_lastUpdated' => 'gt1900-01-01' }
-        ignore_client_exception { @conditional_update_resource_c = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams) }
+        ignore_client_exception { @conditional_update_resource_b = ResourceGenerator.generate(@resource_class,3).conditional_update(searchParams) }
 
         if @client.reply.code==412
           result.update(STATUS[:pass], "Request correctly failed.", @client.reply.body)
-          @conditional_update_resource_c = nil
+          @conditional_update_resource_b = nil
         else
           result.update(STATUS[:fail], "Request should have failed with HTTP 412.", @client.reply.body)
         end

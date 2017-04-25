@@ -29,27 +29,15 @@ module Crucible
         ignore_client_exception { @patient.destroy }
       end
 
-    [true,false].each do |flag|  
-      action = 'GET'
-      action = 'POST' if flag
-
-      test "SR01#{action[0]}","Patient Matching using an MPI (#{action})" do
+      test "SR01","Patient Matching using an MPI" do
         metadata {
           links "#{BASE_SPEC_LINK}/patient.html#match"
-          validates resource: 'Patient', methods: ['search']
+          validates resource: 'Patient', methods: ['$match']
           validates extensions: ['extensions']
         }
-        options = {
-          :search => {
-            :flag => flag,
-            :compartment => nil,
-            :parameters => {
-              '_query' => 'mpi',
-              'given' => @patient.name[0].given[0]
-            }
-          }
-        }
-        reply = @client.search(FHIR::Patient, options)
+        match_patient = Crucible::Generator::Resources.new.minimal_patient
+        match_patient.identifier = nil
+        reply = @client.match(match_patient)
         assert_response_ok(reply)
         assert_bundle_response(reply)        
  
@@ -60,46 +48,15 @@ module Crucible
           entry_has_mpi_data = false
           if entry.search
             entry.search.extension.each do |e|
-              if (e.url=='http://hl7.org/fhir/StructureDefinition/patient-mpi-match' && e.value && ['certain','probable','possible','certainly-not'].include?(e.valueCode))
+              if (e.url=='http://hl7.org/fhir/StructureDefinition/match-grade' && e.value && ['certain','probable','possible','certainly-not'].include?(e.valueCode))
                 entry_has_mpi_data = true
               end
             end
           end
           has_mpi_data = has_mpi_data && entry_has_mpi_data
         end
-        assert( has_score && has_mpi_data, "Every Patient Matching result requires a score and 'patient-mpi-match' extension.", reply.body)
+        assert( has_score && has_mpi_data, "Every Patient Matching result requires a score and 'match-grade' extension.", reply.body)
       end
-
-# Search Parameter Types    
-#   Number
-#   Date/DateTime
-#   String
-#   Token
-#   Reference
-#   Composite
-#   Quantity
-#   URI
-# Parameters for all resources
-#   _id
-#   _lastUpdated
-#   _tag
-#   _profile
-#   _security
-#   _text
-#   _content
-#   _list
-#   _query
-# Search result parameters
-#   _sort
-#   _count
-#   _include
-#   _revinclude
-#   _summary
-#   _elements
-#   _contained
-#   _containedType
-    end # EOF [true,false].each
-
     end
   end
 end

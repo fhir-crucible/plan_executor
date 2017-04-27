@@ -345,7 +345,7 @@ module Crucible
           skip "Profile for #{daf_resource.type} not found."  if profile.nil?
 
           resource.each do |r|
-            assert(profile.is_valid?(r),"The #{daf_resource.type} with ID #{r.id} is not DAF compliant but claims to be.",r.to_xml)
+            assert(profile.valid?(r),"The #{daf_resource.type} with ID #{r.id} is not DAF compliant but claims to be.",r.to_xml)
           end
         end
 

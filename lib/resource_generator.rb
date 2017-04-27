@@ -490,7 +490,7 @@ module Crucible
             c.pReference = textonly_reference('Any')
           end
         when FHIR::DocumentReference
-          resource.docStatus = minimal_codeableconcept('http://hl7.org/fhir/composition-status','preliminary')
+          resource.docStatus = 'preliminary'
         when FHIR::ElementDefinition
           keys = []
           resource.constraint.each do |constraint|

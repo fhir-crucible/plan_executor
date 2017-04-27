@@ -12,9 +12,9 @@ class ResourceGeneratorTest < Test::Unit::TestCase
   def run_generator(resourceType)
     klass = Module.const_get("FHIR::#{resourceType}")
     r = Crucible::Tests::ResourceGenerator.generate(klass,3)
-    assert !r.nil?, "Resource Generator could not generate #{resourceType}"  
-    valid = r.is_valid?
-    assert valid, "Resource Generator could not generate valid #{resourceType}"
+    assert !r.nil?, "Resource Generator could not generate #{resourceType}"
+    errors = r.validate
+    assert errors.empty?, "Resource Generator could not generate valid #{resourceType}\n\n#{r.to_json}\n\nERRORS: #{errors}"
   end
 
 end

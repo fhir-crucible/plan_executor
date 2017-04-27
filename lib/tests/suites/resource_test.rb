@@ -542,7 +542,7 @@ module Crucible
         if !@preexisting.nil?
           begin
             @preexisting.to_xml
-            is_preexisting_valid = @preexisting.is_valid?
+            is_preexisting_valid = @preexisting.valid?
             profile = FHIR::Definitions.get_resource_definition("#{resource_class.name.demodulize}")
             if !profile.nil?
               is_preexisting_valid &&= profile.validates_resource?(@preexisting)

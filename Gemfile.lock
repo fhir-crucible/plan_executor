@@ -14,7 +14,7 @@ GIT
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: 885a8a2ecd92a3752951f62cccdbba9b116c4ec6
+  revision: f30b2665fe8334e410c8372b2c70d825a3ffa753
   branch: 3.0.0-release
   specs:
     fhir_models (3.0.0)
@@ -83,7 +83,7 @@ GEM
       multipart-post (>= 1.2, < 3)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    i18n (0.7.0)
+    i18n (0.8.1)
     json (1.8.3)
     jsonpath (0.5.8)
       multi_json

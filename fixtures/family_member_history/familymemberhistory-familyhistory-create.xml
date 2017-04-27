@@ -13,10 +13,10 @@
 		<system value="http://happyvalley.com/familymemberhistory"/>
 		<value value="CD6D9"/>
 	</identifier>
+	<status value="completed"/>
 	<patient>
 		<reference value="Patient/MotherPatient"/>
 	</patient>
-	<status value="completed"/>
 	<relationship>
 		<coding>
 			<system value="http://hl7.org/fhir/v3/RoleCode"/>

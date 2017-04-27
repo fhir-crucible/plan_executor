@@ -31,7 +31,7 @@
       </p>
       <p>
         <b>request</b>: 
-        <a href="DiagnosticRequest/do-200">do-200</a>
+        <a href="ProcedureRequest/do-200">do-200</a>
       </p>
       <p>
         <b>specimen</b>: 
@@ -61,6 +61,10 @@
     <system value="http://lis.acmelabs.org/identifiers"/>
     <value value="dr-200"/>
   </identifier>
+  <basedOn>
+    <reference value="ProcedureRequest/do-200"/>
+    <display value="do-200"/>
+  </basedOn>
   <status value="final"/>
   <!--    first, various administrative/context stuff   EH the report name code LOINC and/or local   -->
   <code>
@@ -87,13 +91,11 @@
   <!--    EH: Showing dateTime to ss with TZO although only needed to Day    -->
   <issued value="2014-12-06T15:42:15-08:00"/>
   <performer>
-    <reference value="Practitioner/pract-uslab-example3"/>
-    <display value="Gregory F House, PhD"/>
+    <actor>
+      <reference value="Practitioner/pract-uslab-example3"/>
+      <display value="Gregory F House, PhD"/>
+    </actor>
   </performer>
-  <request>
-    <reference value="DiagnosticRequest/do-200"/>
-    <display value="do-200"/>
-  </request>
   <specimen>
     <reference value="Specimen/spec-uslab-example1"/>
     <display value="Blood Sample"/>

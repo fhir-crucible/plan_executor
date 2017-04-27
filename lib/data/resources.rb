@@ -126,7 +126,7 @@ module Crucible
       # ------------------------------ DAF TESTS ------------------------------
 
       def daf_conformance
-        load_fixture('daf/conformance-daf-query-responder.xml')
+        load_fixture('daf/CapabilityStatement-server.json')
       end
 
       # ------------------------------ TERMINOLOGY TRACK TESTS ------------------------------

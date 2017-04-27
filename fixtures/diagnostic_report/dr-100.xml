@@ -31,7 +31,7 @@
       </p>
       <p>
         <b>request</b>: 
-        <a href="DiagnosticRequest/do-100">DiagnosticRequest/do-100</a>
+        <a href="ProcedureRequest/do-100">ProcedureRequest/do-100</a>
       </p>
       <p>
         <b>specimen</b>: 
@@ -59,6 +59,10 @@
     <system value="http://lis.acmelabs.org/identifiers"/>
     <value value="dr-100"/>
   </identifier>
+  <basedOn>
+    <reference value="ProcedureRequest/do-100"/>
+    <display value="ProcedureRequest/do-100"/>
+  </basedOn>
   <status value="final"/>
   <code>
     <coding>
@@ -74,13 +78,11 @@
   <effectiveDateTime value="2015-09-25"/>
   <issued value="2015-09-26T00:00:00Z"/>
   <performer>
-    <reference value="Organization/org-uslab-example3"/>
-    <display value="Acme Labs"/>
+    <actor>
+      <reference value="Organization/org-uslab-example3"/>
+      <display value="Acme Labs"/>
+    </actor>
   </performer>
-  <request>
-    <reference value="DiagnosticRequest/do-100"/>
-    <display value="DiagnosticRequest/do-100"/>
-  </request>
   <specimen>
     <reference value="Specimen/spec-100"/>
     <display value="Specimen/spec-100"/>

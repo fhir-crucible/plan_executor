@@ -24,10 +24,10 @@
        <display value="Urgent"/>
     </coding>
  </priority>
- <patient>
+ <subject>
      <reference value="Patient/f201"/>
      <display value="Roel"/>
- </patient>
+ </subject>
  <participant>
      <individual>
          <reference value="Practitioner/f201"/>
@@ -45,13 +45,15 @@
 		</extension>
    <text value="The patient is treated for a tumor."/>
  </reason>
- <indication>
+ <diagnosis>
 		<extension url="http://hl7.org/fhir/StructureDefinition/encounter-primaryDiagnosis">
 			<valuePositiveInt value="1"/>
 		</extension>
-     <reference value="Procedure/f201"/>
-     <display value="Roel&#39;s TPF chemotherapy on January 28th, 2013"/>
- </indication>
+    <condition>
+      <reference value="Procedure/f201"/>
+      <display value="Roel&#39;s TPF chemotherapy on January 28th, 2013"/>
+    </condition>
+ </diagnosis>
  <!--  No hospitalization was deemed necessary  -->
  <serviceProvider>
      <reference value="Organization/f201"/>

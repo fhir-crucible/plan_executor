@@ -714,7 +714,7 @@ module Crucible
               i.required = nil
               i.repeats = nil
               i.readOnly = nil
-              i.concept = []
+              i.option = []
               FHIR::Questionnaire::Item::MULTIPLE_TYPES['initial'].each do |type|
                 i.instance_variable_set("@initial#{type.capitalize}".to_sym, nil)
               end

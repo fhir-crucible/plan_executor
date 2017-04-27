@@ -60,39 +60,11 @@ module Crucible
 
         skip if !@practitioners
 
-        practitioner_id = @practitioners.select{ |p| !p.resource.role.empty? }.sample.try(:resource).try(:id)
-        assert practitioner_id, 'No practitioner found with a role'
-
-        @practitioner = @client.read(FHIR::Practitioner, practitioner_id).try(:resource)
-
-        assert @practitioner, "No Practitioner found for ID #{practitioner_id}"
-
-        assert @practitioner.role.select { |pr|
-          !pr.location.empty?
-        }.size >= 1, "None of the Roles associated with Practitioner #{@practitioner.identifier.first.value}'s contain Location information"
-
-        # Test for address presence
-        assert @practitioner.role.select { |pr|
-          pr.location.select { |locref|
-            # Try and find the Location in contained/Server resources
-            loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
-            loc && !loc.address.nil?
-          }.size >= 1
-        }.size >= 1, "None of the Locations associated with Practitioner #{@practitioner.identifier.first.value}'s Roles contain Address information"
-
-        # Test for telecom presence
-        assert @practitioner.role.select { |pr|
-          pr.location.select { |locref|
-            # Try and find the Location in contained/Server resources
-            loc = resolve_reference(@practitioner, FHIR::Location, locref.reference)
-             # See if any of the location resources have telecom elements on them
-            loc && !loc.telecom.nil? && !loc.telecom.empty?
-          }.size >= 1
-        }.size >= 1 || @practitioner.role.select { |pr| !pr.telecom.empty? }.size >= 1, "None of the roles associated with Practitioner #{@practitioner.identifier.first.value} contain Telecom information"
-
+        practitioner_id = @practitioners.select{ |p| !p.resource.telecom.empty? || !p.resource.address.empty? }.sample.try(:resource).try(:id)
+        assert practitioner_id, 'No practitioner found with a telecom or address'
       end
 
-      test 'APCT03', 'Test ability to locate a Provider\'s Direct Address' do
+      test 'APCT03', 'Test ability to locate a Provider\'s Email Address' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           requires resource: 'Practitioner', methods: ['read', 'search']
@@ -102,15 +74,9 @@ module Crucible
           validates resource: 'PractitionerRole', methods: ['read']
           validates resource: 'Location', methods: ['read']
         }
-        skip if !@practitioners || !@practitioner
+        skip if !@practitioners
 
-        assert @practitioner.role.select { |pr| !pr.endpoint.empty? }.size >= 1, "No Endpoints found for Practitioner #{@practitioner.identifier.first.value}"
-        assert @practitioner.role.select { |pr|
-          pr.endpoint.select { |endref|
-            endpoint = resolve_reference(@practitioner, FHIR::Endpoint, endref.reference)
-            endpoint && !endpoint.address.nil? && !endpoint.address.empty?
-          }.size >= 1
-        }.size >= 1, "No Endpoints found with direct address found for Practitioner #{@practitioner.identifier.first.value}"
+        assert @practitioners.select { |p| p.resource.telecom.detect{|t| t.system=='email'} }.size >= 1, "No practitioner found with an email address"
       end
 
       test 'APCT04', 'Test ability to locate an Organization\'s Endpoint' do

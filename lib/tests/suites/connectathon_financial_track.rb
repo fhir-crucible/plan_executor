@@ -44,6 +44,10 @@ module Crucible
         assert_response_ok(result)
         @patient_id = result.id
 
+        @simple.careTeam = nil;
+        @preauth.careTeam = nil;
+        @average.careTeam = nil;
+
         @simple.patient.reference = "Patient/#{@patient_id}"
         @average.patient.reference = "Patient/#{@patient_id}"
         @preauth.patient.reference = "Patient/#{@patient_id}"
@@ -118,7 +122,7 @@ module Crucible
             :flag => true,
             :compartment => nil,
             :parameters => {
-              'request-identifier' => @er_id
+              'identifier' => @er_id
             }
           }
         }
@@ -156,7 +160,7 @@ module Crucible
         @preauth_id = reply.id
         sleep(10) # sleep to allow server to process claim, no wait time was causing incorrect failures in subsequent tests
 
-        if !reply.resource.nil?
+        if !reply.resource.nil? && reply.resource.resourceType == "Claim"
           # Response is Claim
           temp = reply.resource.id
           reply.resource.id = nil

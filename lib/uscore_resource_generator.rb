@@ -1,33 +1,32 @@
 module Crucible
   module Tests
-    class DAFResourceGenerator < ResourceGenerator
+    class USCoreResourceGenerator < ResourceGenerator
 
-      def self.daf_patient(identifier='0',name='Name')
+      def self.patient(identifier='0',name='Name')
         resource = minimal_patient(identifier,name)
         # resource.identifier = [ minimal_identifier(identifier) ]
         # resource.name = [ minimal_humanname(name) ]
-        resource.meta.profile = ['http://hl7.org/fhir/StructureDefinition/daf-patient']
-        # DAF must supports and DAF extensions
+        resource.meta.profile = ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient']
+        # US Core must supports and US Core extensions
         resource.active = true
-        resource.telecom = [ daf_contact_point ]
+        resource.telecom = [ contact_point ]
         resource.gender = 'unknown'
         resource.birthDate = DateTime.now.strftime("%Y-%m-%d")
         resource.deceasedBoolean = false
-        resource.address = [ daf_address ]
+        resource.address = [ address ]
         resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
         resource.multipleBirthBoolean = false
-        resource.contact = [ daf_patient_contact ]
-        resource.communication = [ daf_patient_communication ]
-        # resource.careProvider = [ FHIR::Reference.new ] # reference to DAF-Organization or DAF-Pract
-        # resource.careProvider.first.display = 'DAF Organization or Practitioner'
-        resource.managingOrganization = FHIR::Reference.new # reference to DAF-Organization
-        resource.managingOrganization.display = 'DAF Organization'
+        resource.contact = [ patient_contact ]
+        resource.communication = [ patient_communication ]
+        # resource.careProvider = [ FHIR::Reference.new ] # reference to US Core-Organization or US Core-Pract
+        # resource.careProvider.first.display = 'US Core Organization or Practitioner'
+        resource.managingOrganization = FHIR::Reference.new # reference to US Core-Organization
+        resource.managingOrganization.display = 'US Core Organization'
         resource.extension = []
-        resource.extension << make_extension('http://hl7.org/fhir/StructureDefinition/us-core-race','CodeableConcept',minimal_codeableconcept('http://hl7.org/fhir/v3/Race','2106-3'))
-        resource.extension << make_extension('http://hl7.org/fhir/StructureDefinition/us-core-ethnicity','CodeableConcept',minimal_codeableconcept('http://hl7.org/fhir/v3/Ethnicity','2186-5'))
-        resource.extension << make_extension('http://hl7.org/fhir/StructureDefinition/us-core-religion','CodeableConcept',minimal_codeableconcept('http://hl7.org/fhir/v3/ReligiousAffiliation','1007'))
+        resource.extension << make_extension('http://hl7.org/fhir/us/core/StructureDefinition/us-core-race','CodeableConcept',minimal_codeableconcept('http://hl7.org/fhir/v3/Race','2106-3'))
+        resource.extension << make_extension('http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity','CodeableConcept',minimal_codeableconcept('http://hl7.org/fhir/v3/Ethnicity','2186-5'))
         resource.extension << make_extension('http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName','String','Liberty')
-        resource.extension << make_extension('http://hl7.org/fhir/StructureDefinition/birthPlace','Address',daf_address)
+        resource.extension << make_extension('http://hl7.org/fhir/StructureDefinition/birthPlace','Address',address)
         resource
       end
 
@@ -48,7 +47,7 @@ module Crucible
       # Religious Affiliation Patient.extension(religion)
       # Guardian  Patient.contact
 
-      def self.daf_contact_point
+      def self.contact_point
         resource = FHIR::ContactPoint.new
         resource.system = 'phone'
         resource.value = '1-800-555-1212'
@@ -56,7 +55,7 @@ module Crucible
         resource
       end
 
-      def self.daf_address
+      def self.address
         resource = FHIR::Address.new
         resource.line = ['Statue of Liberty National Monument']
         resource.city = 'New York'
@@ -66,16 +65,16 @@ module Crucible
         resource
       end
 
-      def self.daf_patient_contact
+      def self.patient_contact
         resource = FHIR::Patient::Contact.new
         resource.relationship = [ minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','parent'), minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','emergency') ]
         resource.name = minimal_humanname('Mom')
-        resource.telecom = [ daf_contact_point ]
-        resource.address = daf_address
+        resource.telecom = [ contact_point ]
+        resource.address = address
         resource
       end
 
-      def self.daf_patient_communication
+      def self.patient_communication
         resource = FHIR::Patient::Communication.new
         resource.language = minimal_codeableconcept('http://tools.ietf.org/html/bcp47','en-US')
         resource

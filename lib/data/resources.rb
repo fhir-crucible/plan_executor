@@ -123,10 +123,10 @@ module Crucible
         load_fixture('scheduling/slot-simple.xml')
       end
 
-      # ------------------------------ DAF TESTS ------------------------------
+      # ------------------------------ US CORE TESTS ------------------------------
 
-      def daf_conformance
-        load_fixture('daf/CapabilityStatement-server.json')
+      def uscore_conformance
+        load_fixture('uscore/CapabilityStatement-server.json')
       end
 
       # ------------------------------ TERMINOLOGY TRACK TESTS ------------------------------

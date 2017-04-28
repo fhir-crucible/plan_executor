@@ -121,7 +121,6 @@ module Crucible
           requires resource: 'DiagnosticReport', methods: ['create']
           requires resource: 'Observation', methods: ['create']
           requires resource: 'Specimen', methods: ['read']
-          validates resource: 'OrderResponse', methods: ['create']
           validates resource: 'Observation', methods: ['create']
           validates resource: 'DiagnosticReport', methods: ['create']
         }

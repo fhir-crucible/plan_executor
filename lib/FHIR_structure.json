@@ -91,6 +91,8 @@
               "name": "$guidance"
             },{
               "name": "$guidance-requirements"
+            },{
+              "name": "$match"
             }
           ]
         }
@@ -99,303 +101,32 @@
       "name": "RESOURCES",
       "children": [
         {
-          "name": "Clinical",
-          "children": [
-            {
-              "name": "General Clinical",
-              "children": [
-                {
-                  "name": "allergy intolerance"
-                },{
-                  "name": "condition"
-                },{
-                  "name": "procedure"
-                },{
-                  "name": "family member history"
-                },{
-                  "name": "clinical impression"
-                },{
-                  "name": "detected issue"
-                }
-              ]
-            },{
-              "name": "Care Provision",
-              "children": [
-                {
-                  "name": "care plan"
-                },{
-                  "name": "care team"
-                },{
-                  "name": "goal"
-                },{
-                  "name": "referral request"
-                },{
-                  "name": "procedure request"
-                },{
-                  "name": "nutrition request",
-                  "aka": ["nutrition order"]
-                },{
-                  "name": "risk assessment"
-                },{
-                  "name": "vision prescription"
-                }
-              ]
-            },{
-              "name": "Medication & Immunization",
-              "children": [
-                {
-                  "name": "medication"
-                },{
-                  "name": "medication request",
-                  "aka": ["medication order"]
-                },{
-                  "name": "medication administration"
-                },{
-                  "name": "medication dispense"
-                },{
-                  "name": "medication statement"
-                },{
-                  "name": "immunization"
-                },{
-                  "name": "immunization recommendation"
-                }
-              ]
-            },{
-              "name": "Diagnostics",
-              "children": [
-                {
-                  "name": "observation"
-                },{
-                  "name": "diagnostic report"
-                },{
-                  "name": "diagnostic request",
-                  "aka": ["diagnostic order"]
-                },{
-                  "name": "imaging study"
-                },{
-                  "name": "imaging manifest",
-                  "aka": ["imaging object selection"]
-                },{
-                  "name": "specimen"
-                },{
-                  "name": "sequence"
-                },{
-                  "name": "body site"
-                }
-              ]
-            }
-          ]
-        },{
-          "name": "Administration",
-          "aka": ["Administrative", "Identification"],
-          "children": [
-            {
-              "name": "Individuals",
-              "children": [
-                {
-                  "name": "patient"
-                },{
-                  "name": "group"
-                },{
-                  "name": "person"
-                },{
-                  "name": "related person"
-                },{
-                  "name": "practitioner"
-                },{
-                  "name": "practitioner role"
-                }
-              ]
-            },{
-              "name": "Entities",
-              "children": [
-                {
-                  "name": "organization"
-                },{
-                  "name": "healthcare service"
-                },{
-                  "name": "location"
-                },{
-                  "name": "substance"
-                },{
-                  "name": "endpoint"
-                },{
-                  "name": "linkage"
-                }
-              ]
-            },{
-              "name": "Device",
-              "children": [
-                {
-                  "name": "device"
-                },{
-                  "name": "device component"
-                },{
-                  "name": "device metric"
-                }
-              ]
-            },{
-              "name": "Patient Management",
-              "children": [
-                {
-                  "name": "encounter"
-                },{
-                  "name": "episode of care"
-                },{
-                  "name": "flag"
-                },{
-                  "name": "account"
-                },{
-                  "name": "communication"
-                },{
-                  "name": "communication request"
-                }
-              ]
-            },{
-              "name": "Research",
-              "children": [
-                {
-                  "name": "research study"
-                },{
-                  "name": "research subject"
-                }
-              ]
-            },{
-              "name": "Security & Privacy",
-              "children": [
-                {
-                  "name": "provenance"
-                },{
-                  "name": "audit event"
-                },{
-                  "name": "consent"
-                }
-              ]
-            }
-          ]
-        },{
-          "name": "Work Flow",
-          "children": [
-            { "name": "Scheduling",
-              "children": [
-                {
-                  "name": "task"
-                },{
-                  "name": "subscription"
-                },{
-                  "name": "appointment"
-                },{
-                  "name": "appointment response"
-                },{
-                  "name": "schedule"
-                },{
-                  "name": "slot"
-                }
-              ]
-            },{
-              "name": "Events",
-              "aka": ["Workflow", "Order Management"],
-              "children": [
-                {
-                  "name": "device use request"
-                },{
-                  "name": "device use statement"
-                },{
-                  "name": "process request"
-                },{
-                  "name": "process response"
-                },{
-                  "name": "supply delivery"
-                },{
-                  "name": "supply request"
-                }
-              ]
-            },{
-              "name": "Clinical Reasoning",
-              "children": [
-                {
-                  "name": "service definition",
-                  "aka": ["decision support service module"]
-                },{
-                  "name": "guidance response"
-                },{
-                  "name": "library"
-                },{
-                  "name": "measure"
-                },{
-                  "name": "measure report"
-                },{
-                  "name": "activity definition"
-                },{
-                  "name": "request group"
-                },{
-                  "name": "plan definition"
-                }
-              ]
-            }
-          ]
-        },{
           "name": "Foundation",
           "children": [
             {
-              "name": "Documents & Questionnaires",
-              "children": [
-                {
-                  "name": "questionnaire"
-                },{
-                  "name": "questionnaire response"
-                },{
-                  "name": "composition"
-                },{
-                  "name": "document manifest"
-                },{
-                  "name": "document reference"
-                },{
-                  "name": "list"
-                },{
-                  "name": "basic"
-                }
-              ]
-            },{
-              "name": "Exchange",
-              "aka": ["Structure", "Structures"],
-              "children": [
-                {
-                  "name": "media"
-                },{
-                  "name": "binary"
-                },{
-                  "name": "bundle"
-                },{
-                  "name": "message header"
-                },{
-                  "name": "operation outcome"
-                },{
-                  "name": "parameters"
-                }
-              ]
-            },{
               "name": "Conformance",
               "children": [
                 {
-                  "name": "structure definition"
-                },{
-                  "name": "structure map"
-                },{
-                  "name": "data element"
-                },{
                   "name": "capability statement",
                   "aka": ["conformance"]
+                },{
+                  "name": "structure definition"
+                },{
+                  "name": "implementation guide"
+                },{
+                  "name": "search parameter"
                 },{
                   "name": "message definition"
                 },{
                   "name": "operation definition"
                 },{
-                  "name": "search parameter"
-                },{
                   "name": "compartment definition"
                 },{
-                  "name": "implementation guide"
+                  "name": "structure map"
+                },{
+                  "name": "graph definition"
+                },{
+                  "name": "data element"
                 }
               ]
             },{
@@ -414,12 +145,242 @@
                 }
               ]
             },{
-              "name": "Implementation Support",
+              "name": "Security",
+              "aka": ["Security & Privacy"],
               "children": [
                 {
-                  "name": "test script"
+                  "name": "provenance"
                 },{
-                  "name": "test report"
+                  "name": "audit event"
+                },{
+                  "name": "consent"
+                }
+              ]
+            },{
+              "name": "Documents",
+              "aka": ["Documents & Questionnaires"],
+              "children": [
+                {
+                  "name": "composition"
+                },{
+                  "name": "document manifest"
+                },{
+                  "name": "document reference"
+                }
+              ]
+            },{
+              "name": "Other",
+              "aka": ["Exchange", "Structure", "Structures"],
+              "children": [
+                {
+                  "name": "basic"
+                },{
+                  "name": "binary"
+                },{
+                  "name": "bundle"
+                },{
+                  "name": "linkage"
+                },{
+                  "name": "media"
+                },{
+                  "name": "message header"
+                },{
+                  "name": "operation outcome"
+                },{
+                  "name": "parameters"
+                },{
+                  "name": "subscription"
+                }
+              ]
+            }
+          ]
+        },{
+          "name": "Base",
+          "aka": ["Administration", "Administrative", "Identification"],
+          "children": [
+            {
+              "name": "Individuals",
+              "children": [
+                {
+                  "name": "patient"
+                },{
+                  "name": "practitioner"
+                },{
+                  "name": "practitioner role"
+                },{
+                  "name": "related person"
+                },{
+                  "name": "person"
+                },{
+                  "name": "group"
+                }
+              ]
+            },{
+              "name": "Entities",
+              "children": [
+                {
+                  "name": "organization"
+                },{
+                  "name": "healthcare service"
+                },{
+                  "name": "endpoint"
+                },{
+                  "name": "location"
+                },{
+                  "name": "substance"
+                }, {
+                  "name": "device"
+                },{
+                  "name": "device component"
+                },{
+                  "name": "device metric"
+                }
+              ]
+            },{ 
+              "name": "Workflow",
+              "aka": ["Scheduling", "Events", "Order Management"],
+              "children": [
+                {
+                  "name": "task"
+                },{
+                  "name": "appointment"
+                },{
+                  "name": "appointment response"
+                },{
+                  "name": "schedule"
+                },{
+                  "name": "slot"
+                },{
+                  "name": "process request"
+                },{
+                  "name": "process response"
+                }
+              ]
+            },{
+              "name": "Management",
+              "aka": ["Patient Management"],
+              "children": [
+                {
+                  "name": "encounter"
+                },{
+                  "name": "episode of care"
+                },{
+                  "name": "flag"
+                },{
+                  "name": "list"
+                },{
+                  "name": "library"
+                }
+              ]
+            }
+          ]
+        },{
+          "name": "Clinical",
+          "children": [
+            {
+              "name": "Summary",
+              "aka": ["General Clinical"],
+              "children": [
+                {
+                  "name": "allergy intolerance"
+                },{
+                  "name": "adverse event"
+                },{
+                  "name": "condition"
+                },{
+                  "name": "procedure"
+                },{
+                  "name": "family member history"
+                },{
+                  "name": "clinical impression"
+                },{
+                  "name": "detected issue"
+                }
+              ]
+            },{
+              "name": "Diagnostics",
+              "children": [
+                {
+                  "name": "observation"
+                },{
+                  "name": "diagnostic report"
+                },{
+                  "name": "specimen"
+                },{
+                  "name": "body site"
+                },{
+                  "name": "imaging study"
+                },{
+                  "name": "imaging manifest",
+                  "aka": ["imaging object selection"]
+                },{
+                  "name": "questionnaire response"
+                },{
+                  "name": "sequence"
+                }
+              ]
+            },{
+              "name": "Medications",
+              "aka": ["Medication & Immunization"],
+              "children": [
+                {
+                  "name": "medication request",
+                  "aka": ["medication order"]
+                },{
+                  "name": "medication administration"
+                },{
+                  "name": "medication dispense"
+                },{
+                  "name": "medication statement"
+                },{
+                  "name": "medication"
+                },{
+                  "name": "immunization"
+                },{
+                  "name": "immunization recommendation"
+                }
+              ]
+            },{
+              "name": "Care Provision",
+              "children": [
+                {
+                  "name": "care plan"
+                },{
+                  "name": "care team"
+                },{
+                  "name": "goal"
+                },{
+                  "name": "referral request"
+                },{
+                  "name": "procedure request",
+                  "aka": ["diagnostic request", "diagnostic order"]
+                },{
+                  "name": "nutrition order",
+                  "aka": ["nutrition request"]
+                },{
+                  "name": "vision prescription"
+                },{
+                  "name": "risk assessment"
+                },{
+                  "name": "request group"
+                }
+              ]
+            },{
+              "name": "Request & Response",
+              "children": [
+                {
+                  "name": "communication"
+                },{
+                  "name": "communication request"
+                },{
+                  "name": "device request",
+                  "aka": ["device use request"]
+                },{
+                  "name": "device use statement"
+                },{
+                  "name": "supply request"
+                },{
+                  "name": "supply delivery"
                 }
               ]
             }
@@ -461,12 +422,73 @@
                 }
               ]
             },{
-              "name": "Other",
+              "name": "General",
+              "aka": ["Other"],
               "children": [
                 {
                   "name": "explanation of benefit"
                 },{
                   "name": "contract"
+                },{
+                  "name": "account"
+                },{
+                  "name": "charge item"
+                }
+              ]
+            }
+          ]
+        },{
+          "name": "Specialized",
+          "children": [
+            {
+              "name": "Public Health & Research",
+              "aka": ["Research"],
+              "children": [
+                {
+                  "name": "research study"
+                },{
+                  "name": "research subject"
+                }
+              ]
+            },{
+              "name": "Definitional Artifacts",
+              "children": [
+                {
+                  "name": "questionnaire"
+                },{
+                  "name": "activity definition"
+                },{
+                  "name": "service definition",
+                  "aka": ["decision support service module"]
+                },{
+                  "name": "plan definition"
+                }
+              ]
+            },{
+              "name": "Clinical Decision Support",
+              "children": [
+                {
+                  "name": "guidance response"
+                }
+              ]
+            },{
+              "name": "Quality Reporting",
+              "aka": ["Clinical Reasoning"],
+              "children": [
+                {
+                  "name": "measure"
+                },{
+                  "name": "measure report"
+                }
+              ]
+            },{
+              "name": "Testing",
+              "aka": ["Implementation Support"],
+              "children": [
+                {
+                  "name": "test script"
+                },{
+                  "name": "test report"
                 }
               ]
             }

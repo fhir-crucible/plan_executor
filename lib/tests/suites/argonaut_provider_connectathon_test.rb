@@ -113,10 +113,6 @@ module Crucible
         metadata {
           requires resource: 'Location', methods: ['read']
           validates resource: 'Location', methods: ['read']
-          requires resource: 'Address', methods: ['read']
-          validates resource: 'Address', methods: ['read']
-          requires resource: 'ContactPoint', methods: ['read']
-          validates resource: 'ContactPoint', methods: ['read']
         }
 
         options = {

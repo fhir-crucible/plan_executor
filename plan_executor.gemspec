@@ -14,8 +14,8 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency('nokogiri')
   s.add_runtime_dependency('nokogiri-diff')
-  # s.add_runtime_dependency('fhir_models')
-  # s.add_runtime_dependency('fhir_client')
+  s.add_runtime_dependency('fhir_models')
+  s.add_runtime_dependency('fhir_client')
   s.add_runtime_dependency('ansi')
   s.add_runtime_dependency('method_source')
   s.add_runtime_dependency('jsonpath')

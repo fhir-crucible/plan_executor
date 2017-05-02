@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 428d9268da584cef62d5750633c2aa5451a52c49
-  branch: 3.0.0-release
+  revision: 79229522dceee44e04dc73c1c60169b0338ad471
   specs:
-    fhir_client (3.0.0)
+    fhir_client (3.0.1)
       activesupport (>= 3)
       addressable (>= 2.3)
+      fhir_models (>= 3.0.0)
       nokogiri
       oauth2 (~> 1.1)
       rack (>= 1.5)
@@ -14,10 +14,9 @@ GIT
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: f30b2665fe8334e410c8372b2c70d825a3ffa753
-  branch: 3.0.0-release
+  revision: 363edf50e9f9016bc9af83a30b17a16652605ca7
   specs:
-    fhir_models (3.0.0)
+    fhir_models (3.0.1)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 1.16, < 3)
@@ -28,6 +27,8 @@ PATH
   specs:
     plan_executor (1.8.0)
       ansi
+      fhir_client
+      fhir_models
       jsonpath
       method_source
       nokogiri
@@ -85,7 +86,7 @@ GEM
       domain_name (~> 0.5)
     i18n (0.8.1)
     json (1.8.3)
-    jsonpath (0.5.8)
+    jsonpath (0.7.0)
       multi_json
     jwt (1.5.6)
     mail (2.6.3)

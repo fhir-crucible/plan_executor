@@ -551,6 +551,9 @@ module Crucible
             resource.ageRange = nil
             resource.ageString = nil
           end
+          if resource.age.nil?
+            resource.estimatedAge = nil
+          end
           if resource.deceasedAge
             resource.deceasedAge.system = 'http://unitsofmeasure.org'
             resource.deceasedAge.code = 'a'
@@ -636,7 +639,14 @@ module Crucible
             resource.frames = nil
           end
         when FHIR::Medication
-          resource.ingredient.each {|i|i.amount = nil}
+          resource.ingredient.each do |i|
+            i.amount = nil
+          end
+          unless resource.package.nil?
+            resource.package.content.each do |c|
+              c.amount = nil
+            end
+          end
         when FHIR::MedicationAdministration
           date = DateTime.now
           resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
@@ -648,6 +658,10 @@ module Crucible
           end
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
+          unless resource.dosage.nil?
+            resource.dosage.dose.comparator = nil unless resource.dosage.dose.nil?
+            resource.dosage.rateQuantity = nil
+          end
         when FHIR::MedicationDispense
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
@@ -675,9 +689,20 @@ module Crucible
             uid.preferred = nil
           end
         when FHIR::NutritionOrder
-          resource.oralDiet.schedule = nil if resource.oralDiet
+          if resource.oralDiet
+            resource.oralDiet.schedule = nil 
+            resource.oralDiet.nutrient.each { |n| n.amount.comparator = nil unless n.amount.nil? }
+          end
           resource.supplement.each{|s|s.schedule=nil}
-          resource.enteralFormula.administration = nil if resource.enteralFormula
+          unless resource.enteralFormula.nil?
+            resource.enteralFormula.administration = nil 
+            resource.enteralFormula.caloricDensity.comparator = nil unless resource.enteralFormula.caloricDensity.nil?
+            resource.enteralFormula.maxVolumeToDeliver.comparator = nil unless resource.enteralFormula.maxVolumeToDeliver.nil?
+            resource.enteralFormula.administration.each do |a|
+              a.rateQuantity = nil
+            end unless resource.enteralFormula.administration.nil?
+          end
+          resource.supplement.each { |s| s.quantity.comparator = nil unless s.quantity.nil? }
         when FHIR::OperationDefinition
           resource.parameter.each do |p|
             p.binding = nil
@@ -858,6 +883,18 @@ module Crucible
           resource.responseId.gsub!(/[^0-9A-Za-z]/, '') if resource.responseId
           resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
           resource.targetId.gsub!(/[^0-9A-Za-z]/, '') if resource.targetId
+        when FHIR::Timing
+          unless resource.repeat.nil?
+            resource.repeat.offset = nil if resource.repeat.when.nil?
+            resource.repeat.period = resource.repeat.period * -1 if resource.repeat.period < 0
+            resource.repeat.period = 1.0 if resource.repeat.period == 0
+            resource.repeat.periodMax = nil if resource.repeat.period.nil?
+            resource.repeat.durationMax = nil if resource.repeat.duration.nil?
+            resource.repeat.countMax = nil if resource.repeat.count.nil?
+            resource.repeat.duration = nil if resource.repeat.durationUnit.nil?
+            resource.repeat.timeOfDay = nil unless resource.repeat.when.nil?
+            resource.repeat.period = nil if resource.repeat.periodUnit.nil?
+          end
         when FHIR::ValueSet
           if resource.compose
             resource.compose.include.each do |inc|

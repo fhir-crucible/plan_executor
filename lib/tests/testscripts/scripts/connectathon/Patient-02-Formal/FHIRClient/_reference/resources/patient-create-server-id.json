@@ -2,19 +2,19 @@
   "resourceType": "Patient",
   "identifier": [
     {
-      "value": "${patientIdentifier}"
+      "value": "CREATE-IDENTIFER"
     }
   ],
   "active": true,
   "name": [
     {
       "use": "official",
-      "family": "${patientFamilyName}",
+      "family": "CREATE-FAMILY",
       "given": [
-        "${patientGivenName}"
+        "CREATE-GIVEN"
       ]
     }
   ],
-  "gender": "${patientGender}",
-  "birthDate": "${patientBirthDate}"
+  "gender": "male",
+  "birthDate": "2001-01-01"
 }

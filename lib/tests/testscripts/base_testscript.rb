@@ -402,15 +402,15 @@ module Crucible
             @last_response = @client.destroy @fixtures[operation.targetId].class, @id_map[operation.targetId]
             @id_map.delete(operation.targetId)
           end
-        when '$expand'
+        when '$expand', 'expand'
           result.result = 'error'
           result.message = '$expand not supported'
           # @last_response = @client.value_set_expansion( extract_operation_parameters(operation) )
-        when '$validate'
+        when '$validate', 'validate'
           result.result = 'error'
           result.message = '$validate not supported'
           # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
-        when '$validate-code'
+        when '$validate-code', 'validate-code'
           result.result = 'error'
           result.message = '$validate-code not supported'
           # options = {
@@ -469,6 +469,11 @@ module Crucible
 
           when !assertion.navigationLinks.nil?
             call_assertion(:assert_navigation_links, @last_response.resource)
+
+          when !assertion.requestURL.nil?
+            expected_value = replace_variables(assertion.requestURL)
+            actual_value = @last_response.request[:url]
+            call_assertion(:assert_operator, operator, expected_value, actual_value)
 
           when !assertion.path.nil?
             actual_value = nil

@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = "A Gem for handling FHIR test executions"
   s.email = "jwalonoski@mitre.org"
   s.homepage = "https://github.com/hl7-fhir/fhir-svn"
-  s.authors = ["Andre Quina", "Jason Walonoski", "Janoo Fernandes", "Michael O'Keefe"]
+  s.authors = ["Andre Quina", "Jason Walonoski", "Janoo Fernandes", "Michael O'Keefe", "Robert Scanlon"]
   s.version = '1.8.0'
   s.license = 'Apache-2.0'
 

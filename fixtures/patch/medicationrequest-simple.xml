@@ -2,15 +2,11 @@
 <MedicationRequest xmlns="http://hl7.org/fhir">
     <language value="en-US"/>
     <status value="active"/>
-    <stage>
-      <coding>
-        <code value="original-order"/>
-      </coding>
-    </stage>
+    <intent value="order"/>
     <medicationCodeableConcept>
         <text value="medication name"></text>
     </medicationCodeableConcept>
-    <patient>
+    <subject>
       <display value="example"/>
-    </patient>
+    </subject>
 </MedicationRequest>

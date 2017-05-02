@@ -5,12 +5,12 @@
   <text>
     <status value="generated"/>
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <h2>FHIR/v3 Address Use Mapping (http://hl7.org/fhir/ConceptMap/101)</h2>
+      <h2>FHIR-v3-Address-Use (http://hl7.org/fhir/ConceptMap/101)</h2>
       <p>Mapping from 
         <a href="valueset-address-use.html">http://hl7.org/fhir/ValueSet/address-use</a> to 
         <a href="v3/AddressUse/vs.html">http://hl7.org/fhir/ValueSet/v3-AddressUse</a>
       </p>
-      <p>DRAFT (not intended for production usage). Published on Jun 13, 2012 by HL7, Inc (FHIR project team (example): 
+      <p>DRAFT (not intended for production usage). Published on 13/06/2012 by HL7, Inc (FHIR project team (example): 
         <a href="http://hl7.org/fhir">http://hl7.org/fhir</a>). Creative Commons 0
       </p>
       <div>
@@ -30,14 +30,8 @@
             <b>Destination Code</b>
           </td>
           <td>
-            <b>Comments</b>
+            <b>Comment</b>
           </td>
-        </tr>
-        <tr>
-          <td>home (Home)</td>
-          <td></td>
-          <td>H (home address)</td>
-          <td/>
         </tr>
         <tr>
           <td>home (Home)</td>
@@ -72,9 +66,11 @@
     <value value="urn:uuid:53cd62ee-033e-414c-9f58-3ca97b5ffc3b"/>
   </identifier>
   <version value="20120613"/>
-  <name value="FHIR/v3 Address Use Mapping"/>
+  <name value="FHIR-v3-Address-Use"/>
+  <title value="FHIR/v3 Address Use Mapping"/>
   <status value="draft"/>
   <experimental value="true"/>
+  <date value="2012-06-13"/>
   <publisher value="HL7, Inc"/>
   <contact>
     <name value="FHIR project team (example)"/>
@@ -83,7 +79,6 @@
       <value value="http://hl7.org/fhir"/>
     </telecom>
   </contact>
-  <date value="2012-06-13"/>
   <description value="A mapping between the FHIR and HL7 v3 AddressUse Code systems"/>
   <useContext>
     <code>
@@ -96,46 +91,49 @@
   </useContext>
   <purpose value="To help implementers map from HL7 v3/CDA to FHIR"/>
   <copyright value="Creative Commons 0"/>
-  <sourceReference>
-    <reference value="http://hl7.org/fhir/ValueSet/address-use"/>
-  </sourceReference>
-  <targetReference>
-    <reference value="http://hl7.org/fhir/ValueSet/v3-AddressUse"/>
-  </targetReference>
+  <sourceUri value="http://hl7.org/fhir/ValueSet/address-use"/>
+  <targetUri value="http://hl7.org/fhir/ValueSet/v3-AddressUse"/>
   <group>
     <source value="http://hl7.org/fhir/address-use"/>
     <target value="http://hl7.org/fhir/v3/AddressUse"/>
     <element>
       <code value="home"/>
+      <display value="home"/>
       <target>
         <code value="H"/>
-      </target>
-    </element>
-    <element>
-      <code value="home"/>
-      <target>
-        <code value="H"/>
+        <display value="home"/>
       </target>
     </element>
     <element>
       <code value="work"/>
+      <display value="work"/>
       <target>
         <code value="WP"/>
+        <display value="work place"/>
       </target>
     </element>
     <element>
       <code value="temp"/>
+      <display value="temp"/>
       <target>
         <code value="TMP"/>
+        <display value="temporary address"/>
       </target>
     </element>
     <element>
       <code value="old"/>
+      <display value="old"/>
       <target>
         <code value="BAD"/>
+        <display value="bad address"/>
         <equivalence value="disjoint"/>
-        <comments value="In the HL7 v3 AD, old is handled by the usablePeriod element, but you have to provide a time, there&#39;s no simple equivalent of flagging an address as old"/>
+        <comment value="In the HL7 v3 AD, old is handled by the usablePeriod element, but you have to provide a time, there&#39;s no simple equivalent of flagging an address as old"/>
       </target>
     </element>
+    <unmapped>
+      <mode value="fixed"/>
+      <code value="temp"/>
+      <display value="temp"/>
+    </unmapped>
   </group>
 </ConceptMap>

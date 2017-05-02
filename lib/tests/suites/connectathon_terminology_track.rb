@@ -42,11 +42,13 @@ module Crucible
           codesystem_types = @resources.load_fixture('terminology/codesystem-data-types.json')
           codesystem_rsrcs = @resources.load_fixture('terminology/codesystem-resource-types.json')
           valueset_defined = @resources.load_fixture('terminology/valueset-defined-types.json')
+
           @codesystem_types_id = @client.create(codesystem_types).id
           @codesystem_rsrcs_id = @client.create(codesystem_rsrcs).id
           @valueset_defined_id = @client.create(valueset_defined).id
           @valueset_defined.id = @valueset_defined_id
           @valueset = valueset_defined
+          
         end
 
         v2_codesystem = @resources.load_fixture('terminology/v2-codesystem.json')
@@ -339,7 +341,7 @@ module Crucible
               :parameters => {
                 'code' => { type: 'Code', value: @conceptmap_simple.group.first.element.first.code },
                 'system' => { type: 'Uri', value: @conceptmap_simple.group.first.source },
-                'target' => { type: 'Uri', value: @conceptmap_simple.targetReference.reference }
+                'target' => { type: 'Uri', value: @conceptmap_simple.targetUri}
               }
             }
           }

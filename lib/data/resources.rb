@@ -123,10 +123,10 @@ module Crucible
         load_fixture('scheduling/slot-simple.xml')
       end
 
-      # ------------------------------ DAF TESTS ------------------------------
+      # ------------------------------ US CORE TESTS ------------------------------
 
-      def daf_conformance
-        load_fixture('daf/conformance-daf-query-responder.xml')
+      def uscore_conformance
+        load_fixture('uscore/CapabilityStatement-server.json')
       end
 
       # ------------------------------ TERMINOLOGY TRACK TESTS ------------------------------
@@ -150,6 +150,7 @@ module Crucible
       end
 
       def self.tag_metadata(resource)
+        return nil unless resource
         if resource.meta.nil?
           resource.meta = FHIR::Meta.new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]})
         else

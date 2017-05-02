@@ -75,7 +75,7 @@ module Crucible
         script_files.each do |f|
           begin
             script = FHIR.from_contents( File.read(f) )
-            if script.is_a?(FHIR::TestScript) && script.is_valid?
+            if script.is_a?(FHIR::TestScript) && script.valid?
               script.url = f # replace the URL with the local file path so file system references can properly resolve
               @@models << script
               FHIR.logger.info "TestScriptEngine.parse_testscripts: Loaded #{f}"

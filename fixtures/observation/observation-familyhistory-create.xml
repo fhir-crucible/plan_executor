@@ -4,9 +4,6 @@
 		<status value="generated"/>
 		<div xmlns="http://www.w3.org/1999/xhtml">BRCA2 gene mutation analysis</div>
 	</text>
-	<extension url="http://hl7.org/fhir/StructureDefinition/observation-geneticsDNASequenceVariation">
-		<valueString value="185delAG"/>
-	</extension>
 	<extension url="http://hl7.org/fhir/StructureDefinition/observation-geneticsGene">
 		<valueCodeableConcept>
 			<coding>

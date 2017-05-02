@@ -7,7 +7,7 @@ module Crucible
       end
 
       def description
-        'Connectathon Lab Order Track focuses on DiagnosticRequest, Order, Observation and Specimen.'
+        'Connectathon Lab Order Track focuses on ProcedureRequest, Observation, Specimen, and DiagnosticReport.'
       end
 
       def initialize(client1, client2=nil)
@@ -53,7 +53,7 @@ module Crucible
       end
 
       def teardown
-        resourceType = ['DiagnosticReport','DiagnosticRequest','Observation','Specimen','Practitioner','Patient','Organization']
+        resourceType = ['DiagnosticReport','ProcedureRequest','Observation','Specimen','Practitioner','Patient','Organization']
         resourceType.each do |type|
           @records.each_value do |value|
             @client.destroy(value.class, value.id) if value.resourceType==type
@@ -61,29 +61,29 @@ module Crucible
         end
       end
 
-      test 'C12T11_1', 'Create a DiagnosticRequest' do
+      test 'C12T11_1', 'Create a ProcedureRequest' do
         metadata {
           links "#{REST_SPEC_LINK}#create"
           links "http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_1_Order_a_new_lab_test"
           requires resource: 'Patient', methods: ['create', 'delete']
           requires resource: 'Practitioner', methods: ['create', 'delete']
-          requires resource: 'DiagnosticRequest', methods: ['create']
-          validates resource: 'DiagnosticRequest', methods: ['create']
+          requires resource: 'ProcedureRequest', methods: ['create']
+          validates resource: 'ProcedureRequest', methods: ['create']
         }
-        create_diagnostic_request('diagnostic_request/do-100.xml', :diag_order_1)
-        create_diagnostic_request('diagnostic_request/do-200.xml', :diag_order_2, :spec_uslab)
-        create_diagnostic_request('diagnostic_request/do-300.xml', :diag_order_3, :spec_uslab)
-        create_diagnostic_request('diagnostic_request/do-400.xml', :diag_order_4, :spec_400)
+        create_procedure_request('diagnostic_request/do-100.xml', :diag_order_1)
+        create_procedure_request('diagnostic_request/do-200.xml', :diag_order_2, :spec_uslab)
+        create_procedure_request('diagnostic_request/do-300.xml', :diag_order_3, :spec_uslab)
+        create_procedure_request('diagnostic_request/do-400.xml', :diag_order_4, :spec_400)
       end
 
       # The `Order` resource disappeared in STU3
-      # test 'C12T11_2', 'Create an Order referencing the DiagnosticRequest' do
+      # test 'C12T11_2', 'Create an Order referencing the ProcedureRequest' do
       #   metadata {
       #     links "#{REST_SPEC_LINK}#create"
       #     links "http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_1_Order_a_new_lab_test"
       #     requires resource: 'Patient', methods: ['read']
       #     requires resource: 'Practitioner', methods: ['read']
-      #     requires resource: 'DiagnosticRequest', methods: ['read']
+      #     requires resource: 'ProcedureRequest', methods: ['read']
       #     requires resource: 'Order', methods: ['create', 'delete']
       #     validates resource: 'Order', methods: ['create', 'delete']
       #   }
@@ -100,7 +100,7 @@ module Crucible
       #     links 'http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_2_Accept_new_lab_orders'
       #     requires resource: 'Patient', methods: ['read']
       #     requires resource: 'Practitioner', methods: ['read']
-      #     requires resource: 'DiagnosticRequest', methods: ['read']
+      #     requires resource: 'ProcedureRequest', methods: ['read']
       #     requires resource: 'Order', methods: ['read']
       #     requires resource: 'OrderResponse', methods: ['create']
       #     validates resource: 'OrderResponse', methods: ['create']
@@ -112,16 +112,15 @@ module Crucible
       #   create_order_response('order_response/ordresp-400.xml', :order_response_4, @records[:order_4])
       # end
 
-      test 'C12T11_4', 'Submit DiagnosticReport, Specimen and Observation resources' do
+      test 'C12T11_4', 'Submit DiagnosticReport, Specimen, and Observation resources' do
         metadata {
           links "#{REST_SPEC_LINK}#create"
           links "#{REST_SPEC_LINK}#read"
           links 'http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_3_Fulfill_Lab_Order'
-          requires resource: 'DiagnosticRequest', methods: ['read']
+          requires resource: 'ProcedureRequest', methods: ['read']
           requires resource: 'DiagnosticReport', methods: ['create']
           requires resource: 'Observation', methods: ['create']
           requires resource: 'Specimen', methods: ['read']
-          validates resource: 'OrderResponse', methods: ['create']
           validates resource: 'Observation', methods: ['create']
           validates resource: 'DiagnosticReport', methods: ['create']
         }
@@ -152,13 +151,13 @@ module Crucible
         get_diagnostic_report(:diag_report_4)
       end
 
-      test 'C12T11_6', 'Update DiagnosticRequest' do
+      test 'C12T11_6', 'Update ProcedureRequest' do
         metadata {
           links "#{REST_SPEC_LINK}#read"
           links "#{REST_SPEC_LINK}#update"
           links 'http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_4_Receive_Lab_Results'
-          requires resource: 'DiagnosticRequest', methods: ['read', 'update']
-          validates resource: 'DiagnosticRequest', methods: ['read', 'update']
+          requires resource: 'ProcedureRequest', methods: ['read', 'update']
+          validates resource: 'ProcedureRequest', methods: ['read', 'update']
         }
         update_diagnostic_request(:diag_order_1)
         update_diagnostic_request(:diag_order_2)
@@ -179,11 +178,12 @@ module Crucible
       #   create_object(order, order_name)
       # end
 
-      def create_diagnostic_request(fixture_path, order_name, specimen_name = nil)
+      def create_procedure_request(fixture_path, order_name, specimen_name = nil)
         diag_order = @resources.load_fixture(fixture_path)
         diag_order.subject = @records[:patient].to_reference
-        diag_order.requester = @records[:provider].to_reference
-        diag_order.supportingInformation = [@records[specimen_name].to_reference] if specimen_name
+        diag_order.requester = FHIR::ProcedureRequest::Requester.new unless diag_order.requester
+        diag_order.requester.agent = @records[:provider].to_reference
+        diag_order.supportingInfo = [@records[specimen_name].to_reference] if specimen_name
 
         create_object(diag_order, order_name)
       end
@@ -203,8 +203,9 @@ module Crucible
         diag_report.subject = @records[:patient].to_reference
         diag_report.issued = DateTime.now.iso8601
         diag_report.effectiveDateTime = DateTime.now.iso8601
-        diag_report.performer = @records[:performer].to_reference
-        diag_report.request = [diag_order.to_reference]
+        diag_report.performer = [ FHIR::DiagnosticReport::Performer.new ]
+        diag_report.performer.first.actor = @records[:performer].to_reference
+        diag_report.basedOn = [diag_order.to_reference]
         diag_report.specimen = [@records[specimen_name].to_reference]
         diag_report.result = []
 
@@ -222,33 +223,31 @@ module Crucible
       end
 
       def get_diagnostic_report(dr_name)
-
         assert @records[dr_name], "No DiagnosticReport with that name present"
         reply = @client.read FHIR::DiagnosticReport, @records[dr_name].id
         assert_response_ok(reply)
-
         assert reply.resource.equals?(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension']), "DiagnosticReport/#{@records[dr_name].id} doesn't match retrieved DiagnosticReport. Mismatched fields: #{reply.resource.mismatch(@records[dr_name], ['text', 'meta', 'presentedForm', 'extension'])}"
       end
 
       def update_diagnostic_request(order_name)
-        assert @records[order_name], "No DiagnosticRequest with that name present"
+        assert @records[order_name], "No ProcedureRequest with that name present"
         
-        reply = @client.read FHIR::DiagnosticRequest, @records[order_name].id
+        reply = @client.read FHIR::ProcedureRequest, @records[order_name].id
         
         assert_response_ok(reply)
-        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match DiagnosticRequest/#{@records[order_name].id}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
-        assert reply.resource.status == 'active', 'DiagnosticRequest status should be active.'
+        assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match ProcedureRequest/#{@records[order_name].id}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
+        assert reply.resource.status == 'active', 'ProcedureRequest status should be active.'
 
         @records[order_name].status = 'completed'
         reply = @client.update @records[order_name], @records[order_name].id
         
         assert_response_ok(reply)
 
-        reply = @client.read FHIR::DiagnosticRequest, @records[order_name].id
+        reply = @client.read FHIR::ProcedureRequest, @records[order_name].id
         
         assert_response_ok(reply)
         assert reply.resource.equals?(@records[order_name], ['text', 'meta', 'presentedForm', 'extension']), "Reply did not match #{@records[order_name]}. Mismatched fields: #{reply.resource.mismatch(@records[order_name], ['text', 'meta', 'presentedForm', 'extension'])}"
-        assert reply.resource.status == 'completed', 'DiagnosticRequest status should have updated to completed.'
+        assert reply.resource.status == 'completed', 'ProcedureRequest status should have updated to completed.'
       end
 
       def create_object(obj, obj_sym)

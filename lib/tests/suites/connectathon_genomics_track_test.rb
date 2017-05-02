@@ -122,10 +122,10 @@ module Crucible
         create_object(specimen, :family_specimen)
 
         diag_report = @resources.load_fixture('diagnostic_report/diagnosticreport-familyhistory-create.xml')
+        diag_report.result = @records[:family_observation].to_reference
         diag_report.subject = @records[:family_patient].to_reference
         diag_report.performer = @records[:practitioner].to_reference
         diag_report.specimen = @records[:family_specimen].to_reference
-        diag_report.result = @records[:family_observation].to_reference
         create_object(diag_report, :family_report)
 
         reply = @client.read FHIR::FamilyMemberHistory, @records[:family_member_history].id
@@ -147,6 +147,11 @@ module Crucible
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
           requires resource: 'Observation', methods: ['create', 'read']
         }
+
+        if @records[:family_patient].nil? || @records[:practitioner].nil? || @records[:family_specimen].nil? || @records[:family_observation].nil?
+          skip 'Not all necessary resources successfully created in previous test.' 
+        end
+
 
         dw_obs = @resources.load_fixture('observation/observation-datawarehouse-create.xml')
         dw_obs.performer = @records[:practitioner].to_reference
@@ -179,6 +184,10 @@ module Crucible
           validates resource: 'DiagnosticReport', methods: ['create', 'read']
         }
 
+        if @records[:family_patient].nil? || @records[:practitioner].nil? || @records[:family_specimen].nil?
+          skip 'Not all necessary resources successfully created in previous test.' 
+        end
+
         dr_hla = @resources.load_fixture('diagnostic_report/diagnosticreport-hlatyping-create.xml')
         dr_hla.subject = @records[:family_patient].to_reference
         dr_hla.performer = [@records[:practitioner].to_reference]
@@ -199,6 +208,10 @@ module Crucible
           requires resource: 'DiagnosticReport', methods: ['create', 'read', 'search', 'delete']
           validates resource: 'DiagnosticReport', methods: ['create', 'read', 'search', 'delete']
         }
+
+        if @records[:family_patient].nil? || @records[:practitioner].nil? || @records[:family_specimen].nil?
+          skip 'Not all necessary resources successfully created in previous test.' 
+        end
 
         dr = @resources.load_fixture('diagnostic_report/diagnosticreport-pathologyreport-create.xml')
         dr.subject = @records[:family_patient].to_reference

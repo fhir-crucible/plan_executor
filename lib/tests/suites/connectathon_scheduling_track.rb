@@ -36,7 +36,9 @@ module Crucible
         # Create a schedule
         @schedule = @resources.scheduling_schedule
         @schedule.id = nil # clear the identifier, in case the server checks for duplicates
-        @schedule.actor.reference = "Practitioner/#{@practitioner.id}"
+        actor_reference = FHIR::Reference.new
+        actor_reference.reference = "Practitioner/#{@practitioner.id}"
+        @schedule.actor = [actor_reference]
         reply = @client.create(@schedule)
         assert_response_ok(reply)
         @schedule.id = reply.id

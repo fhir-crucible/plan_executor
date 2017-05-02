@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<DiagnosticRequest xmlns="http://hl7.org/fhir">
+<ProcedureRequest xmlns="http://hl7.org/fhir">
   <id value="do-300"/>
   <text>
     <status value="generated"/>
@@ -56,8 +56,10 @@
     <display value="Todd G. Lerr"/>
   </subject>
   <requester>
-    <reference value="Practitioner/pract-uslab-example1"/>
-    <display value="Leonard T Bloodraw"/>
+    <agent>
+      <reference value="Practitioner/pract-uslab-example1"/>
+      <display value="Leonard T Bloodraw"/>
+    </agent>
   </requester>
   <reasonCode>
     <coding>
@@ -66,8 +68,8 @@
       <display value="Other pneumonia, unspecified organism"/>
     </coding>
   </reasonCode>
-  <supportingInformation>
+  <supportingInfo>
     <reference value="Specimen/spec-uslab-example1"/>
     <display value="Blood Specimen"/>
-  </supportingInformation>
-</DiagnosticRequest>
+  </supportingInfo>
+</ProcedureRequest>

@@ -623,14 +623,20 @@ module Crucible
             end
           end
         when FHIR::Immunization
+          resource.doseQuantity.comparator = nil unless resource.doseQuantity.nil?
           if resource.notGiven
-            resource.explanation.reasonNotGiven = [ textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}") ]
-            resource.explanation.reason = nil
+            unless resource.explanation.nil?
+              resource.explanation.reasonNotGiven = [ textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}") ]
+              resource.explanation.reason = nil
+            end
             resource.reaction = nil
           else
-            resource.explanation.reasonNotGiven = nil
-            resource.explanation.reason = [ textonly_codeableconcept("reason #{SecureRandom.base64}") ]
+            unless resource.explanation.nil?
+              resource.explanation.reasonNotGiven = nil
+              resource.explanation.reason = [ textonly_codeableconcept("reason #{SecureRandom.base64}") ]
+            end
           end
+          resource.status = ['completed','entered-in-error'].sample
         when FHIR::ImplementationGuide
           resource.fhirVersion = "STU3"
           resource.package.each do |package|

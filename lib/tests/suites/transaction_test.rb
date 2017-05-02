@@ -244,7 +244,7 @@ module Crucible
 
         @client.begin_transaction
         # read the all the Patient's weight observations. This should happen last (fourth) and return 1 result.
-        @client.add_transaction_request('GET',"Observation?code=#{@obs0b.code.coding.first.system}|#{@obs0b.code.coding.first.code}&patient=Patient/#{@patient0.id}")
+        @client.add_transaction_request('GET',"Observation?code=http://loinc.org|3141-9&patient=Patient/#{@patient0.id}")
         # update the old height observation to be a weight... this should happen third.
         @client.add_transaction_request('PUT',"Observation/#{@obs4.id}",@obs4).fullUrl = @client.full_resource_url({resource: FHIR::Observation, id: @obs4.id})
         # create a new height observation... this should happen second.
@@ -261,7 +261,7 @@ module Crucible
         count = (reply.resource.entry.first.resource.total rescue 0)
         assert(count==1,"In a transaction, GET should execute last and in this case only return 1 result; found #{count}",reply.body)
         searchResultId = (reply.resource.entry.first.resource.entry.first.resource.id rescue nil)
-        assert(searchResultId==@obs2.id,"The GET search returned the wrong result. Expected Observation/#{@obs2.id} but found Observation/#{searchResultId}.",reply.body)
+        assert(searchResultId==@obs0a.id,"The GET search returned the wrong result. Expected Observation/#{@obs0a.id} but found Observation/#{searchResultId}.",reply.body)
 
         # set the IDs to whatever the server created
         @obs3.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
@@ -421,7 +421,7 @@ module Crucible
         reply = @client.end_batch
         
         assert_bundle_response(reply)
-        assert_equal(2, reply.resource.entry.length, "Expected 2 Bundle entries but found #{reply.resource.entry.length}", reply.body)
+        assert_equal(2, reply.resource.entry.length, "Expected 2 Bundle entries but found #{reply.resource.entry.length}.", reply.body)
 
         patientCode = reply.resource.entry[0].try(:response).try(:status).try(:split).try(:first).try(:to_i)
         assert((!patientCode.nil? && patientCode >= 200 && patientCode < 300), "The batch should have created a Patient.", reply.body)
@@ -476,9 +476,9 @@ module Crucible
         @batch_obs_3.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
         @batch_obs_3.id = (reply.resource.entry[1].resource.id rescue nil) if @batch_obs_3.id.nil?
  
-        assert_equal(3, reply.resource.entry.length, "Expected 3 Bundle entries but found #{reply.resource.entry.length}", reply.body)
+        assert_equal(3, reply.resource.entry.length, "Expected 3 Bundle entries but found #{reply.resource.entry.length}.", reply.body)
         assert_bundle_transactions_okay(reply)
-        assert_equal(2, reply.resource.entry[-1].resource.entry.length, "Expected 2 search results but found #{reply.resource.entry[-1].resource.entry.length}", reply.body)
+        assert_equal(2, reply.resource.entry[-1].resource.entry.length, "Expected 2 search results but found #{reply.resource.entry[-1].resource.entry.length}.", reply.body)
       end
 
       # Batch delete patient record

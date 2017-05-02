@@ -313,7 +313,17 @@ module Crucible
             head.resource.id = "#{rid}"
           end
         when FHIR::CarePlan
-          resource.activity.each {|a| a.reference = nil if a.detail }
+          resource.activity.each do |a|
+            unless a.detail.nil?
+              a.reference = nil
+              a.detail.dailyAmount.comparator = nil unless a.detail.dailyAmount.nil?
+              a.detail.quantity.comparator = nil unless a.detail.quantity.nil?
+            end
+          end
+        when FHIR::CareTeam
+          resource.participant.each do |p|
+            p.onBehalfOf = nil
+          end
         when FHIR::CodeSystem
           resource.concept.each do |c|
             c.concept.each do |d|
@@ -366,6 +376,7 @@ module Crucible
           resource.payload = nil
         when FHIR::CommunicationRequest
           resource.payload = nil
+          resource.requester.onBehalfOf = nil unless resource.requester.nil?
         when FHIR::Composition
           resource.attester.each {|a| a.mode = ['professional']}
           resource.section.each do |section|
@@ -389,6 +400,7 @@ module Crucible
             resource.onsetAge.unit = 'yr'
             resource.onsetAge.comparator = nil
           end
+          resource.clinicalStatus = ['inactive', 'resolved','remission'].sample unless resource.abatement.nil?
           if resource.abatementAge
             resource.abatementAge.system = 'http://unitsofmeasure.org'
             resource.abatementAge.code = 'a'
@@ -790,6 +802,20 @@ module Crucible
         when FHIR::StructureMap
           resource.group.each do |g|
             g.rule.each{|r|r.rule = nil}
+          end
+        when FHIR::Substance
+          resource.ingredient.each do |ingredient|
+            unless ingredient.quantity.try(:denominator).try(:comparator).nil?
+              ingredient.quantity.denominator.comparator = nil
+            end
+            unless ingredient.quantity.try(:numerator).try(:comparator).nil?
+              ingredient.quantity.numerator.comparator = nil
+            end
+          end
+          resource.instance.each do |instance|
+            unless instance.quantity.nil?
+              instance.quantity.comparator = nil
+            end
           end
         when FHIR::TestScript
           resource.variable.each do |v|

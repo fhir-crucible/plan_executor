@@ -150,6 +150,7 @@ module Crucible
       end
 
       def self.tag_metadata(resource)
+        return nil unless resource
         if resource.meta.nil?
           resource.meta = FHIR::Meta.new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]})
         else

@@ -345,6 +345,9 @@ module Crucible
             end
             r.interaction.each{|i|i.code = ['transaction', 'batch', 'search-system', 'history-system'].sample }
           end
+          resource.messaging.each do |m|
+            m.supportedMessage = [] if m.event.length > 0
+          end
         when FHIR::Claim
           resource.item.each do |item|
             item.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
@@ -441,6 +444,7 @@ module Crucible
               item.net.unit = nil
               item.net.comparator = nil
             end
+            item.quantity.comparator = nil unless item.quantity.nil?
           end
           resource.term.each do |term|
             term.agent.each do |agent|
@@ -464,6 +468,7 @@ module Crucible
                 item.net.unit = nil
                 item.net.comparator = nil
               end
+              item.quantity.comparator = nil unless item.quantity.nil?
             end
           end
           resource.friendly.each do |f|
@@ -483,6 +488,7 @@ module Crucible
             m.identity = SecureRandom.base64 if m.identity.nil?
             m.identity.gsub!(/[^0-9A-Za-z]/, '')
           end
+          resource.jurisdiction = []
         when FHIR::DeviceComponent
           unless resource.languageCode.nil?
             resource.languageCode.coding.each do |c|
@@ -533,8 +539,22 @@ module Crucible
             resource.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
             resource.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
           end
+        when FHIR::EligibilityResponse
+          resource.insurance.each do |i|
+            i.benefitBalance.each do |b|
+              b.financial = []
+            end
+          end
         when FHIR::ExpansionProfile
           resource.designation.exclude = nil unless resource.designation.nil?
+        when FHIR::ExplanationOfBenefit
+          resource.item.each do |item|
+            item.detail = []
+            item.quantity.comparator = nil unless item.quantity.comparator.nil?
+          end
+          resource.addItem.each do |item|
+            item.detail = []
+          end
         when FHIR::FamilyMemberHistory
           if resource.ageAge
             resource.ageAge.system = 'http://unitsofmeasure.org'
@@ -550,6 +570,9 @@ module Crucible
             resource.ageAge = nil
             resource.ageRange = nil
             resource.ageString = nil
+          end
+          if resource.age.nil?
+            resource.estimatedAge = nil
           end
           if resource.deceasedAge
             resource.deceasedAge.system = 'http://unitsofmeasure.org'
@@ -616,6 +639,10 @@ module Crucible
               r.sourceReference = textonly_reference('Any')
             end
           end
+        when FHIR::Linkage
+          if resource.item.length == 1
+            resource.item << resource.item.first # must have 2
+          end
         when FHIR::List
           resource.emptyReason = nil
           resource.entry.each do |entry|
@@ -636,7 +663,14 @@ module Crucible
             resource.frames = nil
           end
         when FHIR::Medication
-          resource.ingredient.each {|i|i.amount = nil}
+          resource.ingredient.each do |i|
+            i.amount = nil
+          end
+          unless resource.package.nil?
+            resource.package.content.each do |c|
+              c.amount = nil
+            end
+          end
         when FHIR::MedicationAdministration
           date = DateTime.now
           resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
@@ -648,6 +682,10 @@ module Crucible
           end
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
+          unless resource.dosage.nil?
+            resource.dosage.dose.comparator = nil unless resource.dosage.dose.nil?
+            resource.dosage.rateQuantity = nil
+          end
         when FHIR::MedicationDispense
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
@@ -661,6 +699,10 @@ module Crucible
           resource.medicationReference = textonly_reference('Medication')
           resource.medicationCodeableConcept = nil
           resource.dosage.each{|d|d.timing=nil}
+        when FHIR::MessageDefinition
+          resource.focus.each do |f|
+            f.max = '*' unless f.max.nil?
+          end
         when FHIR::MessageHeader
           resource.response.identifier.gsub!(/[^0-9A-Za-z]/, '') if resource.try(:response).try(:identifier)
         when FHIR::NamingSystem
@@ -675,9 +717,20 @@ module Crucible
             uid.preferred = nil
           end
         when FHIR::NutritionOrder
-          resource.oralDiet.schedule = nil if resource.oralDiet
+          if resource.oralDiet
+            resource.oralDiet.schedule = nil 
+            resource.oralDiet.nutrient.each { |n| n.amount.comparator = nil unless n.amount.nil? }
+          end
           resource.supplement.each{|s|s.schedule=nil}
-          resource.enteralFormula.administration = nil if resource.enteralFormula
+          unless resource.enteralFormula.nil?
+            resource.enteralFormula.administration = nil 
+            resource.enteralFormula.caloricDensity.comparator = nil unless resource.enteralFormula.caloricDensity.nil?
+            resource.enteralFormula.maxVolumeToDeliver.comparator = nil unless resource.enteralFormula.maxVolumeToDeliver.nil?
+            resource.enteralFormula.administration.each do |a|
+              a.rateQuantity = nil
+            end unless resource.enteralFormula.administration.nil?
+          end
+          resource.supplement.each { |s| s.quantity.comparator = nil unless s.quantity.nil? }
         when FHIR::OperationDefinition
           resource.parameter.each do |p|
             p.binding = nil
@@ -750,10 +803,28 @@ module Crucible
               resource.low.value,resource.high.value = resource.high.value,resource.low.value
             end
           end
+        when FHIR::ReferralRequest
+          resource.requester.onBehalfOf = nil unless resource.requester.nil?
+        when FHIR::Sequence
+          resource.coordinateSystem = [0,1].sample
+
+          unless resource.referenceSeq.nil?
+            resource.referenceSeq.referenceSeqId = resource.referenceSeq.referenceSeqPointer = resource.referenceSeq.referenceSeqString = nil
+            resource.referenceSeq.strand = [-1,1].sample unless resource.referenceSeq.strand.nil?
+          end
+        when FHIR::SearchParameter
+          resource.type = 'reference'
         when FHIR::Signature
           resource.type = [ minimal_coding('urn:iso-astm:E1762-95:2013','1.2.840.10065.1.12.1.18') ]
           resource.whoUri = 'http://projectcrucible.org'
           resource.whoReference = nil
+        when FHIR::Specimen
+          unless resource.collection.nil?
+            resource.collection.quantity.comparator = nil unless resource.collection.quantity.nil?
+          end
+          resource.container.each do |c|
+            c.capacity = c.specimenQuantity = nil
+          end
         when FHIR::Subscription
           resource.status = 'requested' if resource.id.nil?
           resource.channel.payload = 'applicaton/json+fhir'
@@ -761,6 +832,7 @@ module Crucible
           resource.criteria = 'Observation?code=http://loinc.org|1975-2'
         when FHIR::SupplyDelivery
           resource.type = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
+          resource.suppliedItem.quantity.comparator = nil if !resource.suppliedItem.nil? && !resource.suppliedItem.quantity.nil?
         when FHIR::SupplyRequest
           resource.category = minimal_codeableconcept('http://hl7.org/fhir/supply-kind','central')
         when FHIR::StructureDefinition
@@ -817,6 +889,26 @@ module Crucible
               instance.quantity.comparator = nil
             end
           end
+        when FHIR::TestReport
+          if resource.setup
+            resource.setup.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end
+          end
+          resource.test.each do |test|
+            test.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end            
+          end
+          if resource.teardown
+            resource.teardown.action.each do |a|
+              apply_invariants!(a.operation) if a.operation
+            end
+          end
         when FHIR::TestScript
           resource.variable.each do |v|
             v.sourceId.gsub!(/[^0-9A-Za-z]/, '') if v.sourceId
@@ -858,6 +950,18 @@ module Crucible
           resource.responseId.gsub!(/[^0-9A-Za-z]/, '') if resource.responseId
           resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
           resource.targetId.gsub!(/[^0-9A-Za-z]/, '') if resource.targetId
+        when FHIR::Timing
+          unless resource.repeat.nil?
+            resource.repeat.offset = nil if resource.repeat.when.nil?
+            resource.repeat.period = resource.repeat.period * -1 if resource.repeat.period < 0
+            resource.repeat.period = 1.0 if resource.repeat.period == 0
+            resource.repeat.periodMax = nil if resource.repeat.period.nil?
+            resource.repeat.durationMax = nil if resource.repeat.duration.nil?
+            resource.repeat.countMax = nil if resource.repeat.count.nil?
+            resource.repeat.duration = nil if resource.repeat.durationUnit.nil?
+            resource.repeat.timeOfDay = nil unless resource.repeat.when.nil?
+            resource.repeat.period = nil if resource.repeat.periodUnit.nil?
+          end
         when FHIR::ValueSet
           if resource.compose
             resource.compose.include.each do |inc|
@@ -866,6 +970,10 @@ module Crucible
             resource.compose.exclude.each do |exc|
               exc.filter = nil if exc.concept
             end
+          end
+        when FHIR::VisionPrescription
+          resource.dispense.each do |d|
+            d.duration.comparator = nil unless d.duration.nil?
           end
         when FHIR::RequestGroup::Action
           if !resource.resource.nil? && resource.action.count > 0

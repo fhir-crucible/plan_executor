@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Patient xmlns="http://hl7.org/fhir">
 	<identifier>
-		<value value="${patientIdentifier}"/>
+		<value value="CREATE-IDENTIFER"/>
 	</identifier>
 	<active value="true"/>
 	<name>
 		<use value="official"/>
-		<family value="${patientFamilyName}"/>
-		<given value="${patientGivenName}"/>
+		<family value="CREATE-FAMILY"/>
+		<given value="CREATE-GIVEN"/>
 	</name>
-	<gender value="${patientGender}"/>
-	<birthDate value="${patientBirthDate}"/>
+	<gender value="male"/>
+	<birthDate value="2001-01-01"/>
 </Patient>

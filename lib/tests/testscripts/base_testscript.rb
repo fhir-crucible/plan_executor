@@ -120,7 +120,6 @@ module Crucible
         metadata = {}
         metadata['links'] = []
         metadata['requires'] = nil
-        metadata['validates'] = nil
 
         if @testscript.metadata
           @testscript.metadata.link.each do |link|
@@ -134,12 +133,27 @@ module Crucible
 
         {
           @testscript.id => @testscript.test.map do |test|
+
+            validates = test.action.reject{|a| a.operation.nil? || a.operation.resource.nil?}.map do |a|
+              {
+                'resource' => a.operation.try(:resource),
+                'methods' => a.operation.try(:type).try(:code)
+              }
+            end
+
+            validates_grouped_by_resource = validates.group_by{|g| g['resource']}.values.map do |m|
+              {
+                'resource' => m.first['resource'],
+                'methods' => m.map{|i| i['methods']}
+              }
+            end
+
             {
               "key" => "#{test.id} #{test.name} test".downcase.tr(' ', '_'),
               "id" =>  "#{test.id} #{test.name} test".downcase.tr(' ', '_'),
               "description" => test.description,
-              :test_method=> "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym
-
+              :test_method => "#{test.id} #{test.name} test".downcase.tr(' ', '_').to_sym,
+              'validates' => validates_grouped_by_resource
             }.merge(metadata)
           end
         }

@@ -344,6 +344,8 @@ module Crucible
           'message' => operation.description
           })
 
+        @client.requests = []
+
         requestHeaders = Hash[(operation.requestHeader || []).map{|u| [u.field, u.value]}] #Client needs upgrade to support
         format = FHIR::Formats::ResourceFormat::RESOURCE_XML
         format = FORMAT_MAP[operation.contentType] unless operation.contentType.nil?
@@ -447,6 +449,9 @@ module Crucible
           result.message = "Undefined operation #{operation.type.to_json}"
           FHIR.logger.error(result.message)
         end
+        result.extension.concat(@client.requests.map do |request|
+          FHIR::Extension.new('url' => 'https://projectcrucible.com/extensions/testscript-request', 'valueString' => request.to_json)
+        end)
         handle_response(operation)
         result
       end

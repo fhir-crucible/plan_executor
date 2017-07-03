@@ -28,8 +28,53 @@ module Crucible
         messages
       end
 
-      def self.fhir_resources
-        FHIR::RESOURCES.select {|r| !EXCLUDED_RESOURCES.include?(r)}.map {|r| "FHIR::#{r}".constantize}
+      # helpers to grab the versioned resources
+      # move to another area?
+
+      def get_resource(resource)
+        self.class.get_resource(@client.fhir_version, resource)
+      end
+
+      def fhir_resources
+        self.class.fhir_resources(@client.fhir_version)
+      end
+
+      def resource_from_contents(body)
+        if @client.fhir_version.to_s.upcase == 'DSTU2'
+          FHIR::DSTU2.from_contents(body)
+        else
+          FHIR.from_contents(body)
+        end
+      end
+
+      def self.get_resource(fhir_version, resource)
+        if fhir_version.to_s.upcase == 'DSTU2'
+          "FHIR::DSTU2::#{resource}".constantize
+        else
+          "FHIR::#{resource}".constantize
+        end
+
+      end
+
+
+      def self.valid_resource?(fhir_version, resource)
+        if fhir_version.to_s.upcase == 'DSTU2'
+          FHIR::DSTU2::RESOURCES.include?(resource)
+        else
+          FHIR::RESOURCES.include?(resource)
+        end
+      end
+
+      def self.fhir_resources(fhir_version=nil)
+
+        resources = FHIR::RESOURCES
+        namespace = 'FHIR'
+        if !fhir_version.nil? && FHIR.constants.include?(fhir_version.upcase)
+          resources = FHIR.const_get(fhir_version.upcase)::RESOURCES
+          namespace = "FHIR::#{fhir_version.to_s.upcase}"
+        end
+
+        resources.select {|r| !EXCLUDED_RESOURCES.include?(r)}.map {|r| "#{namespace}::#{r}".constantize}
       end
 
       def requires(hash)

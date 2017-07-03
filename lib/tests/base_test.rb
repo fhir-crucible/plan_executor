@@ -16,9 +16,10 @@ module Crucible
       attr_accessor :setup_failure_message
       attr_accessor :setup_requests
       attr_accessor :teardown_requests
+      attr_accessor :supported_versions
 
       # Base test fields, used in Crucible::Tests::Executor.list_all
-      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category']
+      JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category','supported_versions']
       STATUS = {
         pass: 'pass',
         fail: 'fail',
@@ -34,6 +35,7 @@ module Crucible
         @client.monitor_requests if @client
         @client2.monitor_requests if @client2
         @tags ||= []
+        @supported_versions ||= [:dstu2, :stu3]
         @warnings = []
         @setup_failed = false
         @setup_requests = []

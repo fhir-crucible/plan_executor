@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 825997e6ba3c000f48ed7299fbdfca66064698cc
+  revision: 21f0ffe0e4a8e4fbc9b83adf2ada6873552c73df
   branch: multiversion
   specs:
     fhir_client (3.0.1)
@@ -13,26 +13,6 @@ GIT
       rack (>= 1.5)
       rest-client (~> 2.0)
       tilt (>= 1.1)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_dstu2_models.git
-  revision: 7d027081004ab0a2a5b0adcf4fe5380a1b8e9cac
-  specs:
-    fhir_dstu2_models (1.0.2)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 1.16, < 3)
-      nokogiri (>= 1.7)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: 0cdfe864dc7bd42a072c5a82d3d3520abd67e976
-  specs:
-    fhir_models (3.0.1)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 1.16)
-      nokogiri (>= 1.6)
 
 PATH
   remote: .
@@ -107,6 +87,16 @@ GEM
     erubi (1.6.0)
     faraday (0.12.1)
       multipart-post (>= 1.2, < 3)
+    fhir_dstu2_models (1.0.2)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.7)
+    fhir_models (3.0.1)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.6)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
     hashdiff (0.3.4)
@@ -233,8 +223,6 @@ DEPENDENCIES
   builder
   date_time_precision
   fhir_client!
-  fhir_dstu2_models!
-  fhir_models!
   mongoid
   mongoid-history
   oauth2

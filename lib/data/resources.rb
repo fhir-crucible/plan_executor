@@ -4,6 +4,10 @@ module Crucible
 
       FIXTURE_DIR = File.join(File.expand_path(File.join('..','..','..'),File.absolute_path(__FILE__)), 'fixtures')
 
+      def initialize(fhir_version = nil)
+        @fhir_version = fhir_version
+      end
+
       # FIXME: Determine a better way to share fixture data with Crucible
       def fixture_path
         if File.exists?(FIXTURE_DIR)
@@ -14,69 +18,69 @@ module Crucible
       end
 
       def example_patient
-        load_fixture('patient/patient-example.xml')
+        load_fixture('patient/patient-example',:xml)
       end
 
       def example_patient_us
-        load_fixture('patient/patient-example-us-extensions.xml')
+        load_fixture('patient/patient-example-us-extensions',:xml)
       end
 
       def minimal_patient
-        load_fixture('patient/patient-minimal.xml')
+        load_fixture('patient/patient-minimal',:xml)
       end
 
       def example_patient_record_201
-        load_fixture('record/patient-example-f201-roel.xml')
+        load_fixture('record/patient-example-f201-roel',:xml)
       end
 
       def example_patient_record_condition_201
-        load_fixture('record/condition-example-f201-fever.xml')
+        load_fixture('record/condition-example-f201-fever',:xml)
       end
 
       def example_patient_record_condition_205
-        load_fixture('record/condition-example-f205-infection.xml')
+        load_fixture('record/condition-example-f205-infection',:xml)
       end
 
       def example_patient_record_diagnosticreport_201
-        load_fixture('record/diagnosticreport-example-f201-brainct.xml')
+        load_fixture('record/diagnosticreport-example-f201-brainct',:xml)
       end
 
       def example_patient_record_encounter_201
-        load_fixture('record/encounter-example-f201-20130404.xml')
+        load_fixture('record/encounter-example-f201-20130404',:xml)
       end
 
       def example_patient_record_encounter_202
-        load_fixture('record/encounter-example-f202-20130128.xml')
+        load_fixture('record/encounter-example-f202-20130128',:xml)
       end
 
       def example_patient_record_observation_202
-        load_fixture('record/observation-example-f202-temperature.xml')
+        load_fixture('record/observation-example-f202-temperature',:xml)
       end
 
       def example_patient_record_organization_201
-        load_fixture('record/organization-example-f201-aumc.xml')
+        load_fixture('record/organization-example-f201-aumc',:xml)
       end
 
       def example_patient_record_organization_203
-        load_fixture('record/organization-example-f203-bumc.xml')
+        load_fixture('record/organization-example-f203-bumc',:xml)
       end
 
       def example_patient_record_practitioner_201
-        load_fixture('record/practitioner-example-f201-ab.xml')
+        load_fixture('record/practitioner-example-f201-ab',:xml)
       end
 
       def example_patient_record_procedure_201
-        load_fixture('record/procedure-example-f201-tpf.xml')
+        load_fixture('record/procedure-example-f201-tpf',:xml)
       end
 
       def track3_profile
-        load_fixture('validation/observation.profile.xml')
+        load_fixture('validation/observation.profile',:xml)
       end
 
       def track3_observations
         # get all observations in fixture_path/validation/observations
         observations = []
-        files = File.join(fixture_path, 'validation', 'observations', '*.xml')
+        files = File.join(fixture_path, 'validation', 'observations', '*',:xml)
         Dir.glob(files).each do |f|
           observations << Crucible::Generator::Resources.tag_metadata(FHIR::Xml.from_xml( File.read(f) ))
         end
@@ -86,67 +90,67 @@ module Crucible
       # ------------------------------ CLAIM TEST TRACK ------------------------------
 
       def simple_claim
-        load_fixture('financial/claim-example.xml')
+        load_fixture('financial/claim-example',:xml)
       end
 
       def average_claim
-        load_fixture('financial/claim-example-oral-average.xml')
+        load_fixture('financial/claim-example-oral-average',:xml)
       end
 
       def complex_claim
-        load_fixture('financial/claim-example-oral-orthoplan.xml')
+        load_fixture('financial/claim-example-oral-orthoplan',:xml)
       end
 
       # ------------------------------ SCHEDULING TEST TRACK ------------------------------
 
       def scheduling_appointment
-        load_fixture('scheduling/appointment-simple.xml')
+        load_fixture('scheduling/appointment-simple',:xml)
       end
 
       def scheduling_response_patient
-        load_fixture('scheduling/appointmentresponse-patient-simple.xml')
+        load_fixture('scheduling/appointmentresponse-patient-simple',:xml)
       end
 
       def scheduling_response_practitioner
-        load_fixture('scheduling/appointmentresponse-practitioner-simple.xml')
+        load_fixture('scheduling/appointmentresponse-practitioner-simple',:xml)
       end
 
       def scheduling_practitioner
-        load_fixture('scheduling/practitioner-simple.xml')
+        load_fixture('scheduling/practitioner-simple',:xml)
       end
 
       def scheduling_schedule
-        load_fixture('scheduling/schedule-simple.xml')
+        load_fixture('scheduling/schedule-simple',:xml)
       end
 
       def scheduling_slot
-        load_fixture('scheduling/slot-simple.xml')
+        load_fixture('scheduling/slot-simple',:xml)
       end
 
       # ------------------------------ US CORE TESTS ------------------------------
 
       def uscore_conformance
-        load_fixture('uscore/CapabilityStatement-server.json')
+        load_fixture('uscore/CapabilityStatement-server',:json)
       end
 
       # ------------------------------ TERMINOLOGY TRACK TESTS ------------------------------
 
       def codesystem_simple
-        load_fixture('terminology/codesystem-simple.xml')
+        load_fixture('terminology/codesystem-simple',:xml)
       end
 
       def valueset_simple
-        load_fixture('terminology/valueset-example.xml')
+        load_fixture('terminology/valueset-example',:xml)
       end
 
       def conceptmap_simple
-        load_fixture('terminology/conceptmap-example.xml')
+        load_fixture('terminology/conceptmap-example',:xml)
       end
 
       # ------------------------------ PATCH TRACK TESTS ------------------------------
 
       def medicationorder_simple
-        load_fixture('patch/medicationrequest-simple.xml')
+        load_fixture('patch/medicationrequest-simple',:xml)
       end
 
       def self.tag_metadata(resource)
@@ -159,8 +163,12 @@ module Crucible
         resource
       end
 
-      def load_fixture(path)
-        Crucible::Generator::Resources.tag_metadata(FHIR.from_contents(File.read(File.join(fixture_path, path))))
+      def load_fixture(path, extension)
+
+        full_path = File.join(fixture_path, "#{path}.#{extension.to_s}")
+        full_path = File.join(fixture_path, "#{path}.#{@fhir_version.to_s}.#{extension}") if File.exist?(File.join("#{path}.#{@fhir_version.to_s}.#{extension}"))
+
+        Crucible::Generator::Resources.tag_metadata(FHIR.from_contents(File.read(full_path)))
       end
 
     end

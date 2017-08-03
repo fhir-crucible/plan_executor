@@ -39,7 +39,7 @@ module Crucible
         if @create_failed
           # If create fails, pick one from the Patient Bundle
           begin
-            bundle_reply = request_bundle(FHIR::Patient, @xml_format)
+            bundle_reply = request_bundle(get_resource(:Patient), @xml_format)
             assert_response_ok bundle_reply
             bundle_patient = bundle_reply.resource.entry.first.resource
             @id = bundle_patient.id
@@ -56,7 +56,7 @@ module Crucible
 
       # Delete the reference patient if we created it
       def teardown
-        @client.destroy(FHIR::Patient, @id) unless @create_failed
+        @client.destroy(get_resource(:Patient), @id) unless @create_failed
       end
 
       test 'CT01', 'Request xml using headers' do
@@ -68,7 +68,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
-          patient = request_entry(FHIR::Patient, @id, @@xml_format)
+          patient = request_entry(get_resource(:Patient), @id, @@xml_format)
           assert compare_response_format(patient, @@xml_format), "XML format header mismatch: requested #{@@xml_format}, received #{patient.response_format}"
           warning { assert compare_response(patient), 'requested XML response does not match created resource' }
         rescue => e
@@ -86,7 +86,7 @@ module Crucible
             validates resource: 'Patient', methods: ['read'], formats: ['XML']
           }
           begin
-            patient = request_entry(FHIR::Patient, @id, format, true)
+            patient = request_entry(get_resource(:Patient), @id, format, true)
             assert compare_response_format(patient, @@xml_format), "XML format param mismatch: requested #{format}, received #{patient.response_format}"
             warning { assert compare_response(patient), 'requested XML response does not match created resource' }
           rescue => e
@@ -105,7 +105,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
-          patient = request_entry(FHIR::Patient, @id, @@json_format)
+          patient = request_entry(get_resource(:Patient), @id, @@json_format)
           assert compare_response_format(patient, @@json_format), "JSON format header mismatch: requested #{@@json_format}, received #{patient.response_format}"
           warning { assert compare_response(patient), 'requested JSON resource does not match created resource' }
         rescue => e
@@ -123,7 +123,7 @@ module Crucible
             validates resource: 'Patient', methods: ['read'], formats: ['JSON']
           }
           begin
-            patient = request_entry(FHIR::Patient, @id, format, true)
+            patient = request_entry(get_resource(:Patient), @id, format, true)
             assert compare_response_format(patient, @@json_format), "JSON format param mismatch: requested #{format}, received #{patient.response_format}"
             warning { assert compare_response(patient), 'requested JSON response does not match created resource' }
           rescue => e
@@ -142,8 +142,9 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
         begin
-          patient_xml = request_entry(FHIR::Patient, @id, @@xml_format)
-          patient_json = request_entry(FHIR::Patient, @id, @@json_format)
+          patient_xml = request_entry(get_resource(:Patient), @id, @@xml_format)
+          patient_json = request_entry(get_resource(:Patient), @id, @@json_format)
+          binding.pry
 
           assert compare_response_format(patient_xml, @@xml_format), "XML format header mismatch: requested #{@@xml_format}, received #{patient_xml.response_format}"
           assert compare_response_format(patient_json, @@json_format), "JSON format header mismatch: requested #{@@json_format}, received #{patient_json.response_format}"
@@ -163,8 +164,8 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
         begin
-          patient_xml = request_entry(FHIR::Patient, @id, @@xml_format, true)
-          patient_json = request_entry(FHIR::Patient, @id, @@json_format, true)
+          patient_xml = request_entry(get_resource(:Patient), @id, @@xml_format, true)
+          patient_json = request_entry(get_resource(:Patient), @id, @@json_format, true)
 
           assert compare_response_format(patient_xml, @@xml_format), "XML format header mismatch: requested #{@@xml_format}, received #{patient_xml.response_format}"
           assert compare_response_format(patient_json, @@json_format), "JSON format header mismatch: requested #{@@json_format}, received #{patient_json.response_format}"
@@ -184,7 +185,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
         begin
-          patients_bundle = request_bundle(FHIR::Patient, @@xml_format)
+          patients_bundle = request_bundle(get_resource(:Patient), @@xml_format)
 
           assert compare_response_format(patients_bundle, @@xml_format), "Bundle XML format header mismatch: requested #{@@xml_format}, received #{patients_bundle.response_format}"
         rescue => e
@@ -202,7 +203,7 @@ module Crucible
             validates resource: 'Patient', methods: ['read'], formats: ['XML']
           }
           begin
-            patients_bundle = request_bundle(FHIR::Patient, format, true)
+            patients_bundle = request_bundle(get_resource(:Patient), format, true)
 
             assert compare_response_format(patients_bundle, @@xml_format), "Bundle XML format param mismatch: requested #{format}, received #{patients_bundle.response_format}"
           rescue => e
@@ -220,7 +221,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
         begin
-          patients_bundle = request_bundle(FHIR::Patient, @@json_format)
+          patients_bundle = request_bundle(get_resource(:Patient), @@json_format)
 
           assert compare_response_format(patients_bundle, @@json_format), "Bundle JSON format header mismatch: requested #{@@json_format}, received #{patients_bundle.response_format}"
         rescue => e
@@ -238,7 +239,7 @@ module Crucible
             validates resource: 'Patient', methods: ['read'], formats: ['JSON']
           }
           begin
-            patients_bundle = request_bundle(FHIR::Patient, format, true)
+            patients_bundle = request_bundle(get_resource(:Patient), format, true)
 
             assert compare_response_format(patients_bundle, @@json_format), "Bundle JSON format param mismatch: requested #{format}, received #{patients_bundle.response_format}"
           rescue => e
@@ -254,7 +255,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read']
         }
         @client.use_format_param = false
-        reply = @client.read_feed(FHIR::Patient,'application/foobar')
+        reply = @client.read_feed(get_resource(:Patient),'application/foobar')
         assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
       end
 
@@ -265,7 +266,7 @@ module Crucible
           validates resource: 'Patient', methods: ['read']
         }
         @client.use_format_param = true
-        reply = @client.read_feed(FHIR::Patient,'application/foobar')
+        reply = @client.read_feed(get_resource(:Patient),'application/foobar')
         @client.use_format_param = false
         assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
       end

@@ -248,7 +248,7 @@ module Crucible
         if @preexisting.nil?
           result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
-          ResourceGenerator.set_fields!(@preexisting)
+          ResourceGenerator.set_fields!(@preexisting, version_namespace.to_s)
           ResourceGenerator.apply_invariants!(@preexisting)
 
           ignore_client_exception { @preexisting.update }
@@ -335,7 +335,7 @@ module Crucible
         if @preexisting.nil?
           result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
-          ResourceGenerator.set_fields!(@preexisting)
+          ResourceGenerator.set_fields!(@preexisting, version_namespace.to_s)
           ResourceGenerator.apply_invariants!(@preexisting)
 
           searchParams = { '_id' => @preexisting_id }

@@ -199,7 +199,7 @@ module Crucible
         replyB = @client.read_feed(@resource_class)
 
         # AuditEvent
-        if resource_class==FHIR::AuditEvent
+        if resource_class == get_resource(:AuditEvent)
           count = (reply.resource.total-replyB.resource.total).abs
           assert (count <= 1), 'Searching without criteria did not return all the results.'
         else

@@ -163,7 +163,7 @@ module Crucible
         resource = namespace.const_get(:Patient).new
         resource.identifier = [ minimal_identifier(identifier) ]
         resource.name = [ minimal_humanname(name) ]
-        Crucible::Generator::Resources.tag_metadata(resource)
+        tag_metadata(resource)
       end
 
       # Common systems:
@@ -181,7 +181,7 @@ module Crucible
           resource.subject = ref
         end
         resource.valueQuantity = minimal_quantity(value,units)
-        Crucible::Generator::Resources.tag_metadata(resource)
+        tag_metadata(resource)
       end
 
       # Default system/code are for SNOMED "Obese (finding)"
@@ -195,7 +195,7 @@ module Crucible
         end
         resource.code = minimal_codeableconcept(system,code)
         resource.verificationStatus = 'confirmed'
-        Crucible::Generator::Resources.tag_metadata(resource)
+        tag_metadata(resource)
       end
 
       def self.minimal_identifier(identifier='0', namespace = FHIR)
@@ -262,6 +262,17 @@ module Crucible
         animal.breed = minimal_codeableconcept('http://hl7.org/fhir/animal-breed','gret') # golden retriever
         animal.genderStatus = minimal_codeableconcept('http://hl7.org/fhir/animal-genderstatus','intact') # intact
         animal
+      end
+
+      def self.tag_metadata(resource, namespace = FHIR)
+        return nil unless resource
+
+        if resource.meta.nil?
+          resource.meta = namespace.const_get(:Meta).new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]})
+        else
+          resource.meta.tag << @namespace.const_get(:Coding).new({'system'=>'http://projectcrucible.org', 'code'=>'testdata'})
+        end
+        resource
       end
 
       def self.apply_invariants!(resource)

@@ -16,13 +16,13 @@ module Crucible
       end
 
       def setup
-        # Create a patient
-        patient = Crucible::Generator::Resources.new.minimal_patient
-        patient.identifier = [FHIR::Identifier.new]
-        patient.identifier[0].value = SecureRandom.urlsafe_base64
-        ignore_client_exception { @patient = FHIR::Patient.create(patient) }
-        assert_resource_type @client.reply, FHIR::Patient
-        assert @patient, "Response code #{@client.reply.code} on patient creation."
+          # Create a patient
+          patient = Crucible::Generator::Resources.new(fhir_version).minimal_patient
+          patient.identifier = [get_resource(:Identifier).new]
+          patient.identifier[0].value = SecureRandom.urlsafe_base64
+          ignore_client_exception { @patient = get_resource(:Patient).create(patient) }
+          assert_resource_type @client.reply, get_resource(:Patient)
+          assert @patient, "Response code #{@client.reply.code} on patient creation."
       end
 
       def teardown

@@ -31,6 +31,10 @@ module Crucible
       # helpers to grab the versioned resources
       # move to another area?
 
+      def fhir_version
+        @client.fhir_version
+      end
+
       def get_resource(resource)
         self.class.get_resource(@client.fhir_version, resource)
       end

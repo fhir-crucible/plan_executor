@@ -6,15 +6,8 @@ module Crucible
 
       def initialize(fhir_version = nil)
         @fhir_version = fhir_version
-      end
-
-      # FIXME: Determine a better way to share fixture data with Crucible
-      def fixture_path
-        if File.exists?(FIXTURE_DIR)
-          FIXTURE_DIR
-        else
-          File.join(Rails.root, 'test', 'fixtures')
-        end
+        @namespace = FHIR
+        @namespace = FHIR::DSTU2 if @fhir_version == :dstu2
       end
 
       def example_patient
@@ -82,7 +75,7 @@ module Crucible
         observations = []
         files = File.join(fixture_path, 'validation', 'observations', '*',:xml)
         Dir.glob(files).each do |f|
-          observations << Crucible::Generator::Resources.tag_metadata(FHIR::Xml.from_xml( File.read(f) ))
+          observations << tag_metadata(FHIR::Xml.from_xml( File.read(f) ))
         end
         observations
       end
@@ -153,22 +146,33 @@ module Crucible
         load_fixture('patch/medicationrequest-simple',:xml)
       end
 
-      def self.tag_metadata(resource)
+      def tag_metadata(resource)
         return nil unless resource
+
         if resource.meta.nil?
-          resource.meta = FHIR::Meta.new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]})
+          resource.meta = @namespace.const_get(:Meta).new({ 'tag' => [{'system'=>'http://projectcrucible.org', 'code'=>'testdata'}]})
         else
-          resource.meta.tag << FHIR::Coding.new({'system'=>'http://projectcrucible.org', 'code'=>'testdata'})
+          resource.meta.tag << @namespace.const_get(:Coding).new({'system'=>'http://projectcrucible.org', 'code'=>'testdata'})
         end
         resource
       end
+
+      private
 
       def load_fixture(path, extension)
 
         full_path = File.join(fixture_path, "#{path}.#{extension.to_s}")
         full_path = File.join(fixture_path, "#{path}.#{@fhir_version.to_s}.#{extension}") if File.exist?(File.join("#{path}.#{@fhir_version.to_s}.#{extension}"))
+        tag_metadata(@namespace.from_contents(File.read(full_path)))
+      end
 
-        Crucible::Generator::Resources.tag_metadata(FHIR.from_contents(File.read(full_path)))
+      # FIXME: Determine a better way to share fixture data with Crucible
+      def fixture_path
+        if File.exists?(FIXTURE_DIR)
+          FIXTURE_DIR
+        else
+          File.join(Rails.root, 'test', 'fixtures')
+        end
       end
 
     end

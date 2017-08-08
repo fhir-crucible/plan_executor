@@ -30,9 +30,13 @@ module Crucible
 
       # helpers to grab the versioned resources
       # move to another area?
-
+      # also, this may be causing a problem on the fhir starburst structure
       def fhir_version
-        @client.fhir_version
+        if @client.nil?
+          :stu3
+        else
+          @client.fhir_version
+        end
       end
 
       def get_resource(resource)
@@ -160,7 +164,7 @@ module Crucible
       def resource_category(resource)
         unless @resource_category
           @categories_by_resource = {}
-          fhir_structure = Crucible::FHIRStructure.get
+          fhir_structure = Crucible::FHIRStructure.get(fhir_version)
           categories = fhir_structure['children'].select {|n| n['name'] == 'RESOURCES'}.first['children']
           pull_children = lambda {|n, chain| n['children'].nil? ? n['name'] : n['children'].map {|child| chain.call(child, chain)}}
           categories.each do |category|

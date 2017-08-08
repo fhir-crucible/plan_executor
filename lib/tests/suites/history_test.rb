@@ -17,10 +17,10 @@ module Crucible
 
       def setup
         begin
-          @resources = Crucible::Generator::Resources.new
+          @resources = Crucible::Generator::Resources.new(fhir_version)
           response = @client.create(@resources.minimal_patient)
           assert_response_ok(response)
-          assert_resource_type(response, FHIR::Patient)
+          assert_resource_type(response, get_resource(:Patient))
           @patient = response.resource
           @patient_created = true
           @create_date = Time.now.utc
@@ -29,7 +29,7 @@ module Crucible
           @version << @client.reply.version
 
           @patient.telecom ||= []
-          @patient.telecom << FHIR::ContactPoint.new.from_hash(system: 'email', value: 'foo@example.com')
+          @patient.telecom << get_resource(:ContactPoint).new.from_hash(system: 'email', value: 'foo@example.com')
 
           @patient.update
           @version << @client.reply.version
@@ -58,7 +58,7 @@ module Crucible
         }
         skip 'Patient not correctly created in setup.' unless @patient_setup
 
-        bundle = FHIR::Patient.resource_instance_history(@patient.id)
+        bundle = get_resource(:Patient).resource_instance_history(@patient.id)
 
         assert_equal "history", bundle.type, "The bundle type is not correct"
         assert_equal @version_count, bundle.total, "the number of returned versions is not correct"
@@ -72,7 +72,7 @@ module Crucible
           validates resource: "Patient", methods: ["history"]
         }
         skip 'Patient not correctly created in setup.' unless @patient_setup
-        bundle = FHIR::Patient.resource_instance_history(@patient.id)
+        bundle = get_resource(:Patient).resource_instance_history(@patient.id)
         entries = bundle.entry
 
         assert_equal 1, entries.select{|entry| entry.request.try(:local_method) == 'DELETE' }.size, 'Wrong number of DELETE transactions in the history bundle'
@@ -92,16 +92,16 @@ module Crucible
         before = @create_date - 1.minute
         after = before + 1.hour
 
-        all_history = FHIR::Patient.resource_instance_history(@patient.id)
+        all_history = get_resource(:Patient).resource_instance_history(@patient.id)
 
-        bundle = FHIR::Patient.resource_instance_history_as_of(@patient.id,before)
+        bundle = get_resource(:Patient).resource_instance_history_as_of(@patient.id,before)
 
         assert_equal @version_count, bundle.total, "the number of returned versions since the creation date is not correct"
 
         entry_ids_are_present(bundle.entry)
         check_sort_order(bundle.entry)
 
-        bundle = FHIR::Patient.resource_instance_history_as_of(@patient.id,after)
+        bundle = get_resource(:Patient).resource_instance_history_as_of(@patient.id,after)
         assert_equal 0, bundle.total, "there should not be any history one hour after the creation date"
       end
 
@@ -113,10 +113,10 @@ module Crucible
         }
         skip 'Patient not correctly created in setup.' unless @patient_setup
 
-        bundle = FHIR::Patient.resource_instance_history(@patient.id)
+        bundle = get_resource(:Patient).resource_instance_history(@patient.id)
 
         active_entries(bundle.entry).each do |entry|
-          pulled = FHIR::Patient.vread(entry.resource.id, entry.resource.meta.versionId)
+          pulled = get_resource(:Patient).vread(entry.resource.id, entry.resource.meta.versionId)
           assert !pulled.nil?, "Cannot find version that was present in history"
         end
 
@@ -124,7 +124,7 @@ module Crucible
           # FIXME: Should we parse the request URL or drop this assertion?
           if entry.resource
 
-            ignore_client_exception { pulled = FHIR::Patient.vread(entry.resource.id, entry.resource.meta.versionId) }
+            ignore_client_exception { pulled = get_resource(:Patient).vread(entry.resource.id, entry.resource.meta.versionId) }
             assert_response_gone @client.reply
 
           end
@@ -138,7 +138,7 @@ module Crucible
           validates resource: "Patient", methods: ["history"]
         }
 
-        ignore_client_exception { FHIR::Patient.resource_instance_history('3141592unlikely') }
+        ignore_client_exception { get_resource(:Patient).resource_instance_history('3141592unlikely') }
         assert_response_not_found @client.reply
         assert @client.reply.resource.nil?, 'bad history request should not return a resource'
       end
@@ -153,12 +153,12 @@ module Crucible
         before = @create_date - 1.minute
         after = Time.now.utc + 1.hour
 
-        bundle = FHIR::Patient.resource_history_as_of(before)
+        bundle = get_resource(:Patient).resource_history_as_of(before)
 
         entry_ids_are_present(bundle.entry)
         check_sort_order(bundle.entry)
 
-        bundle = FHIR::Patient.resource_history_as_of(after)
+        bundle = get_resource(:Patient).resource_history_as_of(after)
         assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
 
       end
@@ -188,7 +188,7 @@ module Crucible
           end
         end
 
-        result = @client.resource_history_as_of(FHIR::Patient,after)
+        result = @client.resource_history_as_of(get_resource(:Patient),after)
         assert_response_ok result
         assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
       end
@@ -202,7 +202,7 @@ module Crucible
         }
 
         page_size = 2
-        page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
+        page = @client.history(resource: get_resource(:Patient), history: {since: (Time.now.utc - 1.hour), count: page_size})
 
         forward_count = 0
         # browse forwards
@@ -225,7 +225,7 @@ module Crucible
         }
 
         page_size = 2
-        page = @client.history(resource: FHIR::Patient, history: {since: (Time.now.utc - 1.hour), count: page_size})
+        page = @client.history(resource: get_resource(:Patient), history: {since: (Time.now.utc - 1.hour), count: page_size})
 
         forward_count = 0
         last_page = page

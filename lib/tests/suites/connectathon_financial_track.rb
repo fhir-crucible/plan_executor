@@ -14,10 +14,11 @@ module Crucible
         super(client1, client2)
         @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
 
         @simple = @resources.simple_claim
         @simple.id = nil # clear the identifier, in case the server checks for duplicates
@@ -32,7 +33,7 @@ module Crucible
         @preauth.id = nil # clear the identifier, in case the server checks for duplicates
         @preauth.identifier = nil # clear the identifier, in case the server checks for duplicates
 
-        @er = @resources.load_fixture('financial/eligibilityrequest-example.xml')
+        @er = @resources.eligibility_request
         @er.id = nil
         @er.identifier = nil
 

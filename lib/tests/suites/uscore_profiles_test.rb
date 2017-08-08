@@ -15,11 +15,12 @@ module Crucible
         @tags.append('argonaut')
         @tags.append('connectathon')
         @category = {id: 'core_functionality', title: 'Core Functionality'}
+        @supported_versions = [:stu3]
       end
 
       def setup
         @server_side_resources = {}
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(:stu3)
         @uscore_conformance = @resources.uscore_conformance
 
         # Try to create a USCore patient on the server.

@@ -73,7 +73,7 @@ module Crucible
       def track3_observations
         # get all observations in fixture_path/validation/observations
         observations = []
-        files = File.join(fixture_path, 'validation', 'observations', '*',:xml)
+        files = File.join(fixture_path, 'validation', 'observations', '*','xml')
         Dir.glob(files).each do |f|
           observations << tag_metadata(FHIR::Xml.from_xml( File.read(f) ))
         end
@@ -146,6 +146,87 @@ module Crucible
         load_fixture('patch/medicationrequest-simple',:xml)
       end
 
+      # ------------------------------ CONNECTATHONS -----------------------------
+      def patient_register
+        load_fixture('patient/patient-register-create',:xml)
+      end
+
+      def practitioner_register
+        load_fixture('practitioner/practitioner-register-create', :xml)
+      end
+
+      def eligibility_request
+        load_fixture('financial/eligibilityrequest-example', :xml)
+      end
+
+      def sequence_register
+        load_fixture('sequence/sequence-register-create', :xml)
+      end
+
+      def specimen_register
+        load_fixture('specimen/specimen-register-create', :xml)
+      end
+
+      def observation_register
+        load_fixture('observation/observation-register-create', :xml)
+      end
+
+      def patient_familyhistory
+        load_fixture('patient/patient-familyhistory-create', :xml)
+      end
+
+      def observation_familyhistory
+        load_fixture('observation/observation-familyhistory-create', :xml)
+      end
+
+      def family_member_history
+        load_fixture('family_member_history/familymemberhistory-familyhistory-create', :xml)
+      end
+
+      def specimen_familyhistory
+        load_fixture('specimen/specimen-familyhistory-create', :xml)
+      end
+
+      def diagnostic_familyhistory
+        load_fixture('diagnostic_report/diagnosticreport-familyhistory-create', :xml)
+      end
+
+      def observation_datawarehouse
+        load_fixture('observation/observation-datawarehouse-create', :xml)
+      end
+
+      def diagnosticreport_hltyping
+        load_fixture('diagnostic_report/diagnosticreport-hlatyping-create', :xml)
+      end
+
+      def diagnosticreport_pathology
+        load_fixture('diagnostic_report/diagnosticreport-pathologyreport-create', :xml)
+      end
+
+      def patient_uslab1
+        load_fixture('patient/patient-uslab-example1', :xml)
+      end
+
+      def practitioner_uslab1
+        load_fixture('practitioner/pract-uslab-example1', :xml)
+      end
+
+      def practitioner_uslab3
+        load_fixture('practitioner/pract-uslab-example3', :xml)
+      end
+
+      def organization_uslab3
+        load_fixture('organization/org-uslab-example3', :xml)
+      end
+
+      def specimen_100
+        load_fixture('specimen/spec-100', :xml)
+      end
+
+      def specimen_400
+        load_fixture('specimen/spec-400', :xml)
+      end
+
       def tag_metadata(resource)
         return nil unless resource
 
@@ -157,7 +238,6 @@ module Crucible
         resource
       end
 
-      private
 
       def load_fixture(path, extension)
 
@@ -165,6 +245,8 @@ module Crucible
         full_path = File.join(fixture_path, "#{path}.#{@fhir_version.to_s}.#{extension}") if File.exist?(File.join("#{path}.#{@fhir_version.to_s}.#{extension}"))
         tag_metadata(@namespace.from_contents(File.read(full_path)))
       end
+
+      private
 
       # FIXME: Determine a better way to share fixture data with Crucible
       def fixture_path

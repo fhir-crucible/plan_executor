@@ -20,6 +20,7 @@ module Crucible
         @tags.append('provider')
         @tags.append('connectathon')
         @category = {id: 'argonaut', title: 'Argonaut'}
+        @supported_versions = [:stu3]
       end
 
       test 'APCT01', 'GET a set of Practitioners to test' do
@@ -41,7 +42,7 @@ module Crucible
             }
           }
 
-          result = @client.search(FHIR::Practitioner, options)
+          result = @client.search(get_resource(:Practitioner), options)
 
           assert_response_ok(result)
 
@@ -98,7 +99,7 @@ module Crucible
             }
           }
 
-        result = @client.search(FHIR::Organization, options)
+        result = @client.search(get_resource(:Organization), options)
 
         assert_response_ok(result)
 
@@ -125,7 +126,7 @@ module Crucible
             }
           }
 
-        result = @client.search(FHIR::Location, options)
+        result = @client.search(get_resource(:Location), options)
 
         assert_response_ok(result)
 
@@ -157,7 +158,7 @@ module Crucible
             }
           }
 
-        result = @client.search(FHIR::Location, options)
+        result = @client.search(get_resource(:Location), options)
 
         assert_response_ok(result)
 

@@ -2,6 +2,9 @@ module Crucible
   module Tests
     class USCoreResourceGenerator < ResourceGenerator
 
+      # Currently only support for STU3, so keeping the same namespace
+      # If we add another version, we may need to update these
+
       def self.patient(identifier='0',name='Name')
         resource = minimal_patient(identifier,name)
         # resource.identifier = [ minimal_identifier(identifier) ]

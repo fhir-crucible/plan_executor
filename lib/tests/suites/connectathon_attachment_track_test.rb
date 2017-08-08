@@ -17,6 +17,7 @@ module Crucible
         super(client1, client2)
         @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
@@ -31,11 +32,10 @@ module Crucible
         @mime_types["structured"] = "application/xml"
         @mime_types["unstructured"] = "application/xml"
 
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
 
-        patient = @resources.load_fixture("patient/patient-register-create.xml")
-        practitioner = @resources.load_fixture("practitioner/practitioner-register-create.xml")
-
+        patient = @resources.patient_register
+        practitioner = @resources.practitioner_register
 
         create_object(patient, :patient)
         create_object(practitioner, :practitioner)

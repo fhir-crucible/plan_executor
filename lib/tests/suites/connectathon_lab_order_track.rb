@@ -14,21 +14,22 @@ module Crucible
         super(client1, client2)
         # @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
 
         @records = {}
 
-        patient = @resources.load_fixture('patient/patient-uslab-example1.xml')
-        provider = @resources.load_fixture('practitioner/pract-uslab-example1.xml')
-        performer = @resources.load_fixture('practitioner/pract-uslab-example3.xml')
-        organization = @resources.load_fixture('organization/org-uslab-example3.xml')
+        patient = @resources.patient_uslab1
+        provider = @resources.practitioner_uslab1
+        performer = @resources.practitioner_uslab3
+        organization = @resources.organization_uslab3
 
-        specimen_100 = @resources.load_fixture('specimen/spec-100.xml')
-        specimen_400 = @resources.load_fixture('specimen/spec-400.xml')
-        specimen_uslab = @resources.load_fixture('specimen/spec-400.xml')
+        specimen_100 = @resources.specimen_100
+        specimen_400 = @resources.specimen_400
+        specimen_uslab = @resources.specimen_400
 
         # Create our reference patient
         create_object(patient, :patient)
@@ -70,47 +71,11 @@ module Crucible
           requires resource: 'ProcedureRequest', methods: ['create']
           validates resource: 'ProcedureRequest', methods: ['create']
         }
-        create_procedure_request('diagnostic_request/do-100.xml', :diag_order_1)
-        create_procedure_request('diagnostic_request/do-200.xml', :diag_order_2, :spec_uslab)
-        create_procedure_request('diagnostic_request/do-300.xml', :diag_order_3, :spec_uslab)
-        create_procedure_request('diagnostic_request/do-400.xml', :diag_order_4, :spec_400)
+        create_procedure_request('diagnostic_request/do-100', :diag_order_1)
+        create_procedure_request('diagnostic_request/do-200', :diag_order_2, :spec_uslab)
+        create_procedure_request('diagnostic_request/do-300', :diag_order_3, :spec_uslab)
+        create_procedure_request('diagnostic_request/do-400', :diag_order_4, :spec_400)
       end
-
-      # The `Order` resource disappeared in STU3
-      # test 'C12T11_2', 'Create an Order referencing the ProcedureRequest' do
-      #   metadata {
-      #     links "#{REST_SPEC_LINK}#create"
-      #     links "http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_1_Order_a_new_lab_test"
-      #     requires resource: 'Patient', methods: ['read']
-      #     requires resource: 'Practitioner', methods: ['read']
-      #     requires resource: 'ProcedureRequest', methods: ['read']
-      #     requires resource: 'Order', methods: ['create', 'delete']
-      #     validates resource: 'Order', methods: ['create', 'delete']
-      #   }
-      #   create_order('order/order-100.xml', :order_1, :diag_order_1)
-      #   create_order('order/order-200.xml', :order_2, :diag_order_2)
-      #   create_order('order/order-300.xml', :order_3, :diag_order_3)
-      #   create_order('order/order-400.xml', :order_4, :diag_order_4)
-      # end
-
-      # The `OrderResponse` resource disappeared in STU3
-      # test 'C12T11_3', 'Create an OrderResponse referencing the Order' do
-      #   metadata {
-      #     links "#{REST_SPEC_LINK}#create"
-      #     links 'http://wiki.hl7.org/index.php?title=201605_LabOrder#Step_2_Accept_new_lab_orders'
-      #     requires resource: 'Patient', methods: ['read']
-      #     requires resource: 'Practitioner', methods: ['read']
-      #     requires resource: 'ProcedureRequest', methods: ['read']
-      #     requires resource: 'Order', methods: ['read']
-      #     requires resource: 'OrderResponse', methods: ['create']
-      #     validates resource: 'OrderResponse', methods: ['create']
-      #   }
-
-      #   create_order_response('order_response/ordresp-100.xml', :order_response_1, @records[:order_1])
-      #   create_order_response('order_response/ordresp-200.xml', :order_response_2, @records[:order_2])
-      #   create_order_response('order_response/ordresp-300.xml', :order_response_3, @records[:order_3])
-      #   create_order_response('order_response/ordresp-400.xml', :order_response_4, @records[:order_4])
-      # end
 
       test 'C12T11_4', 'Submit DiagnosticReport, Specimen, and Observation resources' do
         metadata {
@@ -131,10 +96,10 @@ module Crucible
         skip 'Diagnostic Order 3 not successfully created in startup.' if @records[:diag_order_3].nil?
         skip 'Diagnostic Order 4 not successfully created in startup.' if @records[:diag_order_4].nil?
 
-        create_diagnostic_report(:spec_100, ['observation/obs-100.xml', 'observation/obs-101.xml'], 'diagnostic_report/dr-100.xml', :diag_report_1, @records[:diag_order_1])
-        create_diagnostic_report(:spec_uslab, ['observation/obs-200.xml'], 'diagnostic_report/dr-200.xml', :diag_report_2, @records[:diag_order_2])
-        create_diagnostic_report(:spec_uslab, ['observation/obs-300.xml', 'observation/obs-301.xml', 'observation/obs-302.xml', 'observation/obs-303.xml', 'observation/obs-304.xml'], 'diagnostic_report/dr-300.xml', :diag_report_3, @records[:diag_order_3])
-        create_diagnostic_report(:spec_400, ['observation/obs-400.xml', 'observation/obs-401.xml', 'observation/obs-402.xml', 'observation/obs-403.xml', 'observation/obs-404.xml', 'observation/obs-405.xml', 'observation/obs-406.xml', 'observation/obs-407.xml', 'observation/obs-408.xml'], 'diagnostic_report/dr-400.xml', :diag_report_4, @records[:diag_order_4])
+        create_diagnostic_report(:spec_100, ['observation/obs-100', 'observation/obs-101'], 'diagnostic_report/dr-100', :diag_report_1, @records[:diag_order_1])
+        create_diagnostic_report(:spec_uslab, ['observation/obs-200'], 'diagnostic_report/dr-200', :diag_report_2, @records[:diag_order_2])
+        create_diagnostic_report(:spec_uslab, ['observation/obs-300', 'observation/obs-301', 'observation/obs-302', 'observation/obs-303', 'observation/obs-304'], 'diagnostic_report/dr-300', :diag_report_3, @records[:diag_order_3])
+        create_diagnostic_report(:spec_400, ['observation/obs-400', 'observation/obs-401', 'observation/obs-402', 'observation/obs-403', 'observation/obs-404', 'observation/obs-405', 'observation/obs-406', 'observation/obs-407', 'observation/obs-408'], 'diagnostic_report/dr-400', :diag_report_4, @records[:diag_order_4])
       end
 
       test 'C12T11_5', 'Retrieve DiagnosticReport' do
@@ -179,7 +144,7 @@ module Crucible
       # end
 
       def create_procedure_request(fixture_path, order_name, specimen_name = nil)
-        diag_order = @resources.load_fixture(fixture_path)
+        diag_order = @resources.load_fixture(fixture_path, :xml)
         diag_order.subject = @records[:patient].to_reference
         diag_order.requester = FHIR::ProcedureRequest::Requester.new unless diag_order.requester
         diag_order.requester.agent = @records[:provider].to_reference
@@ -199,7 +164,7 @@ module Crucible
       # end
 
       def create_diagnostic_report(specimen_name, observation_fixture_paths, diagnostic_report_fixture_path, dr_name, diag_order)
-        diag_report = @resources.load_fixture(diagnostic_report_fixture_path)
+        diag_report = @resources.load_fixture(diagnostic_report_fixture_path, :xml)
         diag_report.subject = @records[:patient].to_reference
         diag_report.issued = DateTime.now.iso8601
         diag_report.effectiveDateTime = DateTime.now.iso8601
@@ -210,7 +175,7 @@ module Crucible
         diag_report.result = []
 
         observation_fixture_paths.each_with_index do |obs, index|
-          observation = @resources.load_fixture(obs)
+          observation = @resources.load_fixture(obs, :xml)
           observation.specimen = @records[specimen_name].to_reference
           observation.subject = @records[:patient].to_reference
           observation.performer = @records[:performer].to_reference

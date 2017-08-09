@@ -25,17 +25,18 @@ $ bundle exec rake crucible:list_suites
 Crucible tests can be executed by suite from the command-line by calling the `crucible-execute` rake task with the following parameters:
 
 * `url` the FHIR endpoint
+* `version` the FHIR version (sequence).  Currently `:dstu2` and `:stu3` are supported.
 * `test` the name of the test suite (see `crucible:list_suites`)
 * `resource` (optional) limit the `test` (applicable to "ResourceTest" or "SearchTest" suites) to a given resource (e.g. "Patient")
 
-Run a Suite
+Run a DSTU2 Suite
 ```
-$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu2,TransactionAndBatchTest]
+$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu2,:dstu2,TransactionAndBatchTest]
 ```
 
-Run a Suite limited by Resource
+Run a STU3 Suite limited by Resource
 ```
-$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu2,ResourceTest,Patient]
+$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu3,:stu3,ResourceTest,Patient]
 ```
 
 ## Adding a New Test Suite

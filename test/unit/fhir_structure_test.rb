@@ -44,8 +44,12 @@ class FHIRStructureTest < Test::Unit::TestCase
     keys = requires_and_validates.map{|r| [r[:resource], r[:methods], r[:profiles], r[:extensions]]}.flatten.reject(&:nil?).uniq
     keys.map! {|k| k.downcase.delete(' ')}
 
-    structure = Crucible::FHIRStructure.get
-    names = all_names(structure).map{|e| e.downcase.delete(' ')}
+    names = []
+
+    [:dstu2, :stu3].each do |version|
+      structure = Crucible::FHIRStructure.get(version)
+      names.concat(all_names(structure).map{|e| e.downcase.delete(' ')})
+    end
 
     extra_keys = keys - names
 

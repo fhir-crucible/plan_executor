@@ -5,7 +5,7 @@ class ResourceGeneratorTest < Test::Unit::TestCase
   # Define test methods for each resource type
   FHIR::RESOURCES.each do | resourceType |    
     define_method("test_resource_generator_#{resourceType}") do
-      run_generator(resourceType)
+      run_generator(resourceType, :stu3)
     end
   end
 
@@ -17,7 +17,7 @@ class ResourceGeneratorTest < Test::Unit::TestCase
     end
   end
 
-  def run_generator(resourceType, version = :stu3)
+  def run_generator(resourceType, version)
 
     klass_namespace = "FHIR"
     if version != :stu3

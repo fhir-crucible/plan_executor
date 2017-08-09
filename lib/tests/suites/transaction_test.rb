@@ -88,16 +88,16 @@ module Crucible
         assert_bundle_transactions_okay(reply)
 
         # set the IDs to whatever the server created
-        @patient0.id = get_resource(:ResourceAddress).pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @patient0.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
         @patient0.id = reply.resource.entry[0].try(:resource).try(:id) if @patient0.id.nil?
 
-        @obs0a.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @obs0a.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
         @obs0a.id = reply.resource.entry[1].try(:resource).try(:id) if @obs0a.id.nil?
 
-        @obs0b.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
+        @obs0b.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
         @obs0b.id = reply.resource.entry[2].try(:resource).try(:id) if @obs0b.id.nil?
 
-        @condition0.id = get_resource(:ResourceAddress).pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
+        @condition0.id = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[3].try(:response).try(:location))
         @condition0.id = reply.resource.entry[3].try(:resource).try(:id) if @condition0.id.nil?
 
         # check that the Observations and Condition reference the correct Patient.id
@@ -142,8 +142,8 @@ module Crucible
         assert_bundle_transactions_okay(reply)
 
         # set the IDs to whatever the server created
-        # @patient0.id = get_resource(:ResourceAddress).pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
-        @obs1.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        # @patient0.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @obs1.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
         @obs1.id = reply.resource.entry[1].try(:resource).try(:id) if @obs1.id.nil?
       end
 
@@ -185,10 +185,10 @@ module Crucible
         assert_bundle_transactions_okay(reply)
 
         # set the IDs to whatever the server created
-        @obs2.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[-2].try(:response).try(:location))
+        @obs2.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[-2].try(:response).try(:location))
         @obs2.id = reply.resource.entry[-2].try(:resource).try(:id) if @obs2.id.nil?
 
-        @conditionId = get_resource(:ResourceAddress).pull_out_id('Condition',reply.resource.entry[-1].try(:response).try(:location))
+        @conditionId = FHIR::ResourceAddress.pull_out_id('Condition',reply.resource.entry[-1].try(:response).try(:location))
         @conditionId = reply.resource.entry[-1].try(:resource).try(:id) if @conditionId.nil?
       end
 
@@ -215,7 +215,7 @@ module Crucible
 
         # These IDs should not exist, but if they do, then we should delete this Patient during teardown.
         if reply.resource.is_a?(get_resource(:Bundle))
-          @badPatientId = get_resource(:ResourceAddress).pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+          @badPatientId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
           @badPatientId = reply.resource.entry[0].try(:resource).try(:id) if @badPatientId.nil?
         end
 
@@ -264,10 +264,10 @@ module Crucible
         assert(searchResultId==@obs0a.id,"The GET search returned the wrong result. Expected Observation/#{@obs0a.id} but found Observation/#{searchResultId}.",reply.body)
 
         # set the IDs to whatever the server created
-        @obs3.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
+        @obs3.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[2].try(:response).try(:location))
         @obs3.id = reply.resource.entry[2].try(:resource).try(:id) if @obs3.id.nil?
 
-        @obs4.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @obs4.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
         @obs4.id = reply.resource.entry[1].try(:resource).try(:id) if @obs4.id.nil?
       end
 
@@ -305,7 +305,7 @@ module Crucible
         @transferIds = {}
         reply.resource.entry.each do |entry|
           klass = entry.resource.class
-          entry_id = get_resource(:ResourceAddress).pull_out_id(klass.name.demodulize, entry.try(:response).try(:location))
+          entry_id = FHIR::ResourceAddress.pull_out_id(klass.name.demodulize, entry.try(:response).try(:location))
           entry_id = entry.resource.id if entry_id.nil?
           @transferIds[klass] = [] if @transferIds[klass].nil?
           @transferIds[klass] << entry_id
@@ -317,7 +317,7 @@ module Crucible
           klass_name = entry.resource.class.name.demodulize
           original_id = entry.resource.id
           transfer_location = (reply.resource.entry[index].response.location rescue nil)
-          transfer_id = get_resource(:ResourceAddress).pull_out_id( klass_name, transfer_location) if !transfer_location.nil?
+          transfer_id = FHIR::ResourceAddress.pull_out_id( klass_name, transfer_location) if !transfer_location.nil?
           transfer_id = (reply.resource.entry[index].resource.id rescue nil) if transfer_id.nil?
           assert((original_id != transfer_id), "Resource ID was not rewritten: #{original_id}")
 
@@ -426,12 +426,12 @@ module Crucible
         patientCode = reply.resource.entry[0].try(:response).try(:status).try(:split).try(:first).try(:to_i)
         assert((!patientCode.nil? && patientCode >= 200 && patientCode < 300), "The batch should have created a Patient.", reply.body)
         # set the IDs to whatever the server created
-        @batch_patient.id = get_resource(:ResourceAddress).pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
+        @batch_patient.id = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
         @batch_patient.id = (reply.resource.entry[0].resource.id rescue nil) if @batch_patient.id.nil?
  
         obsCode = reply.resource.entry[1].try(:response).try(:status).try(:split).try(:first).try(:to_i)
         # set the IDs to whatever the server created
-        @batch_obs.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @batch_obs.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
         @batch_obs.id = (reply.resource.entry[1].resource.id rescue nil) if @batch_obs.id.nil?
         assert((!obsCode.nil? && obsCode >= 400 && obsCode < 500), "The batch should have failed to create the Observation with a dependency on the Patient.", reply.body)
       end
@@ -471,9 +471,9 @@ module Crucible
         assert_bundle_response(reply)
 
          # set the IDs to whatever the server created
-        @batch_obs_2.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[0].try(:response).try(:location))
+        @batch_obs_2.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[0].try(:response).try(:location))
         @batch_obs_2.id = (reply.resource.entry[0].resource.id rescue nil) if @batch_obs_2.id.nil?
-        @batch_obs_3.id = get_resource(:ResourceAddress).pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
+        @batch_obs_3.id = FHIR::ResourceAddress.pull_out_id('Observation',reply.resource.entry[1].try(:response).try(:location))
         @batch_obs_3.id = (reply.resource.entry[1].resource.id rescue nil) if @batch_obs_3.id.nil?
  
         assert_equal(3, reply.resource.entry.length, "Expected 3 Bundle entries but found #{reply.resource.entry.length}.", reply.body)

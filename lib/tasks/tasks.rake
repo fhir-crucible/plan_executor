@@ -367,13 +367,13 @@ namespace :crucible do
   end
 
   desc 'list names of test suites'
-  task :list_suites do
+  task :list_suites, [:fhir_version] do |t, args|
     require 'benchmark'
     b = Benchmark.measure do
       suites = Crucible::Tests::Executor.list_all
       suite_names = []
       suites.each do |key,value|
-        suite_names << value['author'].split('::').last if !key.start_with?('TS')
+        suite_names << value['author'].split('::').last if !key.start_with?('TS') && (args.fhir_version.nil? || value['supported_versions'].include?(resolve_fhir_version(args.fhir_version)))
       end
       suite_names.uniq!
       suite_names.each {|x| puts "  #{x}"}

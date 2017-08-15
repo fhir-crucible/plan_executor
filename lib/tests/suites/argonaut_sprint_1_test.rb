@@ -28,6 +28,7 @@ module Crucible
         super(client1, client2)
         @tags.append('argonautp1')
         @category = {id: 'argonautp1', title: 'Argonaut Phase 1'}
+        @supported_versions = [:dstu2]
       end
 
       def setup
@@ -37,7 +38,6 @@ module Crucible
         if !@client.client.try(:params).nil? && @client.client.params["patient"]
           @patient_id = @client.client.params["patient"]
         end
-        @supported_versions = [:dstu2]
       end
 
       def get_patient_by_param(params = {}, flag = true)

@@ -44,7 +44,7 @@ module Crucible
         @autodelete = []
         @testscript = testscript
         @preprocessed_vars = {}
-        @supported_versions ||= [:stu3]
+        @supported_versions = [:stu3] # Testscripts only supported on latest version
         define_tests
         load_fixtures
       end

@@ -1348,6 +1348,36 @@ module Crucible
         when FHIR::DSTU2::StructureDefinition
           resource.fhirVersion = 'DSTU2'
           resource.snapshot.element.first.path = resource.constrainedType if resource.snapshot && resource.snapshot.element
+          resource.base = "http://hl7.org/fhir/StructureDefinition/#{resource.constrainedType}"
+          is_pattern = (SecureRandom.random_number(2)==0)
+          if resource.snapshot && resource.snapshot.element
+            resource.snapshot.element.first.id = resource.constrainedType
+            resource.snapshot.element.first.path = resource.constrainedType
+            resource.snapshot.element.first.label = nil
+            resource.snapshot.element.first.code = nil
+            resource.snapshot.element.first.requirements = nil
+            resource.snapshot.element.first.type = nil
+            if is_pattern
+              FHIR::DSTU2::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+                resource.snapshot.element.first.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@fixed#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+              end
+            else
+              FHIR::DSTU2::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+                resource.snapshot.element.first.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@pattern#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+              end
+            end
+          end
+          if resource.differential && resource.differential.element
+            resource.differential.element[0] = resource.snapshot.element[0]
+          end
           resource.mapping.each do |m|
             m.identity.gsub!(/[^0-9A-Za-z]/, '') if m.identity
           end

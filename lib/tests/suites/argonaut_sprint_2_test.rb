@@ -47,10 +47,10 @@ module Crucible
         }
 
         conformance = @client.conformance_statement
+        assert conformance, "Unable to read Conformance (STU3) or CapabilityStatement (DSTU2) -- which is required to access security options."
+
         options = get_security_options(conformance)
-
         assert options[:authorize_url], "Authorize Url was not found in the conformance"
-
       end
 
 
@@ -64,10 +64,10 @@ module Crucible
         }
 
         conformance = @client.conformance_statement
+        assert conformance, "Unable to read Conformance (STU3) or CapabilityStatement (DSTU2) -- which is required to access security options."
+
         options = get_security_options(conformance)
-
         assert options[:token_url], "Token Url was not found in the conformance"
-
       end
 
       def get_security_options(conformance)

@@ -157,12 +157,12 @@ namespace :crucible do
     output_results results
   end
 
-  # TODO track FHIR::Client and FHIR::Model objects --- memory leak?
   def execute_all(client)
     executor = Crucible::Tests::Executor.new(client)
     all_results = {}
     executor.tests.each do |test|
       next if test.multiserver
+      next if !test.supported_versions.include?(client.fhir_version)
       results = executor.execute(test)
       all_results.merge! results
       output_results results

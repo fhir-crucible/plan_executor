@@ -1221,10 +1221,12 @@ module Crucible
           end
         when FHIR::DSTU2::Immunization
           if resource.wasNotGiven
+            resource.explanation = FHIR::DSTU2::Immunization::Explanation.new unless resource.explanation
             resource.explanation.reasonNotGiven = [ textonly_codeableconcept("reasonNotGiven #{SecureRandom.base64}", FHIR::DSTU2) ]
             resource.explanation.reason = nil
             resource.reaction = nil
           else
+            resource.explanation = FHIR::DSTU2::Immunization::Explanation.new unless resource.explanation
             resource.explanation.reasonNotGiven = nil
             resource.explanation.reason = [ textonly_codeableconcept("reason #{SecureRandom.base64}", FHIR::DSTU2) ]
           end

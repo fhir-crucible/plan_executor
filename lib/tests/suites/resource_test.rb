@@ -249,6 +249,7 @@ module Crucible
           result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
           ResourceGenerator.set_fields!(@preexisting, version_namespace.to_s)
+          binding.pry if @preexisting.nil?
           ResourceGenerator.apply_invariants!(@preexisting)
 
           ignore_client_exception { @preexisting.update }
@@ -543,7 +544,7 @@ module Crucible
           begin
             @preexisting.to_xml
             is_preexisting_valid = @preexisting.valid?
-            profile = get_resource(:Definitions).get_resource_definition("#{resource_class.name.demodulize}")
+            profile = get_resource(:Definitions).resource_definition("#{resource_class.name.demodulize}")
             if !profile.nil?
               is_preexisting_valid &&= profile.validates_resource?(@preexisting)
             end

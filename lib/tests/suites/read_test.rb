@@ -99,9 +99,10 @@ module Crucible
         }
         skip 'Patient not created in setup.' if @patient.nil?
 
-        patient = get_resource(:Patient).read_with_summary(@patient.id, "text")
-        assert(patient != nil, 'Patient resource type not returned.')
-        assert(patient.text, 'Requested summary narrative was not provided.', @client.reply.body)
+        @summary_patient = nil
+        ignore_client_exception { @summary_patient = get_resource(:Patient).read_with_summary(@patient.id, "text") }
+        assert(@summary_patient != nil, 'Patient resource type not returned.')
+        assert(@summary_patient.text, 'Requested summary narrative was not provided.', @client.reply.body)
       end      
 
     end

@@ -64,6 +64,9 @@ module Crucible
         rescue AssertionException => e
           @setup_failed = true
           @setup_failure_message = e.message
+        rescue => f
+          @setup_failed = true
+          @setup_failure_message = f.message
         end
         @setup_requests = @client.requests.map(&:to_hash) if @client
         prefix = if @metadata_only then 'generating metadata' else 'executing' end
@@ -89,7 +92,7 @@ module Crucible
 
       def execute_test_method(test_method)
         response = self.method(test_method).call().to_hash.merge!({:test_method => test_method })
-        response.merge!({:requests => @client.requests.map { |r| r.to_hash } }) if @client
+        response.merge!({:requests => @client.requests.map { |r| ( r ? r.to_hash : nil ) } }) if @client
         response
       end
 

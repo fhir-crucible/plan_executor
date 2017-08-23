@@ -47,9 +47,8 @@ module Crucible
           @codesystem_types_id = @client.create(codesystem_types).id
           @codesystem_rsrcs_id = @client.create(codesystem_rsrcs).id
           @valueset_defined_id = @client.create(valueset_defined).id
-          @valueset_defined.id = @valueset_defined_id
+          valueset_defined.id = @valueset_defined_id
           @valueset = valueset_defined
-          
         end
 
         v2_codesystem = @resources.load_fixture('terminology/v2-codesystem', :json)

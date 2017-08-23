@@ -95,7 +95,7 @@ module Crucible
         all_history = get_resource(:Patient).resource_instance_history(@patient.id)
 
         bundle = get_resource(:Patient).resource_instance_history_as_of(@patient.id,before)
-
+        assert (!bundle.nil? && bundle.class == get_resource(:Bundle)), "Patient history should be a Bundle"
         assert_equal @version_count, bundle.total, "the number of returned versions since the creation date is not correct"
 
         entry_ids_are_present(bundle.entry)
@@ -154,6 +154,7 @@ module Crucible
         after = Time.now.utc + 1.hour
 
         bundle = get_resource(:Patient).resource_history_as_of(before)
+        assert (!bundle.nil? && bundle.class == get_resource(:Bundle)), "History should be a Bundle"
 
         entry_ids_are_present(bundle.entry)
         check_sort_order(bundle.entry)
@@ -176,6 +177,7 @@ module Crucible
         result = @client.all_history_as_of(before)
         assert_response_ok result
         bundle = result.resource
+        assert (!bundle.nil? && bundle.class == get_resource(:Bundle)), "History should be a Bundle"
         entry_ids_are_present(bundle.entry)
 
         relevant_entries = bundle.entry.select{|x|x.request.try(:local_method)!='DELETE'}

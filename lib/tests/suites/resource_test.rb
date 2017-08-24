@@ -249,7 +249,6 @@ module Crucible
           result.update(STATUS[:skip], "Unable to update -- existing #{resource_class.name.demodulize} is not available or was not valid.", nil)
         else
           ResourceGenerator.set_fields!(@preexisting, version_namespace.to_s)
-          binding.pry if @preexisting.nil?
           ResourceGenerator.apply_invariants!(@preexisting)
 
           ignore_client_exception { @preexisting.update }

@@ -127,11 +127,11 @@ module Crucible
       end
 
       def assert_bundle_response(response)
-        unless assertion_negated( response.resource.class == FHIR::Bundle )
+        unless assertion_negated( response.resource.class == get_resource(:Bundle) )
           # check what this is...
           found = response.resource
           begin
-            found = FHIR.from_contents(response.body)
+            found = resource_from_contents(response.body)
           rescue
             found = nil
           end

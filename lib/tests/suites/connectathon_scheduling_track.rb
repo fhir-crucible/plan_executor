@@ -14,10 +14,11 @@ module Crucible
         super(client1, client2)
         @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
 
         # Create a patient
         @patient = @resources.minimal_patient

@@ -19,9 +19,9 @@ module Crucible
 
       def setup
         # Create a patient with gender:missing
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
         @patient = @resources.minimal_patient
-        @patient.identifier = [FHIR::Identifier.new]
+        @patient.identifier = [get_resource(:Identifier).new]
         @patient.identifier[0].value = SecureRandom.urlsafe_base64
         @patient.gender = nil
         result = @client.create(@patient)
@@ -30,7 +30,7 @@ module Crucible
         # read all the patients
         @read_entire_feed=true
         @client.use_format_param = true
-        reply = @client.read_feed(FHIR::Patient)
+        reply = @client.read_feed(get_resource(:Patient))
         @read_entire_feed=false if (!reply.nil? && reply.code!=200)
         @total_count = 0
         @entries = []
@@ -45,8 +45,13 @@ module Crucible
         end
 
         # create a condition matching the first patient
-        @condition = ResourceGenerator.generate(FHIR::Condition,3)
-        @condition.subject = @entries.first.try(:resource).try(:to_reference)
+        @condition = ResourceGenerator.generate(get_resource(:Condition),3)
+        if fhir_version == :dstu2
+          @condition.patient = @entries.first.try(:resource).try(:to_reference)
+        else
+          @condition.subject = @entries.first.try(:resource).try(:to_reference)
+        end
+
         reply = @client.create(@condition)
         @condition_id = reply.id
 
@@ -60,37 +65,37 @@ module Crucible
       end
 
       def create_observation(value)
-        observation = FHIR::Observation.new
+        observation = get_resource(:Observation).new
         observation.status = 'preliminary'
-        code = FHIR::Coding.new
+        code = get_resource(:Coding).new
         code.system = 'http://loinc.org'
         code.code = '2164-2'
-        observation.code = FHIR::CodeableConcept.new
+        observation.code = get_resource(:CodeableConcept).new
         observation.code.coding = [ code ]
-        observation.valueQuantity = FHIR::Quantity.new
+        observation.valueQuantity = get_resource(:Quantity).new
         observation.valueQuantity.system = 'http://unitofmeasure.org'
         observation.valueQuantity.value = value
         observation.valueQuantity.unit = 'mmol'
-        body = FHIR::Coding.new
+        body = get_resource(:Coding).new
         body.system = 'http://snomed.info/sct'
         body.code = '182756003'
-        observation.bodySite = FHIR::CodeableConcept.new
+        observation.bodySite = get_resource(:CodeableConcept).new
         observation.bodySite.coding = [ body ]
-        Crucible::Generator::Resources.tag_metadata(observation)
+        Crucible::Generator::Resources.new(fhir_version).tag_metadata(observation)
         reply = @client.create(observation)
         reply.id
       end
 
       def teardown
         @client.use_format_param = false
-        @client.destroy(FHIR::Patient, @patient_id) if @patient_id
-        @client.destroy(FHIR::Condition, @condition_id) if @condition_id
-        @client.destroy(FHIR::Observation, @obs_a) if @obs_a
-        @client.destroy(FHIR::Observation, @obs_b) if @obs_b
-        @client.destroy(FHIR::Observation, @obs_c) if @obs_c
-        @client.destroy(FHIR::Observation, @obs_d) if @obs_d
-        @client.destroy(FHIR::Observation, @obs_e) if @obs_e
-        @client.destroy(FHIR::Observation, @obs_f) if @obs_f
+        @client.destroy(get_resource(:Patient), @patient_id) if @patient_id
+        @client.destroy(get_resource(:Condition), @condition_id) if @condition_id
+        @client.destroy(get_resource(:Observation), @obs_a) if @obs_a
+        @client.destroy(get_resource(:Observation), @obs_b) if @obs_b
+        @client.destroy(get_resource(:Observation), @obs_c) if @obs_c
+        @client.destroy(get_resource(:Observation), @obs_d) if @obs_d
+        @client.destroy(get_resource(:Observation), @obs_e) if @obs_e
+        @client.destroy(get_resource(:Observation), @obs_f) if @obs_f
       end
  
     [true,false].each do |flag|  
@@ -112,7 +117,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal 1, reply.resource.entry.size, 'The server did not return the correct number of results.'
@@ -143,7 +148,12 @@ module Crucible
           validates resource: "Patient", methods: ["search"]
         }
         skip 'Could not find a patient to search on in setup.' unless @read_entire_feed
-        search_string = @patient.name[0].family[0..2]
+        search_string = ''
+        if fhir_version == :dstu2
+          search_string = @patient.name[0].family.first[0..2]
+        else
+          search_string = @patient.name[0].family[0..2]
+        end
         search_regex = Regexp.new(search_string, Regexp::IGNORECASE)
         # how many patients in the bundle have matching names?
         expected = 0
@@ -171,7 +181,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
@@ -215,7 +225,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
@@ -240,11 +250,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -276,11 +290,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -305,11 +323,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -342,11 +364,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -372,11 +398,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -401,11 +431,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -430,11 +464,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -459,11 +497,15 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         reply.resource.entry.each do |e|
-          assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          if fhir_version == :dstu2
+            assert((e.resource.patient.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          else
+            assert((e.resource.subject.reference == @entries.first.resource.to_reference.reference),"The search returned a Condition that doesn't match the Patient.")
+          end
         end
       end
 
@@ -487,13 +529,13 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Condition, options)
+        reply = @client.search(get_resource(:Condition), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert reply.resource.total > 0, 'The server should have Conditions that _include=Condition:patient.'
         has_patient = false
         reply.resource.entry.each do |entry|
-          has_patient = true if (entry.resource && entry.resource.class == FHIR::Patient)
+          has_patient = true if (entry.resource && entry.resource.class == get_resource(:Patient))
         end
         assert(has_patient,'The server did not include the Patient referenced in the Condition.', reply.body)
       end
@@ -518,13 +560,13 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert reply.resource.total > 0, 'The server should have Patients that are _revinclude=Condition:patient.'
         has_condition = false
         reply.resource.entry.each do |entry|
-          has_condition = true if (entry.resource && entry.resource.class == FHIR::Condition)
+          has_condition = true if (entry.resource && entry.resource.class == get_resource(:Condition))
         end
         assert(has_condition,'The server did not include the Condition referencing the Patient.', reply.body)
       end
@@ -547,7 +589,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Observation, options)
+        reply = @client.search(get_resource(:Observation), options)
         has_obs_a = has_obs_b = has_obs_c = has_obs_d = false
         while reply != nil
           assert_response_ok(reply)
@@ -583,7 +625,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Observation, options)
+        reply = @client.search(get_resource(:Observation), options)
         has_obs_e = has_obs_f = false
         while reply != nil
           assert_response_ok(reply)
@@ -626,7 +668,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
@@ -649,7 +691,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
       end
@@ -671,7 +713,7 @@ module Crucible
             }
           }
         }
-        reply = @client.search(FHIR::Patient, options)
+        reply = @client.search(get_resource(:Patient), options)
         assert_response_ok(reply)
         assert_bundle_response(reply)
       end

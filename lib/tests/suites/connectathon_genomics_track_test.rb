@@ -14,14 +14,15 @@ module Crucible
         super(client1, client2)
         @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
         @records = {}
 
-        patient = @resources.load_fixture("patient/patient-register-create.xml")
-        practitioner = @resources.load_fixture("practitioner/practitioner-register-create.xml")
+        patient = @resources.patient_register
+        practitioner = @resources.practitioner_register
 
         create_object(patient, :patient)
         create_object(practitioner, :practitioner)
@@ -47,9 +48,9 @@ module Crucible
           validates resource: 'Observation', methods: ['create']
         }
 
-        sequence = @resources.load_fixture('sequence/sequence-register-create.xml')
-        specimen = @resources.load_fixture('specimen/specimen-register-create.xml')
-        observation = @resources.load_fixture('observation/observation-register-create.xml')
+        sequence = @resources.sequence_register
+        specimen = @resources.specimen_register
+        observation = @resources.observation_register
 
         specimen.subject = @records[:patient].to_reference
         create_object(specimen, :specimen_register_create)
@@ -105,23 +106,23 @@ module Crucible
           requires resource: 'DiagnosticReport', methods: ['create', 'read']
         }
 
-        patient = @resources.load_fixture('patient/patient-familyhistory-create.xml')
+        patient = @resources.patient_familyhistory
         create_object(patient, :family_patient)
 
-        observation = @resources.load_fixture('observation/observation-familyhistory-create.xml')
+        observation = @resources.observation_familyhistory
         observation.subject = @records[:family_patient].to_reference
         create_object(observation, :family_observation)
 
-        familymemberhistory = @resources.load_fixture('family_member_history/familymemberhistory-familyhistory-create.xml')
+        familymemberhistory = @resources.family_member_history
         familymemberhistory.patient = @records[:family_patient].to_reference
         familymemberhistory.extension.find { |exten| exten.url == 'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-observation'}.valueReference = @records[:family_observation].to_reference
         create_object(familymemberhistory, :family_member_history)
 
-        specimen = @resources.load_fixture('specimen/specimen-familyhistory-create.xml')
+        specimen = @resources.specimen_familyhistory
         specimen.subject = @records[:family_patient].to_reference
         create_object(specimen, :family_specimen)
 
-        diag_report = @resources.load_fixture('diagnostic_report/diagnosticreport-familyhistory-create.xml')
+        diag_report = @resources.diagnostic_familyhistory
         diag_report.result = @records[:family_observation].to_reference
         diag_report.subject = @records[:family_patient].to_reference
         diag_report.performer = @records[:practitioner].to_reference
@@ -153,7 +154,7 @@ module Crucible
         end
 
 
-        dw_obs = @resources.load_fixture('observation/observation-datawarehouse-create.xml')
+        dw_obs = @resources.observation_datawarehouse
         dw_obs.performer = @records[:practitioner].to_reference
         dw_obs.subject = @records[:family_patient].to_reference
         dw_obs.specimen = @records[:family_specimen].to_reference
@@ -188,7 +189,7 @@ module Crucible
           skip 'Not all necessary resources successfully created in previous test.' 
         end
 
-        dr_hla = @resources.load_fixture('diagnostic_report/diagnosticreport-hlatyping-create.xml')
+        dr_hla = @resources.diagnosticreport_hltyping
         dr_hla.subject = @records[:family_patient].to_reference
         dr_hla.performer = [@records[:practitioner].to_reference]
         dr_hla.specimen = [@records[:family_specimen].to_reference]
@@ -213,7 +214,7 @@ module Crucible
           skip 'Not all necessary resources successfully created in previous test.' 
         end
 
-        dr = @resources.load_fixture('diagnostic_report/diagnosticreport-pathologyreport-create.xml')
+        dr = @resources.diagnosticreport_pathology
         dr.subject = @records[:family_patient].to_reference
         dr.performer = [@records[:practitioner].to_reference]
         dr.specimen = [@records[:family_specimen].to_reference]

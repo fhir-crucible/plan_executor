@@ -44,6 +44,7 @@ module Crucible
         @autodelete = []
         @testscript = testscript
         @preprocessed_vars = {}
+        @supported_versions = [:stu3] # Testscripts only supported on latest version
         define_tests
         load_fixtures
       end
@@ -109,7 +110,7 @@ module Crucible
       def load_fixtures
         @fixtures = {}
         @testscript.fixture.each do |fixture|
-          @fixtures[fixture.id] = Crucible::Generator::Resources.tag_metadata(get_reference(fixture.resource.reference))
+          @fixtures[fixture.id] = Crucible::Generator::Resources.new(:stu3).tag_metadata(get_reference(fixture.resource.reference))
           @fixtures[fixture.id].id = nil unless @fixtures[fixture.id].nil? #fixture resources cannot have an ID
           @autocreate << fixture.id if fixture.autocreate
           @autodelete << fixture.id if fixture.autodelete

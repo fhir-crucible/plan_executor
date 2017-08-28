@@ -23,11 +23,6 @@ module Crucible
         results
       end
 
-      def self.list_all(multiserver=false, metadata=false)
-        list = SuiteEngine.list_all(metadata).merge TestScriptEngine.list_all(metadata)
-        list.select {|key,value| value['multiserver'] == multiserver}
-      end
-
       def tests
         tests = @suite_engine.tests.concat @testscript_engine.tests
         tests.sort{|t1,t2| t1.id <=> t2.id }
@@ -49,6 +44,11 @@ module Crucible
           extracted_metadata[field] = field_hash
         end
         extracted_metadata
+      end
+
+      def self.list_all(multiserver=false, metadata=false)
+        list = SuiteEngine.list_all(metadata).merge TestScriptEngine.list_all(metadata)
+        list.select {|key,value| value['multiserver'] == multiserver}
       end
 
     end

@@ -78,7 +78,8 @@ module Crucible
         }
         searchParamNames = []
         searchParamNames = @searchParams.map { |item| item.name } if !@searchParams.nil?
-        assert ((@resource_class::SEARCH_PARAMS-searchParamNames).size <= 0), 'The server does not support searching all the parameters specified by the specification.'
+        searchParamsDiff = @resource_class::SEARCH_PARAMS-searchParamNames 
+        assert (searchParamsDiff.size <= 0), "The server does not support the following params: #{searchParamsDiff.join(', ')}."
       end
 
       #
@@ -199,12 +200,14 @@ module Crucible
         replyB = @client.read_feed(@resource_class)
 
         # AuditEvent
-        if resource_class==FHIR::AuditEvent
+        if resource_class == get_resource(:AuditEvent)
           count = (reply.resource.total-replyB.resource.total).abs
           assert (count <= 1), 'Searching without criteria did not return all the results.'
         else
-          assert !replyB.resource.nil?, 'Searching without criteria did not return all the results.'
-          assert !reply.resource.nil?, 'Searching without criteria did not return all the results.'
+          assert !replyB.resource.nil?, 'Searching without criteria did not return any results.'
+          assert !reply.resource.nil?, 'Searching without criteria did not return any results.'
+          assert !replyB.resource.total.nil?, 'Search bundle returned does not report a total entry count.'
+          assert !reply.resource.total.nil?, 'Search bundle returned does not report a total entry count.'
           assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
         end
       end

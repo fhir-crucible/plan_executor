@@ -27,17 +27,23 @@ module Crucible
           test_class = test.class.name.demodulize
           #if t can set class
           if test.respond_to? 'resource_class='
-            Crucible::Tests::BaseSuite.fhir_resources.each do |klass|
-              test.resource_class = Module.const_get("FHIR::#{klass}")
-              list["#{test_class}#{klass}"] = {}
-              list["#{test_class}#{klass}"]['resource_class'] = klass
-              BaseTest::JSON_FIELDS.each {|field| list["#{test_class}#{klass}"][field] = test.send(field)}
-              if metadata
-                test_metadata = test.collect_metadata(true)
-                BaseTest::METADATA_FIELDS.each do |field|
-                  field_hash = {}
-                  test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
-                  list["#{test_class}#{klass}"][field] = field_hash
+            [:dstu2, :stu3].each do |fhir_version|
+              Crucible::Tests::BaseSuite.fhir_resources(fhir_version).each do |klass|
+                klass_name = klass.name.demodulize
+                test_name = "#{test_class}#{klass_name}"
+                test.resource_class = klass 
+                list[test_name] = {} unless list.include?(test_name)
+                BaseTest::JSON_FIELDS.each {|field| list[test_name][field] = test.send(field) unless field == 'supported_versions'} #supported versions overwritten
+                list[test_name]['supported_versions'] = [] if list[test_name]['supported_versions'].nil?
+                list[test_name]['supported_versions'] << fhir_version 
+                list[test_name]['resource_class'] = klass # this currently just gets the stu3 version, problem?
+                if metadata
+                  test_metadata = test.collect_metadata(true)
+                  BaseTest::METADATA_FIELDS.each do |field|
+                    field_hash = {}
+                    test_metadata.each { |tm| field_hash[tm[:test_method]] = tm[field] }
+                    list[test_name][field] = field_hash
+                  end
                 end
               end
             end

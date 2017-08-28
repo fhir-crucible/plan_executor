@@ -18,12 +18,12 @@ module Crucible
       def setup
         # try to find a patient
         begin
-          response = @client.read_feed(FHIR::Patient)
+          response = @client.read_feed(get_resource(:Patient))
           @patient = response.resource.entry.first.resource
         rescue
           # try to create a patient
           begin
-            @patient = FHIR::Patient.new(meta: { tag: [{ system: 'http://projectcrucible.org', code: 'testdata'}] }, name: { family: 'Emerald', given: 'Caro' })
+            @patient = get_resource(:Patient).new(meta: { tag: [{ system: 'http://projectcrucible.org', code: 'testdata'}] }, name: { family: 'Emerald', given: 'Caro' })
             @patient_created = true
           rescue
             @patient = nil
@@ -44,7 +44,7 @@ module Crucible
         }
         skip 'Patient not created in setup.' if @patient.nil?
         
-        patient = FHIR::Patient.read(@patient.id)
+        patient = get_resource(:Patient).read(@patient.id)
 
         assert_equal @patient.id, @client.reply.id, 'Server returned wrong patient.'
         warning { assert_valid_resource_content_type_present(@client.reply) }
@@ -71,7 +71,7 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        ignore_client_exception { FHIR::Patient.read('Supercalifragilisticexpialidocious') }
+        ignore_client_exception { get_resource(:Patient).read('Supercalifragilisticexpialidocious') }
         assert_response_not_found(@client.reply)
       end
 
@@ -85,7 +85,7 @@ module Crucible
           validates resource: "Patient", methods: ["read"]
         }
 
-        ignore_client_exception { FHIR::Patient.read('Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters') }
+        ignore_client_exception { get_resource(:Patient).read('Invalid-ID-Because_Of_!@$Special_Characters_and_Length_Over_Sixty_Four_Characters') }
         assert(([400,404].include?(@client.reply.code)), "Expecting 400 since invalid id, or 404 since unknown resource.  Returned #{@client.reply.code}." )
       end
 
@@ -99,8 +99,10 @@ module Crucible
         }
         skip 'Patient not created in setup.' if @patient.nil?
 
-        patient = FHIR::Patient.read_with_summary(@patient.id, "text")
-        assert(patient.text, 'Requested summary narrative was not provided.', @client.reply.body)
+        @summary_patient = nil
+        ignore_client_exception { @summary_patient = get_resource(:Patient).read_with_summary(@patient.id, "text") }
+        assert(@summary_patient != nil, 'Patient resource type not returned.')
+        assert(@summary_patient.text, 'Requested summary narrative was not provided.', @client.reply.body)
       end      
 
     end

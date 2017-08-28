@@ -14,6 +14,7 @@ module Crucible
         super(client1, client2)
         @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
@@ -34,25 +35,24 @@ module Crucible
           @valueset = bundle.entry[0].resource if bundle.entry.size > 0
         end
 
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
 
         if @valueset.nil?
           # The resource was not found, try to create it in case the server
           # dynamically calculates terminology operations based on local resources
-          codesystem_types = @resources.load_fixture('terminology/codesystem-data-types.json')
-          codesystem_rsrcs = @resources.load_fixture('terminology/codesystem-resource-types.json')
-          valueset_defined = @resources.load_fixture('terminology/valueset-defined-types.json')
+          codesystem_types = @resources.load_fixture('terminology/codesystem-data-types', :json)
+          codesystem_rsrcs = @resources.load_fixture('terminology/codesystem-resource-types', :json)
+          valueset_defined = @resources.load_fixture('terminology/valueset-defined-types', :json)
 
           @codesystem_types_id = @client.create(codesystem_types).id
           @codesystem_rsrcs_id = @client.create(codesystem_rsrcs).id
           @valueset_defined_id = @client.create(valueset_defined).id
-          @valueset_defined.id = @valueset_defined_id
+          valueset_defined.id = @valueset_defined_id
           @valueset = valueset_defined
-          
         end
 
-        v2_codesystem = @resources.load_fixture('terminology/v2-codesystem.json')
-        v2_valueset = @resources.load_fixture('terminology/v2-valueset.json')
+        v2_codesystem = @resources.load_fixture('terminology/v2-codesystem', :json)
+        v2_valueset = @resources.load_fixture('terminology/v2-valueset', :json)
         @v2_codesystem_id = @client.create(v2_codesystem).id
         @v2_valueset_id = @client.create(v2_valueset).id
       end

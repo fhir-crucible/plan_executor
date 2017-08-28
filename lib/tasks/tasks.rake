@@ -30,11 +30,13 @@ namespace :crucible do
   end
 
   desc 'execute all'
-  task :execute_all, [:url, :html_summary] do |t, args|
+  task :execute_all, [:url, :fhir_version, :html_summary] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
+    fhir_version = resolve_fhir_version(args.fhir_version)
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
+      client.use_dstu2 if fhir_version == :dstu2
       options = client.get_oauth2_metadata_from_conformance
       set_client_secrets(client,options) unless options.empty?
       results = execute_all(client)
@@ -88,11 +90,13 @@ namespace :crucible do
   end
 
   desc 'execute'
-  task :execute, [:url, :test, :resource] do |t, args|
+  task :execute, [:url, :fhir_version, :test, :resource] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
+    fhir_version = resolve_fhir_version(args.fhir_version)
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
+      client.use_dstu2 if fhir_version == :dstu2
       options = client.get_oauth2_metadata_from_conformance
       set_client_secrets(client,options) unless options.empty?
       execute_test(client, args.test, args.resource)
@@ -106,6 +110,12 @@ namespace :crucible do
     require 'benchmark'
     b = Benchmark.measure { puts JSON.pretty_unparse(Crucible::Tests::Executor.new(nil).extract_metadata_from_test(args.test)) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
+  end
+
+  def resolve_fhir_version(version_string)
+    fhir_version = :stu3
+    fhir_version = :dstu2 if version_string.downcase == 'dstu2'
+    fhir_version
   end
 
   def set_client_secrets(client,options)
@@ -131,30 +141,33 @@ namespace :crucible do
       puts "Unable to find test: #{key}"
       return
     end
+    if !test.supported_versions.include?(client.fhir_version)
+      puts "Test #{key} does not support fhir version #{client.fhir_version}"
+      return
+    end
+    if !resourceType.nil? && test.respond_to?(:resource_class=) && !Crucible::Tests::BaseSuite.valid_resource?(client.fhir_version, resourceType)
+      puts "No such resource #{resourceType} in fhir version #{client.fhir_version}"
+      return
+    end
     results = nil
-    if !resourceType.nil? && test.respond_to?(:resource_class=) && FHIR::RESOURCES.include?(resourceType)
-      results = test.execute("FHIR::#{resourceType}".constantize)
+    if !resourceType.nil? && test.respond_to?(:resource_class=) && Crucible::Tests::BaseSuite.valid_resource?(client.fhir_version, resourceType)
+      results = test.execute(Crucible::Tests::BaseSuite.get_resource(client.fhir_version, resourceType))
     end
     results = executor.execute(test) if results.nil?
     output_results results
   end
 
-  # TODO track FHIR::Client and FHIR::Model objects --- memory leak?
   def execute_all(client)
     executor = Crucible::Tests::Executor.new(client)
     all_results = {}
     executor.tests.each do |test|
       next if test.multiserver
+      next if !test.supported_versions.include?(client.fhir_version)
       results = executor.execute(test)
       all_results.merge! results
       output_results results
     end
     all_results
-  end
-
-  def execute_multiserver_test(client, client2, key)
-    executor = Crucible::Tests::Executor.new(client, client2)
-    output_results executor.execute(executor.find_test(key))
   end
 
   def output_results(results, metadata_only=false)
@@ -275,9 +288,10 @@ namespace :crucible do
   end
 
   desc 'execute custom'
-  task :execute_custom, [:test, :resource_type, :html_summary] do |t, args|
+  task :execute_custom, [:test, :fhir_version, :resource_type, :html_summary] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
+    fhir_version = resolve_fhir_version(args.fhir_version)
 
     puts "# #{args.test}"
     puts
@@ -289,6 +303,7 @@ namespace :crucible do
       puts "```"
       b = Benchmark.measure {
         client = FHIR::Client.new(url)
+        client.use_dstu2 if fhir_version == :dstu2
         options = client.get_oauth2_metadata_from_conformance
         set_client_secrets(client,options) unless options.empty?
         results = execute_test(client, args.test, args.resource_type)
@@ -304,9 +319,10 @@ namespace :crucible do
   end
 
   desc 'execute all custom'
-  task :execute_all_custom, [:html_summary] do |t, args|
+  task :execute_all_custom, [:fhir_version, :html_summary] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'benchmark'
+    fhir_version = resolve_fhir_version(args.fhir_version)
 
     puts "# #{args.test}"
     puts
@@ -318,6 +334,7 @@ namespace :crucible do
       puts "```"
       b = Benchmark.measure {
         client = FHIR::Client.new(url)
+        client.use_dstu2 if fhir_version == :dstu2
         options = client.get_oauth2_metadata_from_conformance
         set_client_secrets(client,options) unless options.empty?
         results = execute_all(client)
@@ -333,20 +350,30 @@ namespace :crucible do
   end
 
   desc 'list all'
-  task :list_all do
+  task :list_all, [:fhir_version] do |t, args|
     require 'benchmark'
-    b = Benchmark.measure { puts Crucible::Tests::Executor.list_all }
+    b = Benchmark.measure do 
+      tests = Crucible::Tests::Executor.list_all
+
+      tests = tests.select{|k,t| t['supported_versions'].include?(resolve_fhir_version(args.fhir_version))} if !args.fhir_version.nil?
+
+      tests.each do |k, v| 
+        puts "#{k} (#{v['supported_versions'].join(',')})"; 
+        v['tests'].each{|t| puts "\t#{t.to_s}"}
+      end
+    end
+
     puts "List all tests completed in #{b.real} seconds."
   end
 
   desc 'list names of test suites'
-  task :list_suites do
+  task :list_suites, [:fhir_version] do |t, args|
     require 'benchmark'
     b = Benchmark.measure do
       suites = Crucible::Tests::Executor.list_all
       suite_names = []
       suites.each do |key,value|
-        suite_names << value['author'].split('::').last if !key.start_with?('TS')
+        suite_names << value['author'].split('::').last if !key.start_with?('TS') && (args.fhir_version.nil? || value['supported_versions'].include?(resolve_fhir_version(args.fhir_version)))
       end
       suite_names.uniq!
       suite_names.each {|x| puts "  #{x}"}
@@ -362,9 +389,10 @@ namespace :crucible do
   end
 
   desc 'execute with requirements'
-  task :execute_w_requirements, [:url, :test] do |t, args|
+  task :execute_w_requirements, [:url, :fhir_version, :test] do |t, args|
     FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
     require 'ansi'
+    fhir_version = resolve_fhir_version(args.fhir_version)
 
     module Crucible
       module Tests
@@ -386,6 +414,7 @@ namespace :crucible do
     end
 
     client = FHIR::Client.new(args.url)
+    client.use_dstu2 if fhir_version == :dstu2
     options = client.get_oauth2_metadata_from_conformance
     set_client_secrets(client,options) unless options.empty?
     client.monitor_requirements
@@ -393,7 +422,6 @@ namespace :crucible do
     execute_test(client, test)
     pp Crucible::Tests::BaseTest.class_variable_get :@@requirements
   end
-
 
   def write_result(status, test_name, message)
     tab_size = 10
@@ -437,25 +465,6 @@ namespace :crucible do
       end
     end
 
-  end
-
-  namespace :multiserver do
-    desc 'execute'
-    task :execute, [:url1, :url2, :test] do |t, args|
-      FHIR.logger = Logger.new("logs/multiserver.log", 10, 1024000)
-      require 'ansi'
-      require 'benchmark'
-      b = Benchmark.measure {
-        client1 = FHIR::Client.new(args.url1)
-        options = client1.get_oauth2_metadata_from_conformance
-        set_client_secrets(client1,options) unless options.empty?
-        client2 = FHIR::Client.new(args.url2)
-        options = client2.get_oauth2_metadata_from_conformance
-        set_client_secrets(client2,options) unless options.empty?
-        execute_multiserver_test(client1, client2, args.test)
-      }
-      puts "Execute multiserver #{args.test} completed in #{b.real} seconds."
-    end
   end
 
 end

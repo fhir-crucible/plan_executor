@@ -13,10 +13,11 @@ module Crucible
       def initialize(client1, client2=nil)
         super(client1, client2)
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
-        @resources = Crucible::Generator::Resources.new
+        @resources = Crucible::Generator::Resources.new(fhir_version)
       end
 
       def teardown

@@ -21,27 +21,27 @@ module Crucible
 
       def teardown
         # delete resources
-        @client.destroy(FHIR::Observation, @obs4.id) if @obs4 && !@obs4.id.nil?
-        @client.destroy(FHIR::Observation, @obs3.id) if @obs3 && !@obs3.id.nil?
-        @client.destroy(FHIR::Observation, @obs2.id) if @obs2 && !@obs2.id.nil?
-        @client.destroy(FHIR::Observation, @obs1.id) if @obs1 && !@obs1.id.nil?
-        @client.destroy(FHIR::Observation, @obs0a.id) if @obs0a && !@obs0a.id.nil?
-        @client.destroy(FHIR::Observation, @obs0b.id) if @obs0b && !@obs0b.id.nil?
-        @client.destroy(FHIR::Condition, @condition0.id) if @condition0 && !@condition0.id.nil?
-        @client.destroy(FHIR::Condition, @conditionId) if @conditionId
-        @client.destroy(FHIR::Patient, @patient0.id) if @patient0 && !@patient0.id.nil?
-        @client.destroy(FHIR::Patient, @patient1.id) if @patient1 && !@patient1.id.nil?
-        @client.destroy(FHIR::Patient, @badPatientId) if @badPatientId
+        @client.destroy(get_resource(:Observation), @obs4.id) if @obs4 && !@obs4.id.nil?
+        @client.destroy(get_resource(:Observation), @obs3.id) if @obs3 && !@obs3.id.nil?
+        @client.destroy(get_resource(:Observation), @obs2.id) if @obs2 && !@obs2.id.nil?
+        @client.destroy(get_resource(:Observation), @obs1.id) if @obs1 && !@obs1.id.nil?
+        @client.destroy(get_resource(:Observation), @obs0a.id) if @obs0a && !@obs0a.id.nil?
+        @client.destroy(get_resource(:Observation), @obs0b.id) if @obs0b && !@obs0b.id.nil?
+        @client.destroy(get_resource(:Condition), @condition0.id) if @condition0 && !@condition0.id.nil?
+        @client.destroy(get_resource(:Condition), @conditionId) if @conditionId
+        @client.destroy(get_resource(:Patient), @patient0.id) if @patient0 && !@patient0.id.nil?
+        @client.destroy(get_resource(:Patient), @patient1.id) if @patient1 && !@patient1.id.nil?
+        @client.destroy(get_resource(:Patient), @badPatientId) if @badPatientId
         @transferIds.each do |klass,list|
           list.each do |id|
             @client.destroy(klass, id) if(!id.nil? && !id.strip.empty?)
           end
         end unless @transferIds.nil?
-        @client.destroy(FHIR::Observation, @batch_obs.id) if @batch_obs && !@batch_obs.id.nil?
-        @client.destroy(FHIR::Patient, @batch_patient.id) if @batch_patient && !@batch_patient.id.nil?
-        @client.destroy(FHIR::Observation, @batch_obs_2.id) if @batch_obs_2 && !@batch_obs_2.id.nil?
-        @client.destroy(FHIR::Observation, @batch_obs_3.id) if @batch_obs_3 && !@batch_obs_3.id.nil?
-        @client.destroy(FHIR::Patient, @batch_patient_2.id) if @batch_patient_2 && !@batch_patient_2.id.nil?
+        @client.destroy(get_resource(:Observation), @batch_obs.id) if @batch_obs && !@batch_obs.id.nil?
+        @client.destroy(get_resource(:Patient), @batch_patient.id) if @batch_patient && !@batch_patient.id.nil?
+        @client.destroy(get_resource(:Observation), @batch_obs_2.id) if @batch_obs_2 && !@batch_obs_2.id.nil?
+        @client.destroy(get_resource(:Observation), @batch_obs_3.id) if @batch_obs_3 && !@batch_obs_3.id.nil?
+        @client.destroy(get_resource(:Patient), @batch_patient_2.id) if @batch_patient_2 && !@batch_patient_2.id.nil?
       end
 
       # Create a Patient Record as a transaction
@@ -101,11 +101,11 @@ module Crucible
         @condition0.id = reply.resource.entry[3].try(:resource).try(:id) if @condition0.id.nil?
 
         # check that the Observations and Condition reference the correct Patient.id
-        reply = @client.read(FHIR::Observation, @obs0a.id)
+        reply = @client.read(get_resource(:Observation), @obs0a.id)
         assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
-        reply = @client.read(FHIR::Observation, @obs0b.id)
+        reply = @client.read(get_resource(:Observation), @obs0b.id)
         assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Observation doesn't correctly reference Patient/#{@patient0.id}")
-        reply = @client.read(FHIR::Condition, @condition0.id)
+        reply = @client.read(get_resource(:Condition), @condition0.id)
         assert( (reply.resource.subject.reference.ends_with?(@patient0.id) rescue false), "Condition doesn't correctly reference Patient/#{@patient0.id}")
 
         @created_patient_record = true
@@ -214,13 +214,13 @@ module Crucible
         reply = @client.end_transaction
 
         # These IDs should not exist, but if they do, then we should delete this Patient during teardown.
-        if reply.resource.is_a?(FHIR::Bundle)
+        if reply.resource.is_a?(get_resource(:Bundle))
           @badPatientId = FHIR::ResourceAddress.pull_out_id('Patient',reply.resource.entry[0].try(:response).try(:location))
           @badPatientId = reply.resource.entry[0].try(:resource).try(:id) if @badPatientId.nil?
         end
 
         assert((reply.code >= 400 && reply.code < 500), "Failed Transactions should return an HTTP 400 range response, found: #{reply.code}.", reply.body)
-        assert_resource_type(reply,FHIR::OperationOutcome)
+        assert_resource_type(reply,get_resource(:OperationOutcome))
       end
 
       # Test Transaction Processing ordering: DELETE, POST, PUT, GET
@@ -246,7 +246,7 @@ module Crucible
         # read the all the Patient's weight observations. This should happen last (fourth) and return 1 result.
         @client.add_transaction_request('GET',"Observation?code=http://loinc.org|3141-9&patient=Patient/#{@patient0.id}")
         # update the old height observation to be a weight... this should happen third.
-        @client.add_transaction_request('PUT',"Observation/#{@obs4.id}",@obs4).fullUrl = @client.full_resource_url({resource: FHIR::Observation, id: @obs4.id})
+        @client.add_transaction_request('PUT',"Observation/#{@obs4.id}",@obs4).fullUrl = @client.full_resource_url({resource: get_resource(:Observation), id: @obs4.id})
         # create a new height observation... this should happen second.
         @client.add_transaction_request('POST',nil,@obs3).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
         # delete the Patient's existing weight observation... this should happen first.
@@ -309,7 +309,7 @@ module Crucible
           entry_id = entry.resource.id if entry_id.nil?
           @transferIds[klass] = [] if @transferIds[klass].nil?
           @transferIds[klass] << entry_id
-          @transferPatientId = entry_id if(entry.resource.class == FHIR::Patient)
+          @transferPatientId = entry_id if(entry.resource.class == get_resource(:Patient))
         end
 
         # check that the IDs and references were rewritten
@@ -322,9 +322,9 @@ module Crucible
           assert((original_id != transfer_id), "Resource ID was not rewritten: #{original_id}")
 
           # if class is Observation check subject
-          assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Observation.subject Patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Observation
+          assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Observation.subject Patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==get_resource(:Observation)
           # if class is Condition check patient
-          assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Condition.patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==FHIR::Condition
+          assert( (reply.resource.entry[index].resource.subject==@transferPatientId), "Condition.patient reference was not rewritten." ) if reply.resource.entry[index].resource.class==get_resource(:Condition)
         end
       end
 

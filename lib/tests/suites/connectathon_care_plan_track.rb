@@ -10,6 +10,13 @@ module Crucible
         'This track is intended to advance the maturity of FHIR resources for care planning: CarePlan, CareTeam, Goal, Condition, and others'
       end
 
+      def initialize(client1, client2=nil)
+        super(client1, client2)
+        @tags.append('connectathon')
+        @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
+      end
+
       def setup
         @resources = Crucible::Tests::ResourceGenerator
         @records = {}
@@ -64,12 +71,6 @@ module Crucible
         @records.each_value do |value|
           @client.destroy(value.class, value.id)
         end
-      end
-
-      def initialize(client1, client2=nil)
-        super(client1, client2)
-        @tags.append('connectathon')
-        @category = {id: 'connectathon', title: 'Connectathon'}
       end
 
       test 'CCPT1','Search for all Care Plans for a Patient' do

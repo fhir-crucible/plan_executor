@@ -14,10 +14,11 @@ module Crucible
         super(client1, client2)
         @tags.append('connectathon')
         @category = {id: 'connectathon', title: 'Connectathon'}
+        @supported_versions = [:stu3]
       end
 
       def setup
-        @medication_order = Crucible::Generator::Resources.new.medicationorder_simple
+        @medication_order = Crucible::Generator::Resources.new(fhir_version).medicationorder_simple
         @medication_order.id = nil # clear the identifier, in case the server checks for duplicates
         @medication_order.identifier = nil # clear the identifier, in case the server checks for duplicates
 

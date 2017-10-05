@@ -119,7 +119,7 @@
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
 					<code value="read"/>
 				</type>
-				<resource value="Patient"/>
+				<resource value="Parameters"/>
 				<description value="Attempt to read the Parameters resource type. What we really want here is an illegal type but the build process won't allow that. Parameters is a valid resource which doesn't have an end-point so, this should fail."/>
 				<accept value="xml"/>
 				<params value="/1"/>

@@ -28,6 +28,10 @@ module Crucible
 
       # Create a patient and store its details for format requests
       def setup
+        @cached_conformance = @client.capability_statement
+        @supports_xml = @cached_conformance.format.include?('xml')
+        @supports_json = @cached_conformance.format.include?('json')
+
         @resources = Crucible::Generator::Resources.new(fhir_version)
         @resource = @resources.minimal_patient
         @create_failed = false
@@ -72,6 +76,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
+        skip unless @supports_xml
         begin
           patient = request_entry(get_resource(:Patient), @id, @xml_format)
           assert compare_response_format(patient, @xml_format), "XML format header mismatch: requested #{@xml_format}, received #{patient.response_format}"
@@ -90,6 +95,7 @@ module Crucible
             requires resource: 'Patient', methods: ['create','read']
             validates resource: 'Patient', methods: ['read'], formats: ['XML']
           }
+          skip unless @supports_xml
           begin
             wire_format = format
             wire_format = @xml_format if format == 'XML_FORMAT'
@@ -112,6 +118,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
+        skip unless @supports_json
         begin
           patient = request_entry(get_resource(:Patient), @id, @json_format)
           assert compare_response_format(patient, @json_format), "JSON format header mismatch: requested #{@json_format}, received #{patient.response_format}"
@@ -130,6 +137,7 @@ module Crucible
             requires resource: 'Patient', methods: ['create','read']
             validates resource: 'Patient', methods: ['read'], formats: ['JSON']
           }
+          skip unless @supports_json
           begin
             wire_format = format
             wire_format = @xml_format if format == 'XML_FORMAT'
@@ -152,6 +160,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
+        skip unless @supports_xml && @supports_json
         begin
           patient_xml = request_entry(get_resource(:Patient), @id, @xml_format)
           patient_json = request_entry(get_resource(:Patient), @id, @json_format)
@@ -173,6 +182,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML','JSON']
         }
+        skip unless @supports_xml && @supports_json
         begin
           patient_xml = request_entry(get_resource(:Patient), @id, @xml_format, true)
           patient_json = request_entry(get_resource(:Patient), @id, @json_format, true)
@@ -194,6 +204,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['XML']
         }
+        skip unless @supports_xml
         begin
           patients_bundle = request_bundle(get_resource(:Patient), @xml_format)
 
@@ -212,6 +223,7 @@ module Crucible
             requires resource: 'Patient', methods: ['create','read']
             validates resource: 'Patient', methods: ['read'], formats: ['XML']
           }
+          skip unless @supports_xml
           begin
             wire_format = format
             wire_format = @xml_format if format == 'XML_FORMAT'
@@ -234,6 +246,7 @@ module Crucible
           requires resource: 'Patient', methods: ['create','read']
           validates resource: 'Patient', methods: ['read'], formats: ['JSON']
         }
+        skip unless @supports_json
         begin
           patients_bundle = request_bundle(get_resource(:Patient), @json_format)
 
@@ -252,6 +265,7 @@ module Crucible
             requires resource: 'Patient', methods: ['create','read']
             validates resource: 'Patient', methods: ['read'], formats: ['JSON']
           }
+          skip unless @supports_json
           begin
             wire_format = format
             wire_format = @xml_format if format == 'XML_FORMAT'

@@ -87,8 +87,8 @@ module Crucible
         @client.destroy(FHIR::ClaimResponse, @average_response_id) if !@average_response_id.nil?
         @client.destroy(FHIR::ClaimResponse, @preauth_response_id) if !@preauth_response_id.nil?
         @client.destroy(FHIR::Patient, @patient_id) if !@patient_id.nil?
-        @client.destroy(FHIR::Patient, @organization_1_id) if !@organization_1_id.nil?
-        @client.destroy(FHIR::Patient, @organization_2_id) if !@organization_2_id.nil?
+        @client.destroy(FHIR::Organization, @organization_1_id) if !@organization_1_id.nil?
+        @client.destroy(FHIR::Organization, @organization_2_id) if !@organization_2_id.nil?
         @client.destroy(FHIR::EligibilityRequest, @er_id) if !@er_id.nil?
         @client.destroy(FHIR::Communication, @preauth_communication_id) if !@preauth_communication_id.nil?
       end
@@ -98,7 +98,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#create"
           links "#{BASE_SPEC_LINK}/eligibilityrequest.html"
           links 'http://wiki.hl7.org/index.php?title=201609_Financial_Management#Submit_an_Eligibility.2C_Retrieve.2FReceive_an_EligibilityResponse'
-          requires resource: 'EligibilityRequest', methods: ['create']
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           validates resource: 'EligibilityRequest', methods: ['create']
         }
 
@@ -116,6 +117,10 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/eligibilityresponse.html"
           links 'http://wiki.hl7.org/index.php?title=201609_Financial_Management#Submit_an_Eligibility.2C_Retrieve.2FReceive_an_EligibilityResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
+          requires resource: 'EligibilityRequest', methods: ['search']
+          validates resource: 'EligibilityRequest', methods: ['search']
         }
 
         options = {
@@ -153,8 +158,13 @@ module Crucible
           links "#{REST_SPEC_LINK}#create"
           links "#{BASE_SPEC_LINK}/claim.html"
           links 'http://wiki.hl7.org/index.php?title=201609_Financial_Management'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
+          requires resource: 'Claim', methods: ['create']
+          requires resource: 'ClaimResponse', methods: ['search']
+          validates resource: 'Claim', methods: ['create']
+          validates resource: 'ClaimResponse', methods: ['search']
         }
-
 
         reply = @client.create(@preauth)
         assert_response_ok(reply)
@@ -253,6 +263,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#create"
           links "#{BASE_SPEC_LINK}/claim.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'Claim', methods: ['create']
           validates resource: 'Claim', methods: ['create']
         }
@@ -296,6 +308,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#create"
           links "#{BASE_SPEC_LINK}/claim.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'Claim', methods: ['create']
           validates resource: 'Claim', methods: ['create']
         }
@@ -340,6 +354,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#read"
           links "#{BASE_SPEC_LINK}/claim.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'Claim', methods: ['read']
           validates resource: 'Claim', methods: ['read']
         }
@@ -363,6 +379,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#read"
           links "#{BASE_SPEC_LINK}/claim.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'Claim', methods: ['read']
           validates resource: 'Claim', methods: ['read']
         }
@@ -388,6 +406,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
@@ -423,6 +443,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
@@ -457,6 +479,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
@@ -493,6 +517,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
@@ -528,6 +554,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }
@@ -562,6 +590,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#search"
           links "#{BASE_SPEC_LINK}/claimresponse.html"
           links 'http://wiki.hl7.org/index.php?title=Connectathon9_Financial#Submit_a_Claim_via_REST.2C_Retrieve_a_ClaimResponse'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Organization', methods: ['create']
           requires resource: 'ClaimResponse', methods: ['search']
           validates resource: 'ClaimResponse', methods: ['search']
         }

@@ -40,6 +40,8 @@ module Crucible
           links "#{REST_SPEC_LINK}#create"
           links "#{BASE_SPEC_LINK}/sequence.html"
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Practitioner', methods: ['create']
           requires resource: 'Sequence', methods: ['create']
           requires resource: 'Specimen', methods: ['create']
           requires resource: 'Observation', methods: ['create']
@@ -71,7 +73,8 @@ module Crucible
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
           requires resource: 'Sequence', methods: ['read']
           requires resource: 'Observation', methods: ['read']
-          requires resource: 'Patient', methods: ['read']
+          requires resource: 'Patient', methods: ['create','read']
+          requires resource: 'Practitioner', methods: ['create']
         }
 
         options = {
@@ -101,6 +104,7 @@ module Crucible
           requires resource: 'Sequence', methods: ['read']
           requires resource: 'Observation', methods: ['create', 'read']
           requires resource: 'Patient', methods: ['create', 'read']
+          requires resource: 'Practitioner', methods: ['create']
           requires resource: 'Specimen', methods: ['create', 'read']
           requires resource: 'FamilyMemberHistory', methods: ['create', 'read']
           requires resource: 'DiagnosticReport', methods: ['create', 'read']
@@ -146,6 +150,8 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Practitioner', methods: ['create']
           requires resource: 'Observation', methods: ['create', 'read']
         }
 
@@ -181,6 +187,8 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Practitioner', methods: ['create']
           requires resource: 'DiagnosticReport', methods: ['create', 'read']
           validates resource: 'DiagnosticReport', methods: ['create', 'read']
         }
@@ -206,6 +214,8 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Practitioner', methods: ['create']
           requires resource: 'DiagnosticReport', methods: ['create', 'read', 'search', 'delete']
           validates resource: 'DiagnosticReport', methods: ['create', 'read', 'search', 'delete']
         }
@@ -230,6 +240,8 @@ module Crucible
         metadata {
           links "#{REST_SPEC_LINK}#search"
           links 'http://wiki.hl7.org/index.php?title=201605_FHIR_Genomics_on_FHIR_Connectathon_Track_Proposal'
+          requires resource: 'Patient', methods: ['create']
+          requires resource: 'Practitioner', methods: ['create']
           requires resource: 'Sequence', methods: ['read', 'search', 'delete']
           validates resource: 'Sequence', methods: ['read', 'search', 'delete']
         }

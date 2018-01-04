@@ -363,29 +363,29 @@ module Crucible
           end
         when FHIR::Claim
           resource.item.each do |item|
-            item.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+            item.category = minimal_codeableconcept('http://hl7.org/fhir/benefit-subcategory','35')
             item.detail.each do |detail|
-              detail.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
+              detail.category = item.category
               detail.subDetail.each do |sub|
-                sub.category = minimal_coding('http://hl7.org/fhir/v3/ActCode','OHSINV')
-                sub.service = minimal_coding('http://hl7.org/fhir/ex-USCLS','1205')
+                sub.category = item.category
+                sub.service = minimal_codeableconcept('http://hl7.org/fhir/ex-USCLS','1205')
               end
             end
           end
         when FHIR::ClaimResponse
           resource.item.each do |item|
-            item.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            item.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
             item.detail.each do |detail|
-              detail.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+              detail.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
               detail.subDetail.each do |sub|
-                sub.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+                sub.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
               end
             end
           end
           resource.addItem.each do |addItem|
-            addItem.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+            addItem.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
             addItem.detail.each do |detail|
-              detail.adjudication.each{|a|a.category = minimal_coding('http://hl7.org/fhir/adjudication','benefit')}
+              detail.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
             end
           end
         when FHIR::Communication

@@ -297,7 +297,7 @@ module Crucible
           resource.unit = nil
           resource.comparator = nil 
         when FHIR::Appointment
-          resource.reason = minimal_codeableconcept('http://snomed.info/sct','219006') # drinker of alcohol
+          resource.reason = [ minimal_codeableconcept('http://snomed.info/sct','219006') ] # drinker of alcohol
           resource.participant.each{|p| p.type=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
         when FHIR::AppointmentResponse
           resource.participantType = [ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ]

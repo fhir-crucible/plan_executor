@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir">
+	<id value="tacoma-intial-measure-server-id-xml"/>
+
+	<url value="http://wildfhir.aegis.net/fhir3-0-0/TestScript/connectathon-15-patient-base-client-id-xml"/>
+	<name value="Tacoma Initial Patient and Measure Upload - XML - Client Assigned Resource Id"/>
+	<status value="active"/>
+	<date value="2018-07-23"/>
+	<publisher value="MITRE"/>
+	<contact>
+		<name value="Christina Bear"/>
+		<telecom>
+			<system value="email"/>
+			<value value="cbear@mitre.org"/>
+			<use value="work"/>
+		</telecom>
+	</contact>
+	<description value="Initial tests using XML format to upload, read, and update a patient and measure without extensions where the client assigns the resource id. The destination server must support conditional create."/>
+	<copyright value="N/A"/>
+
+	<metadata>
+		<capability>
+			<required value="true"/>
+			<description value="Read, update, delete, history-instance and search-type operations for patient and measure"/>
+			<link value="http://hl7.org/fhir/STU3/http.html#read"/>
+			<link value="http://hl7.org/fhir/STU3/http.html#update"/>
+			<link value="http://hl7.org/fhir/STU3/http.html#delete"/>
+			<link value="http://hl7.org/fhir/STU3/http.html#history"/>
+			<link value="http://hl7.org/fhir/STU3/http.html#search"/>
+			<link value="http://hl7.org/fhir/STU3/patient.html"/>
+			<link value="http://hl7.org/fhir/STU3/measure.html"/>
+			<capabilities>
+				<reference value="../_reference/capabilities/MeasureCapabilityStatement.xml" />
+			</capabilities>
+		</capability>
+	</metadata>
+
+	<fixture id="example-measure">
+		<resource>
+			<reference value="../_reference/resources/measure-cms146-example-tacoma.xml"/>
+		</resource>
+	</fixture>
+	<fixture id="example-measurereport">
+		<resource>
+			<reference value="../_reference/resources/measurereport-summary-cms146-example.xml"/>
+		</resource>
+	</fixture>
+	
+	<Parameters xmlns="http://hl7.org/fhir">
+  		<id value="measure-parameters"/> 
+  		<parameter> 
+    		<name value="periodStart"/> 
+    		<valueDate value="2014"/> 
+  		</parameter>  
+  		<parameter> 
+    		<name value="periodEnd"/> 
+    		<valueDate value="2015"/> 
+  		</parameter> 
+	</Parameters> 
+
+	<profile id="bundle-profile">
+		<reference value="http://hl7.org/fhir/StructureDefinition/Bundle"/>
+	</profile>
+	<profile id="measure-profile">
+		<reference value="http://hl7.org/fhir/StructureDefinition/Measure"/>
+	</profile>
+	<profile id="measurereport-profile">
+		<reference value="http://hl7.org/fhir/StructureDefinition/MeasureReport"/>
+	</profile>
+
+	<variable>
+		<name value="measureID"/>
+		<path value="Measure/identifier"/>
+		<sourceId value="example-measure"/>
+	</variable>
+	<variable>
+		<name value="measurereportID"/>
+		<path value="Measure/identifier"/>
+		<sourceId value="example-measurereport"/>
+	</variable>
+
+
+
+
+
+	<test id="Step1-EvaluateMeasure">
+		<name value="EvaluateMeasure"/>
+		<description value="Evaluate the measure, no extensions where the server assigns the resource id using XML."/>
+
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="evaluate-measure"/>
+				</type>
+				<resource value="Measure"/>
+				<label value="EvaluateMeasure"/>
+				<description value="Evaluate measure with client assigned resource id."/>
+				<accept value="xml"/>
+				<contentType value="xml"/>
+				<params value="measureID">
+				<responseId value="create-response" />
+				<sourceId value="measure-parameters"/>
+			</operation>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP status is 200(OK)"/>
+				<operator value="in"/>
+				<responseCode value="200"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned format is XML. Warning only as the server may not support the return of response content."/>
+				<contentType value="xml"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the return type is MeasureReport. Warning only as the server may not support the return of response content."/>
+				<resource value="MeasureReport"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP Header Last-Modified is present. Warning only as the server may not support versioning."/>
+				<headerField value="Last-Modified"/>
+				<operator value="notEmpty"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP Header ETag is present. Warning only as the server may not support versioning."/>
+				<headerField value="ETag"/>
+				<operator value="notEmpty"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP Header Location is present. Warning only as this is optional but servers are encouraged to return this."/>
+				<headerField value="Location"/>
+				<operator value="notEmpty"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+	</test>
+
+	<test id="Step2-ReadMeasureReport">
+		<name value="Step2-ReadMeasureReport"/>
+		<description value="Read the measure report and validate response."/>
+
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="read"/>
+				</type>
+				<resource value="MeasureReport"/>
+				<description value="Read the measure report resource on the test server using the id from example-measurereport."/>
+				<accept value="xml"/>
+				<contentType value="xml"/>
+				<encodeRequestUrl value="false"/> 
+        		<responseId value="example-measurereport-read"/> 
+        		<targetId value="example-measurereport"/> 
+      		</operation> 
+		</action>
+		<action> 
+	    	<assert> 
+	        	<label value="01-ReadMeasureReportOK"/> 
+	        	<description value="Confirm that the returned HTTP status is 200(OK)."/> 
+	        	<direction value="response"/> 
+	        	<response value="okay"/> 
+	      </assert> 
+   		</action> 
+   		<action> 
+	    	<assert> 
+		        <description value="Confirm that the returned HTTP Header Last-Modified is present. Warning only as the server
+		         may not support versioning."/> 
+		        <direction value="response"/> 
+		        <headerField value="Last-Modified"/> 
+		        <operator value="notEmpty"/> 
+		        <warningOnly value="true"/> 
+	      	</assert> 
+	    </action> 
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP Header ETag is present. Warning only as the server may not support versioning."/>
+				<headerField value="ETag"/>
+				<operator value="notEmpty"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP Header Location is present. Warning only as this is optional but servers are encouraged to return this."/>
+				<headerField value="Location"/>
+				<operator value="notEmpty"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+	    <action> 
+	    	<assert> 
+	        	<description value="Confirm that the returned resource type is MeasureReport."/> 
+	        	<resource value="MeasureReport"/> 
+	      	</assert> 
+	    </action> 
+	    <action> 
+	      <assert> 
+	        <description value="Confirm that the returned MeasureReport conforms to the base FHIR specification."/> 
+	        <validateProfileId value="measurereport-profile"/> 
+	      </assert> 
+	    </action> 
+		<action>
+			<assert>
+				<description value="Confirm that the returned format is XML. Warning only as the server may not support the return of response content."/>
+				<contentType value="xml"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action> 
+	      	<assert> 
+	       		<description value="Confirm that the returned MeasureReport contains the expected family name 'Chalmers'. Uses explicit
+	         sourceId reference to read responseId fixture."/> 
+	       		<operator value="equals"/> 
+	       		<path value="fhir:Patient/fhir:name/fhir:family/@value"/> 
+	       		<sourceId value="fixture-patient-read"/> 
+	       		<value value="Chalmers"/> 
+	      	</assert> 
+	    </action> 
+	</test>
+</TestScript>

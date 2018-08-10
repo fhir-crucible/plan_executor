@@ -1,3 +1,4 @@
+<!--Default measure to use. The initial testscript is based on this measure.-->
 <MeasureReport xmlns="http://hl7.org/fhir">
   <id value="measurereport-summary-cms146-example"/> 
   <identifier> 

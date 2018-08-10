@@ -222,14 +222,15 @@
 				<warningOnly value="true"/>
 			</assert>
 		</action>
+		<!-- Below is an example "value check" test. Similar tests should be written for fields of interest.-->
 		<action> 
 	      	<assert> 
-	       		<description value="Confirm that the returned MeasureReport contains the expected family name 'Chalmers'. Uses explicit
+	       		<description value="Confirm that the returned MeasureReport contains the expected initial population'. Uses explicit
 	         sourceId reference to read responseId fixture."/> 
 	       		<operator value="equals"/> 
-	       		<path value="fhir:Patient/fhir:name/fhir:family/@value"/> 
-	       		<sourceId value="fixture-patient-read"/> 
-	       		<value value="Chalmers"/> 
+	       		<path value="fhir:MeasureReport/fhir:group/fhir:population.where(code.coding.code='initial-population')/fhir:count/@value"/> 
+	       		<sourceId value="example-measurereport"/> 
+	       		<value value="500"/> 
 	      	</assert> 
 	    </action> 
 	</test>

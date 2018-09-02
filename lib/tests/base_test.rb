@@ -18,6 +18,11 @@ module Crucible
       attr_accessor :teardown_requests
       attr_accessor :supported_versions
 
+      # Used to keep track of what order the tests are defined
+      # At some point ruby started not returning the order of methods defined consistently (>2.4ish)
+      # So we need to now save the order that tests were defined
+      @@ordered_tests = []
+
       # Base test fields, used in Crucible::Tests::Executor.list_all
       JSON_FIELDS = ['author','description','id','tests','title', 'multiserver', 'tags', 'details', 'category','supported_versions']
       STATUS = {
@@ -125,7 +130,11 @@ module Crucible
           end
           methods = matches.flatten
         end
-        methods
+        methods.sort {|a, b| @@ordered_tests.index(a) <=> @@ordered_tests.index(b) }
+      end
+
+      def self.store_test_order(test_method)
+        @@ordered_tests << test_method
       end
 
       def warning

@@ -158,6 +158,9 @@ module Crucible
 
           result
         end
+
+        self.store_test_order(test_method)
+
         define_method test_method, wrapped
       end
 

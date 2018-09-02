@@ -49,6 +49,15 @@ module Crucible
 
       %w(pdf structured unstructured).each do |att_type|
         test "A13_#{att_type}1", "Submit unsolicited attachment of #{att_type}" do
+          metadata {
+            links "#{REST_SPEC_LINK}#create"
+            links "#{BASE_SPEC_LINK}/patient.html"
+            links "#{BASE_SPEC_LINK}/practitioner.html"
+            links "#{BASE_SPEC_LINK}/communication.html"
+            requires resource: 'Patient', methods: ['create']
+            requires resource: 'Practitioner', methods: ['create']
+            requires resource: 'Communication', methods: ['create']
+          }
           comm = FHIR::Communication.new()
           comm.subject = [@records[:patient].to_reference]
           comm.recipient = [@records[:practitioner].to_reference]
@@ -66,6 +75,15 @@ module Crucible
         end
 
         test "A13_#{att_type}2", "Submit solicited attachment of #{att_type}" do
+          metadata {
+            links "#{REST_SPEC_LINK}#create"
+            links "#{BASE_SPEC_LINK}/patient.html"
+            links "#{BASE_SPEC_LINK}/practitioner.html"
+            links "#{BASE_SPEC_LINK}/communication.html"
+            requires resource: 'Patient', methods: ['create']
+            requires resource: 'Practitioner', methods: ['create']
+            requires resource: 'Communication', methods: ['create']
+          }
           # find a suitable CommunicationRequest to respond to
           options = {
             :search => {

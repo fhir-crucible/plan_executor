@@ -23,9 +23,8 @@
       <required value="true"/>
       <description value="Read and $evaluate-measure operations for measure"/>
       <link value="http://hl7.org/fhir/STU3/http.html#read"/>
-      <link value="http://hl7.org/fhir/STU3/http.html#history"/>
-      <link value="http://hl7.org/fhir/STU3/http.html#search"/>
       <link value="http://hl7.org/fhir/STU3/measure.html"/>
+      <link value="http://hl7.org/fhir/STU3/measurereport.html"/>
       <capabilities>
         <reference value="../_reference/capabilities/MeasureCapabilityStatement.xml" />
       </capabilities>
@@ -33,15 +32,28 @@
   </metadata>
 
   <fixture id="example-measure">
-  <resource>
-    <reference value="../_reference/resources/connectathon_19_measure_ccs.xml"/>
-  </resource>
-</fixture>
+    <resource>
+      <reference value="../_reference/resources/connectathon_19_measure_ccs.xml"/>
+    </resource>
+  </fixture>
   <fixture id="example-measurereport">
     <resource>
       <reference value="../_reference/resources/connectathon_19_measurereport_ccs_individual.xml"/>
     </resource>
   </fixture>
+
+  <variable>
+    <name value="KnownPatientResourceId"/>
+    <defaultValue value="Patient-6516"/>
+  </variable>
+  <variable>
+    <name value="PeriodStart"/>
+    <defaultValue value="1991-01-01"/>
+  </variable>
+  <variable>
+    <name value="PeriodEnd"/>
+    <defaultValue value="1991-12-31"/>
+  </variable>
 
   <Parameters xmlns="http://hl7.org/fhir">
     <id value="measure-parameters"/>
@@ -59,14 +71,8 @@
     </parameter>
   </Parameters>
 
-  <profile id="bundle-profile">
-    <reference value="http://hl7.org/fhir/bundle"/>
-  </profile>
-  <profile id="measure-profile">
-    <reference value="http://hl7.org/fhir/measure"/>
-  </profile>
   <profile id="measurereport-profile">
-    <reference value="http://hl7.org/fhir/measurereport"/>
+    <reference value="http://hl7.org/fhir/StructureDefinition/MeasureReport"/>
   </profile>
 
   <variable>
@@ -95,7 +101,7 @@
         <description value="Evaluate measure with server assigned resource id."/>
         <accept value="xml"/>
         <contentType value="xml"/>
-        <url value="Measure/measure-ccs/$evaluate-measure?patient=Patient-6516&amp;periodStart=1991-01-01&amp;periodEnd=1991-12-31"/>
+        <url value="Measure/measure-ccs/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
       </operation>
     </action>
     <action>
@@ -153,6 +159,7 @@
       <assert>
         <description value="Confirm that the returned MeasureReport conforms to the base FHIR specification."/>
         <validateProfileId value="measurereport-profile"/>
+        <warningOnly value="true"/>
       </assert>
     </action>
     <action>

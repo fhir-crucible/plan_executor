@@ -14,7 +14,7 @@
 				<code value="read"/>
 			</interaction>
 			<interaction>
-				<code value="evaluate-measure"/>
+				<code value="$evaluate-measure"/>
 			</interaction>
 		</resource>
 	</rest>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestScript xmlns="http://hl7.org/fhir">
-  <id value="connectathon-19-cr-track-ccs-individual-xml"/>
+  <id value="connectathon-19-clinical-reasoning-track-ccs-individual-xml"/>
 
   <url value="http://projectcrucible.org/TestScript/connectathon-19-cr-ccs-xml"/>
-  <name value="Connectathon 19 Clinical Reasoning track Colon Cancer Screening--Individual Patient TestScript"/>
+  <name value="Connectathon 19 Clinical Reasoning track Colon Cancer Screening--Individual Patient TestScript--XML"/>
   <status value="active"/>
   <date value="2018-07-23"/>
   <publisher value="MITRE"/>
@@ -54,22 +54,6 @@
     <name value="PeriodEnd"/>
     <defaultValue value="1991-12-31"/>
   </variable>
-
-  <Parameters xmlns="http://hl7.org/fhir">
-    <id value="measure-parameters"/>
-    <parameter>
-      <name value="periodStart"/>
-      <valueDate value="1997-01-01"/>
-    </parameter>
-    <parameter>
-      <name value="periodEnd"/>
-      <valueDate value="1997-12-31"/>
-    </parameter>
-    <parameter>
-      <name value="patient"/>
-      <valueString value="Patient-6516"/>
-    </parameter>
-  </Parameters>
 
   <profile id="measurereport-profile">
     <reference value="http://hl7.org/fhir/StructureDefinition/MeasureReport"/>
@@ -159,13 +143,6 @@
       <assert>
         <description value="Confirm that the returned MeasureReport conforms to the base FHIR specification."/>
         <validateProfileId value="measurereport-profile"/>
-        <warningOnly value="true"/>
-      </assert>
-    </action>
-    <action>
-      <assert>
-        <description value="Confirm that the returned format is XML. Warning only as the server may not support the return of response content."/>
-        <contentType value="xml"/>
         <warningOnly value="true"/>
       </assert>
     </action>

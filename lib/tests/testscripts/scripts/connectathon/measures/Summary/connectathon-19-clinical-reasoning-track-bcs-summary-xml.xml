@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestScript xmlns="http://hl7.org/fhir">
-  <id value="connectathon-19-clinical-reasoning-track-ccs-individual-json"/>
+  <id value="connectathon-19-clinical-reasoning-track-bcs-summary-xml"/>
 
-  <url value="http://projectcrucible.org/TestScript/connectathon-19-cr-ccs-json"/>
-  <name value="Connectathon 19 Clinical Reasoning track Colon Cancer Screening--Individual Patient TestScript--JSON"/>
+  <url value="http://projectcrucible.org/TestScript/connectathon-19-cr-bcs-xml"/>
+  <name value="Connectathon 19 Clinical Reasoning track Breast Cancer Screening--Summary TestScript--XML"/>
   <status value="active"/>
   <date value="2018-07-23"/>
   <publisher value="MITRE"/>
@@ -15,7 +15,7 @@
       <use value="work"/>
     </telecom>
   </contact>
-  <description value="Tests using JSON format to execute the $evauate-measure operation. The destination server must support the $evaluate-measure operation on the Measure resource."/>
+  <description value="Tests using XML format to execute the $evauate-measure operation for an entire population. The destination server must support the $evaluate-measure operation on the Measure resource."/>
   <copyright value="N/A"/>
 
   <metadata>
@@ -31,39 +31,29 @@
     </capability>
   </metadata>
 
-  <fixture id="example-measure">
-    <resource>
-      <reference value="../_reference/resources/connectathon_19_measure_ccs.json"/>
-    </resource>
-  </fixture>
   <fixture id="example-measurereport">
     <resource>
-      <reference value="../_reference/resources/connectathon_19_measurereport_ccs_individual.json"/>
+      <reference value="../_reference/resources/connectathon_19_measurereport_bcs_summary.xml"/>
     </resource>
   </fixture>
 
   <variable>
-    <name value="KnownPatientResourceId"/>
-    <defaultValue value="Patient-6516"/>
-  </variable>
-  <variable>
     <name value="PeriodStart"/>
-    <defaultValue value="1991-01-01"/>
+    <defaultValue value="1997-01-01"/>
   </variable>
   <variable>
     <name value="PeriodEnd"/>
-    <defaultValue value="1991-12-31"/>
+    <defaultValue value="1997-12-31"/>
+  </variable>
+  <variable>
+    <name value="measureID"/>
+    <defaultValue value="measure-bcs"/>
   </variable>
 
   <profile id="measurereport-profile">
     <reference value="http://hl7.org/fhir/StructureDefinition/MeasureReport"/>
   </profile>
 
-  <variable>
-    <name value="measureID"/>
-    <path value="Measure/id"/>
-    <sourceId value="example-measure"/>
-  </variable>
   <variable>
     <name value="measurereportID"/>
     <path value="Measure/id"/>
@@ -83,9 +73,9 @@
         <resource value="Measure"/>
         <label value="EvaluateMeasure"/>
         <description value="Evaluate measure with server assigned resource id."/>
-        <accept value="json"/>
-        <contentType value="json"/>
-        <url value="Measure/measure-ccs/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
+        <accept value="xml"/>
+        <contentType value="xml"/>
+        <url value="Measure/${measureID}/$evaluate-measure?periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
       </operation>
     </action>
     <action>
@@ -97,8 +87,8 @@
     </action>
     <action>
       <assert>
-        <description value="Confirm that the returned format is JSON. Warning only as the server may not support the return of response content."/>
-        <contentType value="json"/>
+        <description value="Confirm that the returned format is XML. Warning only as the server may not support the return of response content."/>
+        <contentType value="xml"/>
         <warningOnly value="true"/>
       </assert>
     </action>
@@ -150,24 +140,24 @@
       <assert>
         <description value="Confirm that the returned MeasureReport contains the expected initial population."/>
         <operator value="equals"/>
-        <path value="group[*].population[?(@.identifier.value=='initial-population')]['count']"/>
-        <value value="1"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:identifier[fhir:value[@value='initial-population']]]/fhir:count/@value"/>
+        <value value="10"/>
       </assert>
     </action>
     <action>
       <assert>
         <description value="Confirm that the returned MeasureReport contains the expected denominator."/>
         <operator value="equals"/>
-        <path value="group[*].population[?(@.identifier.value=='denominator')]['count']"/>
-        <value value="1"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:identifier[fhir:value[@value='denominator']]]/fhir:count/@value"/>
+        <value value="10"/>
       </assert>
     </action>
     <action>
       <assert>
         <description value="Confirm that the returned MeasureReport contains the expected numerator."/>
         <operator value="equals"/>
-        <path value="group[*].population[?(@.identifier.value=='numerator')]['count']"/>
-        <value value="0"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:identifier[fhir:value[@value='numerator']]]/fhir:count/@value"/>
+        <value value="6"/>
       </assert>
     </action>
   </test>

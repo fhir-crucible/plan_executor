@@ -15,7 +15,7 @@
       <use value="work"/>
     </telecom>
   </contact>
-  <description value="Tests using XML format to execute the $evauate-measure operation without extensions. The destination server must support $evaluate-measure."/>
+  <description value="Tests using JSON format to execute the $evauate-measure operation. The destination server must support the $evaluate-measure operation on the Measure resource."/>
   <copyright value="N/A"/>
 
   <metadata>
@@ -83,8 +83,8 @@
         <resource value="Measure"/>
         <label value="EvaluateMeasure"/>
         <description value="Evaluate measure with server assigned resource id."/>
-        <accept value="xml"/>
-        <contentType value="xml"/>
+        <accept value="json"/>
+        <contentType value="json"/>
         <url value="Measure/measure-ccs/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
       </operation>
     </action>

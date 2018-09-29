@@ -15,7 +15,7 @@
       <use value="work"/>
     </telecom>
   </contact>
-  <description value="Tests using XML format to execute the $evauate-measure operation without extensions. The destination server must support $evaluate-measure."/>
+  <description value="Tests using XML format to execute the $evauate-measure operation. The destination server must support $evaluate-measure."/>
   <copyright value="N/A"/>
 
   <metadata>

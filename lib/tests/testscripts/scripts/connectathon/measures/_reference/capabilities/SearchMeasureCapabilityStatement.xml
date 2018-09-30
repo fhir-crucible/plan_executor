@@ -15,6 +15,9 @@
         <code value="read"/>
       </interaction>
       <interaction>
+        <code value="search"/>
+      </interaction>
+      <interaction>
         <code value="$evaluate-measure"/>
       </interaction>
     </resource>

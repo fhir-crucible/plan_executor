@@ -404,7 +404,7 @@ module Crucible
           reply = @client.search(klass,options)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          warning{ assert((1 >= reply.resource.entry.size), "The server did not return any USCore-#{uscore_resource.type}s.") }
+          warning{ assert((reply.resource.entry.size > 0), "The server did not return any USCore-#{uscore_resource.type}s.") }
 
           if reply.resource.entry.size > 0
             # store any results to a @server_side_resources

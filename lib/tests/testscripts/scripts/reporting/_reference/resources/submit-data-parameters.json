@@ -1,0 +1,34 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "measureReport",
+      "resource": {
+        "resourceType": "MeasureReport",
+        "status": "complete",
+        "type": "data-collection",
+        "measure": {
+          "reference": "Measure/measure-cms146-example"
+        },
+        "patient": {
+          "reference": "Patient/Practitioner-2178"
+        },
+        "period": {
+          "start": "2017-01-01T00:00:00+00:00",
+          "end": "2017-12-31T00:00:00+00:00"
+        },
+        "evaluatedResource": [
+          {
+            "reference": "Patient/Practitioner-2178"
+          },
+          {
+            "reference": "Encounter/Encounter-62912"
+          },
+          {
+            "reference": "Procedure/Procedure-89972"
+          }
+        ]
+      }
+    }
+  ]
+}

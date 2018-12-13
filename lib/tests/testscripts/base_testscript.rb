@@ -423,6 +423,8 @@ module Crucible
             @last_response.resource = FHIR.from_contents(@last_response.body)
             @last_response.resource_class = @last_response.resource.class
           end
+        when 'submit-data', '$submit-data'
+          # @last_response = @client.post("Measure/cms146/$submit-data", @fixtures[operation.sourceId], requestHeaders)
         when 'transaction'
           result.result = 'error'
           result.message = 'transaction not implemented'

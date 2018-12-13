@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir">
+	<id value="testscript-example-submit-data"/>
+
+	<url value="http://example.com"/>
+	<version value="1.0"/>
+	<name value="Submit Data"/>
+	<status value="draft"/>
+	<date value="2018-11-28"/>
+	<publisher value=""/>
+	<contact>
+		<name value="Tom Strassner"/>
+		<telecom>
+			<system value="email"/>
+			<value value="tstrassner@mitre.org"/>
+			<use value="work"/>
+		</telecom>
+	</contact>
+	<description value= "TestScript resource with submit-data test."/>
+	<jurisdiction>
+		<coding>
+			<system value="urn:iso:std:iso:3166"/>
+			<code value="US"/>
+			<display value="United States of America (the)"/>
+		</coding>
+	</jurisdiction>
+
+	<fixture id="submit-data-parameters">
+		<resource>
+			<reference value="./_reference/resources/submit-data-parameters.json"/>
+		</resource>
+	</fixture>
+	
+	<test id="SubmitData">
+		<name value="Submit Data"/>
+		<description value="Submit measure data for a patient."/>
+		<action>
+			<operation>
+				<type>
+					<code value="submit-data"/>
+				</type>
+				<resource value="Measure"/>
+				<description value="Submit data for a measure."/>
+				<accept value="json"/>
+				<contentType value="json"/>
+				<encodeRequestUrl value="false"/>
+				<sourceId value="submit-data-parameters"/>
+			</operation>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP status is 200(OK)."/>
+				<direction value="response"/>
+				<responseCode value="200"/>
+			</assert>
+		</action>
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="evaluate-measure"/>
+				</type>
+				<resource value="Measure"/>
+				<description value="Evaluate a measure."/>
+				<accept value="json"/>
+				<contentType value="json"/>
+				<params value="?measure=CMS146&amp;periodStart=2017&amp;periodEnd=2017"/>
+				<responseId value="measure-calc-report"/>
+			</operation>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP status is 200(OK)."/>
+				<direction value="response"/>
+				<responseCode value="200"/>
+			</assert>
+		</action>
+	</test>
+
+	<teardown>
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="delete"/>
+				</type>
+				<resource value="Patient"/>
+				<description value="Delete the patient resource on the test server using the id from Practitioner-2178."/>
+				<targetId value="Practitioner-2178"/>
+			</operation>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="delete"/>
+				</type>
+				<resource value="Encounter"/>
+				<description value="Delete the encounter on the test server using the id from Encounter-62912"/>
+				<targetId value="Encounter-62912"/>
+			</operation>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="delete"/>
+				</type>
+				<resource value="Procedure"/>
+				<description value="Delete the procedure on the test server using the id from Procedure-89972"/>
+				<targetId value="Procedure-89972"/>
+			</operation>
+		</action>
+	</teardown>
+</TestScript>

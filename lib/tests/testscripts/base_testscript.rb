@@ -424,7 +424,8 @@ module Crucible
             @last_response.resource_class = @last_response.resource.class
           end
         when 'submit-data', '$submit-data'
-          # @last_response = @client.post("Measure/cms146/$submit-data", @fixtures[operation.sourceId], requestHeaders)
+          resource_id = replace_variables(operation.params)
+          @last_response = @client.post("Measure/#{resource_id}/$submit-data", @fixtures[operation.sourceId], @client.fhir_headers({ format: format}))
         when 'transaction'
           result.result = 'error'
           result.message = 'transaction not implemented'

@@ -25,15 +25,65 @@
 		</coding>
 	</jurisdiction>
 
+	<fixture id="library-col-logic">
+		<resource>
+			<reference value="./_reference/resources/Library/library-col-logic.json"/>
+		</resource>
+	</fixture>
+	<fixture id="measure-col">
+		<resource>
+			<reference value="./_reference/resources/Measure/measure-col.json"/>
+		</resource>
+	</fixture>
 	<fixture id="submit-data-parameters">
 		<resource>
 			<reference value="./_reference/resources/submit-data-parameters.json"/>
 		</resource>
 	</fixture>
+
+	<variable>
+		<name value="createMeasureId"/>
+		<path value="Measure/id" />
+		<sourceId value="create-measure-response"/>
+	</variable>
 	
 	<test id="SubmitData">
 		<name value="Submit Data"/>
 		<description value="Submit measure data for a patient."/>
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="create"/>
+				</type>
+				<resource value="Library"/>
+				<description value="Create a library"/>
+				<accept value="json"/>
+				<contentType value="json"/>
+				<sourceId value="library-col-logic"/>
+			</operation>
+		</action>
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="create"/>
+				</type>
+				<resource value="Measure"/>
+				<description value="Create a measure"/>
+				<accept value="json"/>
+				<contentType value="json"/>
+				<sourceId value="measure-col"/>
+				<responseId value="create-measure-response"/>
+			</operation>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+				<operator value="in"/>
+				<responseCode value="200,201"/>
+			</assert>
+		</action>
 		<action>
 			<operation>
 				<type>
@@ -43,6 +93,7 @@
 				<description value="Submit data for a measure."/>
 				<accept value="json"/>
 				<contentType value="json"/>
+				<params value="/${createMeasureId}"/>				
 				<encodeRequestUrl value="false"/>
 				<sourceId value="submit-data-parameters"/>
 			</operation>
@@ -64,7 +115,7 @@
 				<description value="Evaluate a measure."/>
 				<accept value="json"/>
 				<contentType value="json"/>
-				<params value="?measure=CMS146&amp;periodStart=2017&amp;periodEnd=2017"/>
+				<params value="/${createMeasureId}&amp;periodStart=2017&amp;periodEnd=2017"/>
 				<responseId value="measure-calc-report"/>
 			</operation>
 		</action>
@@ -84,9 +135,9 @@
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
 					<code value="delete"/>
 				</type>
-				<resource value="Patient"/>
-				<description value="Delete the patient resource on the test server using the id from Practitioner-2178."/>
-				<targetId value="Practitioner-2178"/>
+				<resource value="Practitioner"/>
+				<description value="Delete the patient resource on the test server using the id of the Practitioner."/>
+				<targetId value="Practitioner-294"/>
 			</operation>
 			<operation>
 				<type>
@@ -94,17 +145,17 @@
 					<code value="delete"/>
 				</type>
 				<resource value="Encounter"/>
-				<description value="Delete the encounter on the test server using the id from Encounter-62912"/>
-				<targetId value="Encounter-62912"/>
+				<description value="Delete the encounter on the test server using the id of the Encounter"/>
+				<targetId value="Encounter-60"/>
 			</operation>
 			<operation>
 				<type>
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
 					<code value="delete"/>
 				</type>
-				<resource value="Procedure"/>
-				<description value="Delete the procedure on the test server using the id from Procedure-89972"/>
-				<targetId value="Procedure-89972"/>
+				<resource value="Measure"/>
+				<description value="Delete the measure resource on the test server"/>
+				<targetId value="${createMeasureId}"/>
 			</operation>
 		</action>
 	</teardown>

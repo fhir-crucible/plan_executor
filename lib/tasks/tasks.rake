@@ -95,11 +95,21 @@ namespace :crucible do
     fhir_version = resolve_fhir_version(args.fhir_version)
     require 'benchmark'
     b = Benchmark.measure {
-      client = FHIR::Client.new(args.url)
-      client.use_dstu2 if fhir_version == :dstu2
-      options = client.get_oauth2_metadata_from_conformance
-      set_client_secrets(client,options) unless options.empty?
+      client = setup_client(args.url, fhir_version)
       execute_test(client, args.test, args.resource)
+    }
+    puts "Execute #{args.test} completed in #{b.real} seconds."
+  end
+
+  desc 'execute_multiserver'
+  task :execute_multiserver, [:url, :url2, :fhir_version, :test, :resource] do |t, args|
+    FHIR.logger = Logger.new("logs/plan_executor.log", 10, 1024000)
+    fhir_version = resolve_fhir_version(args.fhir_version)
+    require 'benchmark'
+    b = Benchmark.measure {
+      client = setup_client(args.url, fhir_version)
+      client2 = setup_client(args.url2, fhir_version)
+      execute_test(client, args.test, args.resource, client2)
     }
     puts "Execute #{args.test} completed in #{b.real} seconds."
   end
@@ -110,6 +120,14 @@ namespace :crucible do
     require 'benchmark'
     b = Benchmark.measure { puts JSON.pretty_unparse(Crucible::Tests::Executor.new(nil).extract_metadata_from_test(args.test)) }
     puts "Metadata #{args.test} completed in #{b.real} seconds."
+  end
+
+  def setup_client(url, fhir_version)
+    client = FHIR::Client.new(url)
+    client.use_dstu2 if fhir_version == :dstu2
+    options = client.get_oauth2_metadata_from_conformance
+    set_client_secrets(client,options) unless options.empty?
+    client
   end
 
   def resolve_fhir_version(version_string)
@@ -134,8 +152,8 @@ namespace :crucible do
     end
   end
 
-  def execute_test(client, key, resourceType=nil)
-    executor = Crucible::Tests::Executor.new(client)
+  def execute_test(client, key, resourceType=nil, client2=nil)
+    executor = Crucible::Tests::Executor.new(client, client2)
     test = executor.find_test(key)
     if test.nil? || (test.is_a?(Array) && test.empty?)
       puts "Unable to find test: #{key}"

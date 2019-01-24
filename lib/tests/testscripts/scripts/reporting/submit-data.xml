@@ -35,6 +35,16 @@
 			<reference value="./_reference/resources/Measure/measure-col.json"/>
 		</resource>
 	</fixture>
+	<fixture id="fixture-create-practitioner">
+		<resource>
+			<reference value="./_reference/resources/Practitioner/Practitioner-294.json"/>
+		</resource>
+	</fixture>
+	<fixture id="fixture-create-patient">
+		<resource>
+			<reference value="./_reference/resources/Patient/Patient-438.json"/>
+		</resource>
+	</fixture>
 	<fixture id="submit-data-parameters">
 		<resource>
 			<reference value="./_reference/resources/submit-data-parameters.json"/>
@@ -45,6 +55,17 @@
 		<name value="createMeasureId"/>
 		<path value="Measure/id" />
 		<sourceId value="create-measure-response"/>
+	</variable>
+	<variable>
+		<name value="createPractitionerId"/>
+		<defaultValue value="test-Practitioner-294"/>
+		<!-- <path value="Practitioner/id" /> -->
+		<sourceId value="fixture-create-practitioner"/>
+	</variable>
+	<variable>
+		<name value="createPatientId"/>
+		<defaultValue value="test-Patient-438" />
+		<sourceId value="fixture-create-patient"/>
 	</variable>
 	
 	<test id="SubmitData">
@@ -75,6 +96,34 @@
 				<contentType value="json"/>
 				<sourceId value="measure-col"/>
 				<responseId value="create-measure-response"/>
+			</operation>
+		</action>
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="update"/>
+				</type>
+				<resource value="Practitioner"/>
+				<description value="Create a practitioner"/>
+				<accept value="json"/>
+				<contentType value="json"/>
+				<params value="/${createPractitionerId}"/>
+				<sourceId value="fixture-create-practitioner"/>
+			</operation>
+		</action>
+		<action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="update"/>
+				</type>
+				<resource value="Patient"/>
+				<description value="Create a patient"/>
+				<accept value="json"/>
+				<contentType value="json"/>
+				<params value="/${createPatientId}"/>
+				<sourceId value="fixture-create-patient"/>
 			</operation>
 		</action>
 		<action>

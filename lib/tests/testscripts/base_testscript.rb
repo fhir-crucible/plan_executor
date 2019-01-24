@@ -45,6 +45,11 @@ module Crucible
         @testscript = testscript
         @preprocessed_vars = {}
         @supported_versions = [:stu3] # Testscripts only supported on latest version
+
+        # Initialize a map for destionation => client for multiserver testscripts
+        @multiserver_destinations = if self.multiserver? && @testscript.destination.length == 2
+          { @testscript.destination[0].index => @client, @testscript.destination[1].index => @client2 }
+        end
         define_tests
         load_fixtures
       end
@@ -65,7 +70,7 @@ module Crucible
         "TS-#{id}"
       end
 
-      def multiserver
+      def multiserver?
         @testscript.origin.length >= 2 || @testscript.destination.length >= 2
       end
 
@@ -330,7 +335,11 @@ module Crucible
       def perform_action(action)
         result = FHIR::TestReport::Setup::Action.new
         if action.operation
-          result.operation = execute_operation(action.operation)
+          if !@multiserver_destinations.nil?
+            result.operation = execute_operation(action.operation, @multiserver_destinations[action.operation.destination])
+          else
+            result.operation = execute_operation(action.operation, @client)
+          end
         elsif action.assert
           result.assert = handle_assertion(action.assert)
         end
@@ -338,14 +347,14 @@ module Crucible
       end
 
       # Returns a FHIR::TestReport::Setup::Action::Operation
-      def execute_operation(operation)
-        return nil if @client.nil?
+      def execute_operation(operation, client=@client)
+        return nil if client.nil?
         result = FHIR::TestReport::Setup::Action::Operation.new({
           'result' => 'pass',
           'message' => operation.description
           })
 
-        @client.requests = []
+        client.requests = []
 
         requestHeaders = Hash[(operation.requestHeader || []).map{|u| [u.field, u.value]}] #Client needs upgrade to support
         format = FHIR::Formats::ResourceFormat::RESOURCE_XML
@@ -358,40 +367,40 @@ module Crucible
         case operationCode
         when 'read'
           if operation.targetId
-            @last_response = @client.read @fixtures[operation.targetId].class, @id_map[operation.targetId], format
+            @last_response = client.read @fixtures[operation.targetId].class, @id_map[operation.targetId], format
           elsif operation.url
-            @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
+            @last_response = client.get replace_variables(operation.url), client.fhir_headers({ format: format})
             @last_response.resource = FHIR.from_contents(@last_response.body)
             @last_response.resource_class = @last_response.resource.class
           else
             resource_type = replace_variables(operation.resource)
             resource_id = replace_variables(operation.params)
-            @last_response = @client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id), format
+            @last_response = client.read "FHIR::#{resource_type}".constantize, id_from_path(resource_id), format
           end
         when 'vread'
           if operation.url
-            @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
+            @last_response = client.get replace_variables(operation.url), client.fhir_headers({ format: format})
             @last_response.resource = FHIR.from_contents(@last_response.body)
             @last_response.resource_class = @last_response.resource.class
           else
             resource_type = replace_variables(operation.resource)
             resource_id = replace_variables(operation.params)
-            @last_response = @client.read "FHIR::#{resource_type}".constantize, resource_id, format
+            @last_response = client.read "FHIR::#{resource_type}".constantize, resource_id, format
           end
         when 'search'
           if operation.url.nil?
             params = extract_operation_parameters(operation)
-            @last_response = @client.search "FHIR::#{operation.resource}".constantize, {search: {parameters: params}}, format
+            @last_response = client.search "FHIR::#{operation.resource}".constantize, {search: {parameters: params}}, format
           else
             url = replace_variables(operation.url)
-            @last_response = @client.search "FHIR::#{operation.resource}".constantize, url: url #todo implement URL
+            @last_response = client.search "FHIR::#{operation.resource}".constantize, url: url #todo implement URL
           end
         when 'history'
           target_id = @id_map[operation.targetId]
           fixture = @fixtures[operation.targetId]
-          @last_response = @client.resource_instance_history(fixture.class,target_id)
+          @last_response = client.resource_instance_history(fixture.class,target_id)
         when 'create'
-          @last_response = @client.base_create(@fixtures[operation.sourceId], requestHeaders, format)
+          @last_response = client.base_create(@fixtures[operation.sourceId], requestHeaders, format)
           @id_map[operation.sourceId] = @last_response.id
         when 'update','updateCreate'
           target_id = nil
@@ -404,7 +413,7 @@ module Crucible
 
           fixture = @fixtures[operation.sourceId]
           fixture.id = replace_variables(target_id) if fixture.id.nil?
-          @last_response = @client.update fixture, replace_variables(target_id), format
+          @last_response = client.update fixture, replace_variables(target_id), format
         when 'transaction'
           result.result = 'error'
           result.message = 'transaction not implemented'
@@ -414,19 +423,19 @@ module Crucible
         when 'delete'
           if operation.targetId.nil?
             params = replace_variables(operation.params)
-            @last_response = @client.destroy "FHIR::#{operation.resource}".constantize, nil, params: params
+            @last_response = client.destroy "FHIR::#{operation.resource}".constantize, nil, params: params
           else
-            @last_response = @client.destroy @fixtures[operation.targetId].class, @id_map[operation.targetId]
+            @last_response = client.destroy @fixtures[operation.targetId].class, @id_map[operation.targetId]
             @id_map.delete(operation.targetId)
           end
         when '$expand', 'expand'
           result.result = 'error'
           result.message = '$expand not supported'
-          # @last_response = @client.value_set_expansion( extract_operation_parameters(operation) )
+          # @last_response = client.value_set_expansion( extract_operation_parameters(operation) )
         when '$validate', 'validate'
           result.result = 'error'
           result.message = '$validate not supported'
-          # @last_response = @client.value_set_code_validation( extract_operation_parameters(operation) )
+          # @last_response = client.value_set_code_validation( extract_operation_parameters(operation) )
         when '$validate-code', 'validate-code'
           result.result = 'error'
           result.message = '$validate-code not supported'
@@ -439,18 +448,18 @@ module Crucible
           #     }
           #   }
           # }
-          # @last_response = @client.value_set_code_validation(options)
+          # @last_response = client.value_set_code_validation(options)
         when 'empty'
           if !operation.params.nil? && !operation.resource.nil?
             resource = "FHIR::#{operation.resource}".constantize 
-            @last_response = @client.read resource, nil, FORMAT_MAP[operation.accept], nil, params: replace_variables(operation.params)
+            @last_response = client.read resource, nil, FORMAT_MAP[operation.accept], nil, params: replace_variables(operation.params)
           end
         else
           result.result = 'error'
           result.message = "Undefined operation #{operation.type.to_json}"
           FHIR.logger.error(result.message)
         end
-        result.extension.concat(@client.requests.map do |request|
+        result.extension.concat(client.requests.map do |request|
           FHIR::Extension.new('url' => 'https://projectcrucible.com/extensions/testscript-request', 'valueString' => request.to_json)
         end)
         handle_response(operation)

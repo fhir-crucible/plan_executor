@@ -417,7 +417,7 @@ module Crucible
         when 'evaluate-measure', '$evaluate-measure'
           if operation.url.nil?
             resource_id = replace_variables(operation.params)
-            @last_response = @client.get "Measure/#{resource_id}/$evaluate-measure", params, format
+            @last_response = @client.get "Measure/#{resource_id}/$evaluate-measure", format
           else
             @last_response = @client.get replace_variables(operation.url), @client.fhir_headers({ format: format})
             @last_response.resource = FHIR.from_contents(@last_response.body)

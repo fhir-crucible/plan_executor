@@ -35,14 +35,9 @@
 			<reference value="./_reference/resources/Measure/measure-col.json"/>
 		</resource>
 	</fixture>
-	<fixture id="fixture-create-practitioner">
-		<resource>
-			<reference value="./_reference/resources/Practitioner/Practitioner-294.json"/>
-		</resource>
-	</fixture>
 	<fixture id="fixture-create-patient">
 		<resource>
-			<reference value="./_reference/resources/Patient/Patient-438.json"/>
+			<reference value="./_reference/resources/Patient/test-Patient-410.json"/>
 		</resource>
 	</fixture>
 	<fixture id="submit-data-parameters">
@@ -57,14 +52,8 @@
 		<sourceId value="create-measure-response"/>
 	</variable>
 	<variable>
-		<name value="createPractitionerId"/>
-		<defaultValue value="test-Practitioner-294"/>
-		<!-- <path value="Practitioner/id" /> -->
-		<sourceId value="fixture-create-practitioner"/>
-	</variable>
-	<variable>
 		<name value="createPatientId"/>
-		<defaultValue value="test-Patient-438" />
+		<defaultValue value="test-Patient-410" />
 		<sourceId value="fixture-create-patient"/>
 	</variable>
 	
@@ -96,20 +85,6 @@
 				<contentType value="json"/>
 				<sourceId value="measure-col"/>
 				<responseId value="create-measure-response"/>
-			</operation>
-		</action>
-		<action>
-			<operation>
-				<type>
-					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
-					<code value="update"/>
-				</type>
-				<resource value="Practitioner"/>
-				<description value="Create a practitioner"/>
-				<accept value="json"/>
-				<contentType value="json"/>
-				<params value="/${createPractitionerId}"/>
-				<sourceId value="fixture-create-practitioner"/>
 			</operation>
 		</action>
 		<action>
@@ -164,7 +139,7 @@
 				<description value="Evaluate a measure."/>
 				<accept value="json"/>
 				<contentType value="json"/>
-				<params value="/${createMeasureId}&amp;periodStart=2017&amp;periodEnd=2017"/>
+				<url value="Measure/${createMeasureId}/$evaluate-measure?patient=${createPatientId}&amp;periodStart=2017&amp;periodEnd=2017"/>
 				<responseId value="measure-calc-report"/>
 			</operation>
 		</action>
@@ -173,6 +148,43 @@
 				<description value="Confirm that the returned HTTP status is 200(OK)."/>
 				<direction value="response"/>
 				<responseCode value="200"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned format is JSON. Warning only as the server may not support the return of response content."/>
+				<contentType value="json"/>
+				<warningOnly value="true"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the return type is MeasureReport. Warning only as the server may not support the return of response content."/>
+				<resource value="MeasureReport"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned MeasureReport contains the expected initial population."/>
+				<operator value="equals"/>
+				<path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='initial-population']]]]/fhir:count/@value"/>
+				<value value="1"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned MeasureReport contains the expected denominator."/>
+				<operator value="equals"/>
+				<path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='denominator']]]]/fhir:count/@value"/>
+				<value value="1"/>
+			</assert>
+		</action>
+		<action>
+			<assert>
+				<description value="Confirm that the returned MeasureReport contains the expected numerator."/>
+				<operator value="equals"/>
+				<path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='numerator']]]]/fhir:count/@value"/>
+				<value value="1"/>
 			</assert>
 		</action>
 	</test>
@@ -184,18 +196,18 @@
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
 					<code value="delete"/>
 				</type>
-				<resource value="Practitioner"/>
-				<description value="Delete the patient resource on the test server using the id of the Practitioner."/>
-				<targetId value="Practitioner-294"/>
+				<resource value="Patient"/>
+				<description value="Delete the patient resource on the test server using the id of the Patient."/>
+				<targetId value="${createPatientId}"/>
 			</operation>
 			<operation>
 				<type>
 					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
 					<code value="delete"/>
 				</type>
-				<resource value="Encounter"/>
-				<description value="Delete the encounter on the test server using the id of the Encounter"/>
-				<targetId value="Encounter-60"/>
+				<resource value="Observation"/>
+				<description value="Delete the observation on the test server using the id of the Observation"/>
+				<targetId value="test-Observation-32794"/>
 			</operation>
 			<operation>
 				<type>
@@ -205,6 +217,15 @@
 				<resource value="Measure"/>
 				<description value="Delete the measure resource on the test server"/>
 				<targetId value="${createMeasureId}"/>
+			</operation>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="delete"/>
+				</type>
+				<resource value="Library"/>
+				<description value="Delete the library on the test server using the id of the Library"/>
+				<targetId value="library-col-logic"/>
 			</operation>
 		</action>
 	</teardown>

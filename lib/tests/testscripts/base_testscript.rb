@@ -598,7 +598,7 @@ module Crucible
           result.result = 'error'
           result.message = "#{e.message}\n#{e.backtrace}"
         end
-
+        result.message << " (URL: #{@last_response.request[:url]})"
         result
       end
 

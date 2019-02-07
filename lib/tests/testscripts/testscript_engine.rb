@@ -71,6 +71,9 @@ module Crucible
         # get all the Connectathon TestScripts
         path = File.join(root, 'scripts', 'connectathon', '**/*.xml')
         script_files += Dir.glob(path)
+        # get all the reporting TestScripts
+        path = File.join(root, 'scripts', 'reporting', '**/*.xml')
+        script_files += Dir.glob(path)
 
         script_files.each do |f|
           begin

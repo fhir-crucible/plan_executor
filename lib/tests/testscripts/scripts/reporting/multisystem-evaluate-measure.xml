@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir">
+  <id value="multisystem-evaluate-measure-xml"/>
+
+  <url value="http://example.com"/>
+  <name value="Individual Patient Multisystem TestScript for Evaluating Measures--XML"/>
+  <status value="draft"/>
+  <date value="2019-02-11"/>
+  <publisher value="MITRE"/>
+  <contact>
+    <name value="Matthew Gramigna"/>
+    <telecom>
+      <system value="email"/>
+      <value value="mgramigna@mitre.org"/>
+      <use value="work"/>
+    </telecom>
+  </contact>
+  <description value="Tests using XML format to execute the $evauate-measure operation. The destination server must support the $evaluate-measure operation on the Measure resource."/>
+  <copyright value="N/A"/>
+
+  <fixture id="example-measure">
+    <resource>
+      <reference value="./_reference/resources/Measure/measure-col.json"/>
+    </resource>
+  </fixture>
+
+  <variable>
+    <name value="measureID"/>
+    <defaultValue value="measure-col"/>
+  </variable>
+  <variable>
+    <name value="KnownPatientResourceId"/>
+    <defaultValue value="Patient-6516"/>
+  </variable>
+  <variable>
+    <name value="PeriodStart"/>
+    <defaultValue value="1991-01-01"/>
+  </variable>
+  <variable>
+    <name value="PeriodEnd"/>
+    <defaultValue value="1991-12-31"/>
+  </variable>
+
+  <profile id="measurereport-profile">
+    <reference value="http://hl7.org/fhir/StructureDefinition/MeasureReport"/>
+  </profile>
+
+  <origin>
+    <index value="1" />
+    <profile>
+      <code value="FHIR-Client"/>
+    </profile>
+  </origin>
+  <destination>
+    <index value="1" />
+    <profile>
+      <code value="FHIR-Server"/>
+    </profile>
+  </destination>
+  <destination>
+    <index value="2" />
+    <profile>
+      <code value="FHIR-Server"/>
+    </profile>
+  </destination>
+
+  <test id="Step1-Dest1EvaluateMeasure">
+    <name value="Dest1EvaluateMeasure"/>
+    <description value="Evaluate the measure, no extensions."/>
+
+    <action>
+      <operation>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="evaluate-measure"/>
+        </type>
+        <resource value="Measure"/>
+        <label value="EvaluateMeasure"/>
+        <description value="Evaluate measure with server assigned resource id."/>
+        <accept value="xml"/>
+        <contentType value="xml"/>
+        <destination value="1"/>
+        <url value="Measure/${measureID}/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
+        <responseId value="dest1-measurereport"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 200(OK)"/>
+        <operator value="in"/>
+        <responseCode value="200"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned format is XML. Warning only as the server may not support the return of response content."/>
+        <contentType value="xml"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the return type is MeasureReport. Warning only as the server may not support the return of response content."/>
+        <resource value="MeasureReport"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP Header Last-Modified is present. Warning only as the server may not support versioning."/>
+        <headerField value="Last-Modified"/>
+        <operator value="notEmpty"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP Header ETag is present. Warning only as the server may not support versioning."/>
+        <headerField value="ETag"/>
+        <operator value="notEmpty"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP Header Location is present. Warning only as this is optional but servers are encouraged to return this."/>
+        <headerField value="Location"/>
+        <operator value="notEmpty"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned resource type is MeasureReport."/>
+        <resource value="MeasureReport"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport conforms to the base FHIR specification."/>
+        <validateProfileId value="measurereport-profile"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport contains the expected initial population."/>
+        <operator value="equals"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='initial-population']]]]/fhir:count/@value"/>
+        <value value="1"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport contains the expected denominator."/>
+        <operator value="equals"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='denominator']]]]/fhir:count/@value"/>
+        <value value="1"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport contains the expected numerator."/>
+        <operator value="equals"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='numerator']]]]/fhir:count/@value"/>
+        <value value="0"/>
+      </assert>
+    </action>
+  </test>
+
+  <test id="Step2-Dest2EvaluateMeasure">
+    <name value="Dest2EvaluateMeasure"/>
+    <description value="Evaluate the measure, no extensions."/>
+
+    <action>
+      <operation>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="evaluate-measure"/>
+        </type>
+        <resource value="Measure"/>
+        <label value="EvaluateMeasure"/>
+        <description value="Evaluate measure with server assigned resource id."/>
+        <accept value="xml"/>
+        <contentType value="xml"/>
+        <destination value="2"/>
+        <url value="Measure/${measureID}/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 200(OK)"/>
+        <operator value="in"/>
+        <responseCode value="200"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned format is XML. Warning only as the server may not support the return of response content."/>
+        <contentType value="xml"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the return type is MeasureReport. Warning only as the server may not support the return of response content."/>
+        <resource value="MeasureReport"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP Header Last-Modified is present. Warning only as the server may not support versioning."/>
+        <headerField value="Last-Modified"/>
+        <operator value="notEmpty"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP Header ETag is present. Warning only as the server may not support versioning."/>
+        <headerField value="ETag"/>
+        <operator value="notEmpty"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP Header Location is present. Warning only as this is optional but servers are encouraged to return this."/>
+        <headerField value="Location"/>
+        <operator value="notEmpty"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned resource type is MeasureReport."/>
+        <resource value="MeasureReport"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport conforms to the base FHIR specification."/>
+        <validateProfileId value="measurereport-profile"/>
+        <warningOnly value="true"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport contains the expected initial population."/>
+        <operator value="equals"/>
+        <compareToSourceId value="dest1-measurereport"/>
+        <compareToSourcePath value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='initial-population']]]]/fhir:count/@value"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='initial-population']]]]/fhir:count/@value"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport contains the expected denominator."/>
+        <operator value="equals"/>
+        <compareToSourceId value="dest1-measurereport"/>
+        <compareToSourcePath value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='denominator']]]]/fhir:count/@value"/>
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='denominator']]]]/fhir:count/@value"/>
+      </assert>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned MeasureReport contains the expected numerator."/>
+        <operator value="equals"/>
+        <compareToSourceId value="dest1-measurereport"/>
+        <compareToSourcePath value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='numerator']]]]/fhir:count/@value" />
+        <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='numerator']]]]/fhir:count/@value"/>
+      </assert>
+    </action>
+  </test>
+</TestScript>

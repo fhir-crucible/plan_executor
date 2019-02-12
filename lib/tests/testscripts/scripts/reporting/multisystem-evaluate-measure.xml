@@ -131,12 +131,6 @@
     </action>
     <action>
       <assert>
-        <description value="Confirm that the returned resource type is MeasureReport."/>
-        <resource value="MeasureReport"/>
-      </assert>
-    </action>
-    <action>
-      <assert>
         <description value="Confirm that the returned MeasureReport conforms to the base FHIR specification."/>
         <validateProfileId value="measurereport-profile"/>
         <warningOnly value="true"/>
@@ -230,12 +224,6 @@
         <headerField value="Location"/>
         <operator value="notEmpty"/>
         <warningOnly value="true"/>
-      </assert>
-    </action>
-    <action>
-      <assert>
-        <description value="Confirm that the returned resource type is MeasureReport."/>
-        <resource value="MeasureReport"/>
       </assert>
     </action>
     <action>

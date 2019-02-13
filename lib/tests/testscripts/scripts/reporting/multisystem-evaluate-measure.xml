@@ -18,27 +18,44 @@
   <description value="Tests using XML format to execute the $evauate-measure operation. The destination server must support the $evaluate-measure operation on the Measure resource."/>
   <copyright value="N/A"/>
 
-  <fixture id="example-measure">
+  <fixture id="library-col-logic">
+    <resource>
+      <reference value="./_reference/resources/Library/library-col-logic.json"/>
+    </resource>
+  </fixture>
+  <fixture id="measure-col">
     <resource>
       <reference value="./_reference/resources/Measure/measure-col.json"/>
     </resource>
   </fixture>
+  <fixture id="fixture-create-patient">
+    <resource>
+      <reference value="./_reference/resources/Patient/test-Patient-410.json"/>
+    </resource>
+  </fixture>
 
   <variable>
-    <name value="measureID"/>
-    <defaultValue value="measure-col"/>
+    <name value="dest1CreateMeasureId"/>
+    <path value="Measure/id" />
+    <sourceId value="dest1-create-measure-response"/>
   </variable>
   <variable>
-    <name value="KnownPatientResourceId"/>
-    <defaultValue value="Patient-6516"/>
+    <name value="dest2CreateMeasureId"/>
+    <path value="Measure/id" />
+    <sourceId value="dest2-create-measure-response"/>
+  </variable>
+  <variable>
+    <name value="createPatientId"/>
+    <defaultValue value="test-Patient-410" />
+    <sourceId value="fixture-create-patient"/>
   </variable>
   <variable>
     <name value="PeriodStart"/>
-    <defaultValue value="1991-01-01"/>
+    <defaultValue value="2017"/>
   </variable>
   <variable>
     <name value="PeriodEnd"/>
-    <defaultValue value="1991-12-31"/>
+    <defaultValue value="2017"/>
   </variable>
 
   <profile id="measurereport-profile">
@@ -64,9 +81,143 @@
     </profile>
   </destination>
 
+  <setup>
+    <action>
+      <operation>
+        <destination value="1"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="create"/>
+        </type>
+        <resource value="Library"/>
+        <description value="Create a library on the first server"/>
+        <accept value="json"/>
+        <contentType value="json"/>
+        <sourceId value="library-col-logic"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 201(Created)."/>
+        <operator value="equals"/>
+        <responseCode value="201"/>
+      </assert>
+    </action>
+    <action>
+      <operation>
+        <destination value="1"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="create"/>
+        </type>
+        <resource value="Measure"/>
+        <description value="Create a measure on the first server"/>
+        <accept value="json"/>
+        <contentType value="json"/>
+        <sourceId value="measure-col"/>
+        <responseId value="dest1-create-measure-response"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 201(Created)."/>
+        <operator value="equals"/>
+        <responseCode value="201"/>
+      </assert>
+    </action>
+    <action>
+      <operation>
+        <destination value="1"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="update"/>
+        </type>
+        <resource value="Patient"/>
+        <description value="Create a patient on the first server"/>
+        <accept value="json"/>
+        <contentType value="json"/>
+        <params value="/${createPatientId}"/>
+        <sourceId value="fixture-create-patient"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+        <operator value="in"/>
+        <responseCode value="200,201"/>
+      </assert>
+    </action>
+    <action>
+      <operation>
+        <destination value="2"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="create"/>
+        </type>
+        <resource value="Library"/>
+        <description value="Create a library on the second server"/>
+        <accept value="json"/>
+        <contentType value="json"/>
+        <sourceId value="library-col-logic"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 201(Created)."/>
+        <operator value="equals"/>
+        <responseCode value="201"/>
+      </assert>
+    </action>
+    <action>
+      <operation>
+        <destination value="2"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="create"/>
+        </type>
+        <resource value="Measure"/>
+        <description value="Create a measure on the second server"/>
+        <accept value="json"/>
+        <contentType value="json"/>
+        <sourceId value="measure-col"/>
+        <responseId value="dest2-create-measure-response"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 201(Created)."/>
+        <operator value="equals"/>
+        <responseCode value="201"/>
+      </assert>
+    </action>
+    <action>
+      <operation>
+        <destination value="2"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="update"/>
+        </type>
+        <resource value="Patient"/>
+        <description value="Create a patient on the second server"/>
+        <accept value="json"/>
+        <contentType value="json"/>
+        <params value="/${createPatientId}"/>
+        <sourceId value="fixture-create-patient"/>
+      </operation>
+    </action>
+    <action>
+      <assert>
+        <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+        <operator value="in"/>
+        <responseCode value="200,201"/>
+      </assert>
+    </action>
+  </setup>
+
+
   <test id="Step1-Dest1EvaluateMeasure">
     <name value="Dest1EvaluateMeasure"/>
-    <description value="Evaluate the measure, no extensions."/>
+    <description value="Evaluate the measure on the first server."/>
 
     <action>
       <operation>
@@ -80,7 +231,7 @@
         <accept value="xml"/>
         <contentType value="xml"/>
         <destination value="1"/>
-        <url value="Measure/${measureID}/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
+        <url value="Measure/${dest1CreateMeasureId}/$evaluate-measure?patient=${createPatientId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
         <responseId value="dest1-measurereport"/>
       </operation>
     </action>
@@ -157,14 +308,14 @@
         <description value="Confirm that the returned MeasureReport contains the expected numerator."/>
         <operator value="equals"/>
         <path value="//fhir:MeasureReport/fhir:group/fhir:population[fhir:code[fhir:coding[fhir:code[@value='numerator']]]]/fhir:count/@value"/>
-        <value value="0"/>
+        <value value="1"/>
       </assert>
     </action>
   </test>
 
   <test id="Step2-Dest2EvaluateMeasure">
     <name value="Dest2EvaluateMeasure"/>
-    <description value="Evaluate the measure, no extensions."/>
+    <description value="Evaluate the measure on the second server. Compare to results from first server."/>
 
     <action>
       <operation>
@@ -178,7 +329,7 @@
         <accept value="xml"/>
         <contentType value="xml"/>
         <destination value="2"/>
-        <url value="Measure/${measureID}/$evaluate-measure?patient=${KnownPatientResourceId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
+        <url value="Measure/${dest2CreateMeasureId}/$evaluate-measure?patient=${createPatientId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/>
       </operation>
     </action>
     <action>

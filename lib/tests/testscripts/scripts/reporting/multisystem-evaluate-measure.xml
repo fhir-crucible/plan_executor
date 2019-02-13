@@ -412,4 +412,69 @@
       </assert>
     </action>
   </test>
+
+  <teardown>
+    <action>
+      <operation>
+        <destination value="1"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="delete"/>
+        </type>
+        <resource value="Patient"/>
+        <description value="Delete the patient resource on the first server"/>
+        <targetId value="${createPatientId}"/>
+      </operation>
+      <operation>
+        <destination value="2"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="delete"/>
+        </type>
+        <resource value="Patient"/>
+        <description value="Delete the patient resource on the second server"/>
+        <targetId value="${createPatientId}"/>
+      </operation>
+      <operation>
+        <destination value="1"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="delete"/>
+        </type>
+        <resource value="Measure"/>
+        <description value="Delete the measure resource on the first server"/>
+        <targetId value="${dest1CreateMeasureId}"/>
+      </operation>
+      <operation>
+        <destination value="2"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="delete"/>
+        </type>
+        <resource value="Measure"/>
+        <description value="Delete the measure resource on the second server"/>
+        <targetId value="${dest2CreateMeasureId}"/>
+      </operation>
+      <operation>
+        <destination value="1"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="delete"/>
+        </type>
+        <resource value="Library"/>
+        <description value="Delete the library on the first server"/>
+        <targetId value="library-col-logic"/>
+      </operation>
+      <operation>
+        <destination value="2"/>
+        <type>
+          <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+          <code value="delete"/>
+        </type>
+        <resource value="Library"/>
+        <description value="Delete the library on the second server"/>
+        <targetId value="library-col-logic"/>
+      </operation>
+    </action>
+  </teardown>
 </TestScript>

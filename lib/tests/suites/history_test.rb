@@ -303,10 +303,10 @@ module Crucible
         relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
 
         relevant_entries.each_cons(2) do |left, right|
-          if !left.versionId.nil? && !right.versionId.nil?
-            assert (left.versionId > right.versionId), 'Result contains entries in the wrong order.'
-          elsif !left.lastUpdated.nil? && !right.lastUpdated.nil?
+          if !left.lastUpdated.nil? && !right.lastUpdated.nil?
             assert (left.lastUpdated >= right.lastUpdated), 'Result contains entries in the wrong order.'
+          elsif !left.versionId.nil? && !right.versionId.nil?
+            assert (left.versionId > right.versionId), 'Result contains entries in the wrong order.'
           else
             raise AssertionException.new 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
           end

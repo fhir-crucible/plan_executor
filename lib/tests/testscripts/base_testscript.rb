@@ -298,6 +298,10 @@ module Crucible
           if !@setup_failed
             @current_action = action
             report_setup.action << perform_action(action) 
+            # Update the id_map if using a fixture id
+            if !action.operation.nil? && !action.operation.sourceId.nil?
+              @id_map[action.operation.sourceId] = @last_response.id
+            end
             if action_failed?(report_setup.action.last)
               @setup_failed = true
               @setup_failure_message = 'One of the setup actions failed.'
@@ -449,6 +453,8 @@ module Crucible
             @last_response = client.destroy @fixtures[operation.targetId].class, @id_map[operation.targetId]
             @id_map.delete(operation.targetId)
           end
+          result.result = ( [200,204].include?(@last_response.code) ? 'pass' : 'error' )
+          result.message << " responded with code #{@last_response.code}" if result.result == 'error'
         when '$expand', 'expand'
           result.result = 'error'
           result.message = '$expand not supported'

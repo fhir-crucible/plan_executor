@@ -268,6 +268,24 @@ namespace :crucible do
       results << Crucible::Tests::TestResult.new(test.name, test.description, status, message, nil).to_hash
       results.last[:test_method] = test.name
     end
+
+    if testreport.teardown
+      statuses = Hash.new(0)
+      message = nil
+      testreport.teardown.action.each do |action|
+        if action.operation
+          statuses[action.operation.result] += 1
+          message = action.operation.message if action.operation.result == 'error' && message.nil? && action.operation.message
+        end
+      end
+      if statuses['error'] > 0
+        status = 'error'
+      else
+        status = 'pass'
+      end
+      results << Crucible::Tests::TestResult.new('TEARDOWN', 'Teardown for TestScript', status, message, nil).to_hash
+      results.last[:test_method] = 'TEARDOWN'
+    end
     results
   end
 

@@ -64,7 +64,7 @@
                     <code value="read"/>
                 </type>
                 <resource value="Patient"/>
-                <description value="Read the known Patient resource on the destination test system using the user defined dynamic variable ${KnownPatientResourceId}."/>
+                <description value="Read the known Patient resource on the destination test system using the user defined dynamic variable ${createPatientId}."/>
                 <accept value="json"/>
                 <params value="/${createPatientId}"/>
             </operation>

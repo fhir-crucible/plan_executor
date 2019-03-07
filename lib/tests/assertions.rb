@@ -9,7 +9,7 @@ module Crucible
       end
 
       def assert_equal(expected, actual, message="", data="")
-        actual = actual.to_s
+        actual = actual.to_s if expected.is_a? String
         unless assertion_negated( expected == actual )
           message += " Expected: #{expected}, but found: #{actual}."
           raise AssertionException.new message, data
@@ -17,7 +17,7 @@ module Crucible
       end
 
       def assert_operator(operator, expected, actual, message="", data="")
-        actual = actual.to_s
+        actual = actual.to_s if expected.is_a? String
         case operator
         when :equals
           unless assertion_negated( expected == actual )

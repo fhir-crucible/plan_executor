@@ -30,10 +30,10 @@
     </fixture>
 
     <variable>
-		<name value="createMeasureId"/>
-		<path value="Measure/id" />
-		<sourceId value="create-measure-response"/>
-	</variable>
+        <name value="createMeasureId"/>
+        <path value="Measure/id"/>
+        <sourceId value="create-measure-response"/>
+    </variable>
 
     <setup>
         <action>
@@ -128,7 +128,7 @@
                 </type>
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
-                <targetId value="measure-col"/>
+                <params value="/${createMeasureId}"/>
             </operation>
         </action>
     </teardown>

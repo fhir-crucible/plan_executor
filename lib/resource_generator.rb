@@ -2,6 +2,10 @@ module Crucible
   module Tests
     class ResourceGenerator
 
+      # Allow to embed this many extra levels if min != 0.
+      # We no longer cut off generation if an element has a min requirement.
+      # This just guards an infinite loop case, if it is possible in FHIR
+      EMBEDDED_LOOP_GUARD = 10
       #
       # Generate a FHIR resource for the given class `klass`
       # If `embedded` is greater than zero, all embedded children will also
@@ -82,11 +86,11 @@ module Crucible
           elsif type == 'base64Binary'
             gen = SecureRandom.base64
           elsif "#{namespace}::RESOURCES".constantize.include?(type)
-            if embedded > 0
+            if embedded > 0 || ((meta['binding'] || meta['min'] != 0) && EMBEDDED_LOOP_GUARD + embedded > 0)
               gen = generate_child(type, namespace, embedded-1)
             end
           elsif "#{namespace}::TYPES".constantize.include?(type)
-            if embedded > 0
+            if embedded > 0 || ((type == 'Coding' || meta['binding'] || meta['min'] != 0) && EMBEDDED_LOOP_GUARD + embedded > 0)
               gen = generate_child(type, namespace, embedded-1)
               # apply bindings
               if type == 'CodeableConcept' && meta['valid_codes'] && meta['binding']
@@ -117,16 +121,16 @@ module Crucible
               end
             end
           elsif resource.class.constants.include? type.demodulize.to_sym
-            if embedded > 0
+            if embedded > 0 || ((meta['binding'] || meta['min'] != 0) && EMBEDDED_LOOP_GUARD + embedded > 0)
               # CHILD component
               gen = generate_child(type, namespace, embedded-1)
             end
           elsif ancestor_fhir_classes(resource.class, namespace).include? type.demodulize.to_sym
-            if embedded > 0
+            if embedded > 0 || ((meta['binding'] || meta['min'] != 0) && EMBEDDED_LOOP_GUARD + embedded > 0)
               gen = generate_child(type, namespace, embedded-1)
             end
           elsif ("#{namespace}::#{type}".constantize rescue nil)
-            if embedded > 0
+            if embedded > 0 || ((meta['binding'] || meta['min'] != 0) && EMBEDDED_LOOP_GUARD + embedded > 0)
               gen = generate_child(type, namespace, embedded-1)
             end
           else
@@ -1310,6 +1314,12 @@ module Crucible
           resource.when.schedule = nil
         when FHIR::DSTU2::Patient
           resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S', FHIR::DSTU2)
+          resource.communication.each do |communication|
+            communication.language.coding.each do |c|
+              c.system = 'http://tools.ietf.org/html/bcp47'
+              c.code = 'en-US'
+            end
+          end
         when FHIR::DSTU2::Procedure
           resource.reasonNotPerformed = nil if resource.notPerformed != true
           resource.focalDevice.each do |fd|

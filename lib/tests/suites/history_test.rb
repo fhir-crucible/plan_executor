@@ -300,12 +300,20 @@ module Crucible
 
       def check_sort_order(entries)
         relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
-        relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
+        relevant_entry_metas = relevant_entries.map(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
 
-        relevant_entries.each_cons(2) do |left, right|
-          if !left.versionId.nil? && !right.versionId.nil?
-            assert (left.versionId > right.versionId), 'Result contains entries in the wrong order.'
-          elsif !left.lastUpdated.nil? && !right.lastUpdated.nil?
+        id_version_map = {}
+
+        relevant_entries.each do |entry|
+
+          key =  "#{entry&.resource&.id} #{entry&.resource&.meta&.versionId}"
+
+          assert !id_version_map.has_key?(key), "Resource with ID #{entry&.resource&.id} has multiple history elements with version id #{entry&.resource&.meta&.versionId}"
+          id_version_map[key] = 1
+        end
+
+        relevant_entry_metas.each_cons(2) do |left, right|
+          if !left.lastUpdated.nil? && !right.lastUpdated.nil?
             assert (left.lastUpdated >= right.lastUpdated), 'Result contains entries in the wrong order.'
           else
             raise AssertionException.new 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'

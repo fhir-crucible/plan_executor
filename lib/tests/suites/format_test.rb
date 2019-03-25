@@ -321,7 +321,8 @@ module Crucible
 
       # Compare two requested entries
       def compare_entries(entry1, entry2)
-        compare_response(entry1) && compare_response(entry2) && entry1.resource.equals?(entry2.resource,['id']) end
+        compare_response(entry1) && compare_response(entry2) && entry1.resource.equals?(entry2.resource,['id'])
+      end
 
       # Unify resource requests and format specification
       def request_entry(resource_class, id, format, use_format_param=false)

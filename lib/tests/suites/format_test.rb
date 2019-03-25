@@ -306,8 +306,12 @@ module Crucible
       private
 
       # Compare requested resource with created resource
+      # @resource is a fixture before it has been posted to the server.
+      # entry is what was returned from a read.
+      # The server is expected to update 'id' and add 'meta.lastUpdated',
+      # and if history is supported add meta.versionId.  Ignore any changes to these.
       def compare_response(entry)
-        !entry.nil? && !entry.resource.nil? && entry.resource.equals?(@resource,['id'])
+        entry&.resource&.equals?(@resource,['id','lastUpdated','versionId']) == true
       end
 
       # Compare response format with requested format

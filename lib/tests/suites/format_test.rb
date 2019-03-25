@@ -29,8 +29,8 @@ module Crucible
       # Create a patient and store its details for format requests
       def setup
         @cached_conformance = @client.capability_statement
-        @supports_xml = @cached_conformance.format.include?('xml')
-        @supports_json = @cached_conformance.format.include?('json')
+        @supports_xml = @cached_conformance.format.any?{|f| f.downcase.include?('xml')}
+        @supports_json = @cached_conformance.format.any?{|f| f.downcase.include?('json')}
 
         @resources = Crucible::Generator::Resources.new(fhir_version)
         @resource = @resources.minimal_patient
@@ -288,7 +288,11 @@ module Crucible
         }
         @client.use_format_param = false
         reply = @client.read_feed(get_resource(:Patient),'application/foobar')
-        assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
+
+        # Per http://hl7.org/fhir/http.html#mime-type (on 3/15/19):
+        # 406 Not Acceptable is the appropriate response when the Accept header requests a format that the server does not support, 
+        # and 415 Unsupported Media Type when the client posts a format that is not supported to the server.
+        assert( (reply.code==406), "406 Not Acceptable is the appropriate response when the Accept header requests a format that the server does not support. Received #{reply.code}.")
       end
 
       test 'FT08', 'Request invalid mime-type using _format' do
@@ -300,7 +304,11 @@ module Crucible
         @client.use_format_param = true
         reply = @client.read_feed(get_resource(:Patient),'application/foobar')
         @client.use_format_param = false
-        assert( (reply.code==415), 'Request for invalid mime-type should return HTTP 415 Unsupported Media Type.')
+
+        # Per http://hl7.org/fhir/http.html#mime-type (on 3/15/19):
+        # 406 Not Acceptable is the appropriate response when the Accept header requests a format that the server does not support, 
+        # and 415 Unsupported Media Type when the client posts a format that is not supported to the server.
+        assert( (reply.code==406), "406 Not Acceptable is the appropriate response when the Accept header requests a format that the server does not support. Received #{reply.code}.")
       end
 
       private

@@ -60,8 +60,12 @@ module Crucible
 
         bundle = get_resource(:Patient).resource_instance_history(@patient.id)
 
+        # bundle.total is optional
+        total = bundle.total
+        total = bundle&.entry&.count if total.nil?
+
         assert_equal "history", bundle.type, "The bundle type is not correct"
-        assert_equal @version_count, bundle.total, "the number of returned versions is not correct"
+        assert_equal @version_count, total, "the number of returned versions is not correct"
         check_sort_order(bundle.entry)
       end
 
@@ -95,14 +99,23 @@ module Crucible
         all_history = get_resource(:Patient).resource_instance_history(@patient.id)
 
         bundle = get_resource(:Patient).resource_instance_history_as_of(@patient.id,before)
+
+        # bundle.total is optional
+        total = bundle.total
+        total = bundle&.entry&.count if total.nil?
+
         assert (!bundle.nil? && bundle.class == get_resource(:Bundle)), "Patient history should be a Bundle"
-        assert_equal @version_count, bundle.total, "the number of returned versions since the creation date is not correct"
+        assert_equal @version_count, total, "the number of returned versions since the creation date is not correct"
 
         entry_ids_are_present(bundle.entry)
         check_sort_order(bundle.entry)
 
         bundle = get_resource(:Patient).resource_instance_history_as_of(@patient.id,after)
-        assert_equal 0, bundle.total, "there should not be any history one hour after the creation date"
+
+        # bundle.total is optional
+        total = bundle.total
+        total = bundle&.entry&.count if total.nil?
+        assert_equal 0, total, "there should not be any history one hour after the creation date"
       end
 
       test "HI03", "individual history versions" do
@@ -160,7 +173,10 @@ module Crucible
         check_sort_order(bundle.entry)
 
         bundle = get_resource(:Patient).resource_history_as_of(after)
-        assert_equal 0, bundle.total, "Setting since to a future moment still returns history"
+        # bundle.total is optional
+        total = bundle.total
+        total = bundle&.entry&.count if total.nil?
+        assert_equal 0, total, "Setting since to a future moment still returns history"
 
       end
 
@@ -191,8 +207,11 @@ module Crucible
         end
 
         result = @client.resource_history_as_of(get_resource(:Patient),after)
+        # bundle.total is optional
+        total = result&.resource&.total
+        total = result&.resource&.entry&.count if total.nil?
         assert_response_ok result
-        assert_equal 0, result.resource.total, "Setting since to a future moment still returns history"
+        assert_equal 0, total, "Setting since to a future moment still returns history"
       end
 
 

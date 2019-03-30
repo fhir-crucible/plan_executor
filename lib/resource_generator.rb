@@ -118,8 +118,6 @@ module Crucible
                 gen.data = nil
               elsif type == 'Narrative'
                 gen.status = 'generated'
-              elsif type == 'Quantity'
-                gen.comparator = nil # Some Quantities are SimpleQuantities without comparators....
               end
             end
           elsif resource.class.constants.include? type.demodulize.to_sym
@@ -1308,7 +1306,7 @@ module Crucible
           if resource.product.try(:ingredient)
             resource.product.ingredient.each {|i|i.amount = nil}
           end
-          resource&.package&.content&.each {|i|i.amount.quantity = nil unless i.amount.nil?}
+          resource&.package&.content&.each {|i|i.amount.comparator = nil unless i.amount.nil?}
         when FHIR::DSTU2::MedicationAdministration
           date = DateTime.now
           resource.effectiveTimeDateTime = date.strftime("%Y-%m-%dT%T.%LZ")

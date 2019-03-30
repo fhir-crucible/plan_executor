@@ -143,7 +143,7 @@ module Crucible
 
         result = TestResult.new('X013',"Conditional Create #{resource_class.name.demodulize} (One Match)", nil, nil, nil)
         # this ID should already exist if temp resource was created
-        if !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
         elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
@@ -192,7 +192,7 @@ module Crucible
         }
 
         result = TestResult.new('X020',"Read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
-        if !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
         elsif !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
@@ -232,7 +232,7 @@ module Crucible
         if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        elsif !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end
@@ -319,7 +319,7 @@ module Crucible
         if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        elsif !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end
@@ -422,7 +422,7 @@ module Crucible
 
         result = TestResult.new('X050',"Version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@history_bundle.nil? && @history_bundle.total && @history_bundle.total>0 && @history_bundle.entry && !@history_bundle.entry[0].nil? && !@history_bundle.entry[0].resource.nil?
+        if !@history_bundle&.entry&.first&.resource.nil?
           @preexisting = @history_bundle.entry[0].resource
           @preexisting_id = @preexisting.id
           @preexisting_version = nil
@@ -460,7 +460,7 @@ module Crucible
 
         result = TestResult.new('X055',"Previous version read existing #{resource_class.name.demodulize} by ID", nil, nil, nil)
 
-        if !@history_bundle.nil? && @history_bundle.total && @history_bundle.total>0 && @history_bundle.entry && !@history_bundle.entry[0].nil? && !@history_bundle.entry[0].resource.nil?
+        if !@history_bundle&.entry&.first&.resource.nil?
           @preexisting = @history_bundle.entry[0].resource
           @preexisting_id = @preexisting.id
           @preexisting_version = nil
@@ -530,7 +530,7 @@ module Crucible
 
         result = TestResult.new('X065',"Validate existing #{resource_class.name.demodulize}", nil, nil, nil)
 
-        if !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if !@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         elsif !@temp_resource.nil? && !@temp_resource.id.nil?
@@ -667,7 +667,7 @@ module Crucible
         if !@temp_resource.nil? && !@temp_resource.id.nil?
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
-        elsif @preexisting_id.nil? &&!@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        elsif @preexisting_id.nil? &&!@bundle.nil? && @bundle.is_a?(get_resource(:Bundle)) && !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end
@@ -725,7 +725,7 @@ module Crucible
           @preexisting_id = @temp_resource.id
           @preexisting = @temp_resource
         end
-        if @preexisting_id.nil? &&!@bundle.nil? && @bundle.total && @bundle.total>0 && @bundle.entry && !@bundle.entry[0].nil? && !@bundle.entry[0].resource.nil?
+        if @preexisting_id.nil? && !@bundle&.entry&.first&.resource.nil?
           @preexisting_id = @bundle.entry[0].resource.id
           @preexisting = @bundle.entry[0].resource
         end

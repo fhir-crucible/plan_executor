@@ -1308,9 +1308,7 @@ module Crucible
           if resource.product.try(:ingredient)
             resource.product.ingredient.each {|i|i.amount = nil}
           end
-          if resource.product.try(:package)
-            resource.package.content.each {|i|i.amount.quanity = nil unless i.amount.nil?}
-          end
+          resource&.package&.content&.each {|i|i.amount.quantity = nil unless i.amount.nil?}
         when FHIR::DSTU2::MedicationAdministration
           date = DateTime.now
           resource.effectiveTimeDateTime = date.strftime("%Y-%m-%dT%T.%LZ")

@@ -46,4 +46,11 @@ class ResourceGeneratorTest < Test::Unit::TestCase
     return resource.instance_values.values.all? { |v| check_valid_namespaces(v, namespace) }
   end
 
+  def test_valid_oid_generator
+    500.times do
+      random_oid = Crucible::Tests::ResourceGenerator.random_oid
+      assert /urn:oid:[0-2](\.[1-9]\d*)+/.match?(random_oid), "Randomly generated #{random_oid} does not appear to be a valid oid."
+    end
+  end
+
 end

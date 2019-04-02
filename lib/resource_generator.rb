@@ -156,9 +156,10 @@ module Crucible
       end
 
       def self.random_oid
+        #	Regex: urn:oid:[0-2](\.[1-9]\d*)+ (http://hl7.org/fhir/STU3/datatypes.html#oid)
         oid = "urn:oid:2"
-        SecureRandom.random_number(12).times do |i|
-          oid = "#{oid}.#{SecureRandom.random_number(500)}"
+        rand(1..12).times do
+          oid = "#{oid}.#{rand(1..500)}"
         end
         oid
       end

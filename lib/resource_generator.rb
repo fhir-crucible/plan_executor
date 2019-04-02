@@ -531,6 +531,19 @@ module Crucible
           end
         when FHIR::DocumentReference
           resource.docStatus = 'preliminary'
+        when FHIR::Dosage
+          if !resource.doseRange.nil?
+            resource.doseRange.low.comparator = nil unless resource.doseRange.low.nil?
+            resource.doseRange.high.comparator = nil unless resource.doseRange.high.nil?
+          end
+          resource.doseQuantity.comparator = nil unless resource.doseQuantity.nil?
+          resource.maxDosePerAdministration.comparator = nil unless resource.maxDosePerAdministration.nil?
+          resource.maxDosePerLifetime.comparator = nil unless resource.maxDosePerLifetime.nil?
+          if !resource.rateRange.nil?
+            resource.rateRange.low.comparator = nil unless resource.rateRange.low.nil?
+            resource.rateRange.high.comparator = nil unless resource.rateRange.high.nil?
+          end
+          resource.rateQuantity.comparator = nil unless resource.rateQuantity.nil?
         when FHIR::ElementDefinition
           keys = []
           resource.constraint.each do |constraint|
@@ -767,6 +780,12 @@ module Crucible
           resource.referenceRange.each do |range|
             range.low.comparator = nil unless range.low.nil?
             range.high.comparator = nil unless range.high.nil?
+          end
+          resource.component.each do |component|
+            if !component.valueRange.nil?
+              component.valueRange.low.comparator = nil unless component.valueRange.low.nil?
+              component.valueRange.high.comparator = nil unless component.valueRange.high.nil?
+            end
           end
 
         when FHIR::OperationDefinition
@@ -1361,6 +1380,12 @@ module Crucible
           resource.referenceRange.each do |referenceRange|
             referenceRange.low.comparator = nil unless referenceRange.low.nil?
             referenceRange.high.comparator = nil unless referenceRange.high.nil?
+          end
+          resource.component.each do |component|
+            if !component.valueRange.nil?
+              component.valueRange.low.comparator = nil unless component.valueRange.low.nil?
+              component.valueRange.high.comparator = nil unless component.valueRange.high.nil?
+            end
           end
         when FHIR::DSTU2::OperationDefinition
           resource.parameter.each do |p|

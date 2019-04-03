@@ -787,6 +787,10 @@ module Crucible
               component.valueRange.low.comparator = nil unless component.valueRange.low.nil?
               component.valueRange.high.comparator = nil unless component.valueRange.high.nil?
             end
+            component.referenceRange.each do |range|
+              range.low.comparator = nil unless range.low.nil?
+              range.high.comparator = nil unless range.high.nil?
+            end
           end
 
         when FHIR::OperationDefinition

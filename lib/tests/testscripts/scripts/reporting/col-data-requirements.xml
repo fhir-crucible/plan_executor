@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestScript xmlns="http://hl7.org/fhir">
-    <id value="data-requirements"/>
+    <id value="col-data-requirements"/>
 
     <url value="http://example.com"/>
     <name value="Data requirements test for colon cancer measure"/>

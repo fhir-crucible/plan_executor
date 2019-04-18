@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir">
+    <id value="col-collect-data"/>
+
+    <url value="http://example.com"/>
+    <name value="Collect data operation test for colon cancer measure"/>
+    <status value="draft"/>
+    <date value="2019-04-17"/>
+    <publisher value="MITRE"/>
+    <contact>
+        <name value="Matthew Gramigna"/>
+        <telecom>
+            <system value="email"/>
+            <value value="mgramigna@mitre.org"/>
+            <use value="work"/>
+        </telecom>
+    </contact>
+    <description value="Tests the $collect-data operation for Colon Cancer Measure"/>
+    <copyright value="N/A"/>
+
+    <fixture id="library-col-logic">
+        <resource>
+            <reference value="./_reference/resources/Library/library-col-logic.json"/>
+        </resource>
+    </fixture>
+    <fixture id="measure-col">
+        <resource>
+            <reference value="./_reference/resources/Measure/measure-col.json"/>
+        </resource>
+    </fixture>
+    <fixture id="test-Patient-410">
+        <resource>
+            <reference value="./_reference/resources/Patient/test-Patient-410.json"/>
+        </resource>
+    </fixture>
+
+    <variable>
+        <name value="createMeasureId"/>
+        <path value="Measure/id"/>
+        <sourceId value="create-measure-response"/>
+    </variable>
+    <variable>
+        <name value="periodStart"/>
+        <defaultValue value="2017"/>
+    </variable>
+    <variable>
+        <name value="periodEnd"/>
+        <defaultValue value="2017"/>
+    </variable>
+
+    <setup>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-col-logic"/>
+                <sourceId value="library-col-logic"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="create"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Create a measure on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <sourceId value="measure-col"/>
+                <responseId value="create-measure-response"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 201(Created)."/>
+                <response value="created"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Create a patient that falls into the IPOP"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/test-Patient-410"/>
+                <sourceId value="test-Patient-410"/>
+            </operation>
+        </action>
+    </setup>
+
+    <test id="TestCollectData">
+        <name value="Test Collect Data"/>
+        <description value="Tests the $collect-data operation for the colon cancer measure"/>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="collect-data"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Collect data for the measure"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <url value="Measure/${createMeasureId}/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <responseId value="collect-data-result"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK)."/>
+                <response value="okay"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the response is a Parameters resource"/>
+                <resource value="Parameters"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned data contains a MeasureReport"/>
+                <operator value="notEmpty"/>
+                <path value="$.parameter[?(@.resource.resourceType == 'MeasureReport')]"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned data contains the Patient"/>
+                <operator value="notEmpty"/>
+                <path value="$.parameter[?(@.resource.id == 'test-Patient-410')]"/>
+            </assert>
+        </action>
+    </test>
+
+    <teardown>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Delete the measure"/>
+                <params value="/${createMeasureId}"/>
+            </operation>
+        </action>
+    </teardown>
+</TestScript>

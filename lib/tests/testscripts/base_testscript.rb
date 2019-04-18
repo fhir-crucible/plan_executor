@@ -439,6 +439,15 @@ module Crucible
             @last_response.resource = FHIR.from_contents(@last_response.body)
             @last_response.resource_class = @last_response.resource.class
           end
+        when 'collect-data', '$collect-data'
+          if operation.url.nil?
+            resource_id = replace_variables(operation.params)
+            @last_response = client.get "Measure/#{resource_id}/$collect-data", format
+          else
+            @last_response = client.get replace_variables(operation.url), client.fhir_headers({ format: format })
+            @last_response.resource = FHIR.from_contents(@last_response.body)
+            @last_response.resource_class = @last_response.resource.class
+          end
         when 'transaction'
           result.result = 'error'
           result.message = 'transaction not implemented'

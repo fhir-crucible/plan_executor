@@ -1,7 +1,7 @@
 {
   "resourceType" : "Parameters",
   "parameter" : [ {
-    "name" : "measureReport",
+    "name" : "measure-report",
     "resource" : {
       "resourceType" : "MeasureReport",
       "status" : "complete",
@@ -10,7 +10,7 @@
         "reference" : "Measure/measure-mrp"
       },
       "patient" : {
-        "reference" : "Patient/Practitioner-2178"
+        "reference" : "Patient/Patient-2178"
       },
       "period" : {
         "start" : "2017-01-01T00:00:00+00:00",

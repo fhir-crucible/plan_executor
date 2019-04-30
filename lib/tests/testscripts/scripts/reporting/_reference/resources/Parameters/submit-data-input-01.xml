@@ -2,7 +2,7 @@
 
 <Parameters xmlns="http://hl7.org/fhir">  
     <parameter> 
-        <name value="measureReport"/>  
+        <name value="measure-report"/>  
         <resource> 
             <MeasureReport> 
                 <status value="complete"/>  
@@ -11,7 +11,7 @@
                     <reference value="Measure/measure-mrp"/> 
                 </measure>  
                 <patient> 
-                    <reference value="Patient/Practitioner-2178"/> 
+                    <reference value="Patient/Patient-2178"/> 
                 </patient>  
                 <period> 
                     <start value="2017-01-01T00:00:00+00:00"/>  

@@ -19,7 +19,7 @@
     <copyright value="(c) AEGIS.net, Inc. 2018"/>  
     <fixture id="submit-data-input-01"> 
         <resource> 
-            <reference value="./_reference/input/submit-data-input-01.xml"/> 
+            <reference value="../_reference/resources/Parameters/submit-data-input-01.xml"/>
         </resource> 
     </fixture>  
     <variable> 
@@ -42,7 +42,7 @@
                 <accept value="xml"/>  
                 <contentType value="xml"/>  
                 <encodeRequestUrl value="true"/>  
-                <params value="/${MeasureId}/$submit-data"/>  
+                <params value="${MeasureId}"/>  
                 <sourceId value="submit-data-input-01"/> 
             </operation> 
         </action>  

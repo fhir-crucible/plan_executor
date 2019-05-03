@@ -22,6 +22,7 @@
     </profile>  
     <variable> 
         <name value="MeasureId"/>  
+        <defaultValue value="measure-mrp"/>
         <description value="Enter a resource id for a valid Measure on the destination system."/>  
         <hint value="[Valid Measure Id]"/> 
     </variable>  
@@ -51,7 +52,7 @@
                 <accept value="json"/>  
                 <contentType value="none"/>  
                 <encodeRequestUrl value="true"/>  
-                <params value="/${MeasureId}/$data-requirements?periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/> 
+                <url value="/Measure/${MeasureId}/$data-requirements?periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}"/> 
             </operation> 
         </action>  
         <action> 
@@ -88,7 +89,7 @@
                 <direction value="response"/>  
                 <operator value="equals"/>  
                 <path value=".type.coding[0].code"/>  
-                <value value="model-definition"/> 
+                <value value="module-definition"/> 
             </assert> 
         </action> 
     </test> 

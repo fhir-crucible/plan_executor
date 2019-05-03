@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TestScript xmlns="http://hl7.org/fhir">
+    <id value="vte-submit-data"/>
+    <url value="http://example.com"/>
+    <name value="Submit Data VTE-1"/>
+    <status value="draft"/>
+    <date value="2019-04-12"/>
+    <publisher value="MITRE"/>
+    <contact>
+        <name value="Matthew Gramigna"/>
+        <telecom>
+            <system value="email"/>
+            <value value="mgramigna@mitre.org"/>
+            <use value="work"/>
+        </telecom>
+    </contact>
+    <description value=""/>
+    <fixture id="vte-submit-data-input">
+        <resource>
+            <reference value="../_reference/Parameters/vte-submit-data-input.json"/>
+        </resource>
+    </fixture>
+    <variable>
+        <name value="MeasureId"/>
+        <defaultValue value="measure-vte-1-FHIR"/>
+        <description value="Enter a resource id for a valid Measure on the destination system."/>
+        <hint value="[Valid Measure Id]"/>
+    </variable>
+    <test id="01-Measure-Submit-Data">
+        <name value="01-Measure-Submit-Data"/>
+        <description value="Submit the required data for a known Measure using HTTP POST. Expected response is 200 (OK)."/>
+        <action>
+            <operation>
+                <type>
+                    <code value="submit-data"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Measure $submit-data operation for a known Measure."/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <encodeRequestUrl value="true"/>
+                <url value="Measure/${MeasureId}/$submit-data"/>
+                <sourceId value="submit-data-input-01"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK)."/>
+                <direction value="response"/>
+                <response value="okay"/>
+            </assert>
+        </action>
+    </test>
+</TestScript>

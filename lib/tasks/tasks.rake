@@ -113,7 +113,8 @@ namespace :crucible do
   end
 
   def resolve_fhir_version(version_string)
-    fhir_version = :stu3
+    fhir_version = :r4
+    fhir_version = :stu3 if version_string.downcase == 'stu3'
     fhir_version = :dstu2 if version_string.downcase == 'dstu2'
     fhir_version
   end

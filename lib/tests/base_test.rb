@@ -42,7 +42,7 @@ module Crucible
         @client.monitor_requests if @client
         @client2.monitor_requests if @client2
         @tags ||= []
-        @supported_versions ||= [:dstu2, :stu3]
+        @supported_versions ||= [:dstu2, :stu3, :r4]
         @warnings = []
         @setup_failed = false
         @setup_requests = []

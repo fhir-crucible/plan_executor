@@ -3,6 +3,11 @@ require_relative '../test_helper'
 class FHIRStructureTest < Test::Unit::TestCase
 
   def test_fhir_starburst_root
+    structure = Crucible::FHIRStructure.get(:r4)
+    structure['name'] == 'FHIR'
+  end
+
+  def test_fhir_starburst_stu3
     structure = Crucible::FHIRStructure.get(:stu3)
     structure['name'] == 'FHIR'
   end
@@ -56,7 +61,7 @@ class FHIRStructureTest < Test::Unit::TestCase
 
     names = []
 
-    [:dstu2, :stu3].each do |version|
+    [:dstu2, :stu3, :r4].each do |version|
       structure = Crucible::FHIRStructure.get(version)
       names.concat(all_names(structure).map{|e| e.downcase.delete(' ')})
     end

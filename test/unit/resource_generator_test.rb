@@ -8,14 +8,14 @@ class ResourceGeneratorTest < Test::Unit::TestCase
   FileUtils.mkdir_p ERROR_DIR
 
   # Define test methods for each resource type
-  # FHIR::RESOURCES.each do | resource_type |    
-  #   3.times do |index|
-  #     max_depth = index + 2
-  #     define_method("test_resource_generator_r4_#{resource_type}_#{max_depth}") do
-  #       run_generator(resource_type, :r4, max_depth )
-  #     end
-  #   end
-  # end
+  FHIR::RESOURCES.each do | resource_type |    
+    3.times do |index|
+      max_depth = index + 2
+      define_method("test_resource_generator_r4_#{resource_type}_#{max_depth}") do
+        run_generator(resource_type, :r4, max_depth )
+      end
+    end
+  end
 
   # Also check to make sure that everything in the resource is within the STU3 namespace
   FHIR::STU3::RESOURCES.each do | resource_type |    

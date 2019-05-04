@@ -69,6 +69,12 @@ module Crucible
             gen = "<div>#{SecureRandom.base64}</div>"
           elsif type == 'uri'
             gen = "http://projectcrucible.org/#{SecureRandom.base64}"
+          elsif type == 'uuid'
+            gen = SecureRandom.uuid
+          elsif type == 'url'
+            gen = "http://projectcrucible.org/#{SecureRandom.base64}"
+          elsif type == 'canonical'
+            gen = "http://projectcrucible.org/#{SecureRandom.base64}|1.0"
           elsif type == 'dateTime' || type == 'instant'
             gen = DateTime.now.strftime("%Y-%m-%dT%T.%LZ")
           elsif type == 'date'
@@ -283,6 +289,651 @@ module Crucible
 
       def self.apply_invariants!(resource)
         case resource
+        when FHIR::ActivityDefinition
+          resource.quantity.comparator = nil unless resource.quantity.nil?
+        when FHIR::Age 
+          resource.system = 'http://unitsofmeasure.org'
+          resource.code = 'a'
+          resource.value = (SecureRandom.random_number(100) + 1)
+          resource.unit = nil
+          resource.comparator = nil
+        when FHIR::AllergyIntolerance
+          resource.clinicalStatus = nil if resource.verificationStatus=='entered-in-error'
+        when FHIR::Binary
+          resource. contentType = MIME::Types.to_a.sample.content_type
+        when FHIR::Duration 
+          resource.system = 'http://unitsofmeasure.org'
+          resource.code = 'mo'
+          resource.unit = nil
+          resource.comparator = nil
+        when FHIR::Appointment
+          resource.reasonCode = [ minimal_codeableconcept('http://snomed.info/sct','219006') ] # drinker of alcohol
+          resource.participant.each{|p| p.type=[ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ] }
+        when FHIR::AppointmentResponse
+          resource.participantType = [ minimal_codeableconcept('http://hl7.org/fhir/participant-type','emergency') ]
+        when FHIR::AuditEvent
+          resource.entity.each do |o|
+            o.query=nil
+            o.name = "name #{SecureRandom.base64}" if o.name.nil?
+          end
+        when FHIR::Bundle
+          resource.type = ['document','message','collection'].sample
+          resource.total = nil if !['searchset','history'].include?(resource.type)
+          resource.entry.each {|e|e.search=nil} if resource.type!='searchset'
+          resource.entry.each {|e|e.request=nil} if !['batch','transaction','history'].include?(resource.type)
+          resource.entry.each {|e|e.response=nil} if !['batch-response','transaction-response'].include?(resource.type)
+          head = resource.entry.first
+          if !head.nil?
+            if resource.type == 'document'
+              head.resource = generate(FHIR::Composition,3)
+            elsif resource.type == 'message'
+              head.resource = generate(FHIR::MessageHeader,3)  
+            else
+              head.resource = generate(FHIR::Basic,3)                              
+            end
+            rid = SecureRandom.random_number(100) + 1
+            head.fullUrl = "http://projectcrucible.org/fhir/#{head.resource.resourceType}/#{rid}"
+            head.resource.id = "#{rid}"
+          end
+        when FHIR::CarePlan
+          resource.activity.each do |a|
+            unless a.detail.nil?
+              a.reference = nil
+              a.detail.dailyAmount.comparator = nil unless a.detail.dailyAmount.nil?
+              a.detail.quantity.comparator = nil unless a.detail.quantity.nil?
+            end
+          end
+        when FHIR::CareTeam
+          resource.participant.each do |p|
+            p.onBehalfOf = nil
+          end
+        when FHIR::CodeSystem
+          resource.concept.each do |c|
+            c.concept.each do |d|
+              d.property = []
+              # d.property.each do |p|
+              #   p.valueCode = nil
+              #   p.valueCoding = nil
+              #   p.valueString = SecureRandom.base64
+              #   p.valueInteger = nil
+              #   p.valueBoolean = nil
+              #   p.valueDateTime = nil
+              # end
+            end
+          end
+        when FHIR::Claim
+          resource.item.each do |item|
+            # item.category = minimal_codeableconcept('http://hl7.org/fhir/benefit-subcategory','35')
+            # item.quantity.comparator = nil unless item.quantity.nil?
+            # item.detail.each do |detail|
+            #   detail.category = item.category
+            #   detail.quantity.comparator = nil unless detail.quantity.nil?
+            #   detail.subDetail.each do |sub|
+            #     sub.category = item.category
+            #     sub.quantity.comparator = nil unless sub.quantity.nil?
+            #     sub.service = minimal_codeableconcept('http://hl7.org/fhir/ex-USCLS','1205')
+            #   end
+            # end
+          end
+        when FHIR::ClaimResponse
+          resource.item.each do |item|
+            item.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
+            item.detail.each do |detail|
+              detail.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
+              detail.subDetail.each do |sub|
+                sub.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
+              end
+            end
+          end
+          resource.addItem.each do |addItem|
+            addItem.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
+            addItem.detail.each do |detail|
+              detail.adjudication.each{|a|a.category = minimal_codeableconcept('http://hl7.org/fhir/adjudication','benefit')}
+            end
+          end
+        when FHIR::Communication
+          resource.payload = nil
+        when FHIR::CommunicationRequest
+          resource.payload = nil
+        when FHIR::Composition
+          resource.attester.each {|a| a.mode = ['professional']}
+          resource.section.each do |section|
+            section.emptyReason = nil
+            section.section.each do |sub|
+              sub.emptyReason = nil
+              sub.section = nil
+            end
+          end
+        when FHIR::ConceptMap
+          # if(resource.sourceUri.nil? && resource.sourceReference.nil?)
+          #   resource.sourceReference = textonly_reference('ValueSet') 
+          # end
+          # if(resource.targetUri.nil? && resource.targetReference.nil?)
+          #   resource.targetReference = textonly_reference('ValueSet') 
+          # end
+        when FHIR::Condition
+          if resource.onsetAge
+            resource.onsetAge.system = 'http://unitsofmeasure.org'
+            resource.onsetAge.code = 'a'
+            resource.onsetAge.unit = 'yr'
+            resource.onsetAge.comparator = nil
+          end
+          # resource.clinicalStatus = ['inactive', 'resolved','remission'].sample unless resource.abatement.nil?
+          if resource.abatementAge
+            resource.abatementAge.system = 'http://unitsofmeasure.org'
+            resource.abatementAge.code = 'a'
+            resource.abatementAge.unit = 'yr'
+            resource.abatementAge.comparator = nil
+          end
+          # Make sure the onsetAge is before the abatementAge. If it's not (and both exist), flip them around
+          if resource.onsetAge && resource.abatementAge
+            if resource.onsetAge.value > resource.abatementAge.value
+              # This is the "Ruby Way" to swap two variables without using a temporary third variable
+              resource.onsetAge, resource.abatementAge = resource.abatementAge, resource.onsetAge
+            end
+          end
+        when FHIR::CapabilityStatement
+          resource.fhirVersion = '4.0.0'
+          resource.format = ['xml','json']
+          resource.patchFormat = []
+          resource.kind = 'instance'
+          resource.rest.each do |r|
+            r.resource.each do |res|
+              res.interaction.each{|i|i.code = ['read', 'vread', 'update', 'delete', 'history-instance', 'history-type', 'create', 'search-type'].sample}
+            end
+            r.interaction.each{|i|i.code = ['transaction', 'batch', 'search-system', 'history-system'].sample }
+          end
+          resource.messaging.each do |m|
+          end
+        when FHIR::DeviceDefinition
+          resource.languageCode.each do |lc|
+            lc.coding.each do |c|
+              c.system = 'http://tools.ietf.org/html/bcp47'
+              c.code = 'en-US'
+            end
+          end
+        when FHIR::DeviceMetric
+          resource.measurementPeriod = nil
+        when FHIR::DiagnosticReport
+          date = DateTime.now
+          resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
+          resource.effectivePeriod = nil
+        when FHIR::DocumentReference
+          resource.docStatus = 'preliminary'
+        when FHIR::Dosage
+          resource.doseAndRate.each do |dose|
+            if !dose.doseRange.nil?
+              dose.doseRange.low.comparator = nil unless dose.doseRange.low.nil?
+              dose.doseRange.high.comparator = nil unless dose.doseRange.high.nil?
+            end
+            dose.doseQuantity.comparator = nil unless dose.doseQuantity.nil?
+            if !dose.rateRange.nil?
+              dose.rateRange.low.comparator = nil unless dose.rateRange.low.nil?
+              dose.rateRange.high.comparator = nil unless dose.rateRange.high.nil?
+            end
+            dose.rateQuantity.comparator = nil unless dose.rateQuantity.nil?
+          end
+          resource.maxDosePerAdministration.comparator = nil unless resource.maxDosePerAdministration.nil?
+          resource.maxDosePerLifetime.comparator = nil unless resource.maxDosePerLifetime.nil?
+        when FHIR::ElementDefinition
+          keys = []
+          resource.constraint.each do |constraint|
+            constraint.key = SecureRandom.base64 if constraint.key.nil?
+            constraint.key.gsub!(/[^0-9A-Za-z]/, '')
+            keys << constraint.key
+            constraint.xpath = "/"
+          end
+          resource.condition = keys
+          resource.mapping.each do |m|
+            m.identity = SecureRandom.base64 if m.identity.nil?
+            m.identity.gsub!(/[^0-9A-Za-z]/, '')
+          end
+          resource.max = "#{resource.min+1}"
+          # TODO remove bindings for things that can't be code, Coding, CodeableConcept
+          is_codeable = false
+          resource.type.each do |f|
+            is_codeable = (['code','Coding','CodeableConcept'].include?(f.code))
+            f.aggregation = []
+          end
+          resource.binding = nil unless is_codeable
+          resource.contentReference = nil
+          FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+            resource.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@fixed#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@pattern#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+            resource.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+          end
+        when FHIR::Endpoint
+          resource.payloadMimeType = [MIME::Types.to_a.sample.content_type]
+        when FHIR::ExplanationOfBenefit
+          resource.item.each do |item|
+            item.detail = []
+            item.quantity.comparator = nil unless item.quantity.nil?
+          end
+          resource.addItem.each do |item|
+            item.detail = []
+          end
+        when FHIR::FamilyMemberHistory
+          if resource.ageAge
+            resource.ageAge.system = 'http://unitsofmeasure.org'
+            resource.ageAge.code = 'a'
+            resource.ageAge.unit = nil
+            resource.ageAge.comparator = nil
+          end
+          if SecureRandom.random_number(2)==0
+            resource.bornPeriod = nil
+            resource.bornDate = nil
+            resource.bornString = nil
+          else
+            resource.ageAge = nil
+            resource.ageRange = nil
+            resource.ageString = nil
+          end
+          if resource.age.nil?
+            resource.estimatedAge = nil
+          end
+          if resource.deceasedAge
+            resource.deceasedAge.system = 'http://unitsofmeasure.org'
+            resource.deceasedAge.code = 'a'
+            resource.deceasedAge.unit = nil
+            resource.deceasedAge.comparator = nil
+          end
+        when FHIR::Goal
+          resource.outcomeCode.each do |code|
+            code = nil
+          end
+          resource.outcomeReference.each do |reference|
+            reference = textonly_reference('Observation')
+          end
+          resource.target.each do |target|
+            unless target.dueDuration.nil?
+              target.dueDuration.system = 'http://unitsofmeasure.org'
+              target.dueDuration.code = 'a'
+              target.dueDuration.unit = nil
+              target.dueDuration.comparator = nil
+            end
+          end
+        when FHIR::Group
+          resource.member = [] if resource.actual==false
+          resource.characteristic = []
+        when FHIR::ImagingStudy
+          availability = ['ONLINE', 'OFFLINE', 'NEARLINE', 'UNAVAILABLE']
+          resource.series.each do |series|
+            series.uid=random_oid
+            series.instance.each do |instance|
+              instance.uid = random_oid
+              instance.sopClass = minimal_coding('urn:ietf:rfc:3986', random_oid)
+            end
+          end
+        when FHIR::Immunization
+          resource.doseQuantity.comparator = nil unless resource.doseQuantity.nil?
+          resource.status = ['completed','entered-in-error'].sample
+        when FHIR::ImplementationGuide
+          resource.fhirVersion = "4.0.0"
+        when FHIR::Linkage
+          if resource.item.length == 1
+            resource.item << resource.item.first # must have 2
+          end
+        when FHIR::List
+          resource.emptyReason = nil
+          resource.entry.each do |entry|
+            resource.mode = 'changes' if !entry.deleted.nil?
+          end
+        when FHIR::Media
+          if resource.type == 'video'
+            resource.frames = nil
+          elsif resource.type == 'photo'
+            resource.duration = nil
+          elsif resource.type == 'audio'
+            resource.height = nil
+            resource.width = nil
+            resource.frames = nil            
+          else
+            resource.height = nil
+            resource.width = nil
+            resource.frames = nil
+          end
+        when FHIR::Medication
+          resource.amount = nil
+          resource.ingredient.each do |i|
+            i.strength = nil
+          end
+        when FHIR::MedicationAdministration
+          date = DateTime.now
+          resource.effectiveDateTime = date.strftime("%Y-%m-%dT%T.%LZ")
+          resource.effectivePeriod = nil
+          resource.medicationReference = textonly_reference('Medication')
+          resource.medicationCodeableConcept = nil
+          unless resource.dosage.nil?
+            resource.dosage.dose.comparator = nil unless resource.dosage.dose.nil?
+            resource.dosage.rateQuantity = nil
+          end
+        when FHIR::MedicationDispense
+          resource.medicationReference = textonly_reference('Medication')
+          resource.medicationCodeableConcept = nil
+          resource.dosageInstruction.each {|d|d.timing = nil }
+          resource.quantity.comparator = nil unless resource.quantity.nil?
+          resource.daysSupply.comparator = nil unless resource.daysSupply.nil?
+        when FHIR::MedicationRequest
+          resource.medicationReference = textonly_reference('Medication')
+          resource.medicationCodeableConcept = nil
+          resource.dosageInstruction.each {|d|d.timing = nil }
+          resource.dispenseRequest.quantity.comparator = nil if resource&.dispenseRequest&.quantity != nil
+        when FHIR::MedicationStatement
+          resource.medicationReference = textonly_reference('Medication')
+          resource.medicationCodeableConcept = nil
+          resource.dosage.each{|d|d.timing=nil}
+        when FHIR::MessageDefinition
+          resource.focus.each do |f|
+            f.max = '*' unless f.max.nil?
+          end
+        when FHIR::MessageHeader
+          resource.response.identifier.gsub!(/[^0-9A-Za-z]/, '') if resource.try(:response).try(:identifier)
+        when FHIR::NamingSystem
+          if resource.kind == 'root'
+            resource.uniqueId.each do |uid|
+              uid.type='uuid'
+              uid.value = SecureRandom.uuid
+            end
+          end
+          resource.uniqueId.each do |uid|
+            uid.preferred = nil
+          end
+        when FHIR::NutritionOrder
+          if resource.oralDiet
+            resource.oralDiet.schedule = nil 
+            resource.oralDiet.nutrient.each { |n| n.amount.comparator = nil unless n.amount.nil? }
+          end
+          resource.supplement.each{|s|s.schedule=nil}
+          resource.supplement.each{|s|s.quantity=nil}
+          unless resource.enteralFormula.nil?
+            resource.enteralFormula.administration = nil 
+            resource.enteralFormula.caloricDensity.comparator = nil unless resource.enteralFormula.caloricDensity.nil?
+            resource.enteralFormula.maxVolumeToDeliver.comparator = nil unless resource.enteralFormula.maxVolumeToDeliver.nil?
+            resource.enteralFormula.administration.each do |a|
+              a.rateQuantity = nil
+            end unless resource.enteralFormula.administration.nil?
+          end
+          resource.supplement.each { |s| s.quantity.comparator = nil unless s.quantity.nil? }
+        when FHIR::Observation
+          resource.referenceRange.each do |range|
+            range.low.comparator = nil unless range.low.nil?
+            range.high.comparator = nil unless range.high.nil?
+          end
+          resource.component.each do |component|
+            if !component.valueRange.nil?
+              component.valueRange.low.comparator = nil unless component.valueRange.low.nil?
+              component.valueRange.high.comparator = nil unless component.valueRange.high.nil?
+            end
+            component.referenceRange.each do |range|
+              range.low.comparator = nil unless range.low.nil?
+              range.high.comparator = nil unless range.high.nil?
+            end
+          end
+
+        when FHIR::OperationDefinition
+          resource.parameter.each do |p|
+            p.binding = nil
+            p.part = nil
+            p.searchType = nil unless p.type == 'string'
+          end
+        when FHIR::Patient
+          resource.maritalStatus = minimal_codeableconcept('http://hl7.org/fhir/v3/MaritalStatus','S')
+        when FHIR::PlanDefinition
+          resource.action.each do |a|
+            a.action.each do |b|
+              b.relatedAction = []
+            end
+          end
+        when FHIR::Procedure
+          resource.focalDevice.each do |fd|
+            code = ['implanted', 'explanted', 'manipulated'].sample
+            fd.action = minimal_codeableconcept('http://hl7.org/fhir/device-action', code)
+          end
+        when FHIR::Provenance
+          resource.entity.each do |e|
+            e.agent.each{|a| a.role = nil }
+          end
+        when FHIR::Practitioner
+          resource.communication.each do |comm|
+            comm.coding.each do |c|
+              c.system = 'http://tools.ietf.org/html/bcp47'
+              c.code = 'en-US'
+            end
+          end
+        when FHIR::RelatedPerson
+          resource.relationship = minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','family')
+        when FHIR::Questionnaire
+          # resource.item.each do |i|
+          #   i.required = true
+          #   i.item = []
+          #   i.answerOption = []
+          #   if ['choice','open-choice'].include?(i.type)
+          #     choice_a = FHIR::Questionnaire::Item::Option.new({'valueString'=>'true'})
+          #     choice_b = FHIR::Questionnaire::Item::Option.new({'valueString'=>'false'})
+          #     i.option = [ choice_a, choice_b ] 
+          #   end
+          #   if i.type=='display'
+          #     i.required = nil
+          #     i.repeats = nil
+          #     i.readOnly = nil
+          #     i.option = []
+          #     FHIR::Questionnaire::Item::MULTIPLE_TYPES['initial'].each do |type|
+          #       i.instance_variable_set("@initial#{type.capitalize}".to_sym, nil)
+          #     end
+          #   end
+          #   # i.enableWhen.each do |ew|
+          #   #   ew.hasAnswer = false
+          #   #   ew.hasAnswer = nil if ew.answer
+          #   # end
+          #   i.maxLength = nil if !['boolean', 'decimal', 'integer', 'string', 'text', 'url'].include?(i.type)
+          # end
+        when FHIR::QuestionnaireResponse
+          resource.item.each do |i|
+            i.item = nil
+            i.answer.each {|q|q.valueBoolean = true if !q.value }
+          end
+        when FHIR::Range
+          # validate that the low/high values in the range are correct (e.g. the low value is not higher than the high value)
+          if resource.low && resource.high
+            if resource.low.value > resource.high.value
+              # This is the "Ruby Way" to swap two variables without using a temporary third variable
+              resource.low.value,resource.high.value = resource.high.value,resource.low.value
+            end
+          end
+          # simple quantities do not have a comparator
+          resource.low.comparator = nil unless resource.low.nil?
+          resource.high.comparator = nil unless resource.high.nil?
+        when FHIR::MolecularSequence
+          resource.coordinateSystem = [0,1].sample
+
+          unless resource.referenceSeq.nil?
+            resource.referenceSeq.referenceSeqId = resource.referenceSeq.referenceSeqPointer = resource.referenceSeq.referenceSeqString = nil
+            resource.referenceSeq.strand = ['watson','crick'].sample unless resource.referenceSeq.strand.nil?
+          end
+        when FHIR::SearchParameter
+          resource.type = 'reference'
+
+        when FHIR::SampledData
+          resource.origin.comparator = nil unless resource.origin.nil?
+        when FHIR::Signature
+          resource.type = [ minimal_coding('urn:iso-astm:E1762-95:2013','1.2.840.10065.1.12.1.18') ]
+          resource.targetFormat = nil
+          resource.sigFormat = nil
+        when FHIR::Specimen
+          unless resource.collection.nil?
+            resource.collection.quantity.comparator = nil unless resource.collection.quantity.nil?
+          end
+          resource.container.each do |c|
+            c.capacity = c.specimenQuantity = nil
+          end
+        when FHIR::Subscription
+          resource.status = 'requested' if resource.id.nil?
+          resource.channel.payload = 'applicaton/json+fhir'
+          resource.end = nil
+          resource.criteria = 'Observation?code=http://loinc.org|1975-2'
+        when FHIR::Substance
+          resource.instance.each do |instance|
+            instance.quantity.comparator = nil unless instance.quantity.nil?
+          end
+        when FHIR::SupplyDelivery
+          resource.type = minimal_codeableconcept('http://hl7.org/fhir/supply-item-type','medication')
+          resource.suppliedItem.quantity.comparator = nil if !resource.suppliedItem.nil? && !resource.suppliedItem.quantity.nil?
+        when FHIR::SupplyRequest
+          resource.category = minimal_codeableconcept('http://hl7.org/fhir/supply-kind','central')
+        when FHIR::StructureDefinition
+          resource.derivation = 'constraint'
+          resource.fhirVersion = '4.0.0'
+          resource.baseDefinition = "http://hl7.org/fhir/StructureDefinition/#{resource.type}"
+          is_pattern = (SecureRandom.random_number(2)==0)
+          if resource.snapshot && resource.snapshot.element
+            resource.snapshot.element.first.id = resource.type
+            resource.snapshot.element.first.path = resource.type 
+            resource.snapshot.element.first.label = nil
+            resource.snapshot.element.first.code = nil
+            resource.snapshot.element.first.requirements = nil
+            resource.snapshot.element.first.type = nil
+            resource.snapshot.element.first.mapping = []
+            if is_pattern
+              FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+                resource.snapshot.element.first.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@fixed#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+              end
+            else
+              FHIR::ElementDefinition::MULTIPLE_TYPES['defaultValue'].each do |type|
+                resource.snapshot.element.first.instance_variable_set("@defaultValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@pattern#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@example#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@minValue#{type.capitalize}".to_sym, nil)
+                resource.snapshot.element.first.instance_variable_set("@maxValue#{type.capitalize}".to_sym, nil)
+              end
+            end
+          end
+          if resource.differential && resource.differential.element
+            resource.differential.element[0] = resource.snapshot.element[0]
+          end
+          resource.mapping.each do |m|
+            m.identity.gsub!(/[^0-9A-Za-z]/, '') if m.identity
+          end
+        when FHIR::StructureMap
+          resource.group.each do |g|
+            g.rule.each{|r|r.rule = nil}
+          end
+        when FHIR::Substance
+          resource.ingredient.each do |ingredient|
+            unless ingredient.quantity.try(:denominator).try(:comparator).nil?
+              ingredient.quantity.denominator.comparator = nil
+            end
+            unless ingredient.quantity.try(:numerator).try(:comparator).nil?
+              ingredient.quantity.numerator.comparator = nil
+            end
+          end
+          resource.instance.each do |instance|
+            unless instance.quantity.nil?
+              instance.quantity.comparator = nil
+            end
+          end
+        when FHIR::TestReport
+          if resource.setup
+            resource.setup.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end
+          end
+          resource.test.each do |test|
+            test.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end            
+          end
+          if resource.teardown
+            resource.teardown.action.each do |a|
+              apply_invariants!(a.operation) if a.operation
+            end
+          end
+        when FHIR::TestScript
+          resource.variable.each do |v|
+            v.sourceId.gsub!(/[^0-9A-Za-z]/, '') if v.sourceId
+            v.path = nil if v.headerField
+          end
+          if resource.setup
+            resource.setup.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end
+          end
+          resource.test.each do |test|
+            test.action.each do |a|
+              a.assert = nil if a.operation
+              apply_invariants!(a.operation) if a.operation
+              apply_invariants!(a.assert) if a.assert
+            end            
+          end
+          if resource.teardown
+            resource.teardown.action.each do |a|
+              apply_invariants!(a.operation) if a.operation
+            end
+          end
+        when FHIR::TestScript::Setup::Action::Assert
+          # an assertion can only contain one of these...
+          keys = ['contentType','headerField','minimumId','navigationLinks','path','resource','responseCode','response','validateProfileId']
+          has_keys = []
+          keys.each do |key|
+            has_keys << key if resource.try(key.to_sym)
+          end
+          # remove all assertions except the first
+          has_keys[1..-1].each do |key|
+            resource.send("#{key}=",nil)
+          end
+          resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
+          resource.validateProfileId.gsub!(/[^0-9A-Za-z]/, '') if resource.validateProfileId
+        when FHIR::TestScript::Setup::Action::Operation
+          resource.accept = MIME::Types.to_a.sample.content_type
+          resource.contentType = MIME::Types.to_a.sample.content_type
+          resource.responseId.gsub!(/[^0-9A-Za-z]/, '') if resource.responseId
+          resource.sourceId.gsub!(/[^0-9A-Za-z]/, '') if resource.sourceId
+          resource.targetId.gsub!(/[^0-9A-Za-z]/, '') if resource.targetId
+        when FHIR::Timing
+          unless resource.repeat.nil?
+            resource.repeat.offset = nil if resource.repeat.when.nil?
+            resource.repeat.period = resource.repeat.period * -1 if resource.repeat.period < 0
+            resource.repeat.period = 1.0 if resource.repeat.period == 0
+            resource.repeat.periodMax = nil if resource.repeat.period.nil?
+            resource.repeat.durationMax = nil if resource.repeat.duration.nil?
+            resource.repeat.countMax = nil if resource.repeat.count.nil?
+            resource.repeat.duration = nil if resource.repeat.durationUnit.nil?
+            resource.repeat.timeOfDay = nil unless resource.repeat.when.nil?
+            resource.repeat.period = nil if resource.repeat.periodUnit.nil?
+          end
+        when FHIR::ValueSet
+          if resource.compose
+            resource.compose.include.each do |inc|
+              inc.filter = nil if inc.concept
+            end
+            resource.compose.exclude.each do |exc|
+              exc.filter = nil if exc.concept
+            end
+          end
+        when FHIR::VisionPrescription
+          resource.lensSpecification.each do |d|
+            d.duration.comparator = nil unless d.duration.nil?
+          end
+        when FHIR::RequestGroup::Action
+          if !resource.resource.nil? && resource.action.count > 0
+            if SecureRandom.random_number(2)==0
+              resource.resource = nil
+            else
+              resource.action = []
+            end
+          end
         ## STU3
         when FHIR::STU3::ActivityDefinition
           resource.quantity.comparator = nil unless resource.quantity.nil?

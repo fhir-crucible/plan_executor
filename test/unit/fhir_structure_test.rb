@@ -21,13 +21,23 @@ class FHIRStructureTest < Test::Unit::TestCase
     end
   end
 
+  def fhir_resources(fhir_version=nil)
+
+    resources = FHIR::RESOURCES
+    namespace = 'FHIR'
+    if !fhir_version.nil? && FHIR.constants.include?(fhir_version.upcase)
+      resources = FHIR.const_get(fhir_version.upcase)::RESOURCES
+    end
+    resources
+  end
+
   def test_no_missing_resources_in_starburst
 
-    [:stu3, :dstu2].each do |version|
-      structure = Crucible::FHIRStructure.get
+    [:r4, :stu3, :dstu2].each do |version|
+      structure = Crucible::FHIRStructure.get(version)
       resource_subset = structure['children'].select{|c| c['name'] == 'RESOURCES'}.first
       structure_resources = all_names(resource_subset, true).map{|e| e.downcase.delete(' ')}
-      model_resources = FHIR::RESOURCES.map(&:downcase).reject{|m| m == 'resource' || m == "domainresource"}
+      model_resources = fhir_resources(version).map(&:downcase).reject{|m| m == 'resource' || m == "domainresource"}
 
       missing_resources = model_resources - structure_resources
       extra_resources = structure_resources - model_resources

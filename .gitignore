@@ -11,6 +11,7 @@ ctl/*
 /test/tmp/
 /test/version_tmp/
 /test/unit/coverage
+/test/coverage
 /tmp/
 
 ## Specific to RubyMotion:

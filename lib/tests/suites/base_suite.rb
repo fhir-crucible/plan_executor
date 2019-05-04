@@ -66,6 +66,8 @@ module Crucible
       def self.get_resource(fhir_version, resource)
         if fhir_version.to_s.upcase == 'DSTU2'
           "FHIR::DSTU2::#{resource}".constantize
+        elsif fhir_version.to_s.upcase == 'STU3'
+          "FHIR::STU3::#{resource}".constantize
         else
           "FHIR::#{resource}".constantize
         end
@@ -76,6 +78,8 @@ module Crucible
       def self.valid_resource?(fhir_version, resource)
         if fhir_version.to_s.upcase == 'DSTU2'
           FHIR::DSTU2::RESOURCES.include?(resource)
+        elsif fhir_version.to_s.upcase == 'STU3'
+          FHIR::STU3::RESOURCES.include?(resource)
         else
           FHIR::RESOURCES.include?(resource)
         end

@@ -380,6 +380,8 @@
                 },{
                   "name": "medication"
                 },{
+                  "name": "medication knowledge"
+                },{
                   "name": "immunization"
                 },{
                   "name": "immunization evaluation"
@@ -521,6 +523,23 @@
                   "name": "specimen definition"
                 }
               ]
+              },{
+                "name": "Evidence-Based Medicine",
+                "children": [
+                  {
+                    "name": "research definition"
+                  },{
+                    "name": "research element definition"
+                  },{
+                    "name": "evidence"
+                  },{
+                    "name": "evidence variable"
+                  },{
+                    "name": "effect evidence synthesis"
+                  },{
+                    "name": "risk evidence synthesis"
+                  }
+                ]
             },{
               "name": "Quality Reporting & Testing",
               "aka": ["Clinical Reasoning", "Quality Reporting"],
@@ -576,6 +595,15 @@
                 },
                 {
                   "name": "substance specification"
+                },
+                {
+                  "name": "substancenucleicacid"
+                },
+                {
+                  "name": "substance protein"
+                },
+                {
+                  "name": "substance source material"
                 }
               ]
             }

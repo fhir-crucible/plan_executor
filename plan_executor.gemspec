@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('nokogiri-diff')
   s.add_runtime_dependency('fhir_client')
   s.add_runtime_dependency('fhir_models')
+  s.add_runtime_dependency('fhir_stu3_models')
   s.add_runtime_dependency('fhir_dstu2_models')
   s.add_runtime_dependency('oauth2')
   s.add_runtime_dependency('rest-client')

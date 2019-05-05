@@ -70,7 +70,7 @@ module Crucible
           elsif type == 'uri'
             gen = "http://projectcrucible.org/#{SecureRandom.base64}"
           elsif type == 'uuid'
-            gen = SecureRandom.uuid
+            gen = "urn:uuid:#{SecureRandom.uuid}"
           elsif type == 'url'
             gen = "http://projectcrucible.org/#{SecureRandom.base64}"
           elsif type == 'canonical'
@@ -837,6 +837,13 @@ module Crucible
             unless instance.quantity.nil?
               instance.quantity.comparator = nil
             end
+          end
+        when FHIR::Task
+          resource.input.each do |input|
+            input.valueString = SecureRandom.uuid if input.value.nil?
+          end
+          resource.output.each do |output|
+            output.valueString = SecureRandom.uuid if output.value.nil?
           end
         when FHIR::TestReport
           if resource.setup
@@ -1613,6 +1620,13 @@ module Crucible
             unless instance.quantity.nil?
               instance.quantity.comparator = nil
             end
+          end
+        when FHIR::STU3::Task
+          resource.input.each do |input|
+            input.valueString = SecureRandom.uuid if input.value.nil?
+          end
+          resource.output.each do |output|
+            output.valueString = SecureRandom.uuid if output.value.nil?
           end
         when FHIR::STU3::TestReport
           if resource.setup

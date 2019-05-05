@@ -1166,6 +1166,11 @@ module Crucible
             f.contentReference = textonly_reference('DocumentReference', FHIR::STU3)
           end
         when FHIR::STU3::DataElement
+          resource.element.each do |e|
+            e.example.each do |example|
+              example.valueString = SecureRandom.uuid if example.value.nil?
+            end
+          end
           resource.mapping.each do |m|
             m.identity = SecureRandom.base64 if m.identity.nil?
             m.identity.gsub!(/[^0-9A-Za-z]/, '')

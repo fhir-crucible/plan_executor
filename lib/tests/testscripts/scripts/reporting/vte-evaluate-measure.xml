@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir">
+    <id value="vte-evaluate-measure"/>
+
+    <url value="http://example.com"/>
+    <name value="Evaluate Measure script for VTE-1 measure"/>
+    <status value="draft"/>
+    <date value="2019-05-07"/>
+    <publisher value="MITRE"/>
+    <contact>
+        <name value="Tom Strassner"/>
+        <telecom>
+            <system value="email"/>
+            <value value="tstrassner@mitre.org"/>
+            <use value="work"/>
+        </telecom>
+    </contact>
+    <description value="Tests using JSON format to execute the $evaluate-measure operation on VTE Measure. The destination server must support the $evaluate-measure operation on the Measure resource."/>
+    <copyright value="N/A"/>
+
+    <fixture id="library-fhir-model-definition">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-fhir-model-definition.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-fhir-helpers">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-fhir-helpers.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-mat-global-common-functions-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-mat-global-common-functions-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-supplemental-data-elements-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-supplemental-data-elements-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-vte-icu-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-vte-icu-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-vte-1-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-vte-1-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="measure-vte-1-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Measure/measure-vte-1-FHIR.json"/>
+        </resource>
+    </fixture>
+
+    <variable>
+        <name value="createMeasureId"/>
+        <path value="Measure/id"/>
+        <sourceId value="create-measure-response"/>
+    </variable>
+    <variable>
+        <name value="periodStart"/>
+        <defaultValue value="2018-01-01"/>
+    </variable>
+    <variable>
+        <name value="periodEnd"/>
+        <defaultValue value="2018-12-31"/>
+    </variable>
+
+    <setup>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-fhir-model-definition"/>
+                <sourceId value="library-fhir-model-definition"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-fhir-helpers"/>
+                <sourceId value="library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-mat-global-common-functions-FHIR"/>
+                <sourceId value="library-mat-global-common-functions-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-supplemental-data-elements-FHIR"/>
+                <sourceId value="library-supplemental-data-elements-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-vte-icu-FHIR"/>
+                <sourceId value="library-vte-icu-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/library-vte-1-FHIR"/>
+                <sourceId value="library-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="create"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Create a measure on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <sourceId value="measure-vte-1-FHIR"/>
+                <responseId value="create-measure-response"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 201(Created)."/>
+                <response value="created"/>
+            </assert>
+        </action>
+    </setup>
+
+    <test id="EvaluateMeasure">
+        <name value="EvaluateMeasure"/>
+        <description value="Evaluate the measure, no extensions."/>
+
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="evaluate-measure"/>
+                </type>
+                <resource value="Measure"/>
+                <label value="EvaluateMeasure"/>
+                <description value="Evaluate measure with server assigned resource id."/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <url value="Measure/${createMeasureId}/$evaluate-measure?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK)"/>
+                <operator value="in"/>
+                <responseCode value="200"/>
+            </assert>
+        </action>
+    </test>
+
+    <teardown>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Delete the measure"/>
+                <params value="/${createMeasureId}"/>
+            </operation>
+        </action>
+    </teardown>
+</TestScript>

@@ -15,18 +15,48 @@
             <use value="work"/>
         </telecom>
     </contact>
-    <description value=""/>
+    <description value="Tests the $submit-data operation for the FHIR VTE Measure"/>
+
     <fixture id="vte-submit-data-input">
         <resource>
-            <reference value="../_reference/Parameters/vte-submit-data-input.json"/>
+            <reference value="./_reference/resources/vte-submit-data-parameters.json"/>
         </resource>
     </fixture>
+    <fixture id="measure-vte-1-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Measure/measure-vte-1-FHIR.json"/>
+        </resource>
+    </fixture>
+
     <variable>
-        <name value="MeasureId"/>
-        <defaultValue value="measure-vte-1-FHIR"/>
-        <description value="Enter a resource id for a valid Measure on the destination system."/>
-        <hint value="[Valid Measure Id]"/>
+        <name value="createMeasureId"/>
+        <path value="Measure/id"/>
+        <sourceId value="create-measure-response"/>
     </variable>
+
+    <setup>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="create"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Create a measure on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <sourceId value="measure-vte-1-FHIR"/>
+                <responseId value="create-measure-response"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 201(Created)."/>
+                <response value="created"/>
+            </assert>
+        </action>
+    </setup>
+
     <test id="01-Measure-Submit-Data">
         <name value="01-Measure-Submit-Data"/>
         <description value="Submit the required data for a known Measure using HTTP POST. Expected response is 200 (OK)."/>
@@ -40,8 +70,8 @@
                 <accept value="json"/>
                 <contentType value="json"/>
                 <encodeRequestUrl value="true"/>
-                <url value="Measure/${MeasureId}/$submit-data"/>
-                <sourceId value="submit-data-input-01"/>
+                <params value="${createMeasureId}"/>
+                <sourceId value="vte-submit-data-input"/>
             </operation>
         </action>
         <action>
@@ -52,4 +82,18 @@
             </assert>
         </action>
     </test>
+
+    <teardown>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Delete the measure"/>
+                <params value="/${createMeasureId}"/>
+            </operation>
+        </action>
+    </teardown>
 </TestScript>

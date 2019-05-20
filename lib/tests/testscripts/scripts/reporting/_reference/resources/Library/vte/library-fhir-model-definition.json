@@ -1,6 +1,6 @@
 {
   "resourceType": "Library",
-  "id": "library-fhir-model-definition",
+  "id": "MitreTestScript-library-fhir-model-definition",
   "url": "http://hl7.org/fhir/Library/library-fhir-model-definition",
   "identifier": [
     {

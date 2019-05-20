@@ -1,6 +1,6 @@
 {
     "resourceType": "Library",
-    "id": "library-fhir-helpers",
+    "id": "MitreTestScript-library-fhir-helpers",
     "meta": {
         "versionId": "3",
         "lastUpdated": "2019-03-12T00:39:19.259-06:00",

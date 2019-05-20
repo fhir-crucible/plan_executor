@@ -117,7 +117,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/MitreTestScript-ibrary-mat-global-common-functions-FHIR"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
                 <sourceId value="library-mat-global-common-functions-FHIR"/>
             </operation>
         </action>
@@ -270,7 +270,7 @@
                 </type>
                 <resource value="Library"/>
                 <description value="Delete a library on the server"/>
-                <params value="/MitreTestScript-ibrary-mat-global-common-functions-FHIR"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
             </operation>
         </action>
         <action>

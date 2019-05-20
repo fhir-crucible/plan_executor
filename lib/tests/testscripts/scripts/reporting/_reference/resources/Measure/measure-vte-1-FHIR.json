@@ -1,6 +1,6 @@
 {
   "resourceType": "Measure",
-  "id": "measure-vte-1-FHIR",
+  "id": "MitreTestScript-measure-vte-1-FHIR",
   "meta": {
     "versionId": "3",
     "lastUpdated": "2019-03-12T11:08:36.881-06:00",

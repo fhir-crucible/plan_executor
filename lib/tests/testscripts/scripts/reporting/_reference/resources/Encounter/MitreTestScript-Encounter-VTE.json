@@ -1,0 +1,31 @@
+{
+  "resourceType": "Encounter",
+  "id": "MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648",
+  "status": "finished",
+  "class": {
+    "code": "inpatient"
+  },
+  "type": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "183452005",
+          "display": "Emergency Hospital Admission (procedure)"
+        }
+      ],
+      "text": "Emergency Hospital Admission (procedure)"
+    }
+  ],
+  "subject": {
+    "reference": "Patient/MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962"
+  },
+  "period": {
+    "start": "2013-02-08T10:47:30-05:00",
+    "end": "2013-02-09T14:18:30-05:00"
+  },
+  "length": {
+    "value": 99060000,
+    "unit": "ms"
+  }
+}

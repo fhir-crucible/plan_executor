@@ -52,7 +52,7 @@
     {
       "type": "depends-on",
       "resource": {
-        "reference": "Library/library-fhir-model-definition"
+        "reference": "Library/MitreTestScript-library-fhir-model-definition"
       }
     }
   ],

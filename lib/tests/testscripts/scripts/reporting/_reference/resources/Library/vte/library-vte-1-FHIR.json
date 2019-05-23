@@ -48,31 +48,31 @@
     {
       "type": "depends-on",
       "resource": {
-        "reference": "Library/library-fhir-model-definition"
+        "reference": "Library/MitreTestScript-library-fhir-model-definition"
       }
     },
     {
       "type": "depends-on",
       "resource": {
-        "reference": "Library/library-fhir-helpers"
+        "reference": "Library/MitreTestScript-library-fhir-helpers"
       }
     },
     {
       "type": "depends-on",
       "resource": {
-        "reference": "Library/library-mat-global-common-functions-FHIR"
+        "reference": "Library/MitreTestScript-library-mat-global-common-functions-FHIR"
       }
     },
     {
       "type": "depends-on",
       "resource": {
-        "reference": "Library/library-vte-icu-FHIR"
+        "reference": "Library/MitreTestScript-library-vte-icu-FHIR"
       }
     },
     {
       "type": "depends-on",
       "resource": {
-        "reference": "Library/library-supplemental-data-elements-FHIR"
+        "reference": "Library/MitreTestScript-library-supplemental-data-elements-FHIR"
       }
     }
   ],

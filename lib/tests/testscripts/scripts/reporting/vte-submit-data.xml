@@ -246,9 +246,9 @@
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
                     <code value="delete"/>
                 </type>
-                <resource value="Library"/>
-                <description value="Delete a library on the server"/>
-                <params value="/MitreTestScript-library-fhir-model-definition"/>
+                <resource value="Measure"/>
+                <description value="Delete the measure"/>
+                <params value="/${createMeasureId}"/>
             </operation>
         </action>
         <action>
@@ -259,29 +259,7 @@
                 </type>
                 <resource value="Library"/>
                 <description value="Delete a library on the server"/>
-                <params value="/MitreTestScript-library-fhir-helpers"/>
-            </operation>
-        </action>
-        <action>
-            <operation>
-                <type>
-                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="delete"/>
-                </type>
-                <resource value="Library"/>
-                <description value="Delete a library on the server"/>
-                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
-            </operation>
-        </action>
-        <action>
-            <operation>
-                <type>
-                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="delete"/>
-                </type>
-                <resource value="Library"/>
-                <description value="Delete a library on the server"/>
-                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
             </operation>
         </action>
         <action>
@@ -303,7 +281,7 @@
                 </type>
                 <resource value="Library"/>
                 <description value="Delete a library on the server"/>
-                <params value="/MitreTestScript-library-vte-1-FHIR"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
             </operation>
         </action>
         <action>
@@ -312,9 +290,31 @@
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
                     <code value="delete"/>
                 </type>
-                <resource value="Measure"/>
-                <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
             </operation>
         </action>
         <action>

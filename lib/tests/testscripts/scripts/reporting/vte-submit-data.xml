@@ -59,6 +59,26 @@
     </fixture>
 
     <variable>
+        <name value="createMeasureReportId"/>
+        <path value="$.parameter[?(@.name == 'measure-report')].resource.id"/>
+        <sourceId value="vte-submit-data-input"/>
+    </variable>
+    <variable>
+        <name value="createPatientId"/>
+        <path value="$.parameter[?(@.resource.resourceType == 'Patient')].resource.id"/>
+        <sourceId value="vte-submit-data-input"/>
+    </variable>
+    <variable>
+        <name value="createPractitionerId"/>
+        <path value="$.parameter[?(@.resource.resourceType == 'Practitioner')].resource.id"/>
+        <sourceId value="vte-submit-data-input"/>
+    </variable>
+    <variable>
+        <name value="createEncounterId"/>
+        <path value="$.parameter[?(@.resource.resourceType == 'Encounter')].resource.id"/>
+        <sourceId value="vte-submit-data-input"/>
+    </variable>
+    <variable>
         <name value="createMeasureId"/>
         <path value="Measure/id"/>
         <sourceId value="create-measure-response"/>
@@ -235,6 +255,42 @@
                 <description value="Confirm that the returned HTTP status is 200(OK)."/>
                 <direction value="response"/>
                 <response value="okay"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the response Bundle contains the MeasureReport ID"/>
+                <direction value="response"/>
+                <operator value="contains"/>
+                <path value="$.entry[0].response.location"/>
+                <value value="${createMeasureReportId}"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the response Bundle contains the Patient ID"/>
+                <direction value="response"/>
+                <operator value="contains"/>
+                <path value="$.entry[1].response.location"/>
+                <value value="${createPatientId}"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the response Bundle contains the Practitioner ID"/>
+                <direction value="response"/>
+                <operator value="contains"/>
+                <path value="$.entry[2].response.location"/>
+                <value value="${createPractitionerId}"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the response Bundle contains the Encounter ID"/>
+                <direction value="response"/>
+                <operator value="contains"/>
+                <path value="$.entry[3].response.location"/>
+                <value value="${createEncounterId}"/>
             </assert>
         </action>
     </test>

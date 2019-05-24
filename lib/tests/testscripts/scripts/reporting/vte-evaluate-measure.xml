@@ -99,7 +99,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-fhir-model-definition"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
                 <sourceId value="library-fhir-model-definition"/>
             </operation>
         </action>
@@ -120,7 +120,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-fhir-helpers"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
                 <sourceId value="library-fhir-helpers"/>
             </operation>
         </action>
@@ -141,7 +141,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-mat-global-common-functions-FHIR"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
                 <sourceId value="library-mat-global-common-functions-FHIR"/>
             </operation>
         </action>
@@ -162,7 +162,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-supplemental-data-elements-FHIR"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
                 <sourceId value="library-supplemental-data-elements-FHIR"/>
             </operation>
         </action>
@@ -183,7 +183,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-vte-icu-FHIR"/>
+                <params value="/MitreTestScript-library-vte-icu-FHIR"/>
                 <sourceId value="library-vte-icu-FHIR"/>
             </operation>
         </action>
@@ -204,7 +204,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-vte-1-FHIR"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
                 <sourceId value="library-vte-1-FHIR"/>
             </operation>
         </action>
@@ -319,6 +319,94 @@
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
                 <params value="/${createMeasureId}"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-vte-icu-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Encounter"/>
+                <description value="Delete the Encounter from $submit-data"/>
+                <params value="/MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Delete the Patient from $submit-data"/>
+                <params value="/MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962"/>
             </operation>
         </action>
     </teardown>

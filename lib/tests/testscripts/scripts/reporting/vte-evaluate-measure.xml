@@ -297,7 +297,7 @@
                 <description value="Evaluate measure with server assigned resource id."/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <url value="Measure/${createMeasureId}/$evaluate-measure?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <params value="/${createMeasureId}/$evaluate-measure?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
             </operation>
         </action>
         <action>

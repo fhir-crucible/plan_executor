@@ -231,7 +231,7 @@
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
                 <operator value="in" />
                 <responseCode value="200,201"/>
             </assert>
@@ -253,7 +253,7 @@
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
                 <operator value="in" />
                 <responseCode value="200,201"/>
             </assert>
@@ -275,7 +275,7 @@
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
                 <operator value="in" />
                 <responseCode value="200,201"/>
             </assert>
@@ -305,6 +305,13 @@
                 <description value="Confirm that the returned HTTP status is 200(OK)"/>
                 <operator value="in"/>
                 <responseCode value="200"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the return type is MeasureReport. Warning only as the server may not support the return of response content." />
+                <resource value="MeasureReport" />
+                <warningOnly value="true" />
             </assert>
         </action>
     </test>
@@ -394,7 +401,7 @@
                     <code value="delete"/>
                 </type>
                 <resource value="Encounter"/>
-                <description value="Delete the Encounter from $submit-data"/>
+                <description value="Delete the Encounter" />
                 <params value="/MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648"/>
             </operation>
         </action>
@@ -405,7 +412,7 @@
                     <code value="delete"/>
                 </type>
                 <resource value="Patient"/>
-                <description value="Delete the Patient from $submit-data"/>
+                <description value="Delete the Patient"/>
                 <params value="/MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962"/>
             </operation>
         </action>

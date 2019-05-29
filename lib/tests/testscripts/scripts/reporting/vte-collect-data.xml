@@ -59,12 +59,6 @@
         <path value="Measure/id"/>
         <sourceId value="create-measure-response"/>
     </variable>
-
-    <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
     <variable>
         <name value="periodStart"/>
         <defaultValue value="2017"/>

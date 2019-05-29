@@ -66,19 +66,19 @@
     {
       "type" : "depends-on",
       "resource" : {
-        "reference" : "Library/library-fhir-helpers"
+        "reference" : "Library/MitreTestScript-library-fhir-helpers"
       }
     },
     {
       "type" : "depends-on",
       "resource" : {
-        "reference" : "Library/library-common-logic"
+        "reference" : "Library/MitreTestScript-library-common-logic"
       }
     },
     {
       "type" : "depends-on",
       "resource" : {
-        "reference" : "Library/library-participation-logic"
+        "reference" : "Library/MitreTestScript-library-participation-logic"
       }
     }
   ],

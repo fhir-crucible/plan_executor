@@ -3,7 +3,7 @@
     <id value="mrp-evaluate-measure"/>
 
     <url value="http://example.com"/>
-    <name value="Connectathon 19 Clinical Reasoning track Colon Cancer Screening--Individual Patient TestScript--XML"/>
+    <name value="Evaluate Measure script for measure-mrp"/>
     <status value="draft"/>
     <date value="2019-05-03"/>
     <publisher value="MITRE"/>
@@ -15,7 +15,7 @@
             <use value="work"/>
         </telecom>
     </contact>
-    <description value=""/>
+    <description value="Tests using JSON format to execute the $evaluate-measure operation on MRP Measure. The destination server must support the $evaluate-measure operation on the Measure resource."/>
     <copyright value="N/A"/>
 
     <fixture id="library-fhir-model-definition">

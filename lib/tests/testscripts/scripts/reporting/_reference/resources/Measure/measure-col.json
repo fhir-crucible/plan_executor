@@ -1,6 +1,6 @@
 {
   "resourceType": "Measure",
-  "id": "measure-col",
+  "id": "MitreTestScript-measure-col",
   "meta": {
     "versionId": "2",
     "lastUpdated": "2018-12-04T19:16:14.862+00:00"
@@ -33,7 +33,7 @@
   ],
   "library": [
     {
-      "reference": "Library/library-col-logic"
+      "reference": "Library/MitreTestScript-library-col-logic"
     }
   ],
   "scoring": {

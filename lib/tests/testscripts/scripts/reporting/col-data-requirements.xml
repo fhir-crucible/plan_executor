@@ -29,12 +29,6 @@
         </resource>
     </fixture>
 
-    <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
-
     <setup>
         <action>
             <operation>
@@ -46,7 +40,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-col-logic"/>
+                <params value="/MitreTestScript-library-col-logic"/>
                 <sourceId value="library-col-logic"/>
             </operation>
         </action>
@@ -61,20 +55,21 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="create"/>
+                    <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <responseId value="create-measure-response"/>
+                <params value="/MitreTestScript-measure-col"/>
                 <sourceId value="measure-col"/>
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
-                <response value="created"/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
             </assert>
         </action>
     </setup>
@@ -92,7 +87,7 @@
                 <description value="Get the data requirements for the measure"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/${createMeasureId}/$data-requirements"/>
+                <params value="/MitreTestScript-measure-col/$data-requirements"/>
                 <responseId value="data-requirements-result"/>
             </operation>
         </action>
@@ -127,8 +122,19 @@
                     <code value="delete"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <description value="Delete the Measure"/>
+                <params value="/MitreTestScript-measure-col"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete the Library"/>
+                <params value="/MitreTestScript-library-col-logic"/>
             </operation>
         </action>
     </teardown>

@@ -104,8 +104,6 @@
             },{
               "name": "$snapshot"
             },{
-              "name": "$lookup"
-            },{
               "name": "$subsumes"
             },{
               "name": "$find-matches"

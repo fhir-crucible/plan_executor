@@ -602,6 +602,9 @@
                 },
                 {
                   "name": "substance source material"
+                },
+                {
+                  "name": "substance nucleic acid"
                 }
               ]
             }

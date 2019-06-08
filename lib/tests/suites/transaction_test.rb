@@ -170,7 +170,7 @@ module Crucible
         @condition0.subject.reference = "Patient/#{@patient0.id}"
         @condition0.clinicalStatus = 'resolved'
         @condition0.verificationStatus = 'refuted'
-        @condition0.abatementBoolean = true
+        @condition0.abatementString = 'Abated at unknown date'
 
         @client.begin_transaction
         @client.add_transaction_request('DELETE',"Observation/#{@obs0b.id}") if @obs0b && !@obs0b.id.nil? # delete first weight

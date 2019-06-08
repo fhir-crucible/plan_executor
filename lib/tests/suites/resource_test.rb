@@ -44,7 +44,7 @@ module Crucible
       end
 
       def category
-        resource = @resource_class.nil? ? "Uncategorized" : resource_category(@resource_class.name.demodulize)
+        resource = @resource_class.nil? ? "Uncategorized" : resource_category(@resource_class)
         {id: "resources_#{resource.parameterize}", title: "#{resource} Resources"}
       end
 

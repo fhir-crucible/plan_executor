@@ -33,7 +33,7 @@ module Crucible
       # also, this may be causing a problem on the fhir starburst structure
       def fhir_version
         if @client.nil?
-          :stu3
+          :r4
         else
           @client.fhir_version
         end
@@ -58,6 +58,8 @@ module Crucible
       def version_namespace
         if @client.fhir_version.to_s.upcase == 'DSTU2'
           "FHIR::DSTU2".constantize
+        elsif @client.fhir_version.to_s.upcase == 'STU3'
+          "FHIR::STU3".constantize
         else
           "FHIR".constantize
         end
@@ -171,6 +173,12 @@ module Crucible
       def resource_category(resource)
         unless @resource_category
           @categories_by_resource = {}
+          fhir_version = :r4
+          if resource.name.start_with? 'FHIR::DSTU2'
+            fhir_version = :dstu2
+          elsif resource.name.start_with? 'FHIR::STU3'
+            fhir_version = :stu3
+          end
           fhir_structure = Crucible::FHIRStructure.get(fhir_version)
           categories = fhir_structure['children'].select {|n| n['name'] == 'RESOURCES'}.first['children']
           pull_children = lambda {|n, chain| n['children'].nil? ? n['name'] : n['children'].map {|child| chain.call(child, chain)}}
@@ -180,7 +188,7 @@ module Crucible
             end
           end
         end
-        @categories_by_resource[resource.underscore.humanize.downcase] || 'Uncategorized'
+        @categories_by_resource[resource.name.demodulize.underscore.humanize.downcase] || 'Uncategorized'
       end
 
     end

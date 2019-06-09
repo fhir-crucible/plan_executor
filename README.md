@@ -1,10 +1,8 @@
 # Plan Executor [![Build Status](https://travis-ci.org/fhir-crucible/plan_executor.svg?branch=master)](https://travis-ci.org/fhir-crucible/plan_executor)
 
-Plan Executor runs test suites against a FHIR server.
-
-# STU3
-
-Updated to support the FHIR [STU3 Candidate branch](http://hl7.org/fhir/2016May/index.html).
+Plan Executor runs test suites against a FHIR server. It supports `DSTU2`, `STU3` and `R4` versions of FHIR.
+Tests can either be written in [Ruby](https://github.com/fhir-crucible/plan_executor#adding-a-new-test-suite),
+or using the [TestScript Resource](https://github.com/fhir-crucible/plan_executor/wiki/Using-Plan-Executor-with-TestScripts#testscript).
 
 ## Getting Started
 

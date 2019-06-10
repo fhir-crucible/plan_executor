@@ -54,12 +54,6 @@
         </resource>
     </fixture>
 
-    <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
-
     <setup>
         <action>
             <operation>
@@ -71,7 +65,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-fhir-model-definition"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
                 <sourceId value="library-fhir-model-definition"/>
             </operation>
         </action>
@@ -92,7 +86,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-fhir-helpers"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
                 <sourceId value="library-fhir-helpers"/>
             </operation>
         </action>
@@ -113,7 +107,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-mat-global-common-functions-FHIR"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
                 <sourceId value="library-mat-global-common-functions-FHIR"/>
             </operation>
         </action>
@@ -134,7 +128,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-supplemental-data-elements-FHIR"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
                 <sourceId value="library-supplemental-data-elements-FHIR"/>
             </operation>
         </action>
@@ -155,7 +149,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-vte-icu-FHIR"/>
+                <params value="/MitreTestScript-library-vte-icu-FHIR"/>
                 <sourceId value="library-vte-icu-FHIR"/>
             </operation>
         </action>
@@ -176,7 +170,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-vte-1-FHIR"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
                 <sourceId value="library-vte-1-FHIR"/>
             </operation>
         </action>
@@ -191,20 +185,21 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="create"/>
+                    <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <responseId value="create-measure-response"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
                 <sourceId value="measure-vte-1-FHIR"/>
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
-                <response value="created"/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
             </assert>
         </action>
     </setup>
@@ -222,7 +217,7 @@
                 <description value="Get the data requirements for the measure"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/${createMeasureId}/$data-requirements"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR/$data-requirements"/>
                 <responseId value="data-requirements-result"/>
             </operation>
         </action>
@@ -258,7 +253,73 @@
                 </type>
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-vte-icu-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
             </operation>
         </action>
     </teardown>

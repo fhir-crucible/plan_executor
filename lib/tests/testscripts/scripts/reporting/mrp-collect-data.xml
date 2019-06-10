@@ -18,6 +18,26 @@
     <description value="Tests the $collect-data operation for medication reconciliation post-discharge (MRP) measure"/>
     <copyright value="N/A"/>
 
+    <fixture id="library-fhir-model-definition">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-fhir-model-definition.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-fhir-helpers">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-fhir-helpers.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-common-logic">
+        <resource>
+            <reference value="./_reference/resources/Library/library-common-logic.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-participation-logic">
+        <resource>
+            <reference value="./_reference/resources/Library/library-participation-logic.json"/>
+        </resource>
+    </fixture>
     <fixture id="library-mrp-logic">
         <resource>
             <reference value="./_reference/resources/Library/library-mrp-logic.json"/>
@@ -29,11 +49,6 @@
         </resource>
     </fixture>
 
-    <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
     <variable>
         <name value="periodStart"/>
         <defaultValue value="2017"/>
@@ -54,7 +69,91 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-mrp-logic"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
+                <sourceId value="library-fhir-model-definition"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+                <sourceId value="library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-common-logic"/>
+                <sourceId value="library-common-logic"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+         <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-participation-logic"/>
+                <sourceId value="library-participation-logic"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-mrp-logic"/>
                 <sourceId value="library-mrp-logic"/>
             </operation>
         </action>
@@ -69,20 +168,21 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="create"/>
+                    <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
+                <params value="/MitreTestScript-measure-mrp"/>
                 <sourceId value="measure-mrp"/>
-                <responseId value="create-measure-response"/>
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
-                <response value="created"/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
             </assert>
         </action>
     </setup>
@@ -134,7 +234,62 @@
                 </type>
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <params value="/MitreTestScript-measure-mrp"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-mrp-logic"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-participation-logic"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-common-logic"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
             </operation>
         </action>
     </teardown>

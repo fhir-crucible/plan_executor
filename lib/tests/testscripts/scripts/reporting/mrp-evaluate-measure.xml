@@ -171,7 +171,7 @@
                     <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
                 <params value="/MitreTestScript-measure-mrp"/>

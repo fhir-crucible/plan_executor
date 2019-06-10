@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestScript xmlns="http://hl7.org/fhir">
-    <id value="mrp-evaluate-measure"/>
+    <id value="mrp-collect-data"/>
 
     <url value="http://example.com"/>
-    <name value="Evaluate Measure script for measure-mrp"/>
+    <name value="Collect data operation test for medication reconciliation post-discharge (MRP) measure"/>
     <status value="draft"/>
-    <date value="2019-05-03"/>
+    <date value="2019-04-25"/>
     <publisher value="MITRE"/>
     <contact>
-        <name value="Matthew Gramigna"/>
+        <name value="Tom Strassner"/>
         <telecom>
             <system value="email"/>
-            <value value="mgramigna@mitre.org"/>
+            <value value="tstrassner@mitre.org"/>
             <use value="work"/>
         </telecom>
     </contact>
-    <description value="Tests using JSON format to execute the $evaluate-measure operation on MRP Measure. The destination server must support the $evaluate-measure operation on the Measure resource."/>
+    <description value="Tests the $collect-data operation for medication reconciliation post-discharge (MRP) measure"/>
     <copyright value="N/A"/>
 
     <fixture id="library-fhir-model-definition">
@@ -51,11 +51,11 @@
 
     <variable>
         <name value="periodStart"/>
-        <defaultValue value="2018-01-01"/>
+        <defaultValue value="2017"/>
     </variable>
     <variable>
         <name value="periodEnd"/>
-        <defaultValue value="2018-12-31"/>
+        <defaultValue value="2017"/>
     </variable>
 
     <setup>
@@ -187,36 +187,40 @@
         </action>
     </setup>
 
-    <test id="EvaluateMeasure">
-        <name value="EvaluateMeasure"/>
-        <description value="Evaluate the measure, no extensions."/>
-
+    <test id="TestCollectData">
+        <name value="Test Collect Data"/>
+        <description value="Tests the $collect-data operation for the MRP measure"/>
         <action>
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="evaluate-measure"/>
+                    <code value="collect-data"/>
                 </type>
                 <resource value="Measure"/>
-                <label value="EvaluateMeasure"/>
-                <description value="Evaluate measure with server assigned resource id."/>
+                <description value="Collect data for the measure"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/MitreTestScript-measure-mrp/$evaluate-measure?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <url value="Measure/${createMeasureId}/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <responseId value="collect-data-result"/>
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 200(OK)"/>
-                <operator value="in"/>
-                <responseCode value="200"/>
+                <description value="Confirm that the returned HTTP status is 200(OK)."/>
+                <response value="okay"/>
             </assert>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the return type is MeasureReport. Warning only as the server may not support the return of response content." />
-                <resource value="MeasureReport" />
-                <warningOnly value="true" />
+                <description value="Confirm that the response is a Parameters resource"/>
+                <resource value="Parameters"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned data contains a MeasureReport"/>
+                <operator value="notEmpty"/>
+                <path value="$.parameter[?(@.resource.resourceType == 'MeasureReport')]"/>
             </assert>
         </action>
     </test>

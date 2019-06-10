@@ -59,7 +59,7 @@
                 <description value="Update or create a library on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/library-col-logic"/>
+                <params value="/MitreTestScript-library-col-logic"/>
                 <sourceId value="library-col-logic"/>
             </operation>
         </action>
@@ -161,6 +161,17 @@
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
                 <params value="/${createMeasureId}"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete the library"/>
+                <params value="/MitreTestScript-library-col-logic"/>
             </operation>
         </action>
     </teardown>

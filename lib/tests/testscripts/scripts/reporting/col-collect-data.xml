@@ -35,11 +35,6 @@
     </fixture>
 
     <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
-    <variable>
         <name value="periodStart"/>
         <defaultValue value="2017"/>
     </variable>
@@ -74,20 +69,21 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="create"/>
+                    <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
+                <params value="/MitreTestScript-measure-col"/>
                 <sourceId value="measure-col"/>
-                <responseId value="create-measure-response"/>
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
-                <response value="created"/>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
             </assert>
         </action>
         <action>
@@ -100,9 +96,16 @@
                 <description value="Create a patient that falls into the IPOP"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/test-Patient-410"/>
+                <params value="/MitreTestScript-test-Patient-410"/>
                 <sourceId value="test-Patient-410"/>
             </operation>
+        </action>
+         <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
         </action>
     </setup>
 
@@ -119,7 +122,7 @@
                 <description value="Collect data for the measure"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <url value="Measure/${createMeasureId}/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <params value="/${createMeasureId}/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
                 <responseId value="collect-data-result"/>
             </operation>
         </action>
@@ -146,7 +149,7 @@
             <assert>
                 <description value="Confirm that the returned data contains the Patient"/>
                 <operator value="notEmpty"/>
-                <path value="$.parameter[?(@.resource.id == 'test-Patient-410')]"/>
+                <path value="$.parameter[?(@.resource.id == 'MitreTestScript-test-Patient-410')]"/>
             </assert>
         </action>
     </test>
@@ -160,7 +163,29 @@
                 </type>
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <params value="/MitreTestScript-measure-col"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete the library"/>
+                <params value="/MitreTestScript-library-col-logic"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Delete the patient"/>
+                <params value="/MitreTestScript-test-Patient-410"/>
             </operation>
         </action>
         <action>

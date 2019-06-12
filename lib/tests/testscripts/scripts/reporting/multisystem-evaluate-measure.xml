@@ -52,16 +52,7 @@
     <profile id="measurereport-profile">
         <reference value="http://hl7.org/fhir/StructureDefinition/MeasureReport" />
     </profile>
-    <variable>
-        <name value="dest1CreateMeasureId" />
-        <path value="Measure/id" />
-        <sourceId value="dest1-create-measure-response" />
-    </variable>
-    <variable>
-        <name value="dest2CreateMeasureId" />
-        <path value="Measure/id" />
-        <sourceId value="dest2-create-measure-response" />
-    </variable>
+
     <variable>
         <name value="dest1CreatePatientId" />
         <path value="Patient/id" />
@@ -89,11 +80,11 @@
                     <code value="update" />
                 </type>
                 <resource value="Library" />
-                <description value="Create or update a library on the first server" />
+                <description value="Update or create a library on the first server" />
                 <accept value="json" />
                 <contentType value="json" />
                 <destination value="1" />
-                <params value="/library-col-logic" />
+                <params value="/MitreTestScript-library-col-logic" />
                 <sourceId value="library-col-logic" />
             </operation>
         </action>
@@ -108,42 +99,44 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes" />
-                    <code value="create" />
+                    <code value="update" />
                 </type>
                 <resource value="Measure" />
-                <description value="Create a measure on the first server" />
+                <description value="Update or create a measure on the first server" />
                 <accept value="json" />
                 <contentType value="json" />
                 <destination value="1" />
-                <responseId value="dest1-create-measure-response" />
+                <params value="/MitreTestScript-measure-col" />
                 <sourceId value="measure-col" />
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)." />
-                <response value="created" />
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)." />
+                <operator value="in" />
+                <responseCode value="200,201" />
             </assert>
         </action>
         <action>
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes" />
-                    <code value="create" />
+                    <code value="update" />
                 </type>
                 <resource value="Patient" />
-                <description value="Create a patient on the first server" />
+                <description value="Update or create a patient on the first server" />
                 <accept value="json" />
                 <contentType value="json" />
                 <destination value="1" />
-                <responseId value="dest1-create-patient-response" />
+                <params value="/MitreTestScript-test-Patient-410" />
                 <sourceId value="fixture-create-patient" />
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)." />
-                <response value="created" />
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)." />
+                <operator value="in" />
+                <responseCode value="200,201" />
             </assert>
         </action>
         <action>
@@ -153,11 +146,11 @@
                     <code value="update" />
                 </type>
                 <resource value="Library" />
-                <description value="Create or update a library on the first server" />
+                <description value="Create or update a library on the second server" />
                 <accept value="json" />
                 <contentType value="json" />
                 <destination value="2" />
-                <params value="/library-col-logic" />
+                <params value="/MitreTestScript-library-col-logic" />
                 <sourceId value="library-col-logic" />
             </operation>
         </action>
@@ -172,42 +165,44 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes" />
-                    <code value="create" />
+                    <code value="update" />
                 </type>
                 <resource value="Measure" />
                 <description value="Create a measure on the second server" />
                 <accept value="json" />
                 <contentType value="json" />
                 <destination value="2" />
-                <responseId value="dest2-create-measure-response" />
+                <params value="/MitreTestScript-measure-col" />
                 <sourceId value="measure-col" />
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)." />
-                <response value="created" />
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)." />
+                <operator value="in" />
+                <responseCode value="200,201" />
             </assert>
         </action>
         <action>
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes" />
-                    <code value="create" />
+                    <code value="update" />
                 </type>
                 <resource value="Patient" />
                 <description value="Create a patient on the second server" />
                 <accept value="json" />
                 <contentType value="json" />
                 <destination value="2" />
-                <responseId value="dest2-create-patient-response" />
+                <params value="/MitreTestScript-test-Patient-410" />
                 <sourceId value="fixture-create-patient" />
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 200(OK)" />
-                <response value="created" />
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)." />
+                <operator value="in" />
+                <responseCode value="200,201" />
             </assert>
         </action>
     </setup>
@@ -227,7 +222,7 @@
                 <accept value="xml" />
                 <contentType value="xml" />
                 <destination value="1" />
-                <params value="/${dest1CreateMeasureId}/$evaluate-measure?patient=${dest1CreatePatientId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}" />
+                <params value="/MitreTestScript-measure-col/$evaluate-measure?patient=MitreTestScript-test-Patient-410&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}" />
                 <responseId value="dest1-measurereport" />
             </operation>
         </action>
@@ -323,7 +318,7 @@
                 <accept value="xml" />
                 <contentType value="xml" />
                 <destination value="2" />
-                <params value="/${dest2CreateMeasureId}/$evaluate-measure?patient=${dest2CreatePatientId}&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}" />
+                <params value="/MitreTestScript-measure-col/$evaluate-measure?patient=MitreTestScript-test-Patient-410&amp;periodStart=${PeriodStart}&amp;periodEnd=${PeriodEnd}" />
             </operation>
         </action>
         <action>
@@ -417,7 +412,7 @@
                 <resource value="Patient" />
                 <description value="Delete the patient resource on the first server" />
                 <destination value="1" />
-                <params value="/${dest1CreatePatientId}" />
+                <params value="/MitreTestScript-test-Patient-410" />
             </operation>
         </action>
         <action>
@@ -429,7 +424,7 @@
                 <resource value="Patient" />
                 <description value="Delete the patient resource on the second server" />
                 <destination value="2" />
-                <params value="/${dest2CreatePatientId}" />
+                <params value="/MitreTestScript-test-Patient-410" />
             </operation>
         </action>
         <action>
@@ -441,7 +436,7 @@
                 <resource value="Measure" />
                 <description value="Delete the measure resource on the first server" />
                 <destination value="1" />
-                <params value="/${dest1CreateMeasureId}" />
+                <params value="/MitreTestScript-measure-col" />
             </operation>
         </action>
         <action>
@@ -453,7 +448,31 @@
                 <resource value="Measure" />
                 <description value="Delete the measure resource on the second server" />
                 <destination value="2" />
-                <params value="/${dest2CreateMeasureId}" />
+                <params value="/MitreTestScript-measure-col" />
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes" />
+                    <code value="delete" />
+                </type>
+                <resource value="Library" />
+                <description value="Delete the Library resource on the first server" />
+                <destination value="1" />
+                <params value="/MitreTestScript-library-col-logic" />
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes" />
+                    <code value="delete" />
+                </type>
+                <resource value="Library" />
+                <description value="Delete the Library resource on the second server" />
+                <destination value="2" />
+                <params value="/MitreTestScript-library-col-logic" />
             </operation>
         </action>
     </teardown>

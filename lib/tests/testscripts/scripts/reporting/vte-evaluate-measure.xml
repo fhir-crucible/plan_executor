@@ -65,11 +65,6 @@
     </fixture>
 
     <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
-    <variable>
         <name value="periodStart"/>
         <defaultValue value="2018-01-01"/>
     </variable>
@@ -219,20 +214,20 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="create"/>
+                    <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
                 <sourceId value="measure-vte-1-FHIR"/>
-                <responseId value="create-measure-response"/>
             </operation>
         </action>
         <action>
             <assert>
                 <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
-                <operator value="in" />
+                <operator value="in"/>
                 <responseCode value="200,201"/>
             </assert>
         </action>
@@ -297,7 +292,7 @@
                 <description value="Evaluate measure with server assigned resource id."/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/${createMeasureId}/$evaluate-measure?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR/$evaluate-measure?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
             </operation>
         </action>
         <action>
@@ -325,7 +320,7 @@
                 </type>
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
             </operation>
         </action>
         <action>

@@ -4,13 +4,14 @@
     {
       "name": "measure-report",
       "resource": {
+        "id": "MitreTestScript-col-individual-report",
         "resourceType": "MeasureReport",
         "type": "individual",
         "measure": {
-          "reference": "Measure/measure-col"
+          "reference": "Measure/MitreTestScript-measure-col"
         },
         "patient": {
-          "reference": "Patient/test-Patient-410"
+          "reference": "Patient/MitreTestScript-test-Patient-410"
         },
         "period": {
           "start": "2017-01-01T00:00:00+00:00",
@@ -22,7 +23,7 @@
       "name": "resource",
       "resource": {
         "resourceType": "Observation",
-        "id": "test-Observation-32794",
+        "id": "MitreTestScript-test-Observation-32794",
         "meta": {
           "versionId": "2",
           "lastUpdated": "2019-01-23T18:19:39.465+00:00",
@@ -64,7 +65,7 @@
           ]
         },
         "subject": {
-          "reference": "Patient/test-Patient-410",
+          "reference": "Patient/MitreTestScript-test-Patient-410",
           "display": "Bobbie Simon Jackson"
         },
         "effectiveDateTime": "2017-01-07T00:08:00-05:00",

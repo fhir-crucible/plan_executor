@@ -202,16 +202,16 @@
 
 	<teardown>
 		<action>
-            <operation>
-                <type>
-                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="delete"/>
-                </type>
-                <resource value="MeasureReport"/>
-                <description value="Delete the MeasureReport from $submit-data"/>
-                <params value="/MitreTestScript-col-individual-report"/>
-            </operation>
-        </action>
+			<operation>
+				<type>
+					<system value="http://hl7.org/fhir/testscript-operation-codes"/>
+					<code value="delete"/>
+				</type>
+				<resource value="MeasureReport"/>
+				<description value="Delete the MeasureReport from $submit-data"/>
+				<params value="/MitreTestScript-col-individual-report"/>
+			</operation>
+		</action>
 		<action>
 			<operation>
 				<type>

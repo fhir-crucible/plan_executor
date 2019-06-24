@@ -55,17 +55,12 @@
     </fixture>
 
     <variable>
-        <name value="createMeasureId"/>
-        <path value="Measure/id"/>
-        <sourceId value="create-measure-response"/>
-    </variable>
-    <variable>
         <name value="periodStart"/>
-        <defaultValue value="2017"/>
+        <defaultValue value="2013"/>
     </variable>
     <variable>
         <name value="periodEnd"/>
-        <defaultValue value="2017"/>
+        <defaultValue value="2013"/>
     </variable>
 
     <setup>
@@ -199,20 +194,20 @@
             <operation>
                 <type>
                     <system value="http://hl7.org/fhir/testscript-operation-codes"/>
-                    <code value="create"/>
+                    <code value="update"/>
                 </type>
                 <resource value="Measure"/>
-                <description value="Create a measure on the server"/>
+                <description value="Update or create a measure on the server"/>
                 <accept value="json"/>
                 <contentType value="json"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
                 <sourceId value="measure-vte-1-FHIR"/>
-                <responseId value="create-measure-response"/>
             </operation>
         </action>
         <action>
             <assert>
-                <description value="Confirm that the returned HTTP status is 201(Created)."/>
-                <operator value="in" />
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
                 <responseCode value="200,201"/>
             </assert>
         </action>
@@ -265,7 +260,7 @@
                 </type>
                 <resource value="Measure"/>
                 <description value="Delete the measure"/>
-                <params value="/${createMeasureId}"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
             </operation>
         </action>
         <action>

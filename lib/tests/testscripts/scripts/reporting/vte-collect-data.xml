@@ -226,7 +226,7 @@
                 <description value="Collect data for the measure"/>
                 <accept value="json"/>
                 <contentType value="json"/>
-                <params value="/${createMeasureId}/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
                 <responseId value="collect-data-result"/>
             </operation>
         </action>

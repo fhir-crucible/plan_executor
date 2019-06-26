@@ -53,6 +53,16 @@
             <reference value="./_reference/resources/Measure/measure-vte-1-FHIR.json"/>
         </resource>
     </fixture>
+    <fixture id="fixture-create-patient">
+        <resource>
+            <reference value="./_reference/resources/Patient/MitreTestScript-Patient-VTE.json"/>
+        </resource>
+    </fixture>
+    <fixture id="fixture-create-encounter">
+        <resource>
+            <reference value="./_reference/resources/Encounter/MitreTestScript-Encounter-VTE.json"/>
+        </resource>
+    </fixture>
 
     <variable>
         <name value="periodStart"/>
@@ -62,6 +72,16 @@
         <name value="periodEnd"/>
         <defaultValue value="2013"/>
     </variable>
+    <variable>
+        <name value="createPatientId"/>
+        <defaultValue value="MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962" />
+        <sourceId value="fixture-create-patient"/>
+     </variable>
+     <variable>
+        <name value="createEncounterId"/>
+        <defaultValue value="MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648" />
+        <sourceId value="fixture-create-encounter"/>
+     </variable>
 
     <setup>
         <action>
@@ -211,6 +231,50 @@
                 <responseCode value="200,201"/>
             </assert>
         </action>
+        <action>
+            <operation>
+                <destination value="1"/>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Create a patient"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/${createPatientId}"/>
+                <sourceId value="fixture-create-patient"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in" />
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <destination value="1"/>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Encounter"/>
+                <description value="Create an encounter"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/${createEncounterId}"/>
+                <sourceId value="fixture-create-encounter"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in" />
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
     </setup>
 
     <test id="TestCollectData">
@@ -327,6 +391,28 @@
                 <resource value="Library"/>
                 <description value="Delete a library on the server"/>
                 <params value="/MitreTestScript-library-fhir-model-definition"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Encounter"/>
+                <description value="Delete the Encounter" />
+                <params value="/MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Delete the Patient"/>
+                <params value="/MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962"/>
             </operation>
         </action>
     </teardown>

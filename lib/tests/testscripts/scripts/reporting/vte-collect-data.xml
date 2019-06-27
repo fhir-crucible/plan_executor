@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestScript xmlns="http://hl7.org/fhir">
+    <id value="vte-collect-data"/>
+
+    <url value="http://example.com"/>
+    <name value="Collect data operation test for the VTE measure"/>
+    <status value="draft"/>
+    <date value="2019-05-24"/>
+    <publisher value="MITRE"/>
+    <contact>
+        <name value="Tom Strassner"/>
+        <telecom>
+            <system value="email"/>
+            <value value="tstrassner@mitre.org"/>
+            <use value="work"/>
+        </telecom>
+    </contact>
+    <description value="Tests the $collect-data operation for the VTE measure"/>
+    <copyright value="N/A"/>
+
+    <fixture id="library-fhir-model-definition">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-fhir-model-definition.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-fhir-helpers">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-fhir-helpers.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-mat-global-common-functions-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-mat-global-common-functions-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-supplemental-data-elements-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-supplemental-data-elements-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-vte-icu-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-vte-icu-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="library-vte-1-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Library/vte/library-vte-1-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="measure-vte-1-FHIR">
+        <resource>
+            <reference value="./_reference/resources/Measure/measure-vte-1-FHIR.json"/>
+        </resource>
+    </fixture>
+    <fixture id="fixture-create-patient">
+        <resource>
+            <reference value="./_reference/resources/Patient/MitreTestScript-Patient-VTE.json"/>
+        </resource>
+    </fixture>
+    <fixture id="fixture-create-encounter">
+        <resource>
+            <reference value="./_reference/resources/Encounter/MitreTestScript-Encounter-VTE.json"/>
+        </resource>
+    </fixture>
+
+    <variable>
+        <name value="periodStart"/>
+        <defaultValue value="2013"/>
+    </variable>
+    <variable>
+        <name value="periodEnd"/>
+        <defaultValue value="2013"/>
+    </variable>
+    <variable>
+        <name value="createPatientId"/>
+        <defaultValue value="MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962" />
+        <sourceId value="fixture-create-patient"/>
+     </variable>
+     <variable>
+        <name value="createEncounterId"/>
+        <defaultValue value="MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648" />
+        <sourceId value="fixture-create-encounter"/>
+     </variable>
+
+    <setup>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
+                <sourceId value="library-fhir-model-definition"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+                <sourceId value="library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
+                <sourceId value="library-mat-global-common-functions-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
+                <sourceId value="library-supplemental-data-elements-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-vte-icu-FHIR"/>
+                <sourceId value="library-vte-icu-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Update or create a library on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
+                <sourceId value="library-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Update or create a measure on the server"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
+                <sourceId value="measure-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in"/>
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <destination value="1"/>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Create a patient"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/${createPatientId}"/>
+                <sourceId value="fixture-create-patient"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in" />
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+        <action>
+            <operation>
+                <destination value="1"/>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="update"/>
+                </type>
+                <resource value="Encounter"/>
+                <description value="Create an encounter"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/${createEncounterId}"/>
+                <sourceId value="fixture-create-encounter"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK) or 201(Created)."/>
+                <operator value="in" />
+                <responseCode value="200,201"/>
+            </assert>
+        </action>
+    </setup>
+
+    <test id="TestCollectData">
+        <name value="Test Collect Data"/>
+        <description value="Tests the $collect-data operation for the VTE measure"/>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="collect-data"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Collect data for the measure"/>
+                <accept value="json"/>
+                <contentType value="json"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR/$collect-data?periodStart=${periodStart}&amp;periodEnd=${periodEnd}"/>
+                <responseId value="collect-data-result"/>
+            </operation>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned HTTP status is 200(OK)."/>
+                <response value="okay"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the response is a Parameters resource"/>
+                <resource value="Parameters"/>
+            </assert>
+        </action>
+        <action>
+            <assert>
+                <description value="Confirm that the returned data contains a MeasureReport"/>
+                <operator value="notEmpty"/>
+                <path value="$.parameter[?(@.resource.resourceType == 'MeasureReport')]"/>
+            </assert>
+        </action>
+    </test>
+
+    <teardown>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Measure"/>
+                <description value="Delete the measure"/>
+                <params value="/MitreTestScript-measure-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-vte-1-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-vte-icu-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-supplemental-data-elements-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-mat-global-common-functions-FHIR"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-helpers"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Library"/>
+                <description value="Delete a library on the server"/>
+                <params value="/MitreTestScript-library-fhir-model-definition"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Encounter"/>
+                <description value="Delete the Encounter" />
+                <params value="/MitreTestScript-aaad87f2-6401-4796-af40-333e1fda9648"/>
+            </operation>
+        </action>
+        <action>
+            <operation>
+                <type>
+                    <system value="http://hl7.org/fhir/testscript-operation-codes"/>
+                    <code value="delete"/>
+                </type>
+                <resource value="Patient"/>
+                <description value="Delete the Patient"/>
+                <params value="/MitreTestScript-455b6e65-5a68-404c-b267-547ad3811962"/>
+            </operation>
+        </action>
+    </teardown>
+</TestScript>

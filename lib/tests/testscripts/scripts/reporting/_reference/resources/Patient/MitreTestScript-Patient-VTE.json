@@ -55,6 +55,14 @@
         "state": "Massachusetts",
         "country": "US"
       }
+    },
+    {
+      "url": "http://synthetichealth.github.io/synthea/disability-adjusted-life-years",
+      "valueDecimal": 11.980835435291082
+    },
+    {
+      "url": "http://synthetichealth.github.io/synthea/quality-adjusted-life-years",
+      "valueDecimal": 49.019164564708916
     }
   ],
   "identifier": [
@@ -89,6 +97,34 @@
       },
       "system": "http://hl7.org/fhir/sid/us-ssn",
       "value": "999-54-2279"
+    },
+    {
+      "type": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/v2/0203",
+            "code": "DL",
+            "display": "Driver's License"
+          }
+        ],
+        "text": "Driver's License"
+      },
+      "system": "urn:oid:2.16.840.1.113883.4.3.25",
+      "value": "S99916479"
+    },
+    {
+      "type": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/v2/0203",
+            "code": "PPN",
+            "display": "Passport Number"
+          }
+        ],
+        "text": "Passport Number"
+      },
+      "system": "http://standardhealthrecord.org/fhir/StructureDefinition/passportNumber",
+      "value": "X75830166X"
     }
   ],
   "name": [

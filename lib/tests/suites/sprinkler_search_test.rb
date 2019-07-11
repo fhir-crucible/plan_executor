@@ -182,9 +182,14 @@ module Crucible
           }
         }
         reply = @client.search(get_resource(:Patient), options)
+
+        # bundle.total is optional
+        total = reply.resource.total
+        total = reply.resource&.entry&.count if total.nil?
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
+        assert_equal expected, total, 'The server did not report the expected number of results.'
       end
 
       test "SE04#{action[0]}", 'Search patient resource on given name' do
@@ -226,9 +231,14 @@ module Crucible
           }
         }
         reply = @client.search(get_resource(:Patient), options)
+        
+        # bundle.total is optional
+        total = reply.resource.total
+        total = reply.resource&.entry&.count if total.nil?
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
+        assert_equal expected, total, 'The server did not report the expected number of results.'
       end
 
       test "SE05.0#{action[0]}", 'Search condition by patient reference url (partial)' do
@@ -530,9 +540,14 @@ module Crucible
           }
         }
         reply = @client.search(get_resource(:Condition), options)
+
+        # bundle.total is optional
+        total = reply.resource.total
+        total = reply.resource&.entry&.count if total.nil?
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.total > 0, 'The server should have Conditions that _include=Condition:patient.'
+        assert_operator :greaterThan, total, 0, 'The server should have Conditions that _include=Condition:patient.'
         has_patient = false
         reply.resource.entry.each do |entry|
           has_patient = true if (entry.resource && entry.resource.class == get_resource(:Patient))
@@ -561,9 +576,14 @@ module Crucible
           }
         }
         reply = @client.search(get_resource(:Patient), options)
+
+        # bundle.total is optional
+        total = reply.resource.total
+        total = reply.resource&.entry&.count if total.nil?
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert reply.resource.total > 0, 'The server should have Patients that are _revinclude=Condition:patient.'
+        assert_operator :greaterThan, total, 0, 'The server should have Patients that are _revinclude=Condition:patient.'
         has_condition = false
         reply.resource.entry.each do |entry|
           has_condition = true if (entry.resource && entry.resource.class == get_resource(:Condition))
@@ -669,9 +689,14 @@ module Crucible
           }
         }
         reply = @client.search(get_resource(:Patient), options)
+        
+        # bundle.total is optional
+        total = reply.resource.total
+        total = reply.resource&.entry&.count if total.nil?
+        
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        assert_equal expected, reply.resource.total, 'The server did not report the expected number of results.'
+        assert_equal expected, total, 'The server did not report the expected number of results.'
       end
 
       test "SE24#{action[0]}", 'Search with non-existing parameter' do

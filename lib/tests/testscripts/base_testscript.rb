@@ -1,7 +1,7 @@
 module Crucible
   module Tests
     class BaseTestScript < BaseTest
-      
+
       FORMAT_MAP = {
         'json' => FHIR::Formats::ResourceFormat::RESOURCE_JSON,
         'xml' => FHIR::Formats::ResourceFormat::RESOURCE_XML
@@ -145,7 +145,7 @@ module Crucible
             validates_grouped_by_resource = validates.group_by{|g| g['resource']}.values.map do |m|
               {
                 'resource' => m.first['resource'],
-                'methods' => m.map{|i| i['methods']}
+                'methods' => m.map{|i| i['methods']}.compact
               }
             end
 
@@ -292,7 +292,7 @@ module Crucible
         @testscript.setup.action.each do |action|
           if !@setup_failed
             @current_action = action
-            report_setup.action << perform_action(action) 
+            report_setup.action << perform_action(action)
             if action_failed?(report_setup.action.last)
               @setup_failed = true
               @setup_failure_message = 'One of the setup actions failed.'
@@ -395,8 +395,8 @@ module Crucible
           @id_map[operation.sourceId] = @last_response.id
         when 'update','updateCreate'
           target_id = nil
-          
-          if !operation.targetId.nil? 
+
+          if !operation.targetId.nil?
             target_id = @id_map[operation.targetId]
           elsif !operation.params.nil?
             target_id = id_from_path(replace_variables(operation.params))
@@ -442,7 +442,7 @@ module Crucible
           # @last_response = @client.value_set_code_validation(options)
         when 'empty'
           if !operation.params.nil? && !operation.resource.nil?
-            resource = "FHIR::#{operation.resource}".constantize 
+            resource = "FHIR::#{operation.resource}".constantize
             @last_response = @client.read resource, nil, FORMAT_MAP[operation.accept], nil, params: replace_variables(operation.params)
           end
         else
@@ -706,7 +706,7 @@ module Crucible
           resource = @testscript.contained.select{|r| r.id == contained_id}.first
         elsif reference.start_with?('http')
           raise "Remote references not supported: #{reference}"
-        else 
+        else
           filepath = File.expand_path reference, File.dirname(File.absolute_path(@testscript.url))
           return nil unless File.exist? filepath
           file = File.open(filepath, 'r:UTF-8', &:read)
@@ -723,7 +723,7 @@ module Crucible
         # ${D5}: generates a 5 digit number
         # ${CD6}: generates a 6 character string with digits and characters
         output = input;
-        input.scan(/\${(\w+)}/).each do |match| 
+        input.scan(/\${(\w+)}/).each do |match|
           if @preprocessed_vars.key?(match[0])
             output.sub!("${#{match[0]}}", @preprocessed_vars[match[0]])
           else

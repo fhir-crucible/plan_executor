@@ -170,9 +170,14 @@ module Crucible
         @obs2 = ResourceGenerator.minimal_observation('http://loinc.org','3141-9',100,'kg',@patient0.id)
         # obesity has been refuted
         @condition0.subject.reference = "Patient/#{@patient0.id}"
-        @condition0.clinicalStatus = 'resolved'
-        @condition0.verificationStatus = 'refuted'
         @condition0.abatementString = 'Abated at unknown date'
+        if fhir_version() == :r4
+          @condition0.clinicalStatus = ResourceGenerator.minimal_codeableconcept('http://hl7.org/fhir/ValueSet/condition-clinical', 'resolved')
+          @condition0.verificationStatus = ResourceGenerator.minimal_codeableconcept('http://hl7.org/fhir/ValueSet/condition-ver-status', 'refuted')
+        else
+          @condition0.clinicalStatus = 'resolved'
+          @condition0.verificationStatus = 'refuted'
+        end
 
         @client.begin_transaction
         @client.add_transaction_request('DELETE',"Observation/#{@obs0b.id}") if @obs0b && !@obs0b.id.nil? # delete first weight

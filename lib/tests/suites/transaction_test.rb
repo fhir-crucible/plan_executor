@@ -172,8 +172,8 @@ module Crucible
         @condition0.subject.reference = "Patient/#{@patient0.id}"
         @condition0.abatementString = 'Abated at unknown date'
         if fhir_version() == :r4
-          @condition0.clinicalStatus = ResourceGenerator.minimal_codeableconcept('http://hl7.org/fhir/ValueSet/condition-clinical', 'resolved')
-          @condition0.verificationStatus = ResourceGenerator.minimal_codeableconcept('http://hl7.org/fhir/ValueSet/condition-ver-status', 'refuted')
+          @condition0.clinicalStatus = ResourceGenerator.minimal_codeableconcept('http://terminology.hl7.org/CodeSystem/condition-clinical', 'resolved')
+          @condition0.verificationStatus = ResourceGenerator.minimal_codeableconcept('http://terminology.hl7.org/CodeSystem/condition-ver-status', 'refuted')
         else
           @condition0.clinicalStatus = 'resolved'
           @condition0.verificationStatus = 'refuted'

@@ -75,6 +75,8 @@ module Crucible
         @condition0 = ResourceGenerator.minimal_condition('http://snomed.info/sct','414915002',patient0_id)
         @condition0.subject.reference = patient0_uri
 
+        ResourceGenerator.apply_invariants!(@condition0)
+
         @client.begin_transaction
         @client.add_transaction_request('POST',nil,@patient0).fullUrl = patient0_uri
         @client.add_transaction_request('POST',nil,@obs0a).fullUrl = "urn:uuid:#{SecureRandom.uuid}"
@@ -258,8 +260,9 @@ module Crucible
         assert_bundle_response(reply)
         assert_bundle_transactions_okay(reply)
 
-        count = (reply.resource.entry.first.resource.total rescue 0)
-        assert(count==1,"In a transaction, GET should execute last and in this case only return 1 result; found #{count}",reply.body)
+        total = reply.resource.entry.first.resource.total
+        total = reply&.resource&.entry&.first&.resource&.entry&.count if total.nil?
+        assert(total==1,"In a transaction, GET should execute last and in this case only return 1 result; found #{total}",reply.body)
         searchResultId = (reply.resource.entry.first.resource.entry.first.resource.id rescue nil)
         assert(searchResultId==@obs0a.id,"The GET search returned the wrong result. Expected Observation/#{@obs0a.id} but found Observation/#{searchResultId}.",reply.body)
 

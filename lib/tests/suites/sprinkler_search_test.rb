@@ -73,7 +73,7 @@ module Crucible
         observation.code = get_resource(:CodeableConcept).new
         observation.code.coding = [ code ]
         observation.valueQuantity = get_resource(:Quantity).new
-        observation.valueQuantity.system = 'http://unitofmeasure.org'
+        observation.valueQuantity.system = 'http://unitsofmeasure.org'
         observation.valueQuantity.value = value
         observation.valueQuantity.unit = 'mmol'
         body = get_resource(:Coding).new

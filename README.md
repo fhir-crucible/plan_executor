@@ -13,7 +13,7 @@ $ bundle exec rake -T
 
 ## Listing Test Suites
 
-List all the available Test Suites, excluding supported `TestScripts`. Pass the version, which can currently either be `dstu2` or `stu3`.
+List all the available Test Suites, excluding supported `TestScripts`. Pass the version, which can currently be `dstu2`, `stu3` or `r4`.
 
 ```
 $ bundle exec rake crucible:list_suites[dstu2]
@@ -24,18 +24,23 @@ $ bundle exec rake crucible:list_suites[dstu2]
 Crucible tests can be executed by suite from the command-line by calling the `crucible-execute` rake task with the following parameters:
 
 * `url` the FHIR endpoint
-* `version` the FHIR version (sequence).  Currently `dstu2` and `stu3` are supported.
+* `version` the FHIR version (sequence).  Currently `dstu2`, `stu3` and `r4` are supported.
 * `test` the name of the test suite (see `crucible:list_suites`)
 * `resource` (optional) limit the `test` (applicable to "ResourceTest" or "SearchTest" suites) to a given resource (e.g. "Patient")
 
-Run a DSTU2 Suite
+Run a R4 Suite limited by Resource
 ```
-$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu2,dstu2,TransactionAndBatchTest]
+$ bundle exec rake crucible:execute[http://hapi.fhir.org/r4,r4,ResourceTest,Patient]
 ```
 
 Run a STU3 Suite limited by Resource
 ```
-$ bundle exec rake crucible:execute[http://fhirtest.uhn.ca/baseDstu3,stu3,ResourceTest,Patient]
+$ bundle exec rake crucible:execute[http://hapi.fhir.org/baseDstu3,stu3,ResourceTest,Patient]
+```
+
+Run a DSTU2 Suite
+```
+$ bundle exec rake crucible:execute[http://hapi.fhir.org/baseDstu2,dstu2,TransactionAndBatchTest]
 ```
 
 ## Adding a New Test Suite
@@ -111,7 +116,7 @@ a trail of test data behind.
 
 # License
 
-Copyright 2014-2016 The MITRE Corporation
+Copyright 2014-2020 The MITRE Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

@@ -66,7 +66,7 @@ module Crucible
               gen = SecureRandom.base64
             end
           elsif type == 'xhtml'
-            gen = "<div>#{SecureRandom.base64}</div>"
+            gen = "<div xmlns=\"http://www.w3.org/1999/xhtml\">#{SecureRandom.base64}</div>"
           elsif type == 'uri'
             gen = "http://projectcrucible.org/#{SecureRandom.base64}"
           elsif type == 'uuid'

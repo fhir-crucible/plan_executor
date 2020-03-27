@@ -78,11 +78,8 @@ module Crucible
             if script.is_a?(FHIR::STU3::TestScript) && script.valid?
               script.url = f # replace the URL with the local file path so file system references can properly resolve
               @@models << script
-              FHIR.logger.info "TestScriptEngine.parse_testscripts: Loaded #{f}"
             elsif script.is_a?(FHIR::STU3::TestScript)
               FHIR.logger.error "TestScriptEngine.parse_testscripts: Skipping invalid TestScript #{f}"
-            else # this is a fixture...
-              FHIR.logger.warn "TestScriptEngine.parse_testscripts: Skipping fixture #{f}"
             end
           rescue
             FHIR.logger.error "TestScriptEngine.parse_testscripts: Exception deserializing TestScript #{f}"

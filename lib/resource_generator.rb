@@ -570,8 +570,6 @@ module Crucible
         when FHIR::Immunization
           resource.doseQuantity.comparator = nil unless resource.doseQuantity.nil?
           resource.status = ['completed','entered-in-error'].sample
-        when FHIR::ImplementationGuide
-          resource.fhirVersion = "4.0.0"
         when FHIR::Linkage
           if resource.item.length == 1
             resource.item << resource.item.first # must have 2

@@ -704,7 +704,7 @@ module Crucible
             end
           end
         when FHIR::RelatedPerson
-          resource.relationship = minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','family')
+          resource.relationship = [minimal_codeableconcept('http://hl7.org/fhir/patient-contact-relationship','family')]
         when FHIR::Questionnaire
           # resource.item.each do |i|
           #   i.required = true

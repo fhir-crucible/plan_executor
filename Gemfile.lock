@@ -62,7 +62,7 @@ GEM
       domain_name (~> 0.5)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
-    json (2.2.0)
+    json (2.3.1)
     jsonpath (1.0.1)
       multi_json
       to_regexp (~> 0.2.1)

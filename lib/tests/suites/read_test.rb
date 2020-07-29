@@ -24,7 +24,7 @@ module Crucible
         rescue
           # try to create a patient
           begin
-            @patient = @client.create(@resources.minimal_patient).resource
+            @patient = @client.create(@resources.example_patient).resource
             @patient_created = true
           rescue
             @patient = nil

@@ -27,7 +27,7 @@ module Crucible
           test_class = test.class.name.demodulize
           #if t can set class
           if test.respond_to? 'resource_class='
-            [:dstu2, :stu3].each do |fhir_version|
+            [:dstu2, :stu3, :r4].each do |fhir_version|
               Crucible::Tests::BaseSuite.fhir_resources(fhir_version).each do |klass|
                 klass_name = klass.name.demodulize
                 test_name = "#{test_class}#{klass_name}"

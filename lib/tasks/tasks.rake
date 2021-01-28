@@ -96,6 +96,8 @@ namespace :crucible do
     require 'benchmark'
     b = Benchmark.measure {
       client = FHIR::Client.new(args.url)
+      client.use_r4
+      client.use_stu3 if fhir_version == :stu3
       client.use_dstu2 if fhir_version == :dstu2
       options = client.get_oauth2_metadata_from_conformance
       set_client_secrets(client,options) unless options.empty?
@@ -113,7 +115,8 @@ namespace :crucible do
   end
 
   def resolve_fhir_version(version_string)
-    fhir_version = :stu3
+    fhir_version = :r4
+    fhir_version = :stu3 if version_string.downcase == 'stu3'
     fhir_version = :dstu2 if version_string.downcase == 'dstu2'
     fhir_version
   end
@@ -303,6 +306,8 @@ namespace :crucible do
       puts "```"
       b = Benchmark.measure {
         client = FHIR::Client.new(url)
+        client.use_r4
+        client.use_stu3 if fhir_version == :stu3
         client.use_dstu2 if fhir_version == :dstu2
         options = client.get_oauth2_metadata_from_conformance
         set_client_secrets(client,options) unless options.empty?
@@ -334,6 +339,8 @@ namespace :crucible do
       puts "```"
       b = Benchmark.measure {
         client = FHIR::Client.new(url)
+        client.use_r4
+        client.use_stu3 if fhir_version == :stu3
         client.use_dstu2 if fhir_version == :dstu2
         options = client.get_oauth2_metadata_from_conformance
         set_client_secrets(client,options) unless options.empty?
@@ -414,6 +421,8 @@ namespace :crucible do
     end
 
     client = FHIR::Client.new(args.url)
+    client.use_r4
+    client.use_stu3 if fhir_version == :stu3
     client.use_dstu2 if fhir_version == :dstu2
     options = client.get_oauth2_metadata_from_conformance
     set_client_secrets(client,options) unless options.empty?

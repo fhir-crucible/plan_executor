@@ -206,7 +206,9 @@ module Crucible
           resource.subject.display = 'Patient'
         end
         resource.code = minimal_codeableconcept(system,code, namespace)
-        resource.verificationStatus = 'confirmed'
+        if namespace == 'FHIR::DSTU2'
+          resource.verificationStatus = 'confirmed'
+        end
         tag_metadata(resource)
       end
 
@@ -412,6 +414,19 @@ module Crucible
           #   resource.targetReference = textonly_reference('ValueSet') 
           # end
         when FHIR::Condition
+          # con-3
+          verification_status_is_entered_in_error = resource&.verificationStatus&.coding&.include?('entered-in-error')
+          category_is_problem_list_item = resource&.category&.find {|e| e&.coding&.include?("problem-list-item")}
+          if (!verification_status_is_entered_in_error || !category_is_problem_list_item)
+            clinical_status_code = ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].sample
+            resource.clinicalStatus = minimal_codeableconcept('http://hl7.org/fhir/ValueSet/condition-clinical', clinical_status_code)
+          end
+
+          # con-5
+          if resource&.verificationStatus&.coding&.include?('entered-in-error')
+            resource.clinicalStatus = nil
+          end
+
           if resource.onsetAge
             resource.onsetAge.system = 'http://unitsofmeasure.org'
             resource.onsetAge.code = 'a'
@@ -1077,6 +1092,11 @@ module Crucible
             resource.targetReference = textonly_reference('ValueSet', FHIR::STU3) 
           end
         when FHIR::STU3::Condition
+          # con-3
+          if resource.verificationStatus != 'entered-in-error'
+            resource.clinicalStatus = ['active', 'recurrence', 'inactive', 'remission', 'resolved'].sample
+          end
+
           if resource.onsetAge
             resource.onsetAge.system = 'http://unitsofmeasure.org'
             resource.onsetAge.code = 'a'

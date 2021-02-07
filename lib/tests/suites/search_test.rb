@@ -199,15 +199,19 @@ module Crucible
 
         replyB = @client.read_feed(@resource_class)
 
+        # bundle.total is optional
+        total = reply.resource.total
+        total = reply.resource&.entry&.count if total.nil?
+        totalB = replyB.resource.total
+        totalB = replyB.resource&.entry&.count if totalB.nil?
+
         # AuditEvent
         if resource_class == get_resource(:AuditEvent)
-          count = (reply.resource.total-replyB.resource.total).abs
+          count = (total-totalB).abs
           assert (count <= 1), 'Searching without criteria did not return all the results.'
         else
-          assert !replyB.resource.nil?, 'Searching without criteria did not return any results.'
-          assert !reply.resource.nil?, 'Searching without criteria did not return any results.'
-          assert !replyB.resource.total.nil?, 'Search bundle returned does not report a total entry count.'
-          assert !reply.resource.total.nil?, 'Search bundle returned does not report a total entry count.'
+          assert_operator :greaterThan, totalB, 0, 'Searching without criteria did not return any results.'
+          assert_operator :greaterThan, total, 0, 'Searching without criteria did not return any results.'
           assert_equal replyB.resource.total, reply.resource.total, 'Searching without criteria did not return all the results.'
         end
       end
